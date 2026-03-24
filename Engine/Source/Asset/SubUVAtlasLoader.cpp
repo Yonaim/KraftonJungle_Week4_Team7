@@ -1,16 +1,15 @@
 #include "Core/CoreMinimal.h"
-#include "FontAtlasLoader.h"
+#include "SubUVAtlasLoader.h"
 
 #include <algorithm>
 #include <cwctype>
 #include <filesystem>
-#include <fstream>
 #include <limits>
 #include <objbase.h>
 #include <wincodec.h>
 
-#include "FontAsset.h"
-#include "Renderer/D3D11/D3D11RHI.h"
+#include "Renderer/D3D11/D3D11DynamicRHI.h"
+#include "SubUVAtlasAsset.h"
 
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "windowscodecs.lib")
@@ -19,7 +18,7 @@ namespace
 {
     class FScopedComInitializer
     {
-      public:
+    public:
         FScopedComInitializer()
         {
             Result = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
@@ -35,16 +34,18 @@ namespace
             }
         }
 
-        bool IsUsable() const { return bUsable; }
+        bool IsUsable() const
+        {
+            return bUsable;
+        }
 
-      private:
+    private:
         HRESULT Result = E_FAIL;
-        bool    bInitialized = false;
-        bool    bUsable = false;
+        bool bInitialized = false;
+        bool bUsable = false;
     };
 
-    bool DecodeWithWICBytes(const TArray<uint8>& Bytes, uint32& OutWidth, uint32& OutHeight,
-                            TArray<uint8>& OutPixels)
+    bool DecodeWithWICBytes(const TArray<uint8>& Bytes, uint32& OutWidth, uint32& OutHeight, TArray<uint8>& OutPixels)
     {
         if (Bytes.empty())
         {
@@ -63,8 +64,11 @@ namespace
         }
 
         TComPtr<IWICImagingFactory> ImagingFactory;
-        HRESULT Hr = CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER,
-                                      IID_PPV_ARGS(&ImagingFactory));
+        HRESULT Hr = CoCreateInstance(
+            CLSID_WICImagingFactory,
+            nullptr,
+            CLSCTX_INPROC_SERVER,
+            IID_PPV_ARGS(&ImagingFactory));
         if (FAILED(Hr))
         {
             return false;
@@ -86,8 +90,7 @@ namespace
         }
 
         TComPtr<IWICBitmapDecoder> Decoder;
-        Hr = ImagingFactory->CreateDecoderFromStream(Stream.Get(), nullptr,
-                                                     WICDecodeMetadataCacheOnLoad, &Decoder);
+        Hr = ImagingFactory->CreateDecoderFromStream(Stream.Get(), nullptr, WICDecodeMetadataCacheOnLoad, &Decoder);
         if (FAILED(Hr))
         {
             return false;
@@ -110,9 +113,9 @@ namespace
 
         const uint64 Stride = static_cast<uint64>(Width) * 4ull;
         const uint64 BufferSize = Stride * static_cast<uint64>(Height);
-        if (Stride > static_cast<uint64>(std::numeric_limits<UINT>::max()) ||
-            BufferSize > static_cast<uint64>(std::numeric_limits<UINT>::max()) ||
-            BufferSize > static_cast<uint64>(std::numeric_limits<size_t>::max()))
+        if (Stride > static_cast<uint64>(std::numeric_limits<UINT>::max())
+            || BufferSize > static_cast<uint64>(std::numeric_limits<UINT>::max())
+            || BufferSize > static_cast<uint64>(std::numeric_limits<size_t>::max()))
         {
             return false;
         }
@@ -124,9 +127,13 @@ namespace
             return false;
         }
 
-        Hr = FormatConverter->Initialize(Frame.Get(), GUID_WICPixelFormat32bppRGBA,
-                                         WICBitmapDitherTypeNone, nullptr, 0.0f,
-                                         WICBitmapPaletteTypeCustom);
+        Hr = FormatConverter->Initialize(
+            Frame.Get(),
+            GUID_WICPixelFormat32bppRGBA,
+            WICBitmapDitherTypeNone,
+            nullptr,
+            0.0f,
+            WICBitmapPaletteTypeCustom);
         if (FAILED(Hr))
         {
             return false;
@@ -136,9 +143,11 @@ namespace
         OutHeight = static_cast<uint32>(Height);
         OutPixels.resize(static_cast<size_t>(BufferSize));
 
-        Hr = FormatConverter->CopyPixels(nullptr, static_cast<UINT>(Stride),
-                                         static_cast<UINT>(BufferSize),
-                                         reinterpret_cast<BYTE*>(OutPixels.data()));
+        Hr = FormatConverter->CopyPixels(
+            nullptr,
+            static_cast<UINT>(Stride),
+            static_cast<UINT>(BufferSize),
+            reinterpret_cast<BYTE*>(OutPixels.data()));
         if (FAILED(Hr))
         {
             OutWidth = 0;
@@ -149,33 +158,42 @@ namespace
 
         return true;
     }
-} // namespace
+}
 
-FFontAtlasLoader::FFontAtlasLoader(FD3D11RHI* InRHI) : RHI(InRHI) {}
+FSubUVAtlasLoader::FSubUVAtlasLoader(FD3D11DynamicRHI* InRHI)
+    : RHI(InRHI)
+{
+}
 
-bool FFontAtlasLoader::CanLoad(const FWString& Path, const FAssetLoadParams& Params) const
+bool FSubUVAtlasLoader::CanLoad(const FWString& Path, const FAssetLoadParams& Params) const
 {
     if (Path.empty())
     {
         return false;
     }
 
-    if (Params.ExplicitType != EAssetType::Unknown && Params.ExplicitType != EAssetType::Font)
+    if (Params.ExplicitType != EAssetType::Unknown && Params.ExplicitType != EAssetType::SpriteAtlas)
     {
         return false;
     }
 
     const std::filesystem::path FilePath(Path);
-    FWString                    Extension = FilePath.extension().native();
+    FWString Extension = FilePath.extension().native();
     std::transform(Extension.begin(), Extension.end(), Extension.begin(),
-                   [](wchar_t Ch) { return static_cast<wchar_t>(std::towlower(Ch)); });
+        [](wchar_t Ch)
+        {
+            return static_cast<wchar_t>(std::towlower(Ch));
+        });
 
     return Extension == L".json";
 }
 
-EAssetType FFontAtlasLoader::GetAssetType() const { return EAssetType::Font; }
+EAssetType FSubUVAtlasLoader::GetAssetType() const
+{
+    return EAssetType::SpriteAtlas;
+}
 
-uint64 FFontAtlasLoader::MakeBuildSignature(const FAssetLoadParams& Params) const
+uint64 FSubUVAtlasLoader::MakeBuildSignature(const FAssetLoadParams& Params) const
 {
     (void)Params;
 
@@ -185,73 +203,90 @@ uint64 FFontAtlasLoader::MakeBuildSignature(const FAssetLoadParams& Params) cons
     return Hash;
 }
 
-UAsset* FFontAtlasLoader::LoadAsset(const FSourceRecord& Source, const FAssetLoadParams& Params)
+UAsset* FSubUVAtlasLoader::LoadAsset(const FSourceRecord& Source, const FAssetLoadParams& Params)
 {
     (void)Params;
 
-    FFontResource FontResource;
-    if (!ParseFontAtlasJson(Source, FontResource))
+    FSubUVAtlasResource AtlasResource;
+    if (!ParseSubUVJson(Source, AtlasResource))
     {
         return nullptr;
     }
 
-    UFontAsset* NewFontAsset = new UFontAsset();
-    NewFontAsset->Initialize(Source, FontResource);
-    return NewFontAsset;
+    USubUVAtlasAsset* NewAsset = new USubUVAtlasAsset();
+    NewAsset->Initialize(Source, AtlasResource);
+    return NewAsset;
 }
 
-bool FFontAtlasLoader::ParseFontAtlasJson(const FSourceRecord& Source, FFontResource& OutFont) const
+bool FSubUVAtlasLoader::ParseSubUVJson(const FSourceRecord& Source, FSubUVAtlasResource& OutAtlas) const
 {
-    OutFont.Reset();
+    OutAtlas.Reset();
 
     if (!Source.bFileBytesLoaded || Source.FileBytes.empty())
     {
         return false;
     }
 
-    const nlohmann::json Root =
-        nlohmann::json::parse(Source.FileBytes.begin(), Source.FileBytes.end(), nullptr, false);
+    const nlohmann::json Root = nlohmann::json::parse(Source.FileBytes.begin(), Source.FileBytes.end(), nullptr, false);
     if (Root.is_discarded())
     {
         return false;
     }
 
-    if (!ParseInfo(Root, OutFont.Info) || !ParseCommon(Root, OutFont.Common) ||
-        !ParsePages(Root, OutFont.PageFiles) || !ParseChars(Root, OutFont.Glyphs))
+    if (!ParseInfo(Root, OutAtlas.Info)
+        || !ParseCommon(Root, OutAtlas.Common)
+        || !ParsePages(Root, OutAtlas.PageFiles)
+        || !ParseFrames(Root, OutAtlas.Frames)
+        || !ParseSequences(Root, OutAtlas.Sequences))
     {
         return false;
     }
 
-    if (OutFont.PageFiles.empty())
+    if (OutAtlas.PageFiles.empty())
     {
         return false;
     }
 
-    if (!LoadAtlasTexture(Source, OutFont.PageFiles[0], OutFont.Atlas))
+    if (!LoadAtlasTexture(Source, OutAtlas.PageFiles[0], OutAtlas.Atlas))
     {
-        OutFont.Reset();
+        OutAtlas.Reset();
         return false;
     }
 
-    if (OutFont.Common.ScaleW == 0)
+    if (OutAtlas.Common.ScaleW == 0)
     {
-        OutFont.Common.ScaleW = OutFont.Atlas.Width;
+        OutAtlas.Common.ScaleW = OutAtlas.Atlas.Width;
     }
 
-    if (OutFont.Common.ScaleH == 0)
+    if (OutAtlas.Common.ScaleH == 0)
     {
-        OutFont.Common.ScaleH = OutFont.Atlas.Height;
+        OutAtlas.Common.ScaleH = OutAtlas.Atlas.Height;
     }
 
-    if (OutFont.Common.Pages == 0)
+    if (OutAtlas.Common.Pages == 0)
     {
-        OutFont.Common.Pages = static_cast<uint32>(OutFont.PageFiles.size());
+        OutAtlas.Common.Pages = static_cast<uint32>(OutAtlas.PageFiles.size());
+    }
+
+    if (OutAtlas.Info.FrameCount == 0)
+    {
+        OutAtlas.Info.FrameCount = static_cast<uint32>(OutAtlas.Frames.size());
+    }
+
+    if (OutAtlas.Info.Columns == 0)
+    {
+        OutAtlas.Info.Columns = 1;
+    }
+
+    if (OutAtlas.Info.Rows == 0)
+    {
+        OutAtlas.Info.Rows = 1;
     }
 
     return true;
 }
 
-bool FFontAtlasLoader::ParseInfo(const nlohmann::json& Root, FFontInfo& OutInfo) const
+bool FSubUVAtlasLoader::ParseInfo(const nlohmann::json& Root, FSubUVAtlasInfo& OutInfo) const
 {
     if (!Root.contains("info") || !Root["info"].is_object())
     {
@@ -260,35 +295,22 @@ bool FFontAtlasLoader::ParseInfo(const nlohmann::json& Root, FFontInfo& OutInfo)
 
     const auto& Info = Root["info"];
 
-    OutInfo.Face = Info.value("face", "");
-    OutInfo.Size = Info.value("size", 0);
-    OutInfo.bBold = Info.value("bold", 0) != 0;
-    OutInfo.bItalic = Info.value("italic", 0) != 0;
-    OutInfo.bUnicode = Info.value("unicode", 0) != 0;
+    OutInfo.Name = Info.value("name", "");
+    OutInfo.Texture = Info.value("texture", "");
 
-    OutInfo.StretchH = Info.value("stretchH", 100);
-    OutInfo.bSmooth = Info.value("smooth", 1) != 0;
-    OutInfo.AA = Info.value("aa", 1);
-    OutInfo.Outline = Info.value("outline", 0);
+    OutInfo.FrameWidth = Info.value("frameWidth", 0u);
+    OutInfo.FrameHeight = Info.value("frameHeight", 0u);
+    OutInfo.Columns = Info.value("columns", 1u);
+    OutInfo.Rows = Info.value("rows", 1u);
+    OutInfo.FrameCount = Info.value("frameCount", 0u);
 
-    if (Info.contains("padding") && Info["padding"].is_array() && Info["padding"].size() == 4)
-    {
-        OutInfo.PaddingLeft = Info["padding"][0].get<int32>();
-        OutInfo.PaddingTop = Info["padding"][1].get<int32>();
-        OutInfo.PaddingRight = Info["padding"][2].get<int32>();
-        OutInfo.PaddingBottom = Info["padding"][3].get<int32>();
-    }
-
-    if (Info.contains("spacing") && Info["spacing"].is_array() && Info["spacing"].size() == 2)
-    {
-        OutInfo.SpacingX = Info["spacing"][0].get<int32>();
-        OutInfo.SpacingY = Info["spacing"][1].get<int32>();
-    }
+    OutInfo.FPS = Info.value("fps", 0.0f);
+    OutInfo.bLoop = Info.value("loop", 1) != 0;
 
     return true;
 }
 
-bool FFontAtlasLoader::ParseCommon(const nlohmann::json& Root, FFontCommon& OutCommon) const
+bool FSubUVAtlasLoader::ParseCommon(const nlohmann::json& Root, FSubUVAtlasCommon& OutCommon) const
 {
     if (!Root.contains("common") || !Root["common"].is_object())
     {
@@ -297,22 +319,15 @@ bool FFontAtlasLoader::ParseCommon(const nlohmann::json& Root, FFontCommon& OutC
 
     const auto& Common = Root["common"];
 
-    OutCommon.LineHeight = Common.value("lineHeight", 0u);
-    OutCommon.Base = Common.value("base", 0u);
     OutCommon.ScaleW = Common.value("scaleW", 0u);
     OutCommon.ScaleH = Common.value("scaleH", 0u);
     OutCommon.Pages = Common.value("pages", 0u);
     OutCommon.bPacked = Common.value("packed", 0) != 0;
 
-    OutCommon.AlphaChannel = Common.value("alphaChnl", 0u);
-    OutCommon.RedChannel = Common.value("redChnl", 0u);
-    OutCommon.GreenChannel = Common.value("greenChnl", 0u);
-    OutCommon.BlueChannel = Common.value("blueChnl", 0u);
-
     return true;
 }
 
-bool FFontAtlasLoader::ParsePages(const nlohmann::json& Root, TArray<FString>& OutPages) const
+bool FSubUVAtlasLoader::ParsePages(const nlohmann::json& Root, TArray<FString>& OutPages) const
 {
     if (!Root.contains("pages") || !Root["pages"].is_array())
     {
@@ -337,37 +352,91 @@ bool FFontAtlasLoader::ParsePages(const nlohmann::json& Root, TArray<FString>& O
     return !OutPages.empty();
 }
 
-bool FFontAtlasLoader::ParseChars(const nlohmann::json&     Root,
-                                  TMap<uint32, FFontGlyph>& OutGlyphs) const
+bool FSubUVAtlasLoader::ParseFrames(const nlohmann::json& Root, TArray<FSubUVFrame>& OutFrames) const
 {
-    if (!Root.contains("chars") || !Root["chars"].is_array())
+    if (!Root.contains("frames") || !Root["frames"].is_array())
     {
         return false;
     }
 
-    OutGlyphs.clear();
-    for (const auto& Ch : Root["chars"])
+    OutFrames.clear();
+    for (const auto& FrameJson : Root["frames"])
     {
-        FFontGlyph Glyph;
-        Glyph.Id = Ch.value("id", 0u);
-        Glyph.X = Ch.value("x", 0u);
-        Glyph.Y = Ch.value("y", 0u);
-        Glyph.Width = Ch.value("width", 0u);
-        Glyph.Height = Ch.value("height", 0u);
-        Glyph.XOffset = Ch.value("xoffset", 0);
-        Glyph.YOffset = Ch.value("yoffset", 0);
-        Glyph.XAdvance = Ch.value("xadvance", 0);
-        Glyph.Page = Ch.value("page", 0u);
-        Glyph.Channel = Ch.value("chnl", 0u);
+        if (!FrameJson.is_object())
+        {
+            continue;
+        }
 
-        OutGlyphs.insert_or_assign(Glyph.Id, Glyph);
+        FSubUVFrame Frame;
+        Frame.Id = FrameJson.value("id", 0u);
+        Frame.X = FrameJson.value("x", 0u);
+        Frame.Y = FrameJson.value("y", 0u);
+        Frame.Width = FrameJson.value("width", 0u);
+        Frame.Height = FrameJson.value("height", 0u);
+        Frame.PivotX = FrameJson.value("pivotX", 0.5f);
+        Frame.PivotY = FrameJson.value("pivotY", 0.5f);
+        Frame.Duration = FrameJson.value("duration", 0.0f);
+
+        OutFrames.push_back(Frame);
     }
 
-    return !OutGlyphs.empty();
+    std::sort(OutFrames.begin(), OutFrames.end(),
+        [](const FSubUVFrame& Lhs, const FSubUVFrame& Rhs)
+        {
+            return Lhs.Id < Rhs.Id;
+        });
+
+    return !OutFrames.empty();
 }
 
-bool FFontAtlasLoader::LoadAtlasTexture(const FSourceRecord& JsonSource, const FString& PageFile,
-                                        FTextureResource& OutAtlas) const
+bool FSubUVAtlasLoader::ParseSequences(const nlohmann::json& Root, TMap<FString, FSubUVSequence>& OutSequences) const
+{
+    OutSequences.clear();
+
+    if (!Root.contains("sequences") || !Root["sequences"].is_array())
+    {
+        FSubUVSequence DefaultSequence;
+        DefaultSequence.Name = "Default";
+        OutSequences.insert_or_assign(DefaultSequence.Name, DefaultSequence);
+        return true;
+    }
+
+    for (const auto& SequenceJson : Root["sequences"])
+    {
+        if (!SequenceJson.is_object())
+        {
+            continue;
+        }
+
+        FSubUVSequence Sequence;
+        Sequence.Name = SequenceJson.value("name", "");
+        if (Sequence.Name.empty())
+        {
+            continue;
+        }
+
+        Sequence.StartFrame = SequenceJson.value("startFrame", 0u);
+        Sequence.EndFrame = SequenceJson.value("endFrame", Sequence.StartFrame);
+        if (Sequence.EndFrame < Sequence.StartFrame)
+        {
+            Sequence.EndFrame = Sequence.StartFrame;
+        }
+        Sequence.bLoop = SequenceJson.value("loop", 1) != 0;
+
+        OutSequences.insert_or_assign(Sequence.Name, Sequence);
+    }
+
+    if (OutSequences.empty())
+    {
+        FSubUVSequence DefaultSequence;
+        DefaultSequence.Name = "Default";
+        OutSequences.insert_or_assign(DefaultSequence.Name, DefaultSequence);
+    }
+
+    return true;
+}
+
+bool FSubUVAtlasLoader::LoadAtlasTexture(const FSourceRecord& JsonSource, const FString& PageFile, FTextureResource& OutAtlas) const
 {
     const FWString AtlasPath = ResolveSiblingPath(JsonSource.NormalizedPath, PageFile);
     if (AtlasPath.empty())
@@ -387,8 +456,7 @@ bool FFontAtlasLoader::LoadAtlasTexture(const FSourceRecord& JsonSource, const F
         return false;
     }
 
-    const std::shared_ptr<FTextureResource> AtlasResource =
-        GetOrCreateAtlasResource(*AtlasSource, *DecodedImage);
+    const std::shared_ptr<FTextureResource> AtlasResource = GetOrCreateAtlasResource(*AtlasSource, *DecodedImage);
     if (!AtlasResource)
     {
         return false;
@@ -398,8 +466,7 @@ bool FFontAtlasLoader::LoadAtlasTexture(const FSourceRecord& JsonSource, const F
     return true;
 }
 
-std::shared_ptr<FFontAtlasLoader::FDecodedAtlasImage>
-FFontAtlasLoader::GetOrDecodeAtlas(const FWString& AtlasPath) const
+std::shared_ptr<FSubUVAtlasLoader::FDecodedAtlasImage> FSubUVAtlasLoader::GetOrDecodeAtlas(const FWString& AtlasPath) const
 {
     const FSourceRecord* AtlasSource = AtlasSourceCache.GetOrLoad(AtlasPath);
     if (!AtlasSource || AtlasSource->SourceHash.empty())
@@ -419,14 +486,12 @@ FFontAtlasLoader::GetOrDecodeAtlas(const FWString& AtlasPath) const
         return nullptr;
     }
 
-    auto [InsertedIt, _] =
-        DecodeCache.insert_or_assign(AtlasSource->SourceHash, std::move(DecodedImage));
+    auto [InsertedIt, _] = DecodeCache.insert_or_assign(AtlasSource->SourceHash, std::move(DecodedImage));
     return InsertedIt->second;
 }
 
-std::shared_ptr<FTextureResource>
-FFontAtlasLoader::GetOrCreateAtlasResource(const FSourceRecord&      AtlasSource,
-                                           const FDecodedAtlasImage& DecodedImage) const
+std::shared_ptr<FTextureResource> FSubUVAtlasLoader::GetOrCreateAtlasResource(const FSourceRecord& AtlasSource,
+                                                                               const FDecodedAtlasImage& DecodedImage) const
 {
     if (AtlasSource.SourceHash.empty())
     {
@@ -445,13 +510,11 @@ FFontAtlasLoader::GetOrCreateAtlasResource(const FSourceRecord&      AtlasSource
         return nullptr;
     }
 
-    auto [InsertedIt, _] =
-        ResourceCache.insert_or_assign(AtlasSource.SourceHash, std::move(Resource));
+    auto [InsertedIt, _] = ResourceCache.insert_or_assign(AtlasSource.SourceHash, std::move(Resource));
     return InsertedIt->second;
 }
 
-bool FFontAtlasLoader::DecodeWithWIC(const FSourceRecord& AtlasSource,
-                                     FDecodedAtlasImage&  OutImage) const
+bool FSubUVAtlasLoader::DecodeWithWIC(const FSourceRecord& AtlasSource, FDecodedAtlasImage& OutImage) const
 {
     if (!AtlasSource.bFileBytesLoaded)
     {
@@ -459,12 +522,10 @@ bool FFontAtlasLoader::DecodeWithWIC(const FSourceRecord& AtlasSource,
     }
 
     OutImage = {};
-    return DecodeWithWICBytes(AtlasSource.FileBytes, OutImage.Width, OutImage.Height,
-                              OutImage.Pixels);
+    return DecodeWithWICBytes(AtlasSource.FileBytes, OutImage.Width, OutImage.Height, OutImage.Pixels);
 }
 
-bool FFontAtlasLoader::CreateTextureResource(const FDecodedAtlasImage& DecodedImage,
-                                             FTextureResource&         OutAtlas) const
+bool FSubUVAtlasLoader::CreateTextureResource(const FDecodedAtlasImage& DecodedImage, FTextureResource& OutAtlas) const
 {
     if (!RHI || !RHI->GetDevice())
     {
@@ -526,8 +587,7 @@ bool FFontAtlasLoader::CreateTextureResource(const FDecodedAtlasImage& DecodedIm
     return true;
 }
 
-FWString FFontAtlasLoader::ResolveSiblingPath(const FWString& BaseFilePath,
-                                              const FString&  RelativePath) const
+FWString FSubUVAtlasLoader::ResolveSiblingPath(const FWString& BaseFilePath, const FString& RelativePath) const
 {
     if (BaseFilePath.empty() || RelativePath.empty())
     {
@@ -538,11 +598,10 @@ FWString FFontAtlasLoader::ResolveSiblingPath(const FWString& BaseFilePath,
 
     const fs::path BasePath(BaseFilePath);
     const fs::path Relative(RelativePath);
-    const fs::path CombinedPath =
-        Relative.is_absolute() ? Relative : (BasePath.parent_path() / Relative);
+    const fs::path CombinedPath = Relative.is_absolute() ? Relative : (BasePath.parent_path() / Relative);
 
     std::error_code ErrorCode;
-    fs::path        Normalized = fs::weakly_canonical(CombinedPath, ErrorCode);
+    fs::path Normalized = fs::weakly_canonical(CombinedPath, ErrorCode);
     if (ErrorCode)
     {
         Normalized = CombinedPath.lexically_normal();
