@@ -32,6 +32,9 @@ namespace Engine::Component
         // Frame Count 계산
         int32 GetFrameCount() const;
 
+        // USpriteComponent 오버라이드
+        void GetUVs(FVector2& OutUVMin, FVector2& OutUVMax) const override;
+
         // UAtlasComponent 오버라이드
         void DescribeProperties(FComponentPropertyBuilder& Builder) override;
         void ResolveAssetReferences(UAssetManager* InAssetManager) override;

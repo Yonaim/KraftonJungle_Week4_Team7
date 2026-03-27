@@ -1,5 +1,6 @@
 #include "UUIDComponent.h"
 
+#include "Core/Misc/BitMaskEnum.h"
 #include "Engine/Component/Core/PrimitiveComponent.h"
 #include "Engine/Game/Actor.h"
 
@@ -29,6 +30,15 @@ namespace Engine::Component
     {
         (void)InOwnerActor;
         return FVector::ZeroVector;
+    }
+
+    void UUUIDComponent::CollectRenderData(FSceneRenderData& OutRenderData,
+                                           ESceneShowFlags   InShowFlags) const
+    {
+        if (IsFlagSet(InShowFlags, ESceneShowFlags::SF_UUIDText))
+        {
+            UAtlasTextComponent::CollectRenderData(OutRenderData, InShowFlags);
+        }
     }
 
     FVector UUUIDComponent::ComputeWorldAnchor(const AActor& InOwnerActor) const

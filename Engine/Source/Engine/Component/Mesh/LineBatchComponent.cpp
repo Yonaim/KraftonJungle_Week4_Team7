@@ -1,6 +1,9 @@
 #include "LineBatchComponent.h"
 #include <algorithm>
 
+#include "Core/Misc/BitMaskEnum.h"
+#include "Renderer/SceneRenderData.h"
+
 namespace Engine::Component
 {
     ULineBatchComponent::ULineBatchComponent()
@@ -12,6 +15,15 @@ namespace Engine::Component
         // 디버그용 선들이므로 컬링 등에서 제외되지 않도록 주의해야 함.
         // 일단 빈 박스를 반환합니다.
         return Geometry::FAABB();
+    }
+
+    void ULineBatchComponent::CollectRenderData(FSceneRenderData& OutRenderData,
+                                                ESceneShowFlags   InShowFlags) const
+    {
+        if (IsFlagSet(InShowFlags, ESceneShowFlags::SF_Primitives))
+        {
+            OutRenderData.LineBatchers.push_back(const_cast<ULineBatchComponent*>(this));
+        }
     }
 
     void ULineBatchComponent::Update(float InDeltaTime)

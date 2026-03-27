@@ -19,6 +19,9 @@ namespace Engine::Component
         FMatrix GetRenderPlacementWorld(const AActor& InOwnerActor) const override;
         FVector GetRenderPlacementOffset(const AActor& InOwnerActor) const override;
 
+        void CollectRenderData(FSceneRenderData& OutRenderData,
+                               ESceneShowFlags   InShowFlags) const override;
+
         bool ShouldSerializeInScene() const override { return false; }
         bool ShouldShowInDetailsTree() const override { return false; }
 

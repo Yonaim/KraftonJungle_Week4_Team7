@@ -3,6 +3,11 @@
 
 #include "ComponentProperty.h"
 #include "Core/Geometry/Primitives/AABBUtility.h"
+#include "Core/Misc/BitMaskEnum.h"
+#include "Renderer/SceneRenderData.h"
+#include "Renderer/Types/RenderItem.h"
+#include "Renderer/Types/BasicMeshType.h"
+#include "Engine/Game/Actor.h"
 
 #include <cfloat>
 
@@ -52,6 +57,42 @@ namespace Engine::Component
         Builder.AddColor(
             "color", L"Color", [this]() { return GetColor(); },
             [this](const FColor& InColor) { SetColor(InColor); });
+    }
+
+    void UPrimitiveComponent::CollectRenderData(FSceneRenderData& OutRenderData,
+                                                ESceneShowFlags   InShowFlags) const
+    {
+        if (!IsFlagSet(InShowFlags, ESceneShowFlags::SF_Primitives))
+        {
+            return;
+        }
+
+        if (GetBasicMeshType() == EBasicMeshType::None)
+        {
+            return;
+        }
+
+        AActor* Actor = GetOwnerActor();
+        if (Actor == nullptr)
+        {
+            return;
+        }
+
+        FPrimitiveRenderItem PrimitiveItem = {};
+        PrimitiveItem.World = GetRelativeMatrix();
+        PrimitiveItem.Color = Actor->GetColor();
+        PrimitiveItem.MeshType = GetBasicMeshType();
+        PrimitiveItem.WorldAABB = GetWorldAABB();
+        PrimitiveItem.bHasWorldAABB = true;
+
+        PrimitiveItem.State.ObjectId = Actor->GetObjectId();
+        PrimitiveItem.State.bShowBounds = Actor->IsShowBounds();
+        PrimitiveItem.State.SetVisible(Actor->IsVisible());
+        PrimitiveItem.State.SetPickable(Actor->IsPickable());
+        PrimitiveItem.State.SetSelected(Actor->IsSelected());
+        PrimitiveItem.State.SetHovered(Actor->IsHovered());
+
+        OutRenderData.Primitives.push_back(PrimitiveItem);
     }
 
     void UPrimitiveComponent::UpdateBounds()

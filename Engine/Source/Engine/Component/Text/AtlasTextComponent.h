@@ -1,20 +1,22 @@
 #pragma once
 
-#include "TextRenderComponent.h"
+#include "Engine/Component/Sprite/AtlasComponent.h"
 #include "Renderer/RenderAsset/FontResource.h"
 
 class AActor;
 
 namespace Engine::Component
 {
-    class ENGINE_API UAtlasTextComponent : public UTextRenderComponent
+    class ENGINE_API UAtlasTextComponent : public UAtlasComponent
     {
-        DECLARE_RTTI(UAtlasTextComponent, UTextRenderComponent)
+        DECLARE_RTTI(UAtlasTextComponent, UAtlasComponent)
 
       public:
         UAtlasTextComponent() = default;
         ~UAtlasTextComponent() override = default;
 
+        const FString& GetText() const { return Text; }
+        void           SetText(const FString& InText);
 
         const FFontResource* GetFontResource() const { return FontResource; }
         FFontResource*       GetFontResource() { return FontResource; }
@@ -30,24 +32,24 @@ namespace Engine::Component
 
         float GetLineSpacing() const { return LineSpacing; }
         void  SetLineSpacing(float InLineSpacing);
- 
-        void            DescribeProperties(FComponentPropertyBuilder& Builder) override;
-        void            ResolveAssetReferences(UAssetManager* InAssetManager) override;
+
+        const FVector& GetBillboardOffset() const { return BillboardOffset; }
+        void           SetBillboardOffset(const FVector& InBillboardOffset);
+        void           DescribeProperties(FComponentPropertyBuilder& Builder) override;
+        void           ResolveAssetReferences(UAssetManager* InAssetManager) override;
         virtual FMatrix GetRenderPlacementWorld(const AActor& InOwnerActor) const;
         virtual FVector GetRenderPlacementOffset(const AActor& InOwnerActor) const;
 
-        EBasicMeshType GetBasicMeshType() const override;
+        void CollectRenderData(FSceneRenderData& OutRenderData,
+                               ESceneShowFlags   InShowFlags) const override;
 
       protected:
-        Geometry::FAABB GetLocalAABB() const override { return {}; }
-
-    
+        FString        Text;
         FFontResource* FontResource = nullptr;
         FString        FontPath;
 
         float TextScale = 1.0f;
         float LetterSpacing = 0.0f;
         float LineSpacing = 0.0f;
-
     };
 } // namespace Engine::Component

@@ -28,6 +28,8 @@ namespace Engine::Component
 
         // UPrimitiveComponent 인터페이스 구현
         EBasicMeshType GetBasicMeshType() const override { return EBasicMeshType::None; }
+
+        void CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const override;
         
     protected:
         Geometry::FAABB GetLocalAABB() const override;
