@@ -88,6 +88,7 @@
     <ClInclude Include="Source\Engine\Component\Core\UnknownComponent.h" />
     <ClInclude Include="Source\Engine\Component\Mesh\ConeComponent.h" />
     <ClInclude Include="Source\Engine\Component\Mesh\CubeComponent.h" />
+    <ClInclude Include="Source\Engine\Component\Mesh\LineBatchComponent.h" />
     <ClInclude Include="Source\Engine\Component\Mesh\CylinderComponent.h" />
     <ClInclude Include="Source\Engine\Component\Mesh\QuadComponent.h" />
     <ClInclude Include="Source\Engine\Component\Mesh\RingComponent.h" />
@@ -136,13 +137,9 @@
     <ClInclude Include="Source\Renderer\RendererModule.h" />
     <ClInclude Include="Source\Renderer\SceneRenderData.h" />
     <ClInclude Include="Source\Renderer\SceneView.h" />
-    <ClInclude Include="Source\Renderer\Submitter\AABBSubmitter.h" />
     <ClInclude Include="Source\Renderer\Submitter\OverlayMeshSubmitter.h" />
-    <ClInclude Include="Source\Renderer\Submitter\SceneMeshSubmitter.h" />
     <ClInclude Include="Source\Renderer\Submitter\SpriteSubmitter.h" />
     <ClInclude Include="Source\Renderer\Submitter\TextSubmitter.h" />
-    <ClInclude Include="Source\Renderer\Submitter\WorldAxesSubmitter.h" />
-    <ClInclude Include="Source\Renderer\Submitter\WorldGridSubmitter.h" />
     <ClInclude Include="Source\Renderer\Types\AxisColors.h" />
     <ClInclude Include="Source\Renderer\Types\BasicMeshType.h" />
     <ClInclude Include="Source\Renderer\Types\EditorShowFlags.h" />
@@ -210,6 +207,7 @@
     <ClCompile Include="Source\Engine\Component\Core\UnknownComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Mesh\ConeComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Mesh\CubeComponent.cpp" />
+    <ClCompile Include="Source\Engine\Component\Mesh\LineBatchComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Mesh\CylinderComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Mesh\QuadComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Mesh\RingComponent.cpp" />
@@ -248,13 +246,10 @@
     <ClCompile Include="Source\Renderer\D3D11\D3D11SpriteBatchRenderer.cpp" />
     <ClCompile Include="Source\Renderer\D3D11\D3D11TextBatchRenderer.cpp" />
     <ClCompile Include="Source\Renderer\RendererModule.cpp" />
-    <ClCompile Include="Source\Renderer\Submitter\AABBSubmitter.cpp" />
     <ClCompile Include="Source\Renderer\Submitter\OverlayMeshSubmitter.cpp" />
     <ClCompile Include="Source\Renderer\Submitter\SceneMeshSubmitter.cpp" />
     <ClCompile Include="Source\Renderer\Submitter\SpriteSubmitter.cpp" />
     <ClCompile Include="Source\Renderer\Submitter\TextSubmitter.cpp" />
-    <ClCompile Include="Source\Renderer\Submitter\WorldAxesSubmitter.cpp" />
-    <ClCompile Include="Source\Renderer\Submitter\WorldGridSubmitter.cpp" />
     <ClCompile Include="Source\SceneIO\SceneJson.cpp" />
     <ClCompile Include="Source\SceneIO\SceneSerializer.cpp" />
     <ClCompile Include="Source\SceneIO\SceneTypeRegistry.cpp" />

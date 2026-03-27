@@ -6,6 +6,8 @@
 
 class FSceneView;
 
+namespace Engine::Component { class ULineBatchComponent; }
+
 struct FSceneRenderData
 {
     const FSceneView* SceneView = nullptr;
@@ -15,4 +17,5 @@ struct FSceneRenderData
     TArray<FPrimitiveRenderItem> Primitives;
     TArray<FSpriteRenderItem>    Sprites;
     TArray<FTextRenderItem>      Texts;
+    TArray<Engine::Component::ULineBatchComponent*> LineBatchers;
 };

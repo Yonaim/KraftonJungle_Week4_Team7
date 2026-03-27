@@ -1,5 +1,6 @@
 #include "Renderer/RendererModule.h"
 
+#include "Engine/Component/Mesh/LineBatchComponent.h"
 #include "Renderer/Types/PickId.h"
 #include "Renderer/Types/PickResult.h"
 
@@ -167,7 +168,7 @@ void FRendererModule::Render(const FEditorRenderData& InEditorRenderData,
 }
 
 /**
- * World: Primitives -> Grid -> Axes
+ * World: Primitives -> LineBatchers -> Outline -> Sprites -> Texts
  */
 void FRendererModule::RenderWorldPass(const FEditorRenderData& InEditorRenderData,
                                       const FSceneRenderData&  InSceneRenderData)
@@ -200,17 +201,19 @@ void FRendererModule::RenderWorldPass(const FEditorRenderData& InEditorRenderDat
     {
         LineRenderer.BeginFrame(InEditorRenderData.SceneView);
 
-        if (InEditorRenderData.bShowGrid)
+        for (auto* LineBatcher : InSceneRenderData.LineBatchers)
         {
-            WorldGridSubmitter.Submit(LineRenderer, InEditorRenderData);
+            if (LineBatcher == nullptr)
+            {
+                continue;
+            }
+
+            for (const auto& Line : LineBatcher->GetLines())
+            {
+                LineRenderer.AddLine(Line.Start, Line.End, Line.Color);
+            }
         }
 
-        if (InEditorRenderData.bShowWorldAxes)
-        {
-            WorldAxesSubmitter.Submit(LineRenderer, InEditorRenderData);
-        }
-
-        AABBSubmitter.Submit(LineRenderer, InSceneRenderData);
         LineRenderer.EndFrame();
     }
 

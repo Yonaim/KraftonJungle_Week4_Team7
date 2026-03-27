@@ -4,6 +4,7 @@
 
 #include "Engine/Component/Core/PrimitiveComponent.h"
 #include "Engine/Component/Core/SceneComponent.h"
+#include "Engine/Component/Mesh/LineBatchComponent.h"
 #include "Engine/Component/Text/UUIDComponent.h"
 #include "Engine/Component/Sprite/PaperSpriteComponent.h"
 #include "Engine/Component/Sprite/SubUVComponent.h"
@@ -66,7 +67,17 @@ namespace
     }
 } // namespace
 
-FScene::~FScene() { Clear(); }
+FScene::FScene()
+{
+    LineBatcher = new Engine::Component::ULineBatchComponent();
+}
+
+FScene::~FScene()
+{
+    Clear();
+    delete LineBatcher;
+    LineBatcher = nullptr;
+}
 
 bool FScene::RemoveActor(AActor* InActor)
 {
@@ -97,10 +108,20 @@ void FScene::Clear()
         delete Actor;
     }
     Actors.clear();
+
+    if (LineBatcher)
+    {
+        LineBatcher->ClearLines();
+    }
 }
 
 void FScene::Tick(float DeltaTime)
 {
+    if (LineBatcher)
+    {
+        LineBatcher->Update(DeltaTime);
+    }
+
     for (auto& actor : Actors)
     {
         if (actor)
@@ -115,6 +136,12 @@ void FScene::BuildRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags In
     OutRenderData.Primitives.clear();
     OutRenderData.Sprites.clear();
     OutRenderData.Texts.clear();
+    OutRenderData.LineBatchers.clear();
+
+    if (LineBatcher && IsFlagSet(InShowFlags, ESceneShowFlags::SF_Primitives))
+    {
+        OutRenderData.LineBatchers.push_back(LineBatcher);
+    }
 
     for (AActor* Actor : Actors)
     {
