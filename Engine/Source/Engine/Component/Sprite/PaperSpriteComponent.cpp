@@ -1,4 +1,4 @@
-#include "SpriteComponent.h"
+#include "PaperSpriteComponent.h"
 
 #include "Asset/AssetManager.h"
 #include "Asset/Texture2DAsset.h"
@@ -7,25 +7,25 @@
 
 namespace Engine::Component
 {
-    void USpriteComponent::SetTextureResource(FTextureResource* InTextureResource)
+    void UPaperSpriteComponent::SetTextureResource(FTextureResource* InTextureResource)
     {
         TextureResource = InTextureResource;
     }
 
-    void USpriteComponent::SetTexturePath(const FString& InPath)
+    void UPaperSpriteComponent::SetTexturePath(const FString& InPath)
     {
         TexturePath = InPath;
         TextureResource = nullptr;
     }
 
-    void USpriteComponent::SetBillboard(bool bInBillboard) { bBillboard = bInBillboard; }
+    void UPaperSpriteComponent::SetBillboard(bool bInBillboard) { bBillboard = bInBillboard; }
 
-    void USpriteComponent::SetBillboardOffset(const FVector& InBillboardOffset)
+    void UPaperSpriteComponent::SetBillboardOffset(const FVector& InBillboardOffset)
     {
         BillboardOffset = InBillboardOffset;
     }
 
-    void USpriteComponent::DescribeProperties(FComponentPropertyBuilder& Builder)
+    void UPaperSpriteComponent::DescribeProperties(FComponentPropertyBuilder& Builder)
     {
         UQuadComponent::DescribeProperties(Builder);
 
@@ -41,7 +41,7 @@ namespace Engine::Component
             [this](bool bInValue) { SetBillboard(bInValue); });
     }
 
-    void USpriteComponent::ResolveAssetReferences(UAssetManager* InAssetManager)
+    void UPaperSpriteComponent::ResolveAssetReferences(UAssetManager* InAssetManager)
     {
         TextureResource = nullptr;
 
@@ -74,5 +74,5 @@ namespace Engine::Component
         SetTextureResource(TextureAsset->GetResource());
     }
 
-    REGISTER_CLASS(Engine::Component, USpriteComponent)
+    REGISTER_CLASS(Engine::Component, UPaperSpriteComponent)
 } // namespace Engine::Component

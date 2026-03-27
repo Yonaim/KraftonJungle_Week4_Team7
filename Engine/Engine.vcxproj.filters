@@ -228,7 +228,7 @@
     <ClCompile Include="Source\Engine\Component\Sprite\AtlasComponent.cpp">
       <Filter>Source\Engine\Component\Sprite</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Component\Sprite\SpriteComponent.cpp">
+    <ClCompile Include="Source\Engine\Component\Sprite\PaperSpriteComponent.cpp">
       <Filter>Source\Engine\Component\Sprite</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Component\Sprite\SubUVAnimatedComponent.cpp">
@@ -590,7 +590,7 @@
     <ClInclude Include="Source\Engine\Component\Sprite\AtlasComponent.h">
       <Filter>Source\Engine\Component\Sprite</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Engine\Component\Sprite\SpriteComponent.h">
+    <ClInclude Include="Source\Engine\Component\Sprite\PaperSpriteComponent.h">
       <Filter>Source\Engine\Component\Sprite</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Component\Sprite\SubUVAnimatedComponent.h">

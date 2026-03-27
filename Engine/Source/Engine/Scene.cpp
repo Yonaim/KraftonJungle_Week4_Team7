@@ -5,7 +5,7 @@
 #include "Engine/Component/Core/PrimitiveComponent.h"
 #include "Engine/Component/Core/SceneComponent.h"
 #include "Engine/Component/Text/UUIDComponent.h"
-#include "Engine/Component/Sprite/SpriteComponent.h"
+#include "Engine/Component/Sprite/PaperSpriteComponent.h"
 #include "Engine/Component/Sprite/SubUVComponent.h"
 #include "Engine/Component/Text/AtlasTextComponent.h"
 #include "Engine/Game/Actor.h"
@@ -15,7 +15,7 @@
 
 namespace
 {
-    void ResolveSpriteUVs(const Engine::Component::USpriteComponent& SpriteComponent,
+    void ResolveSpriteUVs(const Engine::Component::UPaperSpriteComponent& SpriteComponent,
                           FVector2& OutUVMin, FVector2& OutUVMax)
     {
         OutUVMin = FVector2(0.0f, 0.0f);
@@ -184,7 +184,8 @@ void FScene::BuildRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags In
 #pragma endregion
 
 #pragma region __SPRITE__
-            else if (auto* SpriteComponent = Cast<Engine::Component::USpriteComponent>(Component))
+            else if (auto* SpriteComponent =
+                         Cast<Engine::Component::UPaperSpriteComponent>(Component))
             {
                 if (!IsFlagSet(InShowFlags, ESceneShowFlags::SF_Sprites) ||
                     Cast<Engine::Component::UAtlasTextComponent>(SpriteComponent) != nullptr)

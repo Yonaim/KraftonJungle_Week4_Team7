@@ -8,7 +8,7 @@
 #include "Engine/Component/Mesh/SphereComponent.h"
 #include "Engine/Component/Mesh/TriangleComponent.h"
 #include "Engine/Component/Sprite/AtlasComponent.h"
-#include "Engine/Component/Sprite/SpriteComponent.h"
+#include "Engine/Component/Sprite/PaperSpriteComponent.h"
 #include "Engine/Component/Sprite/SubUVComponent.h"
 #include "Engine/Component/Sprite/SubUVAnimatedComponent.h"
 #include "Engine/Component/Core/SceneComponent.h"
@@ -105,7 +105,7 @@ namespace
         RegisterComponentType<Engine::Component::URingComponent>("URingComponent");
         RegisterComponentType<Engine::Component::USphereComponent>("USphereComponent");
         RegisterComponentType<Engine::Component::UTriangleComponent>("UTriangleComponent");
-        RegisterComponentType<Engine::Component::USpriteComponent>("USpriteComponent");
+        RegisterComponentType<Engine::Component::UPaperSpriteComponent>("UPaperSpriteComponent");
         RegisterComponentType<Engine::Component::UAtlasComponent>("UAtlasComponent");
         RegisterComponentType<Engine::Component::USubUVComponent>("USubUVComponent");
         RegisterComponentType<Engine::Component::USubUVComponent>("USubUVAnimatedComponent");

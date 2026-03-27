@@ -1,20 +1,20 @@
 #include "SpriteActor.h"
 
 #include "Engine/Component/Core/PrimitiveComponent.h"
-#include "Engine/Component/Sprite/SpriteComponent.h"
+#include "Engine/Component/Sprite/PaperSpriteComponent.h"
 
 ASpriteActor::ASpriteActor()
 {
-    auto* SpriteComponent = new Engine::Component::USpriteComponent();
+    auto* SpriteComponent = new Engine::Component::UPaperSpriteComponent();
     SpriteComponent->SetColor({0.8f, 0.8f, 0.8f, 1.f});
     AddOwnedComponent(SpriteComponent, true);
 
     Name = "SpriteActor";
 }
 
-Engine::Component::USpriteComponent* ASpriteActor::GetSpriteComponent() const
+Engine::Component::UPaperSpriteComponent* ASpriteActor::GetSpriteComponent() const
 {
-    return Cast<Engine::Component::USpriteComponent>(RootComponent);
+    return Cast<Engine::Component::UPaperSpriteComponent>(RootComponent);
 }
 
 bool ASpriteActor::IsRenderable() const { return GetPrimitiveComponent() != nullptr; }

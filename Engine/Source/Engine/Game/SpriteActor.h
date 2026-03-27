@@ -5,7 +5,7 @@
 namespace Engine::Component
 {
     class UPrimitiveComponent;
-    class USpriteComponent;
+    class UPaperSpriteComponent;
 }
 
 class ENGINE_API ASpriteActor : public AActor
@@ -16,7 +16,7 @@ class ENGINE_API ASpriteActor : public AActor
     ASpriteActor();
     ~ASpriteActor() override = default;
 
-    Engine::Component::USpriteComponent* GetSpriteComponent() const;
+    Engine::Component::UPaperSpriteComponent* GetSpriteComponent() const;
 
     bool           IsRenderable() const override;
     bool           IsSelected() const override;

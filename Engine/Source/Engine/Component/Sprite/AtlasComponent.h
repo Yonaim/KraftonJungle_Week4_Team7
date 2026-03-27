@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Engine/Component/Sprite/SpriteComponent.h"
+#include "Engine/Component/Sprite/PaperSpriteComponent.h"
 
 namespace Engine::Component
 {
-    class ENGINE_API UAtlasComponent : public USpriteComponent
+    class ENGINE_API UAtlasComponent : public UPaperSpriteComponent
     {
-        DECLARE_RTTI(UAtlasComponent, USpriteComponent)
+        DECLARE_RTTI(UAtlasComponent, UPaperSpriteComponent)
       public:
         UAtlasComponent() = default;
         ~UAtlasComponent() override = default;

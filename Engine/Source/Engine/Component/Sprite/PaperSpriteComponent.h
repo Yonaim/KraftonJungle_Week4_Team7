@@ -5,12 +5,12 @@
 
 namespace Engine::Component
 {
-    class ENGINE_API USpriteComponent : public UQuadComponent
+    class ENGINE_API UPaperSpriteComponent : public UQuadComponent
     {
-        DECLARE_RTTI(USpriteComponent, UQuadComponent)
+        DECLARE_RTTI(UPaperSpriteComponent, UQuadComponent)
       public:
-        USpriteComponent() = default;
-        ~USpriteComponent() override = default;
+        UPaperSpriteComponent() = default;
+        ~UPaperSpriteComponent() override = default;
 
         const FTextureResource* GetTextureResource() const { return TextureResource; }
         FTextureResource*       GetTextureResource() { return TextureResource; }
