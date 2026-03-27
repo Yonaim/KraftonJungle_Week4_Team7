@@ -18,6 +18,7 @@
     <ClInclude Include="Resources\Mesh\Quad.h" />
     <ClInclude Include="Resources\Mesh\Ring.h" />
     <ClInclude Include="Resources\Mesh\Sphere.h" />
+    <ClInclude Include="Resources\Mesh\StaticMesh.h" />
     <ClInclude Include="Resources\Mesh\Triangle.h" />
     <ClInclude Include="Resources\Mesh\VertexSimple.h" />
     <ClInclude Include="Source\ApplicationCore\GenericPlatform\IApplication.h" />

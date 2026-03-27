@@ -788,6 +788,9 @@
     <ClInclude Include="Source\Engine\Component\Mesh\StaticMeshComponent.h">
       <Filter>Source\Engine\Component\Mesh</Filter>
     </ClInclude>
+    <ClInclude Include="Resources\Mesh\StaticMesh.h">
+      <Filter>Resources\Mesh</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
