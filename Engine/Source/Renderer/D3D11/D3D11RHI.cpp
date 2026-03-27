@@ -190,7 +190,7 @@ void FD3D11RHI::SetDefaultRenderTargets()
 
     ID3D11RenderTargetView* RTV = BackBufferRTV.Get();
     SetRenderTargets(1, &RTV, DepthStencilView.Get());
-    SetViewport(Viewport);
+    //SetViewport(Viewport);
 }
 
 bool FD3D11RHI::CompileShaderFromFile(const wchar_t* InFilePath, const char* InEntryPoint,

@@ -29,6 +29,11 @@ void SEditorViewportTab::Construct()
 		SceneViews.push_back(NewViewport);
         ViewportClients.push_back(NewClient);
 	}
+
+    SceneViews[0]->SetViewRect({0, 0, 960, 540});     // 좌상
+    SceneViews[1]->SetViewRect({960, 0, 960, 540});   // 우상
+    SceneViews[2]->SetViewRect({0, 540, 960, 540});   // 좌하
+    SceneViews[3]->SetViewRect({960, 540, 960, 540}); // 우하
 }
 
 void SEditorViewportTab::CreateExtraViewportClients() 
@@ -44,7 +49,6 @@ void SEditorViewportTab::CreateExtraViewportClients()
                 V->SetViewportClient(NewClient);
             }
         }
-
         ViewportClients.push_back(NewClient);
     }
 }

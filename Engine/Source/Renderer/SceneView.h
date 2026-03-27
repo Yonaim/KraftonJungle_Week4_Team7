@@ -64,20 +64,15 @@ class FSceneView
     float GetCameraWidth() const { return static_cast<float>(ViewRect.Width); }
     float GetCameraHeight() const { return static_cast<float>(ViewRect.Height); }
 
-    void SetViewportClient(FEditorViewportClient* newViewportClient)
-    {
-        ViewportClient = newViewportClient;
-    }
+    void SetViewportClient(FEditorViewportClient* newViewportClient) { ViewportClient = newViewportClient; }
     FEditorViewportClient* const& GetViewportClient() { return ViewportClient; }
     void RemoveViewportClient() { ViewportClient = nullptr; }
+    bool IsValid() { return ViewportClient != nullptr; }
 
   private:
     void RebuildViewProjectionMatrix() { ViewProjectionMatrix = ViewMatrix * ProjectionMatrix; }
 
   private:
-    TComPtr<ID3D11RenderTargetView> BackBufferRTV;
-    TComPtr<ID3D11RenderTargetView> PickRTV;
-
     FMatrix ViewMatrix;
     FMatrix ProjectionMatrix;
     FMatrix ViewProjectionMatrix;

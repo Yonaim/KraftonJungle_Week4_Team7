@@ -16,6 +16,7 @@
 #include "Asset/SubUVAtlasLoader.h"
 #include "Asset/TextureLoader.h"
 
+
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND HWnd, UINT Message,
                                                              WPARAM WParam, LPARAM LParam);
 
@@ -200,6 +201,7 @@ bool FEditorEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
         Renderer->Pick(Editor->GetEditorRenderData(), X, Y, Result);
         return Result;
     };
+
     return true;
 }
 
@@ -607,10 +609,26 @@ bool FEditorEngineLoop::RunFrameOnceWithoutResize()
     Editor->Tick(DeltaTime, InputSystem);
 
     Renderer->BeginFrame();
-    Renderer->Render(Editor->GetEditorRenderData(), Editor->GetSceneRenderData());
+    for (auto Viewport : Editor->GetViewportTab().GetViewports())
+    {
+        if (Viewport->IsValid())
+        {
+            D3D11_VIEWPORT VP = {};
+            FViewportRect  Rect = Viewport->GetViewRect();
+            VP.TopLeftX = static_cast<float>(Rect.X);
+            VP.TopLeftY = static_cast<float>(Rect.Y);
+            VP.Width = static_cast<float>(Rect.Width);
+            VP.Height = static_cast<float>(Rect.Height);
+            VP.MinDepth = 0.0f;
+            VP.MaxDepth = 1.0f;
+
+            Renderer->SetViewport(VP);
+            Renderer->Render(Editor->GetEditorRenderData(), Editor->GetSceneRenderData());
+        }
+    }
     Editor->DrawPanel();
     Renderer->EndFrame();
-
+   
     bIsRenderingDuringSizeMove = false;
     return true;
 }

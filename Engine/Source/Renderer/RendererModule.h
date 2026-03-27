@@ -30,6 +30,7 @@ class ENGINE_API FRendererModule
     void BeginFrame();
     void EndFrame();
 
+    void SetViewport(const D3D11_VIEWPORT& InViewport);
     void OnWindowResized(int32 InWidth, int32 InHeight);
 
     void Render(const FEditorRenderData& InEditorRenderData,
