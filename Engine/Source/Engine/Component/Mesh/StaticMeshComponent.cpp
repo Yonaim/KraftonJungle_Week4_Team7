@@ -61,3 +61,13 @@ bool Engine::Component::UStaticMeshComponent::GetLocalTriangles(
 
     return !OutTriangles.empty();
 }
+
+Geometry::FAABB Engine::Component::UStaticMeshComponent::GetLocalAABB() const
+{
+    if (StaticMesh)
+    {
+        return StaticMesh->GetLocalAABB();
+    }
+
+    return Geometry::FAABB();
+}

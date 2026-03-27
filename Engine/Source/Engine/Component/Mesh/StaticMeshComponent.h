@@ -1,5 +1,6 @@
 #pragma once
 #include "MeshComponent.h"
+#include "Renderer/Types/BasicMeshType.h"
 
 class UStaticMesh;
 
@@ -16,11 +17,16 @@ namespace Engine::Component
         void    SetStaticMeshPath(const FString& InPath);
 
         // Primitive
+        EBasicMeshType GetBasicMeshType() const override { return EBasicMeshType::None; }
+
         void DescribeProperties(FComponentPropertyBuilder& Builder) override;
         bool GetLocalTriangles(TArray<Geometry::FTriangle>& OutTriangles) const override;
 
-      private:
+      protected:
+        Geometry::FAABB GetLocalAABB() const override;  
+    private:
         FString MeshPath;
+
       protected:
         UStaticMesh* StaticMesh = nullptr;
     };

@@ -22,21 +22,19 @@ class UStaticMesh : public UObject
 {
   public:
     const FString& GetAssetPathFileName() { return StaticMeshAsset->PathFileName; }
+    void           SetStaticMeshAsset(FStaticMesh* InStaticMesh) { StaticMeshAsset = InStaticMesh; }
 
-    void SetStaticMeshAsset(FStaticMesh* InStaticMesh) { StaticMeshAsset = InStaticMesh; }
+    const TArray<FNormalVertex>& GetVerticesData() const;
+    const TArray<uint32>&        GetIndicesData() const;
 
-    const TArray<FNormalVertex>& GetVerticesData() const
-    {
-        assert(StaticMeshAsset != nullptr);
-        return StaticMeshAsset->Vertices;
-    }
+    const Geometry::FAABB GetLocalAABB() const { return CachedAABB; }
 
-    const TArray<uint32>& GetIndicesData() const
-    {
-        assert(StaticMeshAsset != nullptr);
-        return StaticMeshAsset->Indices;
-    }
+    void Build();
 
   private:
-    FStaticMesh* StaticMeshAsset;
+    void CalculateAABB();
+
+  private:
+    FStaticMesh*    StaticMeshAsset = nullptr;
+    Geometry::FAABB CachedAABB;
 };

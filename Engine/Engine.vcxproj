@@ -157,11 +157,13 @@
     <ClInclude Include="Source\SceneIO\SceneSerializer.h" />
     <ClInclude Include="Source\SceneIO\SceneTypeRegistry.h" />
     <ClInclude Include="Source\ThirdParty\Json\json.hpp" />
+    <ClInclude Include="Source\Engine\Game\StaticMeshActor.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Resources\Mesh\StaticMesh.cpp" />
     <ClCompile Include="Source\ApplicationCore\Input\InputRouter.cpp" />
     <ClCompile Include="Source\ApplicationCore\Input\InputSystem.cpp" />
     <ClCompile Include="Source\ApplicationCore\Windows\WindowsApplication.cpp" />
@@ -247,6 +249,7 @@
     <ClCompile Include="Source\SceneIO\SceneJson.cpp" />
     <ClCompile Include="Source\SceneIO\SceneSerializer.cpp" />
     <ClCompile Include="Source\SceneIO\SceneTypeRegistry.cpp" />
+    <ClCompile Include="Source\Engine\Game\StaticMeshActor.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
