@@ -345,7 +345,7 @@
     <ClCompile Include="Source\SceneIO\SceneTypeRegistry.cpp">
       <Filter>Source\SceneIO</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Component\Mesh\UMeshComponent.cpp">
+    <ClCompile Include="Source\Engine\Component\Mesh\MeshComponent.cpp">
       <Filter>Source\Engine\Component\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Component\Mesh\StaticMeshComponent.cpp">
@@ -782,7 +782,7 @@
     <ClInclude Include="Source\ThirdParty\Json\json.hpp">
       <Filter>Source\ThirdParty\Json</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Engine\Component\Mesh\UMeshComponent.h">
+    <ClInclude Include="Source\Engine\Component\Mesh\MeshComponent.h">
       <Filter>Source\Engine\Component\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Component\Mesh\StaticMeshComponent.h">

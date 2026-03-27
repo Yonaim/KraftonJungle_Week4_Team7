@@ -1,2 +1,2 @@
 #include "Core/CoreMinimal.h"
-#include "UMeshComponent.h"
+#include "MeshComponent.h"

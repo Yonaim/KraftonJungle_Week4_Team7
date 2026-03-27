@@ -90,7 +90,7 @@
     <ClInclude Include="Source\Engine\Component\Mesh\SphereComponent.h" />
     <ClInclude Include="Source\Engine\Component\Mesh\StaticMeshComponent.h" />
     <ClInclude Include="Source\Engine\Component\Mesh\TriangleComponent.h" />
-    <ClInclude Include="Source\Engine\Component\Mesh\UMeshComponent.h" />
+    <ClInclude Include="Source\Engine\Component\Mesh\MeshComponent.h" />
     <ClInclude Include="Source\Engine\Component\Sprite\AtlasComponent.h" />
     <ClInclude Include="Source\Engine\Component\Sprite\PaperSpriteComponent.h" />
     <ClInclude Include="Source\Engine\Component\Sprite\SubUVAnimatedComponent.h" />
@@ -205,7 +205,7 @@
     <ClCompile Include="Source\Engine\Component\Mesh\SphereComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Mesh\StaticMeshComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Mesh\TriangleComponent.cpp" />
-    <ClCompile Include="Source\Engine\Component\Mesh\UMeshComponent.cpp" />
+    <ClCompile Include="Source\Engine\Component\Mesh\MeshComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Sprite\AtlasComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Sprite\PaperSpriteComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Sprite\SubUVAnimatedComponent.cpp" />

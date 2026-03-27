@@ -1,23 +1,26 @@
 #pragma once
 
-#include "Engine/Component/Mesh/QuadComponent.h"
+#include "Engine/Component/Mesh/MeshComponent.h"
 #include "Renderer/RenderAsset/TextureResource.h"
+#include "Renderer/Types/BasicMeshType.h"
 
 namespace Engine::Component
 {
-    class ENGINE_API UPaperSpriteComponent : public UQuadComponent
+    class ENGINE_API UPaperSpriteComponent : public UMeshComponent
     {
-        DECLARE_RTTI(UPaperSpriteComponent, UQuadComponent)
+        DECLARE_RTTI(UPaperSpriteComponent, UMeshComponent)
       public:
         UPaperSpriteComponent() = default;
         ~UPaperSpriteComponent() override = default;
+
+        EBasicMeshType GetBasicMeshType() const override { return EBasicMeshType::Quad; }
 
         const FTextureResource* GetTextureResource() const { return TextureResource; }
         FTextureResource*       GetTextureResource() { return TextureResource; }
         void                    SetTextureResource(FTextureResource* InTextureResource);
 
         FString GetTexturePath() const { return TexturePath; }
-        void SetTexturePath(const FString& InPath);
+        void    SetTexturePath(const FString& InPath);
 
         bool GetBillboard() const { return bBillboard; }
         void SetBillboard(bool bInBillboard);
@@ -28,10 +31,15 @@ namespace Engine::Component
         void DescribeProperties(FComponentPropertyBuilder& Builder) override;
         void ResolveAssetReferences(UAssetManager* InAssetManager) override;
 
+        bool GetLocalTriangles(TArray<Geometry::FTriangle>& OutTriangles) const override;
+
+      protected:
+        Geometry::FAABB GetLocalAABB() const override;
+
       protected:
         FTextureResource* TextureResource = nullptr;
-        FString TexturePath = {};
-        bool    bBillboard = false;
-        FVector BillboardOffset = FVector(0.0f, 0.0f, 0.0f);
+        FString           TexturePath = {};
+        bool              bBillboard = false;
+        FVector           BillboardOffset = FVector(0.0f, 0.0f, 0.0f);
     };
 } // namespace Engine::Component
