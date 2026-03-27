@@ -4,7 +4,23 @@
 #include "Core/Math/Matrix.h"
 #include "Core/Math/Vector.h"
 
+#include "Renderer/D3D11/D3D11Common.h"
+#include <d3dcompiler.h>
+
 // TODO: Reverse-Z 적용
+
+class FEditorViewportClient;
+
+enum class ELevelViewportType : uint8
+{
+    LVT_Perspective,
+    LVT_OrthoTop,
+    LVT_OrthoBottom,
+    LVT_OrthoLeft,
+    LVT_OrthoRight,
+    LVT_OrthoFront,
+    LVT_OrthoBack,
+};
 
 struct FViewportRect
 {
@@ -48,10 +64,20 @@ class FSceneView
     float GetCameraWidth() const { return static_cast<float>(ViewRect.Width); }
     float GetCameraHeight() const { return static_cast<float>(ViewRect.Height); }
 
+    void SetViewportClient(FEditorViewportClient* newViewportClient)
+    {
+        ViewportClient = newViewportClient;
+    }
+    FEditorViewportClient* const& GetViewportClient() { return ViewportClient; }
+    void RemoveViewportClient() { ViewportClient = nullptr; }
+
   private:
     void RebuildViewProjectionMatrix() { ViewProjectionMatrix = ViewMatrix * ProjectionMatrix; }
 
   private:
+    TComPtr<ID3D11RenderTargetView> BackBufferRTV;
+    TComPtr<ID3D11RenderTargetView> PickRTV;
+
     FMatrix ViewMatrix;
     FMatrix ProjectionMatrix;
     FMatrix ViewProjectionMatrix;
@@ -62,4 +88,5 @@ class FSceneView
     float FarZ = 1000.0f;
 
     FViewportRect ViewRect;
+    FEditorViewportClient* ViewportClient = nullptr;
 };

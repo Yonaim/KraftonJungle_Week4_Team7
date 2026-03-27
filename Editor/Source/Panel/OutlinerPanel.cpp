@@ -206,8 +206,12 @@ void FOutlinerPanel::DrawActorRow(AActor* Actor) const
     {
         if (GetContext()->Editor != nullptr)
         {
-            bIsSelected =
-                GetContext()->Editor->GetViewportClient().GetSelectionController().IsSelected(
+            bIsSelected = GetContext()
+                              ->Editor->GetViewportTab()
+                              .GetViewport(0)
+                              ->GetViewportClient()
+                              ->GetSelectionController()
+                              .IsSelected(
                     Actor);
         }
         else
@@ -229,7 +233,12 @@ void FOutlinerPanel::DrawActorRow(AActor* Actor) const
         {
             const ESelectionMode SelectionMode =
                 ImGui::GetIO().KeyCtrl ? ESelectionMode::Toggle : ESelectionMode::Replace;
-            GetContext()->Editor->GetViewportClient().GetSelectionController().SelectActor(
+            GetContext()
+                ->Editor->GetViewportTab()
+                .GetViewport(0)
+                ->GetViewportClient()
+                ->GetSelectionController()
+                .SelectActor(
                 Actor, SelectionMode);
         }
     }
@@ -277,7 +286,12 @@ void FOutlinerPanel::SpawnActors() const
 
     if (LastSpawnedActor != nullptr && GetContext()->Editor != nullptr)
     {
-        GetContext()->Editor->GetViewportClient().GetSelectionController().SelectActor(
+        GetContext()
+            ->Editor->GetViewportTab()
+            .GetViewport(0)
+            ->GetViewportClient()
+            ->GetSelectionController()
+            .SelectActor(
             LastSpawnedActor, ESelectionMode::Replace);
     }
 }

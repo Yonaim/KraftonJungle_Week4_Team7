@@ -153,9 +153,6 @@
     <ClCompile Include="Source\ThirdParty\ImGui\imgui_widgets.cpp">
       <Filter>Source\ThirdParty\ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Viewport\EditorViewport.cpp">
-      <Filter>Source\Viewport</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Viewport\EditorViewportClient.cpp">
       <Filter>Source\Viewport</Filter>
     </ClCompile>
@@ -177,6 +174,7 @@
     <ClCompile Include="Source\Viewport\Selection\ViewportSelectionController.cpp">
       <Filter>Source\Viewport\Selection</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Viewport\EditorViewportTab.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Camera\ViewportCamera.h">
@@ -287,9 +285,6 @@
     <ClInclude Include="Source\ThirdParty\ImGui\imstb_truetype.h">
       <Filter>Source\ThirdParty\ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Viewport\EditorViewport.h">
-      <Filter>Source\Viewport</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Viewport\EditorViewportClient.h">
       <Filter>Source\Viewport</Filter>
     </ClInclude>
@@ -311,6 +306,7 @@
     <ClInclude Include="Source\Viewport\Selection\ViewportSelectionController.h">
       <Filter>Source\Viewport\Selection</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Viewport\EditorViewportTab.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\ThirdParty\ImGui\imgui.natstepfilter">

@@ -13,10 +13,9 @@
 #include "ApplicationCore/Input/InputSystem.h"
 #include "Viewport/Global/EditorGlobalController.h"
 #include "Input/EditorGlobalContext.h"
-
 #include "Engine/Scene.h"
 #include "Logging/EditorLogBuffer.h"
-#include "Viewport/EditorViewportClient.h"
+#include "Viewport/EditorViewportTab.h"
 #include "Renderer/EditorRenderData.h"
 #include "Renderer/SceneRenderData.h"
 #include "Renderer/SceneView.h"
@@ -100,8 +99,9 @@ class FEditor
 
     const FEditorRenderData&     GetEditorRenderData() const { return EditorRenderData; }
     const FSceneRenderData&      GetSceneRenderData() const { return SceneRenderData; }
-    FEditorViewportClient&       GetViewportClient() { return ViewportClient; }
-    const FEditorViewportClient& GetViewportClient() const { return ViewportClient; }
+    const SEditorViewportTab&    GetViewportTab() const { return ViewportTab; }
+    //FEditorViewportClient&       GetViewportClient() { return ViewportClient; }
+    //const FEditorViewportClient& GetViewportClient() const { return ViewportClient; }
 
     void DrawPanel();
 
@@ -135,7 +135,8 @@ class FEditor
 
 
   private:
-    FEditorViewportClient ViewportClient;
+    SEditorViewportTab ViewportTab; 
+
     Engine::ApplicationCore::FInputRouter GlobalInputRouter;
     FEditorGlobalController GlobalInputController;
     FEditorGlobalContext GlobalInputContext{&GlobalInputController};
@@ -150,7 +151,7 @@ class FEditor
 
     FEditorRenderData EditorRenderData;
     FSceneRenderData  SceneRenderData;
-    FSceneView        SceneView;
+    //FSceneView        SceneView;
 
     FScene*             CurScene = nullptr;
     FSceneDocumentState SceneDocument;
