@@ -30,8 +30,6 @@ namespace Engine::Component
 
     void UAtlasTextComponent::SetLineSpacing(float InLineSpacing) { LineSpacing = InLineSpacing; }
 
-
-
     void UAtlasTextComponent::DescribeProperties(FComponentPropertyBuilder& Builder)
     {
         UPrimitiveComponent::DescribeProperties(Builder);
