@@ -203,12 +203,18 @@ bool FEditorEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
             [this, i](int32 X, int32 Y) -> FPickResult
             {
                 FPickResult Result;
+
+                FViewportRect Rect = Editor->GetViewportTab().GetViewports()[i]->GetViewRect();
+                int32         WorldX = X + Rect.X;
+                int32         WorldY = Y + Rect.Y;
+
                 // EngineLoop는 Renderer와 Editor 모두에 접근 가능하므로 픽킹을 직접 수행해서 반환
-                Renderer->Pick(Editor->GetEditorRenderData()[i], X, Y, Result);
+                Renderer->Pick(Editor->GetEditorRenderData()[i], WorldX, WorldY, Result);
                 return Result;
             };
         }
     }
+
     //Editor->GetViewportTab().GetViewport(1)->GetViewportClient()->OnPickRequested =
     //    [this](int32 X, int32 Y) -> FPickResult
     //{

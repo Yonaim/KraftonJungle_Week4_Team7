@@ -31,7 +31,7 @@ private:
     void Build_3_1Tree();
 
 private:
-    EFourPanesType Type = EFourPanesType::_2X2;
+    EFourPanesType Type = EFourPanesType::_1l3;
 
     SWindow* WindowA = nullptr; 
     SWindow* WindowB = nullptr;

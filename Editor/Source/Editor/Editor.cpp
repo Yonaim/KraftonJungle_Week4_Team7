@@ -714,15 +714,16 @@ void FEditor::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
 {
     EditorContext.DeltaTime = DeltaTime;
     Engine::ApplicationCore::FInputEvent        Event;
-    const Engine::ApplicationCore::FInputState& InputState = InputSystem->GetInputState();
+    Engine::ApplicationCore::FInputState InputState = InputSystem->GetInputState();
 
     FSceneView* HoveredViewport = nullptr;
+    FViewportRect Rect;
     for (auto Viewport : ViewportTab.GetViewports())
     {
         if (!Viewport->IsValid())
             continue;
 
-        FViewportRect Rect = Viewport->GetViewRect();
+        Rect = Viewport->GetViewRect();
         if (InputState.MouseX >= Rect.X && InputState.MouseX < Rect.X + Rect.Width &&
             InputState.MouseY >= Rect.Y && InputState.MouseY < Rect.Y + Rect.Height)
         {
@@ -741,6 +742,12 @@ void FEditor::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
 
     while (InputSystem->PollEvent(Event))
     {
+        Event.MouseX -= Rect.X;
+        Event.MouseY -= Rect.Y;
+        InputState.ChangeToLocal(Event.MouseX, Event.MouseY);
+        
+        int32 LocalY = Event.MouseY - Rect.Y;
+
         if (GlobalInputRouter.RouteEvent(Event, InputState))
         {
             continue;
