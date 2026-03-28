@@ -1,15 +1,15 @@
 #pragma once
 
-#include "Engine/Component/Sprite/AtlasComponent.h"
+#include "Engine/Component/Core/PrimitiveComponent.h"
 #include "Renderer/RenderAsset/FontResource.h"
 
 class AActor;
 
 namespace Engine::Component
 {
-    class ENGINE_API UAtlasTextComponent : public UAtlasComponent
+    class ENGINE_API UAtlasTextComponent : public UPrimitiveComponent
     {
-        DECLARE_RTTI(UAtlasTextComponent, UAtlasComponent)
+        DECLARE_RTTI(UAtlasTextComponent, UPrimitiveComponent)
 
       public:
         UAtlasTextComponent() = default;
@@ -36,12 +36,17 @@ namespace Engine::Component
         bool GetBillboard() const { return bBillboard; }
         void SetBillboard(bool bInBillboard);
 
-        const FVector& GetBillboardOffset() const { return BillboardOffset; }
-        void           SetBillboardOffset(const FVector& InBillboardOffset);
-        void           DescribeProperties(FComponentPropertyBuilder& Builder) override;
-        void           ResolveAssetReferences(UAssetManager* InAssetManager) override;
+        const FVector&  GetBillboardOffset() const { return BillboardOffset; }
+        void            SetBillboardOffset(const FVector& InBillboardOffset);
+        void            DescribeProperties(FComponentPropertyBuilder& Builder) override;
+        void            ResolveAssetReferences(UAssetManager* InAssetManager) override;
         virtual FMatrix GetRenderPlacementWorld(const AActor& InOwnerActor) const;
         virtual FVector GetRenderPlacementOffset(const AActor& InOwnerActor) const;
+
+        EBasicMeshType GetBasicMeshType() const override;
+
+      protected:
+        Geometry::FAABB GetLocalAABB() const override { return {}; }
 
       protected:
         FString        Text;
@@ -51,5 +56,8 @@ namespace Engine::Component
         float TextScale = 1.0f;
         float LetterSpacing = 0.0f;
         float LineSpacing = 0.0f;
+
+        bool    bBillboard = false;
+        FVector BillboardOffset = FVector(0.0f, 0.0f, 0.0f);
     };
 } // namespace Engine::Component

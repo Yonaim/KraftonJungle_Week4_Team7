@@ -39,7 +39,7 @@ namespace Engine::Component
 
     void UAtlasTextComponent::DescribeProperties(FComponentPropertyBuilder& Builder)
     {
-        UAtlasComponent::DescribeProperties(Builder);
+        UPrimitiveComponent::DescribeProperties(Builder);
         FComponentPropertyOptions FontPathOptions;
         FontPathOptions.ExpectedAssetPathKind = EComponentAssetPathKind::FontFile;
 
@@ -106,6 +106,8 @@ namespace Engine::Component
         (void)InOwnerActor;
         return FVector::ZeroVector;
     }
+
+    EBasicMeshType UAtlasTextComponent::GetBasicMeshType() const { return EBasicMeshType::None; }
 
     REGISTER_CLASS(Engine::Component, UAtlasTextComponent)
 } // namespace Engine::Component

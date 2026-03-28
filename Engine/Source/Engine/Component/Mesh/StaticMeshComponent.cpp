@@ -69,6 +69,5 @@ Geometry::FAABB Engine::Component::UStaticMeshComponent::GetLocalAABB() const
         return StaticMesh->GetLocalAABB();
     }
 
-      return Geometry::FAABB(FVector(FLT_MAX, FLT_MAX, FLT_MAX),
-                           FVector(-FLT_MAX, -FLT_MAX, -FLT_MAX));
+      return {};
 }

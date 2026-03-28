@@ -33,20 +33,6 @@ namespace
         {"flipbook", "AFlipbookActor"},
         {"effect", "AEffectActor"},
         {"atlassprite", "AAtlasSpriteActor"},
-        // SerializeLegacy 출력 호환 (컴포넌트 타입 이름 → 액터)
-        {"ustaticmeshcomponent", "AStaticMeshActor"},
-        {"uconecomponent", "AStaticMeshActor"},
-        {"ucubecomponent", "AStaticMeshActor"},
-        {"ucylindercomponent", "AStaticMeshActor"},
-        {"uringcomponent", "AStaticMeshActor"},
-        {"uspherecomponent", "AStaticMeshActor"},
-        {"utrianglecomponent", "AStaticMeshActor"},
-        {"upaperspritecomponent", "ASpriteActor"},
-        {"uatlastextcomponent", "ATextActor"},
-        {"utextcomponent", "ATextActor"},
-        {"usubuvcomponent", "AAtlasSpriteActor"},
-        {"usubuvanimatedcomponent", "AFlipbookActor"},
-        {"uatlascomponent", "AEffectActor"},
     };
 
      // SerializeLegacy용: 액터 타입 이름 → 레거시 Type 문자열
@@ -1214,7 +1200,7 @@ std::unique_ptr<FScene> FSceneDeserializer::Deserialize(const FString& JsonSourc
         return nullptr;
     }
 
-    FString SchemaName;
+ /*   FString SchemaName;
     if (!TryReadStringField(*RootObject, "schema", SchemaName, OutErrorMessage, "Scene"))
     {
         return nullptr;
@@ -1227,7 +1213,7 @@ std::unique_ptr<FScene> FSceneDeserializer::Deserialize(const FString& JsonSourc
             *OutErrorMessage = "Unsupported scene schema '" + SchemaName + "'.";
         }
         return nullptr;
-    }
+    }*/
 
     int32 Version = 0;
     if (!TryReadIntField(*RootObject, "version", Version, OutErrorMessage, "Scene"))
