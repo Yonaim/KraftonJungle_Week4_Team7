@@ -20,7 +20,7 @@ void Engine::Component::UStaticMeshComponent::SetStaticMeshPath(const FString& I
 void Engine::Component::UStaticMeshComponent::DescribeProperties(FComponentPropertyBuilder& Builder)
 {
     Builder.AddAssetPath(
-        "mesh_path", L"Mesh Asset", [this]() { return GetStaticMeshPath(); },
+        "ObjStaticMeshAsset", L"Mesh Asset", [this]() { return GetStaticMeshPath(); },
         [this](const FString& InValue) { SetStaticMeshPath(InValue); });
 }
 
@@ -69,5 +69,6 @@ Geometry::FAABB Engine::Component::UStaticMeshComponent::GetLocalAABB() const
         return StaticMesh->GetLocalAABB();
     }
 
-    return Geometry::FAABB();
+      return Geometry::FAABB(FVector(FLT_MAX, FLT_MAX, FLT_MAX),
+                           FVector(-FLT_MAX, -FLT_MAX, -FLT_MAX));
 }

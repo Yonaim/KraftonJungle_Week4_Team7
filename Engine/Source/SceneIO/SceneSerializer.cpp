@@ -18,6 +18,23 @@ namespace
     constexpr const char* SceneSchemaName = "JungleScene";
     constexpr int32       SceneSchemaVersion = 2;
 
+    // 레거시 Type 문자열 → 등록된 Actor 타입 이름 매핑 테이블
+    const TMap<FString, FString> LegacyTypeToActorName = {
+        {"sphere", "ASphereActor"},
+        {"cube", "ACubeActor"},
+        {"triangle", "ATriangleActor"},
+        {"cone", "AConeActor"},
+        {"cylinder", "ACylinderActor"},
+        {"ring", "ARingActor"},
+        {"staticmeshcomp", "AStaticMeshActor"},
+        {"staticmeshcomponent", "AStaticMeshActor"},
+        {"sprite", "ASpriteActor"},
+        {"text", "ATextActor"},
+        {"flipbook", "AFlipbookActor"},
+        {"effect", "AEffectActor"},
+        {"atlassprite", "AAtlasSpriteActor"},
+    };
+
     FSceneJsonValue MakeNumberArray(std::initializer_list<double> Values)
     {
         FSceneJsonValue::Array ArrayValue;
@@ -76,6 +93,17 @@ namespace
             *OutErrorMessage = FString(Context) + " is missing required field '" + FieldName + "'.";
         }
         return nullptr;
+    }
+
+    const FSceneJsonValue* FindOptionalField(const FSceneJsonValue::Object& ObjectValue,
+                                             const FString&                 FieldName)
+    {
+        const auto Iterator = ObjectValue.find(FieldName);
+        if (Iterator != ObjectValue.end())
+        {
+            return &Iterator->second;
+        }
+        return nullptr; // 필드가 없으면 에러 메시지 없이 nullptr 반환
     }
 
     bool TryReadStringField(const FSceneJsonValue::Object& ObjectValue, const FString& FieldName,
@@ -148,9 +176,8 @@ namespace
     }
 
     bool TryReadOptionalUIntField(const FSceneJsonValue::Object& ObjectValue,
-                                  const FString& FieldName, uint32& OutValue,
-                                  bool& OutHasValue, FString* OutErrorMessage,
-                                  const char* Context)
+                                  const FString& FieldName, uint32& OutValue, bool& OutHasValue,
+                                  FString* OutErrorMessage, const char* Context)
     {
         const auto Iterator = ObjectValue.find(FieldName);
         if (Iterator == ObjectValue.end())
@@ -216,8 +243,8 @@ namespace
         return true;
     }
 
-    bool TryReadFloatValue(const FSceneJsonValue& Value, float& OutValue,
-                           FString* OutErrorMessage, const char* Context)
+    bool TryReadFloatValue(const FSceneJsonValue& Value, float& OutValue, FString* OutErrorMessage,
+                           const char* Context)
     {
         double NumberValue = 0.0;
         if (!Value.TryGetNumber(NumberValue))
@@ -343,8 +370,8 @@ namespace
         return true;
     }
 
-    FSceneJsonValue SerializeComponentProperty(
-        const Engine::Component::FComponentPropertyDescriptor& Descriptor)
+    FSceneJsonValue
+    SerializeComponentProperty(const Engine::Component::FComponentPropertyDescriptor& Descriptor)
     {
         using namespace Engine::Component;
 
@@ -354,12 +381,12 @@ namespace
             return FSceneJsonValue(Descriptor.BoolGetter ? Descriptor.BoolGetter() : false);
 
         case EComponentPropertyType::Int:
-            return FSceneJsonValue(static_cast<double>(
-                Descriptor.IntGetter ? Descriptor.IntGetter() : 0));
+            return FSceneJsonValue(
+                static_cast<double>(Descriptor.IntGetter ? Descriptor.IntGetter() : 0));
 
         case EComponentPropertyType::Float:
-            return FSceneJsonValue(static_cast<double>(
-                Descriptor.FloatGetter ? Descriptor.FloatGetter() : 0.0f));
+            return FSceneJsonValue(
+                static_cast<double>(Descriptor.FloatGetter ? Descriptor.FloatGetter() : 0.0f));
 
         case EComponentPropertyType::String:
             return FSceneJsonValue(Descriptor.StringGetter ? Descriptor.StringGetter() : FString{});
@@ -390,7 +417,7 @@ namespace
     }
 
     void BuildKnownComponentProperties(Engine::Component::USceneComponent& Component,
-                                       FSceneJsonValue::Object& OutPropertiesObject)
+                                       FSceneJsonValue::Object&            OutPropertiesObject)
     {
         Engine::Component::FComponentPropertyBuilder Builder;
         Component.DescribeProperties(Builder);
@@ -407,16 +434,15 @@ namespace
         }
     }
 
-    void LogComponentPropertyRestoreFailure(
-        const Engine::Component::USceneComponent& Component, const FString& PropertyKey,
-        const FString& ErrorMessage)
+    void LogComponentPropertyRestoreFailure(const Engine::Component::USceneComponent& Component,
+                                            const FString& PropertyKey, const FString& ErrorMessage)
     {
         UE_LOG(SceneIO, ELogVerbosity::Error,
-               "Failed to restore property '%s' on component '%s': %s",
-               PropertyKey.c_str(), Component.GetTypeName(), ErrorMessage.c_str());
+               "Failed to restore property '%s' on component '%s': %s", PropertyKey.c_str(),
+               Component.GetTypeName(), ErrorMessage.c_str());
     }
 
-    void ApplyKnownComponentProperties(const FSceneJsonValue::Object& PropertiesObject,
+    void ApplyKnownComponentProperties(const FSceneJsonValue::Object&      PropertiesObject,
                                        Engine::Component::USceneComponent& Component)
     {
         using namespace Engine::Component;
@@ -438,8 +464,8 @@ namespace
             }
 
             const FSceneJsonValue& PropertyValue = PropertyIterator->second;
-            FString PropertyError;
-            const FString Context = "Component.properties." + Descriptor.Key;
+            FString                PropertyError;
+            const FString          Context = "Component.properties." + Descriptor.Key;
 
             switch (Descriptor.Type)
             {
@@ -554,6 +580,112 @@ namespace
 
             LogComponentPropertyRestoreFailure(Component, Descriptor.Key, PropertyError);
         }
+    }
+    void ApplyLegacyTransform(const FSceneJsonValue::Object&      LegacyObj,
+                              Engine::Component::USceneComponent& Component)
+    {
+        FVector Location = FVector::ZeroVector;
+        FVector Scale = FVector::OneVector;
+        FQuat   Rotation = FQuat::Identity;
+
+        const auto LocIt = LegacyObj.find("Location");
+        if (LocIt != LegacyObj.end())
+        {
+            TryReadVector3(LocIt->second, Location, nullptr, "Primitive.Location");
+        }
+
+        const auto ScaleIt = LegacyObj.find("Scale");
+        if (ScaleIt != LegacyObj.end())
+        {
+            TryReadVector3(ScaleIt->second, Scale, nullptr, "Primitive.Scale");
+        }
+
+        const auto RotIt = LegacyObj.find("Rotation");
+        if (RotIt != LegacyObj.end())
+        {
+            if (const auto* Arr = RotIt->second.TryGetArray())
+            {
+                double rx = 0.0, ry = 0.0, rz = 0.0;
+                if (Arr->size() >= 3 && (*Arr)[0].TryGetNumber(rx) && (*Arr)[1].TryGetNumber(ry) &&
+                    (*Arr)[2].TryGetNumber(rz))
+                {
+                    FVector          EulerDeg(static_cast<float>(FMath::RadiansToDegrees(rx)),
+                                              static_cast<float>(FMath::RadiansToDegrees(ry)),
+                                              static_cast<float>(FMath::RadiansToDegrees(rz)));
+                    FRotator         Rotator = FRotator::MakeFromEuler(EulerDeg);
+                    Rotation = Rotator.Quaternion();
+                }
+            }
+        }
+
+        Component.SetRelativeLocation(Location);
+        Component.SetRelativeRotation(Rotation);
+        Component.SetRelativeScale3D(Scale);
+    }
+    bool CreateActorFromLegacyComponent(const FString&                 Key,
+                                        const FSceneJsonValue::Object& LegacyObj, FScene& OutScene,
+                                        FString* OutErrorMessage)
+    {
+        auto ToLower = [](const FString& s)
+        {
+            std::string t = s;
+            for (char& c : t)
+                c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+            return FString(t);
+        };
+
+        // Read Type
+        const auto TypeIter = LegacyObj.find("Type");
+        FString    TypeStr;
+        if (TypeIter != LegacyObj.end())
+        {
+            TypeIter->second.TryGetString(TypeStr);
+        }
+        const FString LowerType = ToLower(TypeStr);
+
+        const auto MapIter = LegacyTypeToActorName.find(LowerType);
+        if (MapIter == LegacyTypeToActorName.end())
+        {
+            return false; // 매핑 없음 → 변환 불가
+        }
+        const FString& ActorTypeName = MapIter->second;
+
+        // 2) Actor 생성
+        bool                    bKnownActor = false;
+        std::unique_ptr<AActor> Actor(
+            FSceneTypeRegistry::ConstructActor(ActorTypeName, &bKnownActor));
+        if (Actor == nullptr)
+        {
+            if (OutErrorMessage)
+                *OutErrorMessage = "Failed to construct " + ActorTypeName + ".";
+            return false;
+        }
+
+        try
+        {
+            Actor->UUID = static_cast<uint32>(std::stoul(Key));
+        }
+        catch (...)
+        { /* keep default */
+        }
+
+        Actor->Name = ActorTypeName + " " + std::to_string(Actor->UUID);
+
+        // 3) 루트 컴포넌트에 Transform + 프로퍼티 적용
+        auto* RootComp = Actor->GetRootComponent();
+        if (RootComp == nullptr)
+        {
+            if (OutErrorMessage)
+                *OutErrorMessage = ActorTypeName + " has no root component.";
+            return false;
+        }
+
+        ApplyLegacyTransform(LegacyObj, *RootComp);
+        ApplyKnownComponentProperties(LegacyObj, *RootComp);
+
+        // 5) 씬에 추가
+        OutScene.AddActor(Actor.release());
+        return true;
     }
 
     FSceneJsonValue::Object
@@ -727,9 +859,10 @@ namespace
             }
             else
             {
-                UE_LOG(SceneIO, ELogVerbosity::Error,
-                       "Component.properties on '%s' must be an object. Property restore was skipped.",
-                       Component.GetTypeName());
+                UE_LOG(
+                    SceneIO, ELogVerbosity::Error,
+                    "Component.properties on '%s' must be an object. Property restore was skipped.",
+                    Component.GetTypeName());
             }
         }
 
@@ -767,9 +900,9 @@ namespace
         struct FPendingComponentHierarchy
         {
             Engine::Component::USceneComponent* Component = nullptr;
-            bool bIsRootComponent = false;
-            bool bHasParentUuid = false;
-            uint32 ParentUuid = 0;
+            bool                                bIsRootComponent = false;
+            bool                                bHasParentUuid = false;
+            uint32                              ParentUuid = 0;
         };
 
         const FSceneJsonValue::Object* ActorObject = nullptr;
@@ -847,7 +980,7 @@ namespace
         const auto   ExistingComponents = Actor->GetOwnedComponents();
         TArray<bool> ReusedFlags(ExistingComponents.size(), false);
         TMap<uint32, Engine::Component::USceneComponent*> ComponentsByUuid;
-        TArray<FPendingComponentHierarchy> PendingHierarchy;
+        TArray<FPendingComponentHierarchy>                PendingHierarchy;
         PendingHierarchy.reserve(ComponentsArray->size());
 
         for (const FSceneJsonValue& ComponentValue : *ComponentsArray)
@@ -873,7 +1006,7 @@ namespace
             }
 
             uint32 ParentUuid = 0;
-            bool bHasParentUuid = false;
+            bool   bHasParentUuid = false;
             if (!TryReadOptionalUIntField(*ComponentObject, "parent_uuid", ParentUuid,
                                           bHasParentUuid, OutErrorMessage, "Component"))
             {
@@ -922,11 +1055,11 @@ namespace
             }
 
             ComponentsByUuid[Component->UUID] = Component;
-            PendingHierarchy.push_back(FPendingComponentHierarchy{
-                .Component = Component,
-                .bIsRootComponent = bIsRootComponent,
-                .bHasParentUuid = bHasParentUuid,
-                .ParentUuid = ParentUuid});
+            PendingHierarchy.push_back(
+                FPendingComponentHierarchy{.Component = Component,
+                                           .bIsRootComponent = bIsRootComponent,
+                                           .bHasParentUuid = bHasParentUuid,
+                                           .ParentUuid = ParentUuid});
         }
 
         for (const FPendingComponentHierarchy& Hierarchy : PendingHierarchy)
@@ -975,6 +1108,7 @@ namespace
         OutScene.AddActor(Actor.release());
         return true;
     }
+
 } // namespace
 
 bool FSceneSerializer::Serialize(const FScene& Scene, FString& OutJson, FString* OutErrorMessage)
@@ -1081,7 +1215,11 @@ std::unique_ptr<FScene> FSceneDeserializer::Deserialize(const FString& JsonSourc
         return nullptr;
     }
 
-    const FSceneJsonValue* ActorsValue =
+    std::unique_ptr<FScene> Scene = std::make_unique<FScene>();
+
+    // Actor 및 Component 계층 구조 호환용 코드입니다(Scene 형식이 개선되면 사용해주세요)
+
+    /*   const FSceneJsonValue* ActorsValue =
         FindRequiredField(*RootObject, "actors", OutErrorMessage, "Scene");
     if (ActorsValue == nullptr)
     {
@@ -1094,17 +1232,42 @@ std::unique_ptr<FScene> FSceneDeserializer::Deserialize(const FString& JsonSourc
         return nullptr;
     }
 
-    std::unique_ptr<FScene> Scene = std::make_unique<FScene>();
-    for (const FSceneJsonValue& ActorValue : *ActorsArray)
+     for (const FSceneJsonValue& ActorValue : *ActorsArray)
     {
-        FString ActorErrorMessage;
-        if (!DeserializeActorValue(ActorValue, *Scene, &ActorErrorMessage))
+         FString ActorErrorMessage;
+         if (!DeserializeActorValue(ActorValue, *Scene, &ActorErrorMessage))
+         {
+             if (OutErrorMessage != nullptr)
+             {
+                 *OutErrorMessage = ActorErrorMessage;
+             }
+             return nullptr;
+         }
+     }*/
+
+    // 4주차 Scene 형식 호환용 (Primitives 필드)
+    if (const FSceneJsonValue* PrimitivesValue = FindOptionalField(*RootObject, "Primitives"))
+    {
+        const FSceneJsonValue::Object* PrimitivesObject = nullptr;
+        if (TryGetObject(*PrimitivesValue, PrimitivesObject, OutErrorMessage, "Scene.Primitives"))
         {
-            if (OutErrorMessage != nullptr)
+            for (const auto& Pair : *PrimitivesObject)
             {
-                *OutErrorMessage = ActorErrorMessage;
+                const FSceneJsonValue::Object* LegacyObj = nullptr;
+                if (!TryGetObject(Pair.second, LegacyObj, OutErrorMessage, "Scene.Primitives.item"))
+                {
+                    return nullptr;
+                }
+
+                FString LocalError;
+                if (!CreateActorFromLegacyComponent(Pair.first, *LegacyObj, *Scene, &LocalError))
+                {
+                    UE_LOG(SceneIO, ELogVerbosity::Warning, "Skipped legacy primitive '%s': %s",
+                           Pair.first.c_str(),
+                           LocalError.empty() ? "unsupported primitive" : LocalError.c_str());
+                    continue;
+                }
             }
-            return nullptr;
         }
     }
 
