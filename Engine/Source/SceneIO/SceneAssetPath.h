@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/CoreMinimal.h"
-#include "Core/Path.h"
+#include "Core/Misc/Paths.h"
 
 #include <algorithm>
 #include <filesystem>
@@ -23,9 +23,8 @@ namespace Engine::SceneIO
             }
 
 #if defined(_WIN32)
-            const int32 RequiredSize =
-                MultiByteToWideChar(CP_UTF8, 0, InText.c_str(),
-                                    static_cast<int32>(InText.size()), nullptr, 0);
+            const int32 RequiredSize = MultiByteToWideChar(
+                CP_UTF8, 0, InText.c_str(), static_cast<int32>(InText.size()), nullptr, 0);
             if (RequiredSize <= 0)
             {
                 return {};
@@ -49,8 +48,8 @@ namespace Engine::SceneIO
 
 #if defined(_WIN32)
             const int32 RequiredSize =
-                WideCharToMultiByte(CP_UTF8, 0, InText.c_str(),
-                                    static_cast<int32>(InText.size()), nullptr, 0, nullptr, nullptr);
+                WideCharToMultiByte(CP_UTF8, 0, InText.c_str(), static_cast<int32>(InText.size()),
+                                    nullptr, 0, nullptr, nullptr);
             if (RequiredSize <= 0)
             {
                 return {};
@@ -116,7 +115,7 @@ namespace Engine::SceneIO
             CandidatePath = FPaths::Combine(FPaths::AppContentDir(), CandidatePath);
         }
 
-        std::error_code ErrorCode;
+        std::error_code       ErrorCode;
         std::filesystem::path CanonicalContentRoot =
             std::filesystem::weakly_canonical(FPaths::AppContentDir(), ErrorCode);
         if (ErrorCode)
