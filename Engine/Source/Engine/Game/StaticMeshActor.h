@@ -1,20 +1,28 @@
 #pragma once
 
-#include "Actor.h"
+#include "MeshActor.h"
 
 namespace Engine::Component
 {
     class UStaticMeshComponent;
+    class UPrimitiveComponent;
 } // namespace Engine::Component
 
-
-class ENGINE_API AStaticMeshActor:public AActor
+class ENGINE_API AStaticMeshActor : public AMeshActor
 {
-    DECLARE_RTTI(AStaticMeshActor, AActor)
+    DECLARE_RTTI(AStaticMeshActor, AMeshActor)
   public:
     AStaticMeshActor();
     ~AStaticMeshActor() override = default;
 
     Engine::Component::UStaticMeshComponent* GetStaticMeshComponent() const;
 
+    bool           IsRenderable() const override;
+    bool           IsSelected() const override;
+    FColor         GetColor() const override;
+    EBasicMeshType GetMeshType() const override;
+    uint32         GetObjectId() const override;
+
+  private:
+    Engine::Component::UPrimitiveComponent* GetPrimitiveComponent() const;
 };

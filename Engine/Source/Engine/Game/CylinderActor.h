@@ -1,28 +1,15 @@
-﻿#pragma once
-#include "Actor.h"
+#pragma once
 
-namespace Engine::Component
-{
-    class UCylinderComponent;
-    class UPrimitiveComponent;
-}
+#include "StaticMeshActor.h"
 
-class ENGINE_API ACylinderActor : public AActor
+class ENGINE_API ACylinderActor : public AStaticMeshActor
 {
-    DECLARE_RTTI(ACylinderActor, AActor)
+    DECLARE_RTTI(ACylinderActor, AStaticMeshActor)
     
 public:
     ACylinderActor();
     ~ACylinderActor() override = default;
     
-    Engine::Component::UCylinderComponent * GetCylinderComponent() const;
-    
-    bool           IsRenderable() const override;
-    bool           IsSelected() const override;
-    FColor         GetColor() const override;
-    EBasicMeshType GetMeshType() const override;
-    uint32         GetObjectId() const override;
-    
-private:
-    Engine::Component::UPrimitiveComponent* GetPrimitiveComponent() const;
+    EBasicMeshType GetMeshType() const override { return EBasicMeshType::Cylinder; }
+
 };

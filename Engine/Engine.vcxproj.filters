@@ -353,6 +353,7 @@
     </ClCompile>
     <ClCompile Include="Source\Engine\Game\StaticMeshActor.cpp" />
     <ClCompile Include="Resources\Mesh\StaticMesh.cpp" />
+    <ClCompile Include="Source\Engine\Game\MeshActor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Resources\Mesh\Cone.h">
@@ -794,6 +795,7 @@
       <Filter>Resources\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Game\StaticMeshActor.h" />
+    <ClInclude Include="Source\Engine\Game\MeshActor.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

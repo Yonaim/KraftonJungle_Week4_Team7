@@ -8,7 +8,7 @@ namespace Engine::Component
 {
     class ENGINE_API UStaticMeshComponent : public UMeshComponent
     {
-        DECLARE_RTTI(UStaticComponent, UMeshComponent)
+        DECLARE_RTTI(UStaticMeshComponent, UMeshComponent)
       public:
         UStaticMeshComponent() = default;
         ~UStaticMeshComponent() override = default;
