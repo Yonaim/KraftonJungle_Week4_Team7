@@ -29,6 +29,10 @@ void FPaths::Initialize(const FPathConfig& InConfig)
     Config.SavedDir = InConfig.SavedDir.empty()
         ? Combine(Config.AppRoot, L"Saved")
         : Normalize(InConfig.SavedDir);
+    
+    Config.ShaderDir = InConfig.ShaderDir.empty()
+        ? Combine(Config.AppContentDir, L"Shader")
+        : Normalize(InConfig.ShaderDir);
 
     Config.ShaderCacheDir = InConfig.ShaderCacheDir.empty()
         ? Combine(Config.SavedDir, L"ShaderCache")
@@ -65,6 +69,11 @@ const fs::path& FPaths::AppContentDir()
 const fs::path& FPaths::SavedDir()
 {
     return GetConfig().SavedDir;
+}
+
+const std::filesystem::path& FPaths::ShaderDir()
+{
+    return GetConfig().ShaderDir;
 }
 
 const fs::path& FPaths::ShaderCacheDir()

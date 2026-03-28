@@ -1,6 +1,10 @@
 #include "CubeComponent.h"
 
-#include "Resources/Mesh/Cube.h"
+#include "Renderer/SceneRenderData.h"
+#include "Resources/Mesh/Cube.h"    // 예전 Vertex format을 따르는 헤더파일. 추후 삭제 혹은 대체
+#include "NewRenderer/Primitive/PrimitiveCube.h"
+#include "Renderer/D3D11/GeneralRenderer.h"
+#include <memory>
 
 namespace Engine::Component
 {
@@ -33,6 +37,29 @@ namespace Engine::Component
         }
         
         return OutTriangles.size() > 0;
+    }
+
+    void UCubeComponent::CollectRenderData(FSceneRenderData& OutRenderData,
+        ESceneShowFlags InShowFlags) const
+    {
+        // UPrimitiveComponent::CollectRenderData(OutRenderData, InShowFlags);
+        
+        // === 테스트용 데이터 삽입
+        // 추후 일반화할 것.
+        
+        FRenderCommand RenderCommand;
+        
+        static CPrimitiveCube cubePrimitive;
+        if (cubePrimitive.GetMeshData() == nullptr)
+        {
+            cubePrimitive.Generate();
+        }
+        RenderCommand.MeshData = cubePrimitive.GetMeshData();
+        RenderCommand.Material = FGeneralRenderer::GetDefaultMaterial();
+        RenderCommand.WorldMatrix = GetRelativeMatrix();
+        OutRenderData.RenderCommands.push_back(RenderCommand);
+        
+        // === 테스트용 데이터 삽입
     }
 
     Geometry::FAABB UCubeComponent::GetLocalAABB() const

@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 
+#include "D3D11/GeneralRenderer.h"
 #include "Renderer/D3D11/D3D11Common.h"
 #include "Renderer/D3D11/D3D11LineBatchRenderer.h"
 #include "Renderer/D3D11/D3D11MeshBatchRenderer.h"
@@ -10,6 +11,7 @@
 #include "Renderer/D3D11/D3D11RHI.h"
 #include "Renderer/D3D11/D3D11SpriteBatchRenderer.h"
 #include "Renderer/D3D11/D3D11TextBatchRenderer.h"
+#include "Renderer/D3D11/GeneralRenderer.h"
 #include "Renderer/EditorRenderData.h"
 #include "Renderer/SceneRenderData.h"
 #include "Renderer/Submitter/OverlayMeshSubmitter.h"
@@ -21,6 +23,9 @@
 class ENGINE_API FRendererModule
 {
   public:
+    FRendererModule();
+    ~FRendererModule();
+    
     bool StartupModule(HWND hWnd);
     void ShutdownModule();
 
@@ -44,6 +49,7 @@ class ENGINE_API FRendererModule
   private:
     FD3D11RHI RHI;
 
+    FGeneralRenderer*        GeneralRenderer   = nullptr;
     FD3D11MeshBatchRenderer  MeshBatchRenderer;
     FD3D11OutlineRenderer    OutlineRenderer;
     FD3D11LineBatchRenderer  LineRenderer;

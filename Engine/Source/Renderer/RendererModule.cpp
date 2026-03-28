@@ -1,5 +1,6 @@
 #include "Renderer/RendererModule.h"
 
+#include "SceneView.h"
 #include "Engine/Component/Mesh/LineBatchComponent.h"
 #include "Renderer/Types/PickId.h"
 #include "Renderer/Types/PickResult.h"
@@ -50,18 +51,44 @@ namespace
     }
 } // namespace
 
+FRendererModule::FRendererModule()
+{
+}
+
+FRendererModule::~FRendererModule()
+{
+}
+
 bool FRendererModule::StartupModule(HWND hWnd)
 {
     if (hWnd == nullptr)
     {
         return false;
     }
-
+    
     if (!RHI.Initialize(hWnd))
     {
         ShutdownModule();
         return false;
     }
+    
+    // === GeneralRenderer 초기화
+    RECT ClientRect = {};
+    if (!GetClientRect(hWnd, &ClientRect))
+    {
+        return false;
+    }
+    int ViewportWidth = static_cast<int32>(ClientRect.right - ClientRect.left);
+    int ViewportHeight = static_cast<int32>(ClientRect.bottom - ClientRect.top);
+    GeneralRenderer = new FGeneralRenderer(hWnd, ViewportWidth, ViewportHeight);
+    GeneralRenderer->DEBUG_ForceInitialize(
+        RHI.GetDevice(),
+        RHI.GetDeviceContext(),
+        RHI.GetBackBufferRTV(),
+        RHI.GetDepthStencilView(), 
+        RHI.GetViewport()
+    );
+    // === GeneralRenderer 초기화
 
     if (!MeshBatchRenderer.Initialize(&RHI))
     {
@@ -140,9 +167,21 @@ void FRendererModule::BeginFrame()
 
     RHI.SetDefaultRenderTargets();
     RHI.Clear(ClearColor, 1.0f, 0);
+    
+    // === GeneralRenderer 사용한 렌더 루트
+    GeneralRenderer->SetSceneRenderTarget(RHI.GetBackBufferRTV(), nullptr, RHI.GetViewport());
+    GeneralRenderer->BeginFrame();
 }
 
-void FRendererModule::EndFrame() { RHI.EndFrame(); }
+// 테스트용 임시 플래그
+bool hasRenderCommand = false;
+
+void FRendererModule::EndFrame()
+{
+    RHI.EndFrame();
+    // if (hasRenderCommand)
+    //     GeneralRenderer->EndFrame();
+}
 
 void FRendererModule::SetViewport(const D3D11_VIEWPORT& InViewport) { RHI.SetViewport(InViewport); }
 
@@ -153,6 +192,7 @@ void FRendererModule::OnWindowResized(int32 InWidth, int32 InHeight)
         return;
     }
 
+    GeneralRenderer->OnResize(InWidth, InHeight);
     RHI.Resize(InWidth, InHeight);
     ObjectIdRenderer.Resize(InWidth, InHeight);
 }
@@ -167,12 +207,32 @@ void FRendererModule::Render(const FEditorRenderData& InEditorRenderData,
     RenderOverlayPass(InEditorRenderData, InSceneRenderData);
 }
 
-/**
- * World: Primitives -> LineBatchers -> Outline -> Sprites -> Texts
- */
 void FRendererModule::RenderWorldPass(const FEditorRenderData& InEditorRenderData,
                                       const FSceneRenderData&  InSceneRenderData)
 {
+    hasRenderCommand = false;
+    // === GeneralRenderer 사용한 렌더 루트
+    if (!InSceneRenderData.RenderCommands.empty())
+    {
+        hasRenderCommand = true;
+        
+        FRenderCommandQueue CommandQueue;
+        for (auto el : InSceneRenderData.RenderCommands)
+        {
+            CommandQueue.AddCommand(el);
+        }
+        // ==== 테스트 코드. 추후 삭제할 것
+        {
+            CommandQueue.ViewMatrix = InEditorRenderData.SceneView->GetViewMatrix();
+            CommandQueue.ProjectionMatrix = InEditorRenderData.SceneView->GetProjectionMatrix();
+        }
+        // ==== 테스트 코드. 추후 삭제할 것
+        
+        GeneralRenderer->SubmitCommands(CommandQueue);
+        GeneralRenderer->ExecuteCommands();
+    }
+    // === GeneralRenderer 사용한 렌더 루트
+        
     if (HasScenePrimitives(InSceneRenderData))
     {
         FMeshBatchPassParams ScenePassParams = {};
