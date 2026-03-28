@@ -18,7 +18,7 @@ namespace
     constexpr const char* SceneSchemaName = "JungleScene";
     constexpr int32       SceneSchemaVersion = 2;
 
-    // 레거시 Type 문자열 → 등록된 Actor 타입 이름 매핑 테이블
+    // 4주차 레거시 호환 테이블입니다. 씬 형식 개선되면 삭제해주세요.
     const TMap<FString, FString> LegacyTypeToActorName = {
         {"sphere", "ASphereActor"},
         {"cube", "ACubeActor"},
@@ -33,6 +33,36 @@ namespace
         {"flipbook", "AFlipbookActor"},
         {"effect", "AEffectActor"},
         {"atlassprite", "AAtlasSpriteActor"},
+        // SerializeLegacy 출력 호환 (컴포넌트 타입 이름 → 액터)
+        {"ustaticmeshcomponent", "AStaticMeshActor"},
+        {"uconecomponent", "AStaticMeshActor"},
+        {"ucubecomponent", "AStaticMeshActor"},
+        {"ucylindercomponent", "AStaticMeshActor"},
+        {"uringcomponent", "AStaticMeshActor"},
+        {"uspherecomponent", "AStaticMeshActor"},
+        {"utrianglecomponent", "AStaticMeshActor"},
+        {"upaperspritecomponent", "ASpriteActor"},
+        {"uatlastextcomponent", "ATextActor"},
+        {"utextcomponent", "ATextActor"},
+        {"usubuvcomponent", "AAtlasSpriteActor"},
+        {"usubuvanimatedcomponent", "AFlipbookActor"},
+        {"uatlascomponent", "AEffectActor"},
+    };
+
+     // SerializeLegacy용: 액터 타입 이름 → 레거시 Type 문자열
+    const TMap<FString, FString> ActorTypeToLegacyType = {
+        {"AStaticMeshActor", "StaticMeshComp"},
+        {"ASphereActor", "Sphere"},
+        {"ACubeActor", "Cube"},
+        {"ATriangleActor", "Triangle"},
+        {"AConeActor", "Cone"},
+        {"ACylinderActor", "Cylinder"},
+        {"ARingActor", "Ring"},
+        {"ASpriteActor", "Sprite"},
+        {"ATextActor", "Text"},
+        {"AFlipbookActor", "Flipbook"},
+        {"AEffectActor", "Effect"},
+        {"AAtlasSpriteActor", "AtlasSprite"},
     };
 
     FSceneJsonValue MakeNumberArray(std::initializer_list<double> Values)
@@ -609,10 +639,10 @@ namespace
                 if (Arr->size() >= 3 && (*Arr)[0].TryGetNumber(rx) && (*Arr)[1].TryGetNumber(ry) &&
                     (*Arr)[2].TryGetNumber(rz))
                 {
-                    FVector          EulerDeg(static_cast<float>(FMath::RadiansToDegrees(rx)),
-                                              static_cast<float>(FMath::RadiansToDegrees(ry)),
-                                              static_cast<float>(FMath::RadiansToDegrees(rz)));
-                    FRotator         Rotator = FRotator::MakeFromEuler(EulerDeg);
+                    FVector  EulerDeg(static_cast<float>(FMath::RadiansToDegrees(rx)),
+                                      static_cast<float>(FMath::RadiansToDegrees(ry)),
+                                      static_cast<float>(FMath::RadiansToDegrees(rz)));
+                    FRotator Rotator = FRotator::MakeFromEuler(EulerDeg);
                     Rotation = Rotator.Quaternion();
                 }
             }
@@ -683,7 +713,6 @@ namespace
         ApplyLegacyTransform(LegacyObj, *RootComp);
         ApplyKnownComponentProperties(LegacyObj, *RootComp);
 
-        // 5) 씬에 추가
         OutScene.AddActor(Actor.release());
         return true;
     }
@@ -1139,7 +1168,7 @@ bool FSceneSerializer::SaveToFile(const FScene& Scene, const std::filesystem::pa
                                   FString* OutErrorMessage)
 {
     FString JsonText;
-    if (!Serialize(Scene, JsonText, OutErrorMessage))
+    if (!SerializeLegacy(Scene, JsonText, OutErrorMessage))
     {
         return false;
     }
@@ -1298,4 +1327,70 @@ std::unique_ptr<FScene> FSceneDeserializer::LoadFromFile(const std::filesystem::
     }
 
     return Deserialize(JsonSource, OutErrorMessage);
+}
+
+bool FSceneSerializer::SerializeLegacy(const FScene& Scene, FString& OutJson,
+                                       FString* OutErrorMessage)
+{
+    (void)OutErrorMessage;
+
+    FSceneJsonValue::Object RootObject;
+    RootObject["schema"] = SceneSchemaName;
+    RootObject["version"] = static_cast<double>(SceneSchemaVersion);
+
+    FSceneJsonValue::Object PrimitivesObject;
+    uint32                  MaxUUID = 0;
+
+    const TArray<AActor*>& Actors = Scene.GetActors();
+    for (AActor* Actor : Actors)
+    {
+        if (Actor == nullptr)
+        {
+            continue;
+        }
+
+        auto* RootComp = Actor->GetRootComponent();
+        if (RootComp == nullptr)
+        {
+            continue;
+        }
+
+        const FString Key = std::to_string(Actor->UUID);
+        if (Actor->UUID > MaxUUID)
+        {
+            MaxUUID = Actor->UUID;
+        }
+
+        FSceneJsonValue::Object EntryObject;
+
+        const FString ActorTypeName = FSceneTypeRegistry::ResolveActorTypeName(*Actor);
+        const auto    TypeIt = ActorTypeToLegacyType.find(ActorTypeName);
+        EntryObject["Type"] =
+            (TypeIt != ActorTypeToLegacyType.end()) ? TypeIt->second : ActorTypeName;
+
+        const FVector Location = RootComp->GetRelativeLocation();
+        const FQuat   Rotation = RootComp->GetRelativeQuaternion();
+        const FVector Scale = RootComp->GetRelativeScale3D();
+
+        EntryObject["Location"] = MakeNumberArray({Location.X, Location.Y, Location.Z});
+
+        FRotator Rotator(Rotation);
+        FVector  EulerDeg = Rotator.Euler();
+        EntryObject["Rotation"] = MakeNumberArray({FMath::DegreesToRadians(EulerDeg.X),
+                                                   FMath::DegreesToRadians(EulerDeg.Y),
+                                                   FMath::DegreesToRadians(EulerDeg.Z)});
+
+        EntryObject["Scale"] = MakeNumberArray({Scale.X, Scale.Y, Scale.Z});
+
+        // 루트 컴포넌트 프로퍼티
+        BuildKnownComponentProperties(*RootComp, EntryObject);
+
+        PrimitivesObject[Key] = std::move(EntryObject);
+    }
+
+    RootObject["NextUUID"] = static_cast<double>(MaxUUID + 1);
+    RootObject["Primitives"] = std::move(PrimitivesObject);
+
+    OutJson = FSceneJsonWriter::Write(FSceneJsonValue(std::move(RootObject)), true);
+    return true;
 }
