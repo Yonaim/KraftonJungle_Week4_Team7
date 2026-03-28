@@ -17,43 +17,4 @@ Engine::Component::USubUVAnimatedComponent* AEffectActor::GetEffectComponent() c
     return Cast<Engine::Component::USubUVAnimatedComponent>(RootComponent);
 }
 
-bool AEffectActor::IsRenderable() const { return GetPrimitiveComponent() != nullptr; }
-
-bool AEffectActor::IsSelected() const
-{
-    if (RootComponent == nullptr)
-    {
-        return false;
-    }
-
-    return RootComponent->IsSelected();
-}
-
-FColor AEffectActor::GetColor() const
-{
-    if (const auto* PrimitiveComponent = GetPrimitiveComponent())
-    {
-        return PrimitiveComponent->GetColor();
-    }
-
-    return FColor::White();
-}
-
-EBasicMeshType AEffectActor::GetMeshType() const
-{
-    if (const auto* EffectComponent = GetEffectComponent())
-    {
-        return EffectComponent->GetBasicMeshType();
-    }
-
-    return AActor::GetMeshType();
-}
-
-uint32 AEffectActor::GetObjectId() const { return UUID; }
-
-Engine::Component::UPrimitiveComponent* AEffectActor::GetPrimitiveComponent() const
-{
-    return Cast<Engine::Component::UPrimitiveComponent>(RootComponent);
-}
-
 REGISTER_CLASS(, AEffectActor)

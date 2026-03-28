@@ -159,6 +159,7 @@
     <ClInclude Include="Source\SceneIO\SceneTypeRegistry.h" />
     <ClInclude Include="Source\ThirdParty\Json\json.hpp" />
     <ClInclude Include="Source\Engine\Game\StaticMeshActor.h" />
+    <ClInclude Include="Source\Engine\Component\Text\TextRenderComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -252,6 +253,7 @@
     <ClCompile Include="Source\SceneIO\SceneSerializer.cpp" />
     <ClCompile Include="Source\SceneIO\SceneTypeRegistry.cpp" />
     <ClCompile Include="Source\Engine\Game\StaticMeshActor.cpp" />
+    <ClCompile Include="Source\Engine\Component\Text\TextRenderComponent.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

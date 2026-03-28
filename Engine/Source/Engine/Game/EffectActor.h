@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Game/Actor.h"
+#include "SpriteActor.h"
 
 namespace Engine::Component
 {
@@ -8,22 +8,13 @@ namespace Engine::Component
     class USubUVAnimatedComponent;
 }
 
-class ENGINE_API AEffectActor : public AActor
+class ENGINE_API AEffectActor : public ASpriteActor
 {
-    DECLARE_RTTI(AEffectActor, AActor)
+    DECLARE_RTTI(AEffectActor, ASpriteActor)
 
   public:
     AEffectActor();
     ~AEffectActor() override = default;
 
     Engine::Component::USubUVAnimatedComponent* GetEffectComponent() const;
-
-    bool           IsRenderable() const override;
-    bool           IsSelected() const override;
-    FColor         GetColor() const override;
-    EBasicMeshType GetMeshType() const override;
-    uint32         GetObjectId() const override;
-
-  private:
-    Engine::Component::UPrimitiveComponent* GetPrimitiveComponent() const;
 };

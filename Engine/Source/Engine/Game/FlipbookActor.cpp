@@ -28,44 +28,4 @@ Engine::Component::USubUVAnimatedComponent* AFlipbookActor::GetSubUVAnimatedComp
     return Cast<Engine::Component::USubUVAnimatedComponent>(RootComponent);
 }
 
-bool AFlipbookActor::IsRenderable() const { return GetPrimitiveComponent() != nullptr; }
-
-bool AFlipbookActor::IsSelected() const
-{
-    if (RootComponent == nullptr)
-    {
-        return false;
-    }
-
-    return RootComponent->IsSelected();
-}
-
-FColor AFlipbookActor::GetColor() const
-{
-    if (const auto* PrimitiveComponent = GetPrimitiveComponent())
-    {
-        return PrimitiveComponent->GetColor();
-    }
-
-    return FColor::White();
-}
-
-EBasicMeshType AFlipbookActor::GetMeshType() const
-{
-    // 변수명 CubeComponent -> PrimitiveComp 로 가독성 수정
-    if (const auto* PrimitiveComp = GetPrimitiveComponent())
-    {
-        return PrimitiveComp->GetBasicMeshType();
-    }
-
-    return AActor::GetMeshType();
-}
-
-uint32 AFlipbookActor::GetObjectId() const { return UUID; }
-
-Engine::Component::UPrimitiveComponent* AFlipbookActor::GetPrimitiveComponent() const
-{
-    return Cast<Engine::Component::UPrimitiveComponent>(RootComponent);
-}
-
 REGISTER_CLASS(, AFlipbookActor)

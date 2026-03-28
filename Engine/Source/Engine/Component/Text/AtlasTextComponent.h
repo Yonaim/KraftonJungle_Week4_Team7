@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Engine/Component/Core/PrimitiveComponent.h"
+#include "TextRenderComponent.h"
 #include "Renderer/RenderAsset/FontResource.h"
 
 class AActor;
 
 namespace Engine::Component
 {
-    class ENGINE_API UAtlasTextComponent : public UPrimitiveComponent
+    class ENGINE_API UAtlasTextComponent : public UTextRenderComponent
     {
         DECLARE_RTTI(UAtlasTextComponent, UPrimitiveComponent)
 
@@ -15,8 +15,6 @@ namespace Engine::Component
         UAtlasTextComponent() = default;
         ~UAtlasTextComponent() override = default;
 
-        const FString& GetText() const { return Text; }
-        void           SetText(const FString& InText);
 
         const FFontResource* GetFontResource() const { return FontResource; }
         FFontResource*       GetFontResource() { return FontResource; }
@@ -32,12 +30,7 @@ namespace Engine::Component
 
         float GetLineSpacing() const { return LineSpacing; }
         void  SetLineSpacing(float InLineSpacing);
-
-        bool GetBillboard() const { return bBillboard; }
-        void SetBillboard(bool bInBillboard);
-
-        const FVector&  GetBillboardOffset() const { return BillboardOffset; }
-        void            SetBillboardOffset(const FVector& InBillboardOffset);
+ 
         void            DescribeProperties(FComponentPropertyBuilder& Builder) override;
         void            ResolveAssetReferences(UAssetManager* InAssetManager) override;
         virtual FMatrix GetRenderPlacementWorld(const AActor& InOwnerActor) const;
@@ -48,8 +41,7 @@ namespace Engine::Component
       protected:
         Geometry::FAABB GetLocalAABB() const override { return {}; }
 
-      protected:
-        FString        Text;
+    
         FFontResource* FontResource = nullptr;
         FString        FontPath;
 
@@ -57,7 +49,5 @@ namespace Engine::Component
         float LetterSpacing = 0.0f;
         float LineSpacing = 0.0f;
 
-        bool    bBillboard = false;
-        FVector BillboardOffset = FVector(0.0f, 0.0f, 0.0f);
     };
 } // namespace Engine::Component
