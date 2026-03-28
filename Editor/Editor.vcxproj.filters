@@ -175,6 +175,8 @@
       <Filter>Source\Viewport\Selection</Filter>
     </ClCompile>
     <ClCompile Include="Source\Viewport\EditorViewportTab.cpp" />
+    <ClCompile Include="Source\Viewport\Layout\Window.cpp" />
+    <ClCompile Include="Source\Viewport\Layout\FEditorViewportLayoutFourPanes.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Camera\ViewportCamera.h">
@@ -307,6 +309,9 @@
       <Filter>Source\Viewport\Selection</Filter>
     </ClInclude>
     <ClInclude Include="Source\Viewport\EditorViewportTab.h" />
+    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayout.h" />
+    <ClInclude Include="Source\Viewport\Layout\Window.h" />
+    <ClInclude Include="Source\Viewport\Layout\FEditorViewportLayoutFourPanes.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\ThirdParty\ImGui\imgui.natstepfilter">

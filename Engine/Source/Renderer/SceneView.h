@@ -4,9 +4,6 @@
 #include "Core/Math/Matrix.h"
 #include "Core/Math/Vector.h"
 
-#include "Renderer/D3D11/D3D11Common.h"
-#include <d3dcompiler.h>
-
 // TODO: Reverse-Z 적용
 
 class FEditorViewportClient;

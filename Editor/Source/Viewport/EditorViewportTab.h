@@ -3,6 +3,7 @@
 #include "Core/CoreMinimal.h"
 
 #include "Viewport/EditorViewportClient.h"
+#include "Viewport/Layout/EditorViewportLayout.h"
 #include "Renderer/SceneView.h"
 
 class SEditorViewportTab
@@ -12,7 +13,7 @@ public:
     ~SEditorViewportTab();
 
 public:
-    void Construct();
+    void Construct(FViewportRect WindowRect);
 
     TArray<FSceneView*> const& GetViewports() const { return SceneViews; }
     FSceneView* const&         GetViewport(int32 index) const { return SceneViews[index]; }
@@ -23,4 +24,5 @@ public:
 private:
     TArray<FSceneView*>            SceneViews;
     TArray<FEditorViewportClient*> ViewportClients;
+    FEditorViewportLayout*         ViewportLayout = nullptr;
 };

@@ -129,6 +129,8 @@ if exist "$(ProjectDir)..\Engine\Bin\$(Configuration)\Engine.pdb" copy /Y "$(Pro
     <ClCompile Include="Source\Viewport\Gizmo\ViewportGizmoController.cpp" />
     <ClCompile Include="Source\Viewport\Global\EditorGlobalController.cpp" />
     <ClCompile Include="Source\Viewport\Interaction\ViewportInteractionState.cpp" />
+    <ClCompile Include="Source\Viewport\Layout\FEditorViewportLayoutFourPanes.cpp" />
+    <ClCompile Include="Source\Viewport\Layout\Window.cpp" />
     <ClCompile Include="Source\Viewport\Navigation\ViewportNavigationController.cpp" />
     <ClCompile Include="Source\Viewport\RenderSetting\ViewportRenderSetting.cpp" />
     <ClCompile Include="Source\Viewport\Selection\ViewportSelectionController.cpp" />
@@ -175,6 +177,9 @@ if exist "$(ProjectDir)..\Engine\Bin\$(Configuration)\Engine.pdb" copy /Y "$(Pro
     <ClInclude Include="Source\Viewport\Gizmo\ViewportGizmoController.h" />
     <ClInclude Include="Source\Viewport\Global\EditorGlobalController.h" />
     <ClInclude Include="Source\Viewport\Interaction\ViewportInteractionState.h" />
+    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayout.h" />
+    <ClInclude Include="Source\Viewport\Layout\FEditorViewportLayoutFourPanes.h" />
+    <ClInclude Include="Source\Viewport\Layout\Window.h" />
     <ClInclude Include="Source\Viewport\Navigation\ViewportNavigationController.h" />
     <ClInclude Include="Source\Viewport\RenderSetting\ViewportRenderSetting.h" />
     <ClInclude Include="Source\Viewport\Selection\ViewportSelectionController.h" />

@@ -1,4 +1,5 @@
 #include "EditorViewportTab.h"
+#include "Viewport/Layout/FEditorViewportLayoutFourPanes.h"
 
 SEditorViewportTab::SEditorViewportTab() {}
 
@@ -14,9 +15,12 @@ SEditorViewportTab::~SEditorViewportTab()
         C->Release();
         delete C;
     }
+
+    delete ViewportLayout;
+    ViewportLayout = nullptr;
 }
 
-void SEditorViewportTab::Construct() 
+void SEditorViewportTab::Construct(FViewportRect WindowRect)
 { 
 	for (int32 i = 0; i < 4; i++)
 	{
@@ -30,10 +34,14 @@ void SEditorViewportTab::Construct()
         ViewportClients.push_back(NewClient);
 	}
 
-    SceneViews[0]->SetViewRect({0, 0, 960, 540});     // 좌상
-    SceneViews[1]->SetViewRect({960, 0, 960, 540});   // 우상
-    SceneViews[2]->SetViewRect({0, 540, 960, 540});   // 좌하
-    SceneViews[3]->SetViewRect({960, 540, 960, 540}); // 우하
+    ViewportLayout = new FEditorViewportLayoutFourPanes();
+    ViewportLayout->Initialize(WindowRect);
+
+    auto windows = ViewportLayout->GetLeafWindows();
+    SceneViews[0]->SetViewRect(windows[0]->GetViewportRect());     
+    SceneViews[1]->SetViewRect(windows[1]->GetViewportRect()); 
+    SceneViews[2]->SetViewRect(windows[2]->GetViewportRect());          
+    SceneViews[3]->SetViewRect(windows[3]->GetViewportRect()); 
 }
 
 void SEditorViewportTab::CreateExtraViewportClients() 

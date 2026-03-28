@@ -318,7 +318,7 @@ void FEditor::Create()
     UE_LOG(FEditor, ELogVerbosity::Log, "Hello Editor");
     EditorContext.Scene = CurScene;
      
-    ViewportTab.Construct();
+    ViewportTab.Construct({0, 0, (int)WindowWidth, (int)WindowHeight});
     //ViewportClient.Create();
     for (auto Viewport : ViewportTab.GetViewports())
     {
@@ -763,6 +763,7 @@ void FEditor::OnWindowResized(float Width, float Height)
     EditorContext.WindowWidth = Width;
     EditorContext.WindowHeight = Height;
 
+    ViewportTab.Construct({0, 0, (int)WindowWidth, (int)WindowHeight});
 
     for (auto Viewport : ViewportTab.GetViewports())
     {
