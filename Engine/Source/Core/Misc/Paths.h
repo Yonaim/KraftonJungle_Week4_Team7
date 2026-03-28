@@ -17,7 +17,7 @@ struct FPathConfig
 
 class ENGINE_API FPaths
 {
-public:
+  public:
     static void Initialize(const FPathConfig& InConfig);
     static bool IsInitialized();
 
@@ -30,14 +30,14 @@ public:
 
     static void EnsureRuntimeDirectories();
 
-    static std::filesystem::path Combine(const std::filesystem::path& Base, const std::filesystem::path& Relative);
-
-private:
-    static const FPathConfig& GetConfig();
-    static void ValidateConfig(const FPathConfig& InConfig);
     static std::filesystem::path Normalize(const std::filesystem::path& InPath);
+    static std::filesystem::path Combine(const std::filesystem::path& Base,
+                                         const std::filesystem::path& Relative);
+
+  private:
+    static const FPathConfig& GetConfig();
+    static void               ValidateConfig(const FPathConfig& InConfig);
 
     static FPathConfig Config;
-    static bool bInitialized;
+    static bool        bInitialized;
 };
-
