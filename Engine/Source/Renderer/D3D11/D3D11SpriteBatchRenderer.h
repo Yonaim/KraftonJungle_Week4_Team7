@@ -68,7 +68,7 @@ class FD3D11SpriteBatchRenderer
     const FTextureResource* CurrentTextureResource = nullptr;
     ERenderPlacementMode    CurrentPlacementMode = ERenderPlacementMode::World;
 
-    TArray<FSpriteVertex>     Vertices;
+    TArray<FMeshVertex>     Vertices;
     TArray<uint32>            Indices;
     TArray<FSpriteRenderItem> PendingSpriteItems;
 

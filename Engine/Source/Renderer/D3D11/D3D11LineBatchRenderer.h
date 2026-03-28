@@ -33,7 +33,7 @@ class FD3D11LineBatchRenderer
     FD3D11RHI*        RHI = nullptr;
     const FSceneView* CurrentSceneView = nullptr;
 
-    TArray<FLineVertex> Vertices;
+    TArray<FMeshVertex> Vertices;
 
     uint32 MaxLineCount = DefaultMaxLineCount;
     uint32 MaxVertexCount = DefaultMaxLineCount * 2;

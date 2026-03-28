@@ -126,7 +126,7 @@ class FD3D11TextBatchRenderer
     const FFontResource* CurrentFontResource = nullptr;
     ERenderPlacementMode CurrentPlacementMode = ERenderPlacementMode::World;
 
-    TArray<FFontVertex>     Vertices;
+    TArray<FMeshVertex>     Vertices;
     TArray<uint32>          Indices;
     TArray<FTextRenderItem> PendingTextItems;
 

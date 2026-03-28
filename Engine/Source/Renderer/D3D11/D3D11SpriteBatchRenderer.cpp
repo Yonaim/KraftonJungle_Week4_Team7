@@ -187,22 +187,22 @@ void FD3D11SpriteBatchRenderer::AppendQuad(const FVector& InBottomLeft, const FV
 {
     const uint32 BaseVertex = static_cast<uint32>(Vertices.size());
 
-    FSpriteVertex V0 = {};
+    FMeshVertex V0 = {};
     V0.Position = InBottomLeft;
     V0.UV = FVector2(InUVMin.X, InUVMax.Y);
     V0.Color = InColor;
 
-    FSpriteVertex V1 = {};
+    FMeshVertex V1 = {};
     V1.Position = InBottomLeft + InUp;
     V1.UV = FVector2(InUVMin.X, InUVMin.Y);
     V1.Color = InColor;
 
-    FSpriteVertex V2 = {};
+    FMeshVertex V2 = {};
     V2.Position = InBottomLeft + InRight + InUp;
     V2.UV = FVector2(InUVMax.X, InUVMin.Y);
     V2.Color = InColor;
 
-    FSpriteVertex V3 = {};
+    FMeshVertex V3 = {};
     V3.Position = InBottomLeft + InRight;
     V3.UV = FVector2(InUVMax.X, InUVMax.Y);
     V3.Color = InColor;
@@ -345,7 +345,7 @@ void FD3D11SpriteBatchRenderer::Flush(const FSceneView* InSceneView)
     }
 
     if (!RHI->UpdateDynamicBuffer(DynamicVertexBuffer.Get(), Vertices.data(),
-                                  static_cast<uint32>(Vertices.size() * sizeof(FSpriteVertex))) ||
+                                  static_cast<uint32>(Vertices.size() * sizeof(FMeshVertex))) ||
         !RHI->UpdateDynamicBuffer(DynamicIndexBuffer.Get(), Indices.data(),
                                   static_cast<uint32>(Indices.size() * sizeof(uint32))))
     {
@@ -364,7 +364,7 @@ void FD3D11SpriteBatchRenderer::Flush(const FSceneView* InSceneView)
         return;
     }
 
-    const UINT VertexStride = sizeof(FSpriteVertex);
+    const UINT VertexStride = sizeof(FMeshVertex);
     const UINT VertexOffset = 0;
 
     RHI->SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -406,11 +406,11 @@ bool FD3D11SpriteBatchRenderer::CreateShaders()
 
     static const D3D11_INPUT_ELEMENT_DESC InputElements[] = {
         {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
-         static_cast<UINT>(offsetof(FSpriteVertex, Position)), D3D11_INPUT_PER_VERTEX_DATA, 0},
-        {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, static_cast<UINT>(offsetof(FSpriteVertex, UV)),
+         static_cast<UINT>(offsetof(FMeshVertex, Position)), D3D11_INPUT_PER_VERTEX_DATA, 0},
+        {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, static_cast<UINT>(offsetof(FMeshVertex, UV)),
          D3D11_INPUT_PER_VERTEX_DATA, 0},
         {"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0,
-         static_cast<UINT>(offsetof(FSpriteVertex, Color)), D3D11_INPUT_PER_VERTEX_DATA, 0},
+         static_cast<UINT>(offsetof(FMeshVertex, Color)), D3D11_INPUT_PER_VERTEX_DATA, 0},
     };
 
     if (!RHI->CreateVertexShaderAndInputLayout(
@@ -545,7 +545,7 @@ bool FD3D11SpriteBatchRenderer::CreateBuffers()
     }
 
     D3D11_BUFFER_DESC VertexBufferDesc = {};
-    VertexBufferDesc.ByteWidth = sizeof(FSpriteVertex) * MaxVertexCount;
+    VertexBufferDesc.ByteWidth = sizeof(FMeshVertex) * MaxVertexCount;
     VertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
     VertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     VertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;

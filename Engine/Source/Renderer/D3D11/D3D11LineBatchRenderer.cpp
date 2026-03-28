@@ -85,11 +85,11 @@ void FD3D11LineBatchRenderer::AddLine(const FVector& InStart, const FVector& InE
         return;
     }
 
-    FLineVertex V0 = {};
+    FMeshVertex V0 = {};
     V0.Position = InStart;
     V0.Color = InColor;
 
-    FLineVertex V1 = {};
+    FMeshVertex V1 = {};
     V1.Position = InEnd;
     V1.Color = InColor;
 
@@ -117,9 +117,9 @@ bool FD3D11LineBatchRenderer::CreateShaders()
 
     static const D3D11_INPUT_ELEMENT_DESC InputElements[] = {
         {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
-         static_cast<UINT>(offsetof(FLineVertex, Position)), D3D11_INPUT_PER_VERTEX_DATA, 0},
+         static_cast<UINT>(offsetof(FMeshVertex, Position)), D3D11_INPUT_PER_VERTEX_DATA, 0},
         {"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0,
-         static_cast<UINT>(offsetof(FLineVertex, Color)), D3D11_INPUT_PER_VERTEX_DATA, 0},
+         static_cast<UINT>(offsetof(FMeshVertex, Color)), D3D11_INPUT_PER_VERTEX_DATA, 0},
     };
 
     if (!RHI->CreateVertexShaderAndInputLayout(DefaultShaderPath, "VSMain", InputElements,
@@ -158,7 +158,7 @@ bool FD3D11LineBatchRenderer::CreateDynamicVertexBuffer(uint32 InMaxVertexCount)
     }
 
     D3D11_BUFFER_DESC Desc = {};
-    Desc.ByteWidth = sizeof(FLineVertex) * InMaxVertexCount;
+    Desc.ByteWidth = sizeof(FMeshVertex) * InMaxVertexCount;
     Desc.Usage = D3D11_USAGE_DYNAMIC;
     Desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     Desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -182,7 +182,7 @@ void FD3D11LineBatchRenderer::Flush()
     }
 
     if (!RHI->UpdateDynamicBuffer(DynamicVertexBuffer.Get(), Vertices.data(),
-                                  static_cast<uint32>(sizeof(FLineVertex) * Vertices.size())))
+                                  static_cast<uint32>(sizeof(FMeshVertex) * Vertices.size())))
     {
         return;
     }
@@ -200,7 +200,7 @@ void FD3D11LineBatchRenderer::Flush()
         return;
     }
 
-    const UINT    Stride = sizeof(FLineVertex);
+    const UINT    Stride = sizeof(FMeshVertex);
     const UINT    Offset = 0;
     ID3D11Buffer* VertexBuffer = DynamicVertexBuffer.Get();
 

@@ -6,25 +6,7 @@
 
 struct FMeshVertex
 {
-    FVector Position;
-};
-
-struct FLineVertex
-{
-    FVector Position;
-    FColor  Color;
-};
-
-struct FFontVertex
-{
-    FVector  Position;
-    FVector2 UV;
-    FColor   Color;
-};
-
-struct FSpriteVertex
-{
-    FVector  Position;
-    FVector2 UV;
-    FColor   Color;
+    FVector   Position;
+    FVector2  UV;
+    FColor    Color;
 };

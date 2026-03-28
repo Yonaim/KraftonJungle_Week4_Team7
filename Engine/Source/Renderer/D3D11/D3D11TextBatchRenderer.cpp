@@ -710,7 +710,7 @@ void FD3D11TextBatchRenderer::Flush(const FSceneView* InSceneView)
     }
 
     if (!RHI->UpdateDynamicBuffer(DynamicVertexBuffer.Get(), Vertices.data(),
-                                  static_cast<uint32>(Vertices.size() * sizeof(FFontVertex))) ||
+                                  static_cast<uint32>(Vertices.size() * sizeof(FMeshVertex))) ||
         !RHI->UpdateDynamicBuffer(DynamicIndexBuffer.Get(), Indices.data(),
                                   static_cast<uint32>(Indices.size() * sizeof(uint32))))
     {
@@ -730,7 +730,7 @@ void FD3D11TextBatchRenderer::Flush(const FSceneView* InSceneView)
         return;
     }
 
-    const uint32 VertexStride = sizeof(FFontVertex);
+    const uint32 VertexStride = sizeof(FMeshVertex);
     const uint32 VertexOffset = 0;
     const float  BlendFactor[4] = {0.f, 0.f, 0.f, 0.f};
 
@@ -771,22 +771,22 @@ void FD3D11TextBatchRenderer::AppendGlyphQuad(const FVector& InBottomLeft, const
 
     const uint32 BaseVertex = static_cast<uint32>(Vertices.size());
 
-    FFontVertex Vtx0;
+    FMeshVertex Vtx0;
     Vtx0.Position = InBottomLeft;
     Vtx0.UV = FVector2(U0, V1);
     Vtx0.Color = InColor;
 
-    FFontVertex Vtx1;
+    FMeshVertex Vtx1;
     Vtx1.Position = InBottomLeft + InRight;
     Vtx1.UV = FVector2(U1, V1);
     Vtx1.Color = InColor;
 
-    FFontVertex Vtx2;
+    FMeshVertex Vtx2;
     Vtx2.Position = InBottomLeft + InUp;
     Vtx2.UV = FVector2(U0, V0);
     Vtx2.Color = InColor;
 
-    FFontVertex Vtx3;
+    FMeshVertex Vtx3;
     Vtx3.Position = InBottomLeft + InRight + InUp;
     Vtx3.UV = FVector2(U1, V0);
     Vtx3.Color = InColor;
@@ -811,22 +811,22 @@ void FD3D11TextBatchRenderer::AppendSolidColorQuad(const FVector& InBottomLeft,
 {
     const uint32 BaseVertex = static_cast<uint32>(Vertices.size());
 
-    FFontVertex Vtx0;
+    FMeshVertex Vtx0;
     Vtx0.Position = InBottomLeft;
     Vtx0.UV = FVector2(0.0f, 0.0f);
     Vtx0.Color = InColor;
 
-    FFontVertex Vtx1;
+    FMeshVertex Vtx1;
     Vtx1.Position = InBottomLeft + InRight;
     Vtx1.UV = FVector2(0.0f, 0.0f);
     Vtx1.Color = InColor;
 
-    FFontVertex Vtx2;
+    FMeshVertex Vtx2;
     Vtx2.Position = InBottomLeft - InUp;
     Vtx2.UV = FVector2(0.0f, 0.0f);
     Vtx2.Color = InColor;
 
-    FFontVertex Vtx3;
+    FMeshVertex Vtx3;
     Vtx3.Position = InBottomLeft + InRight - InUp;
     Vtx3.UV = FVector2(0.0f, 0.0f);
     Vtx3.Color = InColor;
@@ -900,11 +900,11 @@ bool FD3D11TextBatchRenderer::CreateShaders()
 
     static const D3D11_INPUT_ELEMENT_DESC InputElements[] = {
         {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
-         static_cast<UINT>(offsetof(FFontVertex, Position)), D3D11_INPUT_PER_VERTEX_DATA, 0},
-        {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, static_cast<UINT>(offsetof(FFontVertex, UV)),
+         static_cast<UINT>(offsetof(FMeshVertex, Position)), D3D11_INPUT_PER_VERTEX_DATA, 0},
+        {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, static_cast<UINT>(offsetof(FMeshVertex, UV)),
          D3D11_INPUT_PER_VERTEX_DATA, 0},
         {"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0,
-         static_cast<UINT>(offsetof(FFontVertex, Color)), D3D11_INPUT_PER_VERTEX_DATA, 0},
+         static_cast<UINT>(offsetof(FMeshVertex, Color)), D3D11_INPUT_PER_VERTEX_DATA, 0},
     };
 
     if (!RHI->CreateVertexShaderAndInputLayout(
@@ -995,7 +995,7 @@ bool FD3D11TextBatchRenderer::CreateBuffers()
     }
 
     D3D11_BUFFER_DESC VertexBufferDesc = {};
-    VertexBufferDesc.ByteWidth = sizeof(FFontVertex) * MaxVertexCount;
+    VertexBufferDesc.ByteWidth = sizeof(FMeshVertex) * MaxVertexCount;
     VertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
     VertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     VertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
