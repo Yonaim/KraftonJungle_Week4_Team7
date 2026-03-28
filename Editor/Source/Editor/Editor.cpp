@@ -4,7 +4,7 @@
 
 #include "Asset/AssetManager.h"
 #include "Asset/Texture2DAsset.h"
-#include "Core/Path.h"
+#include "Core/Misc/Paths.h"
 #include "Engine/Component/Core/SceneComponent.h"
 #include "Engine/EngineStatics.h"
 #include "Engine/Game/Actor.h"

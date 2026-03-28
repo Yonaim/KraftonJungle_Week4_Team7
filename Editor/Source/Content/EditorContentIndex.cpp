@@ -1,6 +1,6 @@
 #include "EditorContentIndex.h"
 
-#include "Core/Path.h"
+#include "Core/Misc/Paths.h"
 #include "Core/Logging/LogMacros.h"
 
 #include <algorithm>
