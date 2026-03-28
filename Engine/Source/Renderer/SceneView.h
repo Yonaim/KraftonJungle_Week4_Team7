@@ -42,7 +42,7 @@ class FSceneView
         RebuildViewProjectionMatrix();
     }
 
-    void SetViewRect(const FViewportRect& InViewRect) { ViewRect = InViewRect; }
+    void OnResize(const FViewportRect& NewViewRect) { ViewRect = NewViewRect; }
 
     void SetViewLocation(const FVector& InViewLocation) { ViewLocation = InViewLocation; }
 

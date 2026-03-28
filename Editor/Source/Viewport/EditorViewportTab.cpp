@@ -20,28 +20,44 @@ SEditorViewportTab::~SEditorViewportTab()
     ViewportLayout = nullptr;
 }
 
-void SEditorViewportTab::Construct(FViewportRect WindowRect)
+void SEditorViewportTab::Construct()
 { 
-	for (int32 i = 0; i < 4; i++)
-	{
-        FSceneView* NewViewport = new FSceneView();
+    for (int32 i = 0; i < 4; i++)
+    {
+        FSceneView*            NewViewport = new FSceneView();
         FEditorViewportClient* NewClient = new FEditorViewportClient();
-		
-		NewClient->Create();
-		NewViewport->SetViewportClient(NewClient);
 
-		SceneViews.push_back(NewViewport);
+        NewClient->Create();
+        NewViewport->SetViewportClient(NewClient);
+
+        SceneViews.push_back(NewViewport);
         ViewportClients.push_back(NewClient);
-	}
+    }
 
     ViewportLayout = new FEditorViewportLayoutFourPanes();
-    ViewportLayout->Initialize(WindowRect);
+    ViewportLayout->Initialize({0, 0, 0, 0});
+}
+
+void SEditorViewportTab::OnResize(FViewportRect WindowRect)
+{ 
+    ViewportLayout->Resize(WindowRect);
 
     auto windows = ViewportLayout->GetLeafWindows();
-    SceneViews[0]->SetViewRect(windows[0]->GetViewportRect());     
-    SceneViews[1]->SetViewRect(windows[1]->GetViewportRect()); 
-    SceneViews[2]->SetViewRect(windows[2]->GetViewportRect());          
-    SceneViews[3]->SetViewRect(windows[3]->GetViewportRect()); 
+    SceneViews[0]->OnResize(windows[0]->GetViewportRect());
+    SceneViews[0]->GetViewportClient()->OnResize(windows[0]->GetViewportRect().Width, 
+                                                 windows[0]->GetViewportRect().Height);
+    
+    SceneViews[1]->OnResize(windows[1]->GetViewportRect());
+    SceneViews[1]->GetViewportClient()->OnResize(windows[1]->GetViewportRect().Width,
+                                                 windows[1]->GetViewportRect().Height);
+
+    SceneViews[2]->OnResize(windows[2]->GetViewportRect());
+    SceneViews[2]->GetViewportClient()->OnResize(windows[2]->GetViewportRect().Width,
+                                                 windows[2]->GetViewportRect().Height);
+
+    SceneViews[3]->OnResize(windows[3]->GetViewportRect());
+    SceneViews[3]->GetViewportClient()->OnResize(windows[3]->GetViewportRect().Width,
+                                                 windows[3]->GetViewportRect().Height);
 }
 
 void SEditorViewportTab::CreateExtraViewportClients() 

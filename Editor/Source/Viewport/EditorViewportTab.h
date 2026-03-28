@@ -13,7 +13,8 @@ public:
     ~SEditorViewportTab();
 
 public:
-    void Construct(FViewportRect WindowRect);
+    void Construct();
+    void OnResize(FViewportRect WindowRect);
 
     TArray<FSceneView*> const& GetViewports() const { return SceneViews; }
     FSceneView* const&         GetViewport(int32 index) const { return SceneViews[index]; }

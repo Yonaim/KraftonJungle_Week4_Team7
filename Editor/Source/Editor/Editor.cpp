@@ -318,7 +318,7 @@ void FEditor::Create()
     UE_LOG(FEditor, ELogVerbosity::Log, "Hello Editor");
     EditorContext.Scene = CurScene;
      
-    ViewportTab.Construct({0, 0, (int)WindowWidth, (int)WindowHeight});
+    ViewportTab.Construct();
     //ViewportClient.Create();
     for (auto Viewport : ViewportTab.GetViewports())
     {
@@ -403,7 +403,7 @@ void FEditor::Initialize()
         {
             if (Viewport->IsValid())
             {
-                ViewportTab.GetViewport(0)->GetViewportClient()->SetScene(CurScene);
+                Viewport->GetViewportClient()->SetScene(CurScene);
             }
         }
         //ViewportTab.GetViewport(0)->GetViewportClient()->SetScene(CurScene);
@@ -469,10 +469,10 @@ void FEditor::LoadEditorSettings()
     {
         if (Viewport->IsValid())
         {
-            Viewport->GetViewportClient()->GetNavigationController().SetMoveSpeed(
-                SettingsData.CameraMoveSpeed);
-            Viewport
-                ->GetViewportClient()
+            Viewport->GetViewportClient()
+                ->GetNavigationController()
+                .SetMoveSpeed(SettingsData.CameraMoveSpeed);
+            Viewport->GetViewportClient()
                 ->GetNavigationController()
                 .SetRotationSpeed(SettingsData.CameraRotationSpeed);
         }
@@ -587,10 +587,7 @@ void FEditor::PerformClearScene()
     {
         if (Viewport->IsValid())
         {
-            Viewport
-                ->GetViewportClient()
-                ->GetSelectionController()
-                .ClearSelection();
+            Viewport->GetViewportClient()->GetSelectionController().ClearSelection();
         }
     }
     //ViewportTab.GetViewport(0)->GetViewportClient()->GetSelectionController().ClearSelection();
@@ -719,6 +716,29 @@ void FEditor::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
     Engine::ApplicationCore::FInputEvent        Event;
     const Engine::ApplicationCore::FInputState& InputState = InputSystem->GetInputState();
 
+    FSceneView* HoveredViewport = nullptr;
+    for (auto Viewport : ViewportTab.GetViewports())
+    {
+        if (!Viewport->IsValid())
+            continue;
+
+        FViewportRect Rect = Viewport->GetViewRect();
+        if (InputState.MouseX >= Rect.X && InputState.MouseX < Rect.X + Rect.Width &&
+            InputState.MouseY >= Rect.Y && InputState.MouseY < Rect.Y + Rect.Height)
+        {
+            HoveredViewport = Viewport;
+            break; 
+        }
+    }
+
+    if (HoveredViewport != nullptr)
+    {
+        GlobalInputContext.SetNavigationController(
+            &HoveredViewport->GetViewportClient()->GetNavigationController());
+        GlobalInputController.SetSelectionController(
+            &HoveredViewport->GetViewportClient()->GetSelectionController());
+    }
+
     while (InputSystem->PollEvent(Event))
     {
         if (GlobalInputRouter.RouteEvent(Event, InputState))
@@ -726,7 +746,9 @@ void FEditor::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
             continue;
         }
 
-        ViewportTab.GetViewport(0)->GetViewportClient()->HandleInputEvent(Event, InputState);
+        if (HoveredViewport != nullptr)
+            HoveredViewport->GetViewportClient()->HandleInputEvent(Event, InputState);
+        //ViewportTab.GetViewport(1)->GetViewportClient()->HandleInputEvent(Event, InputState);
     }
 
     for (auto Viewport : ViewportTab.GetViewports())
@@ -763,16 +785,8 @@ void FEditor::OnWindowResized(float Width, float Height)
     EditorContext.WindowWidth = Width;
     EditorContext.WindowHeight = Height;
 
-    ViewportTab.Construct({0, 0, (int)WindowWidth, (int)WindowHeight});
+    ViewportTab.OnResize({0, 0, (int)WindowWidth, (int)WindowHeight});
 
-    for (auto Viewport : ViewportTab.GetViewports())
-    {
-        if (Viewport->IsValid())
-        {
-            Viewport->GetViewportClient()->OnResize(static_cast<uint32>(Width),
-                                                    static_cast<uint32>(Height));
-        }
-    }
     //ViewportTab.GetViewport(0)->GetViewportClient()->OnResize(static_cast<uint32>(Width),
                                                               //static_cast<uint32>(Height));
 }
@@ -1373,9 +1387,11 @@ void FEditor::BuildSceneView()
         if (Viewport->IsValid())
         {
             Viewport->SetViewMatrix(Viewport->GetViewportClient()->GetCamera().GetViewMatrix());
-            Viewport->SetProjectionMatrix(
-                Viewport->GetViewportClient()->GetCamera().GetProjectionMatrix());
+            Viewport->SetProjectionMatrix(Viewport->GetViewportClient()->GetCamera().GetProjectionMatrix());
             Viewport->SetViewLocation(Viewport->GetViewportClient()->GetCamera().GetLocation());
+        
+            Viewport->SetClipPlanes(Viewport->GetViewportClient()->GetCamera().GetNearPlane(),
+            Viewport->GetViewportClient()->GetCamera().GetFarPlane());
         }
     }
     //ViewportTab.GetViewport(0)->SetViewMatrix(
@@ -1391,16 +1407,6 @@ void FEditor::BuildSceneView()
     //ViewRect.Width = static_cast<int32>(WindowWidth);
     //ViewRect.Height = static_cast<int32>(WindowHeight);
 
-    for (auto Viewport : ViewportTab.GetViewports())
-    {
-        if (Viewport->IsValid())
-        {
-            //Viewport->SetViewRect(ViewRect);
-            Viewport->SetClipPlanes(
-                Viewport->GetViewportClient()->GetCamera().GetNearPlane(),
-                                    Viewport->GetViewportClient()->GetCamera().GetFarPlane());
-        }
-    }
     //ViewportTab.GetViewport(0)->SetViewRect(ViewRect);
     //ViewportTab.GetViewport(0)->SetClipPlanes(
     //    ViewportTab.GetViewport(0)->GetViewportClient()->GetCamera().GetNearPlane(),
@@ -1501,34 +1507,46 @@ void FEditor::DrawPanel()
 
 void FEditor::BuildRenderData()
 {
-    EditorRenderData = FEditorRenderData{};
-    SceneRenderData = FSceneRenderData{};
-
-    BuildSceneView();
-
-    EditorRenderData.SceneView = ViewportTab.GetViewport(0);
-    SceneRenderData.SceneView = ViewportTab.GetViewport(0);
-    SceneRenderData.ViewMode =
-        ViewportTab.GetViewport(0)->GetViewportClient()->GetRenderSetting().GetViewMode();
-
-    const EEditorShowFlags EditorShowFlags =
-        ViewportTab.GetViewport(0)->GetViewportClient()->GetRenderSetting().BuildEditorShowFlags(
-            true);
-    const ESceneShowFlags SceneShowFlags =
-        ViewportTab.GetViewport(0)->GetViewportClient()->GetRenderSetting().BuildSceneShowFlags();
+    EditorRenderDatas.clear();
+    SceneRenderDatas.clear();
 
     for (auto Viewport : ViewportTab.GetViewports())
     {
         if (Viewport->IsValid())
         {
+            FEditorRenderData EditorRenderData = FEditorRenderData{};
+            FSceneRenderData SceneRenderData = FSceneRenderData{};
+
+            BuildSceneView();
+
+            EditorRenderData.SceneView = Viewport;
+            SceneRenderData.SceneView = Viewport;
+            SceneRenderData.ViewMode =
+                Viewport->GetViewportClient()->GetRenderSetting().GetViewMode();
+
+            const EEditorShowFlags EditorShowFlags =
+                Viewport
+                ->GetViewportClient()
+                ->GetRenderSetting()
+                .BuildEditorShowFlags(true);
+            const ESceneShowFlags SceneShowFlags =
+                Viewport
+                ->GetViewportClient()
+                ->GetRenderSetting()
+                .BuildSceneShowFlags();
+
             Viewport->GetViewportClient()->BuildRenderData(EditorRenderData, EditorShowFlags);
+
+            if (CurScene != nullptr)
+            {
+                CurScene->BuildRenderData(SceneRenderData, SceneShowFlags);
+            }
+
+            EditorRenderDatas.push_back(EditorRenderData);
+            SceneRenderDatas.push_back(SceneRenderData);
         }
     }
+
     //ViewportTab.GetViewport(0)->GetViewportClient()->BuildRenderData(EditorRenderData,
     //                                                                 EditorShowFlags);
-
-    if (CurScene != nullptr)
-    {
-        CurScene->BuildRenderData(SceneRenderData, SceneShowFlags);
-    }
 }

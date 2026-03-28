@@ -97,9 +97,9 @@ class FEditor
     std::filesystem::path GetCurrentScenePath() const { return SceneDocument.CurrentScenePath; }
     std::filesystem::path GetDefaultSceneDirectory() const;
 
-    const FEditorRenderData&     GetEditorRenderData() const { return EditorRenderData; }
-    const FSceneRenderData&      GetSceneRenderData() const { return SceneRenderData; }
-    const SEditorViewportTab&    GetViewportTab() const { return ViewportTab; }
+    const TArray<FEditorRenderData>& GetEditorRenderData() const { return EditorRenderDatas; }
+    const TArray<FSceneRenderData>&  GetSceneRenderData() const { return SceneRenderDatas; }
+    const SEditorViewportTab&        GetViewportTab() const { return ViewportTab; }
     //FEditorViewportClient&       GetViewportClient() { return ViewportClient; }
     //const FEditorViewportClient& GetViewportClient() const { return ViewportClient; }
 
@@ -149,8 +149,8 @@ class FEditor
     FEditorMenuRegistry   MenuRegistry;
     IEditorChromeHost*    ChromeHost = nullptr;
 
-    FEditorRenderData EditorRenderData;
-    FSceneRenderData  SceneRenderData;
+    TArray<FEditorRenderData> EditorRenderDatas;
+    TArray<FSceneRenderData>  SceneRenderDatas;
     //FSceneView        SceneView;
 
     FScene*             CurScene = nullptr;
