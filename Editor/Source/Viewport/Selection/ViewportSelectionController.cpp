@@ -266,11 +266,6 @@ AActor* FViewportSelectionController::PickActor(int32 MouseX, int32 MouseY) cons
         TArray<Geometry::FTriangle> LocalTriangles;
         if (!PrimitiveComponent->GetLocalTriangles(LocalTriangles))
         {
-            if (AABBHitT >= 0.0f && AABBHitT < ClosestT)
-            {
-                ClosestActor = Actor;
-                ClosestT = AABBHitT;
-            }
             continue;
         }
 
