@@ -138,9 +138,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Resources\Mesh\StaticMesh.cpp">
-      <Filter>Resources\Mesh</Filter>
-    </ClCompile>
     <ClCompile Include="Source\ApplicationCore\Input\InputRouter.cpp">
       <Filter>Source\ApplicationCore\Input</Filter>
     </ClCompile>
@@ -447,9 +444,6 @@
       <Filter>Resources\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Resources\Mesh\Sphere.h">
-      <Filter>Resources\Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="Resources\Mesh\StaticMesh.h">
       <Filter>Resources\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Resources\Mesh\Triangle.h">

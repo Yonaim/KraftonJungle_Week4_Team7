@@ -1,25 +1,45 @@
 #include "Core/CoreMinimal.h"
 #include "StaticMeshComponent.h"
 #include "Engine/Component/Core/ComponentProperty.h"
-#include "Resources/Mesh/StaticMesh.h"
+#include "Engine/Asset/StaticMesh.h"
+
+#include <cstring>
 
 namespace Engine::Component
 {
     REGISTER_CLASS(Engine::Component, UStaticMeshComponent)
 
+    namespace
+    {
+        static bool ReadVertexPosition(const TArray<uint8>& VertexData, uint32 VertexStride,
+                                       uint32 VertexIndex, FVector& OutPosition)
+        {
+            if (VertexStride < sizeof(FVector))
+            {
+                return false;
+            }
+
+            const size_t Offset = static_cast<size_t>(VertexIndex) * VertexStride;
+            if (Offset + sizeof(FVector) > VertexData.size())
+            {
+                return false;
+            }
+
+            std::memcpy(&OutPosition, VertexData.data() + Offset, sizeof(FVector));
+            return true;
+        }
+    } // namespace
+
     FString UStaticMeshComponent::GetStaticMeshPath() const
     {
         if (StaticMesh)
         {
-            return StaticMesh->GetAssetPathFileName();
+            return StaticMesh->GetMeshName();
         }
         return MeshPath;
     }
 
-    void UStaticMeshComponent::SetStaticMeshPath(const FString& InPath)
-    {
-        MeshPath = InPath; // JSON에서 읽은 경로를 일단 저장 (티켓)
-    }
+    void UStaticMeshComponent::SetStaticMeshPath(const FString& InPath) { MeshPath = InPath; }
 
     void UStaticMeshComponent::DescribeProperties(FComponentPropertyBuilder& Builder)
     {
@@ -32,33 +52,46 @@ namespace Engine::Component
     {
         OutTriangles.clear();
 
-        if (StaticMesh == nullptr)
+        if (StaticMesh == nullptr || !StaticMesh->IsValidLowLevel())
         {
             return false;
         }
 
-        const TArray<FNormalVertex>& Vertices = StaticMesh->GetVerticesData();
-        const TArray<uint32>&        Indices = StaticMesh->GetIndicesData();
+        const TArray<uint8>&  VertexData = StaticMesh->GetVerticesData();
+        const TArray<uint32>& Indices = StaticMesh->GetIndicesData();
+        const uint32          VertexStride = StaticMesh->GetVertexStride();
+        const uint32          VertexCount = StaticMesh->GetVerticesCount();
+
+        if (VertexStride < sizeof(FVector) || VertexCount == 0)
+        {
+            return false;
+        }
 
         OutTriangles.reserve(Indices.size() / 3);
 
         for (size_t i = 0; i + 2 < Indices.size(); i += 3)
         {
-            // 인덱스 범위 체크 (안정성)
-            uint32 I0 = Indices[i + 0];
-            uint32 I1 = Indices[i + 1];
-            uint32 I2 = Indices[i + 2];
+            const uint32 I0 = Indices[i + 0];
+            const uint32 I1 = Indices[i + 1];
+            const uint32 I2 = Indices[i + 2];
 
-            if (I0 >= Vertices.size() || I1 >= Vertices.size() || I2 >= Vertices.size())
+            if (I0 >= VertexCount || I1 >= VertexCount || I2 >= VertexCount)
+            {
+                continue;
+            }
+
+            FVector P0, P1, P2;
+            if (!ReadVertexPosition(VertexData, VertexStride, I0, P0) ||
+                !ReadVertexPosition(VertexData, VertexStride, I1, P1) ||
+                !ReadVertexPosition(VertexData, VertexStride, I2, P2))
             {
                 continue;
             }
 
             Geometry::FTriangle Triangle;
-            Triangle.V0 = Vertices[I0].pos;
-            Triangle.V1 = Vertices[I1].pos;
-            Triangle.V2 = Vertices[I2].pos;
-
+            Triangle.V0 = P0;
+            Triangle.V1 = P1;
+            Triangle.V2 = P2;
             OutTriangles.push_back(Triangle);
         }
 
@@ -69,7 +102,7 @@ namespace Engine::Component
     {
         if (StaticMesh)
         {
-            return StaticMesh->GetLocalAABB();
+            return StaticMesh->GetAABB();
         }
 
         return {};
