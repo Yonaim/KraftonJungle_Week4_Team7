@@ -361,6 +361,7 @@
     <ClCompile Include="Resources\Mesh\StaticMesh.cpp" />
     <ClCompile Include="Source\Engine\Game\MeshActor.cpp" />
     <ClCompile Include="Source\Engine\Component\Text\TextRenderComponent.cpp" />
+    <ClCompile Include="Source\CoreUObject\ObjectIterator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Resources\Mesh\Cone.h">

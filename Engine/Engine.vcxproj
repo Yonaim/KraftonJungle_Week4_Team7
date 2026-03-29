@@ -168,6 +168,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\CoreUObject\ObjectIterator.cpp" />
     <ClCompile Include="Source\Engine\Game\MeshActor.cpp" />
     <ClCompile Include="Resources\Mesh\StaticMesh.cpp" />
     <ClCompile Include="Source\ApplicationCore\Input\InputRouter.cpp" />
