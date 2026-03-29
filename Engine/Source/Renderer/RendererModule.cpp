@@ -86,7 +86,8 @@ bool FRendererModule::StartupModule(HWND hWnd)
         RHI.GetDeviceContext(),
         RHI.GetBackBufferRTV(),
         RHI.GetDepthStencilView(), 
-        RHI.GetViewport()
+        RHI.GetViewport(),
+        RHI.GetSwapChain()
     );
     // === GeneralRenderer 초기화
 
@@ -192,8 +193,13 @@ void FRendererModule::OnWindowResized(int32 InWidth, int32 InHeight)
         return;
     }
 
-    GeneralRenderer->OnResize(InWidth, InHeight);
+    // 1. RHI의 리소스를 먼저 갱신 (자원 관리 주체)
     RHI.Resize(InWidth, InHeight);
+
+    // 2. 갱신된 리소스를 GeneralRenderer에 전달 (참조만 수행)
+    GeneralRenderer->OnResize(InWidth, InHeight);
+    GeneralRenderer->DEBUG_UpdateViewResources(RHI.GetBackBufferRTV(), RHI.GetDepthStencilView(), RHI.GetViewport());
+
     ObjectIdRenderer.Resize(InWidth, InHeight);
 }
 

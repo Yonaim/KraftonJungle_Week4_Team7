@@ -25,7 +25,8 @@ void FGeneralRenderer::DEBUG_ForceInitialize(
     ID3D11DeviceContext* InDeviceContext,
     ID3D11RenderTargetView* InRTV,
     ID3D11DepthStencilView* InDSV,
-    D3D11_VIEWPORT InVP
+    D3D11_VIEWPORT InVP,
+    IDXGISwapChain* InSwapChain
     )
 {
     Device = InDevice;
@@ -33,6 +34,7 @@ void FGeneralRenderer::DEBUG_ForceInitialize(
     RenderTargetView = InRTV;
     DepthStencilView = InDSV;
     Viewport = InVP;
+    SwapChain = InSwapChain;
     
     RenderStateManager = std::make_unique<CRenderStateManager>(Device, DeviceContext);
     RenderStateManager->PrepareCommonStates();
@@ -202,6 +204,12 @@ void FGeneralRenderer::Release()
         FrameConstantBuffer->Release();
     if (ObjectConstantBuffer)
         ObjectConstantBuffer->Release();
+    
+    /** 
+     * TODO: RHI 제거 후, GeneralRenderer가 자원 관리를 책임질 때 주석 해제
+     * 현재는 RHI에서 자원을 관리하므로 여기서 Release하면 이중 해제(Double Release) 발생 위험이 있음.
+     */
+    /*
     if (DepthStencilView)
         DepthStencilView->Release();
     if (RenderTargetView)
@@ -212,6 +220,7 @@ void FGeneralRenderer::Release()
         DeviceContext->Release();
     if (Device)
         Device->Release();
+    */
 }
 
 bool FGeneralRenderer::IsOccluded()
@@ -227,6 +236,12 @@ void FGeneralRenderer::OnResize(int32 NewWidth, int32 NewHeight)
     if (NewWidth == 0 || NewHeight == 0)
         return;
     ClearSceneRenderTarget();
+
+    /** 
+     * TODO: RHI 제거 후, GeneralRenderer가 직접 스왑체인과 렌더타겟을 관리할 때 주석 해제
+     * 현재는 RHI.Resize()에서 이 작업을 수행하므로 중복 호출 시 충돌 위험이 있음.
+     */
+    /*
     DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
     if (RenderTargetView)
     {
@@ -242,6 +257,17 @@ void FGeneralRenderer::OnResize(int32 NewWidth, int32 NewHeight)
     CreateRenderTargetAndDepthStencil(NewWidth, NewHeight);
     Viewport.Width = static_cast<float>(NewWidth);
     Viewport.Height = static_cast<float>(NewHeight);
+    */
+}
+
+// D3DRHI와 공존을 위해 D3DRHI가 관리하는 리소스 포인터를 받아오는 함수.
+// 자원 관리를 FGeneralRenderer가 하게 되는 시점에서 이 함수는 삭제할 것.
+void FGeneralRenderer::DEBUG_UpdateViewResources(ID3D11RenderTargetView* InRTV, ID3D11DepthStencilView* InDSV, const D3D11_VIEWPORT& InVP)
+{
+    // RHI에서 관리하는 최신 리소스로 갱신
+    RenderTargetView = InRTV;
+    DepthStencilView = InDSV;
+    Viewport = InVP;
 }
 
 void FGeneralRenderer::SetSceneRenderTarget(ID3D11RenderTargetView* InRenderTargetView,

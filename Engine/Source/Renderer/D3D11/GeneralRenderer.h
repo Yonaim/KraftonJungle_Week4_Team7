@@ -12,12 +12,19 @@ public:
     FGeneralRenderer(HWND InHwnd, int32 InWidth, int32 InHeight);
     ~FGeneralRenderer();
     
-    void DEBUG_ForceInitialize(ID3D11Device* InDevice, ID3D11DeviceContext* InDeviceContext, ID3D11RenderTargetView* InRTV, ID3D11DepthStencilView* InDSV, D3D11_VIEWPORT InVP);
+    void DEBUG_ForceInitialize(
+        ID3D11Device* InDevice, ID3D11DeviceContext* InDeviceContext, 
+        ID3D11RenderTargetView* InRTV, ID3D11DepthStencilView* InDSV, 
+        D3D11_VIEWPORT InVP, IDXGISwapChain* InSwapChain);
     void BeginFrame();
     void EndFrame();        // 스왑체인, 콜백 등 담당
     void Release();
     bool IsOccluded();
     void OnResize(int32 NewWidth, int32 NewHeight);
+    
+    /** TODO: RHI 제거 후, GeneralRenderer가 직접 자원을 관리할 때 삭제 */
+    void DEBUG_UpdateViewResources(ID3D11RenderTargetView* InRTV, ID3D11DepthStencilView* InDSV, const D3D11_VIEWPORT& InVP);
+
     void SetSceneRenderTarget(ID3D11RenderTargetView* InRenderTargetView, ID3D11DepthStencilView* InDepthStencilView, const D3D11_VIEWPORT& InViewport);
     void ClearSceneRenderTarget();
     void SetVSync(bool bEnable) { bVSyncEnabled = bEnable; }
