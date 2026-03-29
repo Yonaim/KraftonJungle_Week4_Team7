@@ -104,78 +104,6 @@ namespace
         Colors[ImGuiCol_DragDropTarget] = BrandBlue;
         Colors[ImGuiCol_NavCursor] = BrandBlue;
     }
-
-    void SubmitDebugLines(FEditor* Editor)
-    {
-        if (Editor == nullptr || Editor->GetScene() == nullptr ||
-            Editor->GetScene()->GetLineBatcher() == nullptr)
-        {
-            return;
-        }
-
-        Engine::Component::ULineBatchComponent& LineBatcher = *Editor->GetScene()->GetLineBatcher();
-        const FEditorRenderData&                EditorRenderData = Editor->GetEditorRenderData();
-        const FSceneRenderData&                 SceneRenderData = Editor->GetSceneRenderData();
-
-        // 1. Grid
-        if (EditorRenderData.bShowGrid)
-        {
-            constexpr int32 GridHalfLineCount = 500;
-            constexpr int32 MajorLineEvery = 5;
-            const FColor    MinorGridColor = FColor(0.25f, 0.25f, 0.25f, 1.0f);
-            const FColor    MajorGridColor = FColor(0.45f, 0.45f, 0.45f, 1.0f);
-
-            const float Extent = static_cast<float>(GridHalfLineCount) * UEngineStatics::GridSpacing;
-
-            for (int32 i = -GridHalfLineCount; i <= GridHalfLineCount; ++i)
-            {
-                if (EditorRenderData.bShowWorldAxes && i == 0)
-                {
-                    continue;
-                }
-
-                const float   Offset = static_cast<float>(i) * UEngineStatics::GridSpacing;
-                const bool    bIsMajorLine = (i % MajorLineEvery) == 0;
-                const FColor& LineColor = bIsMajorLine ? MajorGridColor : MinorGridColor;
-
-                LineBatcher.AddLine(FVector(-Extent, Offset, 0.0f), FVector(Extent, Offset, 0.0f),
-                                    LineColor);
-                LineBatcher.AddLine(FVector(Offset, -Extent, 0.0f), FVector(Offset, Extent, 0.0f),
-                                    LineColor);
-            }
-        }
-
-        // 2. Axes
-        if (EditorRenderData.bShowWorldAxes)
-        {
-            constexpr float AxisExtent = 1000.0f;
-            LineBatcher.AddLine(FVector(-AxisExtent, 0.0f, 0.0f), FVector(AxisExtent, 0.0f, 0.0f),
-                                GetAxisBaseColor(EAxis::X));
-            LineBatcher.AddLine(FVector(0.0f, -AxisExtent, 0.0f), FVector(0.0f, AxisExtent, 0.0f),
-                                GetAxisBaseColor(EAxis::Y));
-            LineBatcher.AddLine(FVector(0.0f, 0.0f, -AxisExtent), FVector(0.0f, 0.0f, AxisExtent),
-                                GetAxisBaseColor(EAxis::Z));
-        }
-
-        // 3. AABBs
-        for (const auto& Item : SceneRenderData.Primitives)
-        {
-            if (Item.State.IsVisible() && Item.State.bShowBounds && Item.bHasWorldAABB)
-            {
-                FColor BoundsColor = FColor(1.0f, 1.0f, 1.0f, 1.0f); // Default
-                if (Item.State.IsSelected())
-                {
-                    BoundsColor = FColor(1.0f, 1.0f, 0.0f, 1.0f); // Yellow
-                }
-                else if (Item.State.IsHovered())
-                {
-                    BoundsColor = FColor(0.0f, 1.0f, 1.0f, 1.0f); // Cyan
-                }
-
-                LineBatcher.AddBox(Item.WorldAABB.Min, Item.WorldAABB.Max, BoundsColor);
-            }
-        }
-    }
 } // namespace
 
 bool FEditorEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
@@ -704,9 +632,7 @@ bool FEditorEngineLoop::RunFrameOnceWithoutResize()
     Editor->SetMainLoopFPS(MainLoopFPS);
     
     Editor->Tick(DeltaTime, InputSystem);
-
-    SubmitDebugLines(Editor);
-
+    
     Renderer->BeginFrame();
 
     TArray<FSceneView*> Views = Editor->GetViewportTab().GetViewports();

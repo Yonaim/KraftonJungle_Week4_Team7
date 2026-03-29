@@ -121,6 +121,9 @@ void FWorld::BuildRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags In
         SceneRenderData.bUseInstancing = bUseInstancing;
         Scene->BuildRenderData(SceneRenderData, InShowFlags);
 
+        OutRenderData.RenderCommands.insert(OutRenderData.RenderCommands.end(),
+                                    SceneRenderData.RenderCommands.begin(),
+                                    SceneRenderData.RenderCommands.end());
         OutRenderData.Primitives.insert(OutRenderData.Primitives.end(),
                                         SceneRenderData.Primitives.begin(),
                                         SceneRenderData.Primitives.end());
@@ -130,6 +133,9 @@ void FWorld::BuildRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags In
         OutRenderData.Texts.insert(OutRenderData.Texts.end(),
                                    SceneRenderData.Texts.begin(),
                                    SceneRenderData.Texts.end());
+        OutRenderData.LineBatchers.insert(OutRenderData.LineBatchers.begin(),
+                                SceneRenderData.LineBatchers.begin(),
+                                SceneRenderData.LineBatchers.end());
     };
 
     AppendScene(ActiveScene);

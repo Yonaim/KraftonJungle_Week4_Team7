@@ -11,7 +11,10 @@ namespace Engine::Component
     {
         DECLARE_RTTI(UMeshComponent, UPrimitiveComponent)
       public:
-        UMeshComponent() = default;
+        UMeshComponent();
         ~UMeshComponent() override = default;
+        
+        // Gereral Renderer 호환용으로 만든 임시 override
+        void CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const override;
     };
 };

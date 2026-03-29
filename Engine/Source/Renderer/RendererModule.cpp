@@ -216,12 +216,9 @@ void FRendererModule::Render(const FEditorRenderData& InEditorRenderData,
 void FRendererModule::RenderWorldPass(const FEditorRenderData& InEditorRenderData,
                                       const FSceneRenderData&  InSceneRenderData)
 {
-    hasRenderCommand = false;
     // === GeneralRenderer 사용한 렌더 루트
     if (!InSceneRenderData.RenderCommands.empty())
     {
-        hasRenderCommand = true;
-        
         FRenderCommandQueue CommandQueue;
         for (auto el : InSceneRenderData.RenderCommands)
         {

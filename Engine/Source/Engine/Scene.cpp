@@ -89,7 +89,7 @@ void FScene::BuildRenderData(FSceneRenderData& OutRenderData,
 
     for (AActor* Actor : Actors)
     {
-        if (Actor == nullptr || !Actor->IsRenderable())
+        if (Actor == nullptr)
         {
             continue;
         }
