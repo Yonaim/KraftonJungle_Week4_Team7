@@ -16,6 +16,7 @@
 #include "Asset/SubUVAtlasLoader.h"
 #include "Asset/TextureLoader.h"
 
+
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND HWnd, UINT Message,
                                                              WPARAM WParam, LPARAM LParam);
 
@@ -192,13 +193,37 @@ bool FEditorEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
                             static_cast<float>(CachedWindowHeight));
 
     InitializeForTime();
-    Editor->GetViewportClient().OnPickRequested = [this](int32 X, int32 Y) -> FPickResult
+
+    auto Views = Editor->GetViewportTab().GetViewports();
+    for (int i = 0; i < Views.size(); i++)
     {
-        FPickResult Result;
-        // EngineLoop는 Renderer와 Editor 모두에 접근 가능하므로 픽킹을 직접 수행해서 반환
-        Renderer->Pick(Editor->GetEditorRenderData(), X, Y, Result);
-        return Result;
-    };
+        if (Views[i]->IsValid())
+        {
+            Views[i]->GetViewportClient()->OnPickRequested =
+            [this, i](int32 X, int32 Y) -> FPickResult
+            {
+                FPickResult Result;
+
+                // EngineLoop는 Renderer와 Editor 모두에 접근 가능하므로 픽킹을 직접 수행해서 반환
+                Renderer->Pick(Editor->GetEditorRenderData()[i], 
+                    Editor->GetViewportTab().GetViewports()[i]->GetWorldX(X), 
+                    Editor->GetViewportTab().GetViewports()[i]->GetWorldY(Y), 
+                    Result);
+
+                return Result;
+            };
+        }
+    }
+
+    //Editor->GetViewportTab().GetViewport(1)->GetViewportClient()->OnPickRequested =
+    //    [this](int32 X, int32 Y) -> FPickResult
+    //{
+    //    FPickResult Result;
+    //    // EngineLoop는 Renderer와 Editor 모두에 접근 가능하므로 픽킹을 직접 수행해서 반환
+    //    Renderer->Pick(Editor->GetEditorRenderData()[0], X, Y, Result);
+    //    return Result;
+    //};
+
     return true;
 }
 
@@ -606,10 +631,20 @@ bool FEditorEngineLoop::RunFrameOnceWithoutResize()
     Editor->Tick(DeltaTime, InputSystem);
 
     Renderer->BeginFrame();
-    Renderer->Render(Editor->GetEditorRenderData(), Editor->GetSceneRenderData());
+
+    TArray<FSceneView*> Views = Editor->GetViewportTab().GetViewports();
+    for (int i = 0; i < Views.size(); i++)
+    {
+        if (Views[i]->IsValid())
+        { 
+            Renderer->SetViewport(Views[i]->GetViewport());
+            Renderer->Render(Editor->GetEditorRenderData()[i], Editor->GetSceneRenderData()[i]);
+        }
+    }
+
     Editor->DrawPanel();
     Renderer->EndFrame();
-
+   
     bIsRenderingDuringSizeMove = false;
     return true;
 }

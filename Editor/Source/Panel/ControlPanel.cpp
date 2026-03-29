@@ -88,7 +88,7 @@ FViewportCamera* FControlPanel::ResolveViewportCamera() const
         return nullptr;
     }
 
-    return &GetContext()->Editor->GetViewportClient().GetCamera();
+    return &GetContext()->Editor->GetViewportTab().GetViewport(0)->GetViewportClient()->GetCamera();
 }
 
 void FControlPanel::DrawUnavailableState() const
@@ -159,8 +159,11 @@ void FControlPanel::DrawViewModeSection() const
         return;
     }
 
-    FViewportRenderSetting& RenderSetting =
-        GetContext()->Editor->GetViewportClient().GetRenderSetting();
+    FViewportRenderSetting& RenderSetting = GetContext()
+                                                ->Editor->GetViewportTab()
+                                                .GetViewport(0)
+                                                ->GetViewportClient()
+                                                ->GetRenderSetting();
 
     ImGui::TextUnformatted("View Mode");
 
@@ -178,8 +181,11 @@ void FControlPanel::DrawShowFlagsSection() const
         return;
     }
 
-    FViewportRenderSetting& RenderSetting =
-        GetContext()->Editor->GetViewportClient().GetRenderSetting();
+    FViewportRenderSetting& RenderSetting = GetContext()
+                                                ->Editor->GetViewportTab()
+                                                .GetViewport(0)
+                                                ->GetViewportClient()
+                                                ->GetRenderSetting();
 
     ImGui::TextUnformatted("Show Flags");
 
@@ -249,8 +255,11 @@ void FControlPanel::DrawNavigationSection() const
         return;
     }
 
-    FViewportNavigationController& NavigationController =
-        GetContext()->Editor->GetViewportClient().GetNavigationController();
+    FViewportNavigationController& NavigationController = GetContext()
+                                                              ->Editor->GetViewportTab()
+                                                              .GetViewport(0)
+                                                              ->GetViewportClient()
+                                                              ->GetNavigationController();
 
     ImGui::TextUnformatted("Navigation");
 

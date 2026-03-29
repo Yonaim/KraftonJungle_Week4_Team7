@@ -13,10 +13,9 @@
 #include "ApplicationCore/Input/InputSystem.h"
 #include "Viewport/Global/EditorGlobalController.h"
 #include "Input/EditorGlobalContext.h"
-
 #include "Engine/Scene.h"
 #include "Logging/EditorLogBuffer.h"
-#include "Viewport/EditorViewportClient.h"
+#include "Viewport/EditorViewportTab.h"
 #include "Renderer/EditorRenderData.h"
 #include "Renderer/SceneRenderData.h"
 #include "Renderer/SceneView.h"
@@ -98,10 +97,11 @@ class FEditor
     std::filesystem::path GetCurrentScenePath() const { return SceneDocument.CurrentScenePath; }
     std::filesystem::path GetDefaultSceneDirectory() const;
 
-    const FEditorRenderData&     GetEditorRenderData() const { return EditorRenderData; }
-    const FSceneRenderData&      GetSceneRenderData() const { return SceneRenderData; }
-    FEditorViewportClient&       GetViewportClient() { return ViewportClient; }
-    const FEditorViewportClient& GetViewportClient() const { return ViewportClient; }
+    const TArray<FEditorRenderData>& GetEditorRenderData() const { return EditorRenderDatas; }
+    const TArray<FSceneRenderData>&  GetSceneRenderData() const { return SceneRenderDatas; }
+    const SEditorViewportTab&        GetViewportTab() const { return ViewportTab; }
+    //FEditorViewportClient&       GetViewportClient() { return ViewportClient; }
+    //const FEditorViewportClient& GetViewportClient() const { return ViewportClient; }
 
     void DrawPanel();
 
@@ -135,7 +135,8 @@ class FEditor
 
 
   private:
-    FEditorViewportClient ViewportClient;
+    SEditorViewportTab ViewportTab; 
+
     Engine::ApplicationCore::FInputRouter GlobalInputRouter;
     FEditorGlobalController GlobalInputController;
     FEditorGlobalContext GlobalInputContext{&GlobalInputController};
@@ -148,9 +149,9 @@ class FEditor
     FEditorMenuRegistry   MenuRegistry;
     IEditorChromeHost*    ChromeHost = nullptr;
 
-    FEditorRenderData EditorRenderData;
-    FSceneRenderData  SceneRenderData;
-    FSceneView        SceneView;
+    TArray<FEditorRenderData> EditorRenderDatas;
+    TArray<FSceneRenderData>  SceneRenderDatas;
+    //FSceneView        SceneView;
 
     FScene*             CurScene = nullptr;
     FSceneDocumentState SceneDocument;
