@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Asset/Texture.h"
+#include "Engine/Asset/Texture.h"
 #include "Engine/Component/Mesh/MeshComponent.h"
 #include "Renderer/Types/BasicMeshType.h"
 
@@ -22,6 +22,8 @@ namespace Engine::Component
 
         const FTextureRenderResource* GetTextureRenderResource() const;
         FTextureRenderResource*       GetTextureRenderResource();
+        const FTextureRenderResource* GetTextureResource() const { return GetTextureRenderResource(); }
+        FTextureRenderResource*       GetTextureResource() { return GetTextureRenderResource(); }
 
         bool GetBillboard() const { return bBillboard; }
         void SetBillboard(bool bInBillboard);

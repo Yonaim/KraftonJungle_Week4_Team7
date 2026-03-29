@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Asset/FontAtlas.h"
+#include "Engine/Asset/FontAtlas.h"
 #include "TextRenderComponent.h"
 
 class AActor;
@@ -21,6 +21,8 @@ namespace Engine::Component
 
         const FFontAtlasRenderResource* GetFontRenderResource() const;
         FFontAtlasRenderResource*       GetFontRenderResource();
+        const FFontAtlasRenderResource* GetFontResource() const { return GetFontRenderResource(); }
+        FFontAtlasRenderResource*       GetFontResource() { return GetFontRenderResource(); }
 
         float GetTextScale() const { return TextScale; }
         void  SetTextScale(float InTextScale);

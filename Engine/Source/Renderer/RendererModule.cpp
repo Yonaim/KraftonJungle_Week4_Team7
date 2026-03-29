@@ -114,8 +114,8 @@ void FRendererModule::ShutdownModule()
     DebugDevice.Reset();
 
     ObjectIdRenderer.Shutdown();
-    SpriteRenderer.Shutdown();
-    TextRenderer.Shutdown();
+    //SpriteRenderer.Shutdown();
+    //TextRenderer.Shutdown();
     LineRenderer.Shutdown();
     OutlineRenderer.Shutdown();
     MeshBatchRenderer.Shutdown();
@@ -223,9 +223,9 @@ void FRendererModule::RenderWorldPass(const FEditorRenderData& InEditorRenderDat
 
     if (InSceneRenderData.SceneView != nullptr && !InSceneRenderData.Sprites.empty())
     {
-        SpriteRenderer.BeginFrame(InSceneRenderData.SceneView);
-        SpriteSubmitter.Submit(SpriteRenderer, InSceneRenderData);
-        SpriteRenderer.EndFrame(InSceneRenderData.SceneView);
+        //SpriteRenderer.BeginFrame(InSceneRenderData.SceneView);
+        //SpriteSubmitter.Submit(SpriteRenderer, InSceneRenderData);
+        //SpriteRenderer.EndFrame(InSceneRenderData.SceneView);
     }
 
     if (InSceneRenderData.SceneView != nullptr && !InSceneRenderData.Texts.empty())
@@ -238,9 +238,9 @@ void FRendererModule::RenderWorldPass(const FEditorRenderData& InEditorRenderDat
         }
         else
         {
-            TextRenderer.BeginFrame(InSceneRenderData.SceneView);
-            TextSubmitter.Submit(TextRenderer, InSceneRenderData);
-            TextRenderer.EndFrame(InSceneRenderData.SceneView);
+            //TextRenderer.BeginFrame(InSceneRenderData.SceneView);
+            //TextSubmitter.Submit(TextRenderer, InSceneRenderData);
+            //TextRenderer.EndFrame(InSceneRenderData.SceneView);
         }
     }
 }

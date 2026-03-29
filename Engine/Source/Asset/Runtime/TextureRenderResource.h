@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "Asset/Cooked/TextureCookedData.h"
+#include "Renderer/D3D11/D3D11Common.h"
 #include "RHI/DynamicRHI.h"
 #include "RHI/RHITexture.h"
 
@@ -10,6 +11,10 @@ namespace Asset
 {
     struct FTextureRenderResource
     {
+        uint32 Width = 0;
+        uint32 Height = 0;
+        RHI::EPixelFormat Format = RHI::EPixelFormat::Unknown;
+
         std::shared_ptr<RHI::FRHITexture> Texture;
 
         static std::shared_ptr<FTextureRenderResource> Create(const FTextureCookedData& CookedData,
@@ -17,6 +22,8 @@ namespace Asset
 
         bool IsValid() const;
         void Reset();
+
+        ID3D11ShaderResourceView* GetSRV() const { return nullptr; }
 
       private:
         static RHI::EPixelFormat ResolvePixelFormat(uint32 Channels);

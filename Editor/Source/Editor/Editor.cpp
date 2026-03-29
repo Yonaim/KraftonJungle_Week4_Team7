@@ -2,8 +2,8 @@
 
 #include "Viewport/EditorViewportClient.h"
 
-#include "Asset/AssetManager.h"
-#include "Asset/Texture2DAsset.h"
+//#include "Asset/AssetManager.h"
+//#include "Asset/Texture2DAsset.h"
 #include "Core/Misc/Paths.h"
 #include "Engine/Component/Core/SceneComponent.h"
 #include "Engine/EngineStatics.h"
@@ -947,20 +947,20 @@ void FEditor::EnsureAboutImageLoaded()
     const std::filesystem::path ImagePath =
         FPaths::Combine(FPaths::AppRoot(), L"Content\\Texture\\Logo\\copass.png");
 
-    FAssetLoadParams LoadParams;
-    LoadParams.ExplicitType = EAssetType::Texture;
+    //FAssetLoadParams LoadParams;
+    //LoadParams.ExplicitType = EAssetType::Texture;
 
-    UAsset* LoadedAsset = EditorContext.AssetManager->Load(ImagePath.wstring(), LoadParams);
-    UTexture2DAsset* TextureAsset = Cast<UTexture2DAsset>(LoadedAsset);
-    if (TextureAsset == nullptr || TextureAsset->GetResource() == nullptr
-        || TextureAsset->GetSRV() == nullptr)
-    {
-        UE_LOG(FEditor, ELogVerbosity::Warning, "Failed to load About image: %s",
-               PathToUtf8String(ImagePath).c_str());
-        return;
-    }
+    //UAsset* LoadedAsset = EditorContext.AssetManager->Load(ImagePath.wstring(), LoadParams);
+    //UTexture2DAsset* TextureAsset = Cast<UTexture2DAsset>(LoadedAsset);
+    //if (TextureAsset == nullptr || TextureAsset->GetResource() == nullptr
+    //    || TextureAsset->GetSRV() == nullptr)
+    //{
+    //    UE_LOG(FEditor, ELogVerbosity::Warning, "Failed to load About image: %s",
+    //           PathToUtf8String(ImagePath).c_str());
+    //    return;
+    //}
 
-    AboutImageResource = TextureAsset->GetResource();
+    //AboutImageResource = TextureAsset->GetResource();
 }
 
 void FEditor::RequestAboutPopup()

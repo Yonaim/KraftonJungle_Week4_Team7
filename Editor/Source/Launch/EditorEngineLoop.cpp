@@ -153,13 +153,13 @@ bool FEditorEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
         return false;
     }
 
-    AssetManager = new UAssetManager();
-    TextureAssetLoader = new FTextureLoader(&Renderer->GetRHI());
-    FontAssetLoader = new FFontAtlasLoader(&Renderer->GetRHI());
-    SubUVAtlasAssetLoader = new FSubUVAtlasLoader(&Renderer->GetRHI());
-    AssetManager->RegisterLoader(TextureAssetLoader);
-    AssetManager->RegisterLoader(FontAssetLoader);
-    AssetManager->RegisterLoader(SubUVAtlasAssetLoader);
+    //AssetManager = new UAssetManager();
+    //TextureAssetLoader = new FTextureLoader(&Renderer->GetRHI());
+    //FontAssetLoader = new FFontAtlasLoader(&Renderer->GetRHI());
+    //SubUVAtlasAssetLoader = new FSubUVAtlasLoader(&Renderer->GetRHI());
+    //AssetManager->RegisterLoader(TextureAssetLoader);
+    //AssetManager->RegisterLoader(FontAssetLoader);
+    //AssetManager->RegisterLoader(SubUVAtlasAssetLoader);
     Editor->SetRuntimeServices(&Renderer->GetRHI(), AssetManager);
 
     ImGui::CreateContext();

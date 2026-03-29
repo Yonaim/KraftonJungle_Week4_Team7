@@ -94,13 +94,6 @@ namespace
         RegisterActorType<AUnknownActor>("AUnknownActor");
         RegisterActorType<AStaticMeshActor>("AStaticMeshActor");
 
-        RegisterComponentType<Engine::Component::UConeComponent>("UConeComponent");
-        RegisterComponentType<Engine::Component::UCubeComponent>("UCubeComponent");
-        RegisterComponentType<Engine::Component::UCylinderComponent>("UCylinderComponent");
-        RegisterComponentType<Engine::Component::UQuadComponent>("UQuadComponent");
-        RegisterComponentType<Engine::Component::URingComponent>("URingComponent");
-        RegisterComponentType<Engine::Component::USphereComponent>("USphereComponent");
-        RegisterComponentType<Engine::Component::UTriangleComponent>("UTriangleComponent");
         RegisterComponentType<Engine::Component::UPaperSpriteComponent>("UPaperSpriteComponent");
         RegisterComponentType<Engine::Component::UAtlasComponent>("UAtlasComponent");
         RegisterComponentType<Engine::Component::USubUVComponent>("USubUVComponent");

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Asset/SubUVAtlas.h"
+#include "Engine/Asset/SubUVAtlas.h"
 #include "AtlasComponent.h"
 #include "Core/CoreMinimal.h"
 
