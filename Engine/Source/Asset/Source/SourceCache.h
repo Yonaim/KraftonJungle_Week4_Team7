@@ -2,6 +2,9 @@
 
 #include "Asset/Source/SourceRecord.h"
 
+namespace Asset
+{
+
 // Source 캐싱 본체
 class FSourceCache
 {
@@ -23,3 +26,5 @@ class FSourceCache
   private:
     TMap<FWString, FSourceRecord> Records; // <NormalizedPath, SourceRecord>
 };
+
+} // namespace Asset

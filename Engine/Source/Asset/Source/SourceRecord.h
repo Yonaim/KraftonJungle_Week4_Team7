@@ -2,6 +2,9 @@
 
 #include "Core/CoreMinimal.h"
 
+namespace Asset
+{
+
 struct FSourceRecord
 {
     FWString NormalizedPath;
@@ -10,3 +13,5 @@ struct FSourceRecord
     FString  ContentHash;
     bool     bHasContentHash = false;
 };
+
+} // namespace Asset

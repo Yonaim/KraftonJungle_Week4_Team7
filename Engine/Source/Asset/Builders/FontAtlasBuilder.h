@@ -4,6 +4,9 @@
 
 #include "Asset/AssetBuildCache.h"
 
+namespace Asset
+{
+
 class FFontAtlasBuilder
 {
   public:
@@ -13,3 +16,5 @@ class FFontAtlasBuilder
     FAssetBuildCache& Cache;
 };
 // TODO
+
+} // namespace Asset

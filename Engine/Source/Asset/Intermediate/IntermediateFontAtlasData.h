@@ -3,6 +3,9 @@
 #include "Asset/Core/Types.h"
 #include "Asset/Data/FontAtlasCookedData.h"
 
+namespace Asset
+{
+
 struct FIntermediateFontAtlasData
 {
     FFontInfo                Info;
@@ -10,3 +13,5 @@ struct FIntermediateFontAtlasData
     TMap<uint32, FFontGlyph> Glyphs;
     FWString                 AtlasImagePath;
 };
+
+} // namespace Asset

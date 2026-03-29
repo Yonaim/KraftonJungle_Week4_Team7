@@ -4,6 +4,9 @@
 
 #include "Asset/AssetBuildCache.h"
 
+namespace Asset
+{
+
 class FMaterialBuilder
 {
   public:
@@ -13,3 +16,5 @@ class FMaterialBuilder
     FAssetBuildCache& Cache;
 };
 // TODO
+
+} // namespace Asset

@@ -12,6 +12,9 @@
 #include "Asset/Data/SubUVAtlasCookedData.h"
 #include "Asset/Data/FontAtlasCookedData.h"
 
+namespace Asset
+{
+
 template <typename TTag> struct TAssetCacheTraits;
 
 template <> struct TAssetCacheTraits<FTextureAssetTag>
@@ -49,3 +52,5 @@ using TIntermediateTypeOf = typename TAssetCacheTraits<TTag>::IntermediateType;
 
 template <typename TTag>
 using TCookedTypeOf = typename TAssetCacheTraits<TTag>::CookedType;
+
+} // namespace Asset

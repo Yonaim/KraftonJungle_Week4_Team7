@@ -2,7 +2,8 @@
 
 #include "Core/CoreMinimal.h"
 
-// TODO: 세분화 (특정 필드만 있는 경우)
+namespace Asset
+{
 
 struct FVertexPNCT
 {
@@ -11,3 +12,5 @@ struct FVertexPNCT
     FVector  Color;
     FVector2 UV;
 };
+
+} // namespace Asset

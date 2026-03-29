@@ -2,6 +2,9 @@
 
 #include "Asset/Data/CookedData.h"
 
+namespace Asset
+{
+
 struct FTextureCookedData : public FCookedData
 {
     FString       SourcePath;
@@ -25,3 +28,5 @@ struct FTextureCookedData : public FCookedData
         Pixels.clear();
     }
 };
+
+} // namespace Asset

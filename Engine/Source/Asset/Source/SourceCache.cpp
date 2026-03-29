@@ -3,6 +3,9 @@
 #include "Asset/Source/SourceLoader.h"
 #include "Core/Misc/Paths.h"
 
+namespace Asset
+{
+
 const FSourceRecord* FSourceCache::GetOrLoad(const FWString& Path)
 {
     const FWString NormalizedPath = FPaths::Normalize(Path);
@@ -125,3 +128,5 @@ bool FSourceCache::ReloadRecord(const FWString& NormalizedPath, FSourceRecord& O
     OutRecord.LastWriteTimeTicks = WriteTimeTicks;
     return true;
 }
+
+} // namespace Asset

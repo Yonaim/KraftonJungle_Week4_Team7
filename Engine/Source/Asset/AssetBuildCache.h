@@ -5,6 +5,9 @@
 #include "Asset/Core/AssetCacheTraits.h"
 
 
+namespace Asset
+{
+
 // key = MakeDerivedKey
 class FAssetBuildCache
 {
@@ -191,3 +194,5 @@ class FAssetBuildCache
     TCookedCache<FSubUVAtlasCookedData> SubUVAtlasCookedCache;
     TCookedCache<FFontAtlasCookedData>  FontAtlasCookedCache;
 };
+
+} // namespace Asset

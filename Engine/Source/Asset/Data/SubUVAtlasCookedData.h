@@ -5,6 +5,9 @@
 #include "Asset/Data/CookedData.h"
 #include "Asset/Data/TextureCookedData.h"
 
+namespace Asset
+{
+
 struct FSubUVAtlasInfo
 {
     FString Name;
@@ -79,3 +82,5 @@ struct FSubUVAtlasCookedData : public FCookedData
         Sequences.clear();
     }
 };
+
+} // namespace Asset

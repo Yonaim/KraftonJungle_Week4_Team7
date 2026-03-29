@@ -4,6 +4,9 @@
 #include <sstream>
 #include <string_view>
 
+namespace Asset
+{
+
 bool FSourceHash::Compute(const TArray<uint8>& Bytes, FString& OutHash)
 {
     std::string_view View(reinterpret_cast<const char*>(Bytes.data()), Bytes.size());
@@ -15,3 +18,5 @@ bool FSourceHash::Compute(const TArray<uint8>& Bytes, FString& OutHash)
     OutHash = Oss.str();
     return true;
 }
+
+} // namespace Asset

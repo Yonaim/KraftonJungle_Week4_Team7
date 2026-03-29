@@ -2,6 +2,9 @@
 
 #include "Asset/Core/Types.h"
 
+namespace Asset
+{
+
 enum class EPixelFormat : uint8
 {
     Unknown = 0,
@@ -18,3 +21,5 @@ struct FIntermediateTextureData
     EPixelFormat  Format = EPixelFormat::Unknown;
     TArray<uint8> Pixels;
 };
+
+} // namespace Asset

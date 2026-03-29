@@ -4,6 +4,9 @@
 #include <filesystem>
 #include <fstream>
 
+namespace Asset
+{
+
 namespace
 {
     static uint64 ToUnixLikeTicks(const std::filesystem::file_time_type& InTime)
@@ -76,3 +79,5 @@ bool FSourceLoader::ReadAllBytes(const FWString& Path, TArray<uint8>& OutBytes)
 
     return true;
 }
+
+} // namespace Asset

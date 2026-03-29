@@ -4,6 +4,9 @@
 
 #include "Asset/Core/Types.h"
 
+namespace Asset
+{
+
 struct FTextureBuildSettings
 {
     bool bSRGB = true;
@@ -29,3 +32,5 @@ struct FStaticMeshBuildSettings
         return Oss.str();
     }
 };
+
+} // namespace Asset

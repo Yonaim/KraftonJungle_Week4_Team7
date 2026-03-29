@@ -5,6 +5,9 @@
 #include "Asset/Data/CookedData.h"
 #include "Asset/Data/TextureCookedData.h"
 
+namespace Asset
+{
+
 struct FFontGlyph
 {
     uint32 Id = 0;
@@ -68,3 +71,5 @@ struct FFontAtlasCookedData : public FCookedData
         Glyphs.clear();
     }
 };
+
+} // namespace Asset

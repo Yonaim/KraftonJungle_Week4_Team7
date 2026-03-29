@@ -1,5 +1,8 @@
 #pragma once
 
+namespace Asset
+{
+
 struct FTextureAssetTag
 {
 };
@@ -15,3 +18,5 @@ struct FSubUVAtlasAssetTag
 struct FFontAtlasAssetTag
 {
 };
+
+} // namespace Asset

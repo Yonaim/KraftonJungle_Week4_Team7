@@ -3,6 +3,9 @@
 #include "Asset/Core/Types.h"
 #include "Asset/Data/SubUVAtlasCookedData.h"
 
+namespace Asset
+{
+
 struct FIntermediateSubUVAtlasData
 {
     FSubUVAtlasInfo               Info;
@@ -10,3 +13,5 @@ struct FIntermediateSubUVAtlasData
     TMap<FString, FSubUVSequence> Sequences;
     FWString                      AtlasImagePath;
 };
+
+} // namespace Asset

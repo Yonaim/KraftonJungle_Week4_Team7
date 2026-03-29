@@ -2,6 +2,9 @@
 
 #include "Asset/Core/Types.h"
 
+namespace Asset
+{
+
 struct FIntermediateMeshFaceVertex
 {
     int32 PositionIndex = -1;
@@ -22,3 +25,5 @@ struct FIntermediateStaticMeshData
     TArray<FVector2>              UVs;
     TArray<FIntermediateMeshFace> Faces;
 };
+
+} // namespace Asset

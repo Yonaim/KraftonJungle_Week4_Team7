@@ -5,6 +5,9 @@
 #include "Asset/AssetBuildCache.h"
 #include "Asset/Core/BuildSettings.h"
 
+namespace Asset
+{
+
 class FStaticMeshBuilder
 {
   public:
@@ -14,3 +17,5 @@ class FStaticMeshBuilder
     FAssetBuildCache& Cache;
 };
 // TODO
+
+} // namespace Asset

@@ -2,6 +2,9 @@
 
 #include "Asset/Core/Types.h"
 
+namespace Asset
+{
+
 struct FIntermediateMaterialTextureRef
 {
     FString SlotName;
@@ -19,3 +22,5 @@ struct FIntermediateMaterialData
 
     TArray<FIntermediateMaterialTextureRef> TextureRefs;
 };
+
+} // namespace Asset
