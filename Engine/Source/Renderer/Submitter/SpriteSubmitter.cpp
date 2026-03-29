@@ -1,6 +1,6 @@
 #include "Renderer/Submitter/SpriteSubmitter.h"
 
-#include "Renderer/D3D11/D3D11LineBatchRenderer.h"
+#include "Engine/Component/Mesh/LineBatchComponent.h"
 #include "Renderer/D3D11/D3D11SpriteBatchRenderer.h"
 #include "Renderer/SceneRenderData.h"
 #include "Renderer/SceneView.h"
@@ -8,7 +8,7 @@
 
 namespace
 {
-    void SubmitQuadOutline(FD3D11LineBatchRenderer& InLineRenderer, const FVector& InBottomLeft,
+    void SubmitQuadOutline(Engine::Component::ULineBatchComponent& InLineRenderer, const FVector& InBottomLeft,
                            const FVector& InRight, const FVector& InUp, const FColor& InColor)
     {
         const FVector P0 = InBottomLeft;
@@ -39,7 +39,7 @@ void FSpriteSubmitter::Submit(FD3D11SpriteBatchRenderer& InSpriteRenderer,
     InSpriteRenderer.AddSprites(InSceneRenderData.Sprites);
 }
 
-void FSpriteSubmitter::Submit(FD3D11LineBatchRenderer& InLineRenderer,
+void FSpriteSubmitter::Submit(Engine::Component::ULineBatchComponent& InLineRenderer,
                               const FSceneRenderData&  InSceneRenderData) const
 {
     if (!ShouldSubmitSprites(InSceneRenderData))

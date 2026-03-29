@@ -542,8 +542,9 @@ void CRenderer::RenderOutline(FMeshData* Mesh, const FMatrix& WorldMatrix, float
 
 void CRenderer::DrawLine(const FVector& Start, const FVector& End, const FVector4& Color)
 {
-	LineVertices.push_back({ Start, Color, FVector::ZeroVector });
-	LineVertices.push_back({ End, Color, FVector::ZeroVector });
+    FColor c = FColor(Color.X, Color.Y, Color.Z, 1);
+	LineVertices.push_back({ Start, c, FVector::ZeroVector });
+	LineVertices.push_back({ End, c, FVector::ZeroVector });
 }
 
 void CRenderer::DrawCube(const FVector& Center, const FVector& BoxExtent, const FVector4& Color)

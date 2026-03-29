@@ -3,6 +3,8 @@
 
 #include "Core/Misc/BitMaskEnum.h"
 #include "Renderer/SceneRenderData.h"
+#include "NewRenderer/MaterialManager.h"
+#include "NewRenderer/Primitive/PrimitiveBase.h"
 
 namespace Engine::Component
 {
@@ -22,7 +24,52 @@ namespace Engine::Component
     {
         if (IsFlagSet(InShowFlags, ESceneShowFlags::SF_Primitives))
         {
-            OutRenderData.LineBatchers.push_back(const_cast<ULineBatchComponent*>(this));
+            if (Lines.empty())
+            {
+                return;
+            }
+
+            if (!BatchMeshData)
+            {
+                BatchMeshData = std::make_shared<FMeshData>();
+                BatchMeshData->Topology = EMeshTopology::EMT_LineList;
+            }
+
+            BatchMeshData->Vertices.clear();
+            BatchMeshData->Indices.clear();
+
+            for (const auto& Line : Lines)
+            {
+                uint32 StartIdx = static_cast<uint32>(BatchMeshData->Vertices.size());
+
+                FPrimitiveVertex V0;
+                V0.Position = Line.Start;
+                V0.Color = Line.Color;
+                V0.Normal = FVector::ZeroVector;
+                V0.UV = FVector2::ZeroVector;
+
+                FPrimitiveVertex V1;
+                V1.Position = Line.End;
+                V1.Color = Line.Color;
+                V1.Normal = FVector::ZeroVector;
+                V1.UV = FVector2::ZeroVector;
+
+                BatchMeshData->Vertices.push_back(V0);
+                BatchMeshData->Vertices.push_back(V1);
+
+                BatchMeshData->Indices.push_back(StartIdx);
+                BatchMeshData->Indices.push_back(StartIdx + 1);
+            }
+
+            BatchMeshData->bIsDirty = true;
+
+            FRenderCommand Cmd;
+            Cmd.MeshData = BatchMeshData.get();
+            Cmd.Material = FMaterialManager::Get().FindByName("M_AABB").get();
+            Cmd.WorldMatrix = FMatrix::Identity;
+            Cmd.RenderLayer = ERenderLayer::Default;
+
+            OutRenderData.RenderCommands.push_back(Cmd);
         }
     }
 

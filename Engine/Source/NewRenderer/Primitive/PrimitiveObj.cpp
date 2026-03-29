@@ -116,7 +116,7 @@ void CPrimitiveObj::LoadObj(const FString& FilePath)
                     FPrimitiveVertex V{};
 
                     V.Position = Positions[Idx.PosIdx];
-                    V.Color = FVector4(V.Position.X, V.Position.Y, V.Position.Z, 1);
+                    V.Color = FColor(V.Position.X, V.Position.Y, V.Position.Z, 1);
 
                     if (!UVs.empty())
                         V.UV = UVs[Idx.UVIdx];

@@ -37,7 +37,7 @@ void CPrimitiveSky::Generate(int32 Segments, int32 Rings)
 			FVector Position = { X * Radius, Y * Radius, Z * Radius };
 			// Normal reverse
 			FVector Normal = { -X, -Y, -Z };
-			FVector4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
+			FColor Color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 			Data->Vertices.push_back({ Position, Color, Normal });
 		}

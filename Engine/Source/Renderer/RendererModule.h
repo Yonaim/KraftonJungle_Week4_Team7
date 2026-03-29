@@ -4,7 +4,6 @@
 
 #include "D3D11/GeneralRenderer.h"
 #include "Renderer/D3D11/D3D11Common.h"
-#include "Renderer/D3D11/D3D11LineBatchRenderer.h"
 #include "Renderer/D3D11/D3D11MeshBatchRenderer.h"
 #include "Renderer/D3D11/D3D11ObjectIdRenderer.h"
 #include "Renderer/D3D11/D3D11OutlineRenderer.h"
@@ -52,7 +51,6 @@ class ENGINE_API FRendererModule
     FGeneralRenderer*        GeneralRenderer   = nullptr;
     FD3D11MeshBatchRenderer  MeshBatchRenderer;
     FD3D11OutlineRenderer    OutlineRenderer;
-    FD3D11LineBatchRenderer  LineRenderer;
     FD3D11TextBatchRenderer  TextRenderer;
     FD3D11SpriteBatchRenderer SpriteRenderer;
     FD3D11ObjectIdRenderer   ObjectIdRenderer;

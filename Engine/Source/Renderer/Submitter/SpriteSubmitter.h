@@ -2,7 +2,7 @@
 
 #include "Renderer/SceneRenderData.h"
 
-class FD3D11LineBatchRenderer;
+namespace Engine::Component { class ULineBatchComponent; }
 class FD3D11SpriteBatchRenderer;
 
 class FSpriteSubmitter
@@ -11,6 +11,6 @@ class FSpriteSubmitter
     void Submit(FD3D11SpriteBatchRenderer& InSpriteRenderer,
                 const FSceneRenderData&     InSceneRenderData) const;
 
-    void Submit(FD3D11LineBatchRenderer& InLineRenderer,
+    void Submit(Engine::Component::ULineBatchComponent& InLineRenderer,
                 const FSceneRenderData&   InSceneRenderData) const;
 };

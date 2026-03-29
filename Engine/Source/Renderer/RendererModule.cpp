@@ -103,12 +103,6 @@ bool FRendererModule::StartupModule(HWND hWnd)
         return false;
     }
 
-    if (!LineRenderer.Initialize(&RHI))
-    {
-        ShutdownModule();
-        return false;
-    }
-
     if (!TextRenderer.Initialize(&RHI))
     {
         ShutdownModule();
@@ -145,8 +139,6 @@ void FRendererModule::ShutdownModule()
     ObjectIdRenderer.Shutdown();
     SpriteRenderer.Shutdown();
     TextRenderer.Shutdown();
-    LineRenderer.Shutdown();
-    OutlineRenderer.Shutdown();
     MeshBatchRenderer.Shutdown();
 
 #if defined(_DEBUG)
@@ -260,47 +252,14 @@ void FRendererModule::RenderWorldPass(const FEditorRenderData& InEditorRenderDat
         MeshBatchRenderer.EndFrame();
     }
 
-    if (InEditorRenderData.SceneView != nullptr)
-    {
-        LineRenderer.BeginFrame(InEditorRenderData.SceneView);
-
-        for (auto* LineBatcher : InSceneRenderData.LineBatchers)
-        {
-            if (LineBatcher == nullptr)
-            {
-                continue;
-            }
-
-            for (const auto& Line : LineBatcher->GetLines())
-            {
-                LineRenderer.AddLine(Line.Start, Line.End, Line.Color);
-            }
-        }
-
-        LineRenderer.EndFrame();
-    }
-
-    if (ShouldRenderSelectionOutline(InEditorRenderData, InSceneRenderData))
-    {
-        OutlineRenderer.BeginFrame(InSceneRenderData.SceneView);
-        OutlineRenderer.AddPrimitives(InSceneRenderData.Primitives);
-        OutlineRenderer.EndFrame();
-    }
-
-    if (InSceneRenderData.SceneView != nullptr && !InSceneRenderData.Sprites.empty())
-    {
-        SpriteRenderer.BeginFrame(InSceneRenderData.SceneView);
-        SpriteSubmitter.Submit(SpriteRenderer, InSceneRenderData);
-        SpriteRenderer.EndFrame(InSceneRenderData.SceneView);
-    }
-
     if (InSceneRenderData.SceneView != nullptr && !InSceneRenderData.Texts.empty())
     {
         if (InSceneRenderData.ViewMode == EViewModeIndex::VMI_Wireframe)
         {
-            LineRenderer.BeginFrame(InSceneRenderData.SceneView);
-            TextSubmitter.Submit(LineRenderer, InSceneRenderData);
-            LineRenderer.EndFrame();
+            if (!InSceneRenderData.LineBatchers.empty())
+            {
+                TextSubmitter.Submit(*InSceneRenderData.LineBatchers[0], InSceneRenderData);
+            }
         }
         else
         {

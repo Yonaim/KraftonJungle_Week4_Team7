@@ -593,6 +593,8 @@ void FGeneralRenderer::InitializeAABBResources()
     AABBMaterial->SetOriginName("M_AABB");
     AABBMaterial->SetVertexShader(VS);
     AABBMaterial->SetPixelShader(PS);
+    
+    FMaterialManager::Get().Register("M_AABB", AABBMaterial);
 
     // 라인 렌더링용 상태 설정
     FRasterizerStateOption rasterizerOption;

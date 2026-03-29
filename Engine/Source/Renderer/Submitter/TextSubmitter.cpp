@@ -1,6 +1,6 @@
 #include "Renderer/Submitter/TextSubmitter.h"
 
-#include "Renderer/D3D11/D3D11LineBatchRenderer.h"
+#include "Engine/Component/Mesh/LineBatchComponent.h"
 #include "Renderer/D3D11/D3D11TextBatchRenderer.h"
 #include "Renderer/RenderAsset/FontResource.h"
 #include "Renderer/SceneRenderData.h"
@@ -47,7 +47,7 @@ namespace
         bool              bMissing = true;
     };
 
-    void SubmitQuadOutline(FD3D11LineBatchRenderer& InLineRenderer, const FVector& InBottomLeft,
+    void SubmitQuadOutline(Engine::Component::ULineBatchComponent& InLineRenderer, const FVector& InBottomLeft,
                            const FVector& InRight, const FVector& InUp, const FColor& InColor)
     {
         const FVector P0 = InBottomLeft;
@@ -268,7 +268,7 @@ void FTextSubmitter::Submit(FD3D11TextBatchRenderer& InTextRenderer,
     }
 }
 
-void FTextSubmitter::Submit(FD3D11LineBatchRenderer& InLineRenderer,
+void FTextSubmitter::Submit(Engine::Component::ULineBatchComponent& InLineRenderer,
                             const FSceneRenderData&  InSceneRenderData) const
 {
     if (!ShouldSubmitAnyText(InSceneRenderData))

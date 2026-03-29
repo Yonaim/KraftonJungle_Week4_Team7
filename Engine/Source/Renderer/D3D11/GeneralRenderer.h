@@ -1,5 +1,4 @@
 #pragma once
-#include "D3D11LineBatchRenderer.h"
 #include "NewRenderer/Renderer.h"
 
 // === Forward Declaraction
@@ -41,6 +40,7 @@ public:
     // void SetPostRenderCallback(FPostRenderCallback InCallback) { PostRenderCallback = std::move(InCallback); }
     
     static FMaterial* GetDefaultMaterial() { return DefaultMaterial.get(); }
+    FMaterial* GetLineMaterial() const { return AABBMaterial.get(); }
     std::unique_ptr<CRenderStateManager>& GetRenderStateManager() { return RenderStateManager; }
     ID3D11Device* GetDevice() const { return Device; }
     ID3D11DeviceContext* GetDeviceContext() const { return DeviceContext; }

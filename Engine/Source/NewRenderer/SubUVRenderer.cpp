@@ -123,7 +123,7 @@ bool CSubUVRenderer::BuildSubUVMesh(const FVector2& Size, FMeshData& OutMesh) co
 	V2.Position = FVector(0.0f, HalfW, -HalfH);  V2.UV = FVector2(1.0f, 1.0f);
 	V3.Position = FVector(0.0f, -HalfW, -HalfH); V3.UV = FVector2(0.0f, 1.0f);
 
-	V0.Color = V1.Color = V2.Color = V3.Color = FVector4(1, 1, 1, 1);
+	V0.Color = V1.Color = V2.Color = V3.Color = FColor(1, 1, 1, 1);
 	V0.Normal = V1.Normal = V2.Normal = V3.Normal = FVector(0, 0, 1);
 
 	OutMesh.Vertices.push_back(V0);

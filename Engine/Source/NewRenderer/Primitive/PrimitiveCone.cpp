@@ -20,7 +20,7 @@ void CPrimitiveCone::Generate()
 {
 	auto Data = std::make_shared<FMeshData>();
 
-	FVector4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	FColor Color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	FVector Normal = { 0.0f, 1.0f, 0.0f }; // 임시 노멀
 
 	for (uint32_t i = 0; i < cone_vertex_count; ++i)

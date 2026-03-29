@@ -154,7 +154,7 @@ bool CTextMeshBuilder::BuildTextMesh(const FString& Text, FMeshData& OutMesh) co
             V3.Position = FVector(0.0f, X0, Y0);
             V3.UV = FVector2(Glyph->X, Glyph->Y + Glyph->Height);
 
-            V0.Color = V1.Color = V2.Color = V3.Color = FVector4(1, 1, 1, 1);
+            V0.Color = V1.Color = V2.Color = V3.Color = FColor(1, 1, 1, 1);
             V0.Normal = V1.Normal = V2.Normal = V3.Normal = FVector(0, 0, 1);
 
             OutMesh.Vertices.push_back(V0);

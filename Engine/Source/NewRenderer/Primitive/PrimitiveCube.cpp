@@ -22,12 +22,12 @@ void CPrimitiveCube::Generate()
 {
 	auto Data = std::make_shared<FMeshData>();
 
-	FVector4 Red = { 1.0f, 0.3f, 0.3f, 1.0f };
-	FVector4 Green = { 0.3f, 1.0f, 0.3f, 1.0f };
-	FVector4 Blue = { 0.3f, 0.3f, 1.0f, 1.0f };
-	FVector4 Yellow = { 1.0f, 1.0f, 0.3f, 1.0f };
-	FVector4 Cyan = { 0.3f, 1.0f, 1.0f, 1.0f };
-	FVector4 Magenta = { 1.0f, 0.3f, 1.0f, 1.0f };
+	FColor Red = { 1.0f, 0.3f, 0.3f, 1.0f };
+	FColor Green = { 0.3f, 1.0f, 0.3f, 1.0f };
+	FColor Blue = { 0.3f, 0.3f, 1.0f, 1.0f };
+	FColor Yellow = { 1.0f, 1.0f, 0.3f, 1.0f };
+	FColor Cyan = { 0.3f, 1.0f, 1.0f, 1.0f };
+	FColor Magenta = { 1.0f, 0.3f, 1.0f, 1.0f };
 
 	// Front face (x = +0.5) — Red
 	Data->Vertices.push_back({ {  0.5f, -0.5f, -0.5f }, Red, {  1.0f,  0.0f,  0.0f } });

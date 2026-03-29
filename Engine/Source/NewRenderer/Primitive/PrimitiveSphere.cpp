@@ -43,7 +43,7 @@ void CPrimitiveSphere::Generate(int32 Segments, int32 Rings)
 			float R = Normal.X * 0.5f + 0.5f;
 			float G = Normal.Y * 0.5f + 0.5f;
 			float B = Normal.Z * 0.5f + 0.5f;
-			FVector4 Color = { R, G, B, 1.0f };
+			FColor Color = { R, G, B, 1.0f };
 
 			Data->Vertices.push_back({ Position, Color, Normal });
 		}

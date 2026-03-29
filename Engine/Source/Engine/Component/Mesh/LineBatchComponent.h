@@ -55,5 +55,6 @@ namespace Engine::Component
 
     private:
         TArray<FLineData> Lines;
+        mutable std::shared_ptr<FMeshData> BatchMeshData;
     };
 } // namespace Engine::Component
