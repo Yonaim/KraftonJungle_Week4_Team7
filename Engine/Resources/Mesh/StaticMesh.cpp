@@ -1,6 +1,8 @@
 #include "StaticMesh.h"
 #include "Core/Path.h"
 
+REGISTER_CLASS(, UStaticMesh)
+
 FString UStaticMesh::GetMeshName() const
 {
     if (StaticMeshAsset == nullptr || StaticMeshAsset->PathFileName.empty())

@@ -9,7 +9,7 @@ namespace Engine::Component
 {
     class ENGINE_API UAtlasTextComponent : public UTextRenderComponent
     {
-        DECLARE_RTTI(UAtlasTextComponent, UPrimitiveComponent)
+        DECLARE_RTTI(UAtlasTextComponent, UTextRenderComponent)
 
       public:
         UAtlasTextComponent() = default;

@@ -20,6 +20,7 @@ struct FStaticMesh
 
 class UStaticMesh : public UObject
 {
+    DECLARE_RTTI(UStaticMesh, UObject)
   public:
     const FString& GetAssetPathFileName() { return StaticMeshAsset->PathFileName; }
     void           SetStaticMeshAsset(FStaticMesh* InStaticMesh) { StaticMeshAsset = InStaticMesh; }

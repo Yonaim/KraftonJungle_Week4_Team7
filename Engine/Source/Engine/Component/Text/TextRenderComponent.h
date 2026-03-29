@@ -3,9 +3,9 @@
 
 namespace Engine::Component
 {
-    class ENGINE_API UTextRenderComponent : public Engine::Component::UPrimitiveComponent
+    class ENGINE_API UTextRenderComponent : public UPrimitiveComponent
     {
-        DECLARE_RTTI(UTextRemderComponent, UPrimitiveComponent)
+        DECLARE_RTTI(UTextRenderComponent, UPrimitiveComponent)
 
       public:
         UTextRenderComponent() = default;
