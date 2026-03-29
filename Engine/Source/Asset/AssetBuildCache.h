@@ -4,10 +4,28 @@
 #include "Asset/Core/AssetCache.h"
 #include "Asset/Core/AssetCacheTraits.h"
 
+
+// key = MakeDerivedKey
 class FAssetBuildCache
 {
   public:
-    const FSourceRecord* GetSource(const FWString& Path) { return SourceCache.GetOrLoad(Path); }
+    // ============================ Dispatcher =================================
+
+    const FSourceRecord* GetSource(const FWString& Path)
+    {
+        const FSourceRecord* Source = SourceCache.GetOrLoad(Path);
+        if (Source == nullptr)
+        {
+            return nullptr;
+        }
+
+        if (!SourceCache.EnsureContentHashLoaded(Path))
+        {
+            return nullptr;
+        }
+
+        return SourceCache.Find(Path);
+    }
 
     void InvalidateSource(const FWString& Path) { SourceCache.Invalidate(Path); }
 
@@ -28,30 +46,41 @@ class FAssetBuildCache
         FontAtlasCookedCache.Clear();
     }
 
-    template <typename TTag> auto& GetIntermediateCache(TTag Tag)
+    // ======================== GetCache() Dispatcher ==========================
+    // dispatch by tag
+
+    template <typename TTag>
+    TIntermediateCache<TIntermediateTypeOf<TTag>>& GetIntermediateCache(TTag Tag)
     {
         return GetIntermediateCacheImpl(Tag);
     }
 
-    template <typename TTag> const auto& GetIntermediateCache(TTag Tag) const
+    template <typename TTag>
+    const TIntermediateCache<TIntermediateTypeOf<TTag>>& GetIntermediateCache(TTag Tag) const
     {
         return GetIntermediateCacheImpl(Tag);
     }
 
-    template <typename TTag> auto& GetCookedCache(TTag Tag) { return GetCookedCacheImpl(Tag); }
+    template <typename TTag>
+    TCookedCache<TCookedTypeOf<TTag>>& GetCookedCache(TTag Tag)
+    {
+        return GetCookedCacheImpl(Tag);
+    }
 
-    template <typename TTag> const auto& GetCookedCache(TTag Tag) const
+    template <typename TTag>
+    const TCookedCache<TCookedTypeOf<TTag>>& GetCookedCache(TTag Tag) const
     {
         return GetCookedCacheImpl(Tag);
     }
 
   private:
+    // ===================== Intermediate Cache Dispatcher =====================
+
     TIntermediateCache<FIntermediateTextureData>& GetIntermediateCacheImpl(FTextureAssetTag)
     {
         return IntermediateTextureCache;
     }
-    const TIntermediateCache<FIntermediateTextureData>&
-    GetIntermediateCacheImpl(FTextureAssetTag) const
+    const TIntermediateCache<FIntermediateTextureData>& GetIntermediateCacheImpl(FTextureAssetTag) const
     {
         return IntermediateTextureCache;
     }
@@ -60,8 +89,7 @@ class FAssetBuildCache
     {
         return IntermediateMaterialCache;
     }
-    const TIntermediateCache<FIntermediateMaterialData>&
-    GetIntermediateCacheImpl(FMaterialAssetTag) const
+    const TIntermediateCache<FIntermediateMaterialData>& GetIntermediateCacheImpl(FMaterialAssetTag) const
     {
         return IntermediateMaterialCache;
     }
@@ -90,11 +118,12 @@ class FAssetBuildCache
     {
         return IntermediateFontAtlasCache;
     }
-    const TIntermediateCache<FIntermediateFontAtlasData>&
-    GetIntermediateCacheImpl(FFontAtlasAssetTag) const
+    const TIntermediateCache<FIntermediateFontAtlasData>& GetIntermediateCacheImpl(FFontAtlasAssetTag) const
     {
         return IntermediateFontAtlasCache;
     }
+
+    // ======================== Cooked Cache Dispatcher ========================
 
     TCookedCache<FTextureCookedData>& GetCookedCacheImpl(FTextureAssetTag)
     {
@@ -142,13 +171,19 @@ class FAssetBuildCache
     }
 
   private:
+    // ============================== Source Cache =============================
+
     FSourceCache SourceCache;
+
+    // =========================== Intermediate Cache ==========================
 
     TIntermediateCache<FIntermediateTextureData>    IntermediateTextureCache;
     TIntermediateCache<FIntermediateMaterialData>   IntermediateMaterialCache;
     TIntermediateCache<FIntermediateStaticMeshData> IntermediateStaticMeshCache;
     TIntermediateCache<FIntermediateSubUVAtlasData> IntermediateSubUVAtlasCache;
     TIntermediateCache<FIntermediateFontAtlasData>  IntermediateFontAtlasCache;
+
+    // ============================== Cooked Cache =============================
 
     TCookedCache<FTextureCookedData>    TextureCookedCache;
     TCookedCache<FMaterialCookedData>   MaterialCookedCache;
