@@ -12,6 +12,7 @@ namespace
 {
     constexpr const char* ProjectionTypeLabels[] = {"Perspective", "Orthographic"};
     constexpr const char* ViewModeLabels[] = {"Lit", "Unlit", "Wireframe"};
+    constexpr const char* ViewLayoutLabels[] = {"Single", "_2X2", "_1l3"};
 
     void DrawVectorRow(const char* Label, FVector& Value, float Speed = 0.1f)
     {
@@ -171,6 +172,13 @@ void FControlPanel::DrawViewModeSection() const
     if (ImGui::Combo("Shading", &CurrentViewMode, ViewModeLabels, IM_ARRAYSIZE(ViewModeLabels)))
     {
         RenderSetting.SetViewMode(static_cast<EViewModeIndex>(CurrentViewMode));
+    }
+
+    SEditorViewportTab& ViewportTab = GetContext()->Editor->GetViewportTab();
+    int CurrentViewLayout = static_cast<int>(ViewportTab.GetCurrentLayoutType());
+    if (ImGui::Combo("Layout", &CurrentViewLayout, ViewLayoutLabels, IM_ARRAYSIZE(ViewLayoutLabels)))
+    {
+        ViewportTab.SetLayout(static_cast<EViewportLayoutType>(CurrentViewLayout));
     }
 }
 

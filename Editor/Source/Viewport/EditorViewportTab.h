@@ -4,6 +4,8 @@
 
 #include "Viewport/EditorViewportClient.h"
 #include "Viewport/Layout/EditorViewportLayout.h"
+#include "Viewport/Layout/EditorViewportLayoutFactory.h"
+
 #include "Renderer/SceneView.h"
 
 class SEditorViewportTab
@@ -19,11 +21,16 @@ public:
     TArray<FSceneView*> const& GetViewports() const { return SceneViews; }
     FSceneView* const&         GetViewport(int32 index) const { return SceneViews[index]; }
 
-    void CreateExtraViewportClients();
-    void RemoveExtraViewportClients();
+    EViewportLayoutType GetCurrentLayoutType() { return CurrentLayoutType; }
+    void SetLayout(EViewportLayoutType NewType);
+
+    void AdjustViewportCount(EViewportLayoutType NewType);
 
 private:
+    FViewportRect                  CurrentRect = {0, 0, 0, 0};
     TArray<FSceneView*>            SceneViews;
     TArray<FEditorViewportClient*> ViewportClients;
+
     FEditorViewportLayout*         ViewportLayout = nullptr;
+    EViewportLayoutType            CurrentLayoutType;
 };

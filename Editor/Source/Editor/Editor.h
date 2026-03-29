@@ -100,7 +100,7 @@ class FEditor
 
     const TArray<FEditorRenderData>& GetEditorRenderData() const { return EditorRenderDatas; }
     const TArray<FSceneRenderData>&  GetSceneRenderData() const { return SceneRenderDatas; }
-    const SEditorViewportTab&        GetViewportTab() const { return ViewportTab; }
+    SEditorViewportTab&              GetViewportTab() { return ViewportTab; }
     //FEditorViewportClient&       GetViewportClient() { return ViewportClient; }
     //const FEditorViewportClient& GetViewportClient() const { return ViewportClient; }
 
