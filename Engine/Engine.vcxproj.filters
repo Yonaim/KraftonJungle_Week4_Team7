@@ -810,6 +810,7 @@
     <ClInclude Include="Source\Engine\Game\StaticMeshActor.h" />
     <ClInclude Include="Source\Engine\Game\MeshActor.h" />
     <ClInclude Include="Source\Engine\Component\Text\TextRenderComponent.h" />
+    <ClInclude Include="Source\CoreUObject\ObjectIterator.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
