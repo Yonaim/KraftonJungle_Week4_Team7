@@ -1,29 +1,46 @@
 #pragma once
 
 #include <memory>
+#include <utility>
 
+#include "Asset/Asset.h"
 #include "Asset/Data/StaticMeshCookedData.h"
-#include "Engine/Asset/Asset.h"
-#include "Renderer/Resource/StaticMeshResource.h"
+#include "Asset/Runtime/StaticMeshRenderResource.h"
+
+using namespace Asset;
 
 class UStaticMesh : public UAsset
 {
     DECLARE_RTTI(UStaticMesh, UAsset)
 
   public:
-    void SetCookedData(const std::shared_ptr<FStaticMeshCookedData>& InCookedData)
+    const std::shared_ptr<FStaticMeshCookedData>& GetCookedData() const { return CookedData; }
+
+    void SetCookedData(std::shared_ptr<FStaticMeshCookedData> InCookedData)
     {
-        CookedData = InCookedData;
-    }
-    void SetResource(const std::shared_ptr<FStaticMeshResource>& InResource)
-    {
-        Resource = InResource;
+        CookedData = std::move(InCookedData);
     }
 
-    std::shared_ptr<FStaticMeshCookedData> GetCookedData() const { return CookedData; }
-    std::shared_ptr<FStaticMeshResource>   GetResource() const { return Resource; }
+    const std::shared_ptr<FStaticMeshRenderResource>& GetRenderResource() const
+    {
+        return RenderResource;
+    }
+
+    void SetRenderResource(std::shared_ptr<FStaticMeshRenderResource> InRenderResource)
+    {
+        RenderResource = std::move(InRenderResource);
+    }
+
+    void ResetRenderResource()
+    {
+        if (RenderResource)
+        {
+            RenderResource->Reset();
+        }
+        RenderResource.reset();
+    }
 
   private:
-    std::shared_ptr<FStaticMeshCookedData> CookedData;
-    std::shared_ptr<FStaticMeshResource>   Resource;
+    std::shared_ptr<FStaticMeshCookedData>     CookedData;
+    std::shared_ptr<FStaticMeshRenderResource> RenderResource;
 };

@@ -1,3 +1,3 @@
-#include "Engine/Asset/StaticMesh.h"
+#include "Asset/StaticMesh.h"
 
-REGISTER_CLASS(UStaticMesh)
+REGISTER_CLASS(, UStaticMesh)

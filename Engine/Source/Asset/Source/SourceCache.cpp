@@ -6,127 +6,128 @@
 namespace Asset
 {
 
-const FSourceRecord* FSourceCache::GetOrLoad(const FWString& Path)
-{
-    const FWString NormalizedPath = FPaths::Normalize(Path);
-    if (NormalizedPath.empty())
+    const FSourceRecord* FSourceCache::GetOrLoad(const FWString& Path)
     {
-        return nullptr;
-    }
-
-    uint64 CurrentFileSize = 0;
-    uint64 CurrentWriteTimeTicks = 0;
-    if (!FSourceLoader::QueryFileInfo(NormalizedPath, CurrentFileSize, CurrentWriteTimeTicks))
-    {
-        Records.erase(NormalizedPath);
-        return nullptr;
-    }
-
-    auto ExistingIt = Records.find(NormalizedPath);
-    if (ExistingIt != Records.end())
-    {
-        if (!HasFileChanged(ExistingIt->second, CurrentFileSize, CurrentWriteTimeTicks))
+        const FWString NormalizedPath = FPaths::Normalize(Path);
+        if (NormalizedPath.empty())
         {
-            return &ExistingIt->second;
+            return nullptr;
         }
+
+        uint64 CurrentFileSize = 0;
+        uint64 CurrentWriteTimeTicks = 0;
+        if (!FSourceLoader::QueryFileInfo(NormalizedPath, CurrentFileSize, CurrentWriteTimeTicks))
+        {
+            Records.erase(NormalizedPath);
+            return nullptr;
+        }
+
+        auto ExistingIt = Records.find(NormalizedPath);
+        if (ExistingIt != Records.end())
+        {
+            if (!HasFileChanged(ExistingIt->second, CurrentFileSize, CurrentWriteTimeTicks))
+            {
+                return &ExistingIt->second;
+            }
+        }
+
+        FSourceRecord NewRecord;
+        if (!ReloadRecord(NormalizedPath, NewRecord))
+        {
+            Records.erase(NormalizedPath);
+            return nullptr;
+        }
+
+        auto [It, bInserted] = Records.insert_or_assign(NormalizedPath, std::move(NewRecord));
+        (void)bInserted;
+        return &It->second;
     }
 
-    FSourceRecord NewRecord;
-    if (!ReloadRecord(NormalizedPath, NewRecord))
+    bool FSourceCache::EnsureContentHashLoaded(const FWString& Path)
     {
-        Records.erase(NormalizedPath);
-        return nullptr;
-    }
+        const FWString NormalizedPath = FPaths::Normalize(Path);
+        if (NormalizedPath.empty())
+        {
+            return false;
+        }
 
-    auto [It, bInserted] = Records.insert_or_assign(NormalizedPath, std::move(NewRecord));
-    (void)bInserted;
-    return &It->second;
-}
+        auto It = Records.find(NormalizedPath);
+        if (It == Records.end())
+        {
+            return false;
+        }
 
-bool FSourceCache::EnsureContentHashLoaded(const FWString& Path)
-{
-    const FWString NormalizedPath = FPaths::Normalize(Path);
-    if (NormalizedPath.empty())
-    {
-        return false;
-    }
+        if (It->second.bHasContentHash)
+        {
+            return true;
+        }
 
-    auto It = Records.find(NormalizedPath);
-    if (It == Records.end())
-    {
-        return false;
-    }
+        TArray<uint8> FileBytes;
+        if (!FSourceLoader::ReadAllBytes(NormalizedPath, FileBytes))
+        {
+            return false;
+        }
 
-    if (It->second.bHasContentHash)
-    {
+        FString ContentHash;
+        if (!FSourceHash::Compute(FileBytes, ContentHash))
+        {
+            return false;
+        }
+
+        It->second.ContentHash = std::move(ContentHash);
+        It->second.bHasContentHash = true;
         return true;
     }
 
-    TArray<uint8> FileBytes;
-    if (!FSourceLoader::ReadAllBytes(NormalizedPath, FileBytes))
+    const FSourceRecord* FSourceCache::Find(const FWString& Path) const
     {
-        return false;
+        const FWString NormalizedPath = FPaths::Normalize(Path);
+        if (NormalizedPath.empty())
+        {
+            return nullptr;
+        }
+
+        auto It = Records.find(NormalizedPath);
+        if (It == Records.end())
+        {
+            return nullptr;
+        }
+
+        return &It->second;
     }
 
-    FString ContentHash;
-    if (!FSourceHash::Compute(FileBytes, ContentHash))
+    void FSourceCache::Invalidate(const FWString& Path)
     {
-        return false;
+        const FWString NormalizedPath = FPaths::Normalize(Path);
+        if (!NormalizedPath.empty())
+        {
+            Records.erase(NormalizedPath);
+        }
     }
 
-    It->second.ContentHash = std::move(ContentHash);
-    It->second.bHasContentHash = true;
-    return true;
-}
+    void FSourceCache::Clear() { Records.clear(); }
 
-const FSourceRecord* FSourceCache::Find(const FWString& Path) const
-{
-    const FWString NormalizedPath = FPaths::Normalize(Path);
-    if (NormalizedPath.empty())
+    bool FSourceCache::HasFileChanged(const FSourceRecord& Record, uint64 CurrentFileSize,
+                                      uint64 CurrentWriteTimeTicks) const
     {
-        return nullptr;
+        return Record.FileSize != CurrentFileSize ||
+               Record.LastWriteTimeTicks != CurrentWriteTimeTicks;
     }
 
-    auto It = Records.find(NormalizedPath);
-    if (It == Records.end())
+    bool FSourceCache::ReloadRecord(const FWString& NormalizedPath, FSourceRecord& OutRecord) const
     {
-        return nullptr;
+        uint64 FileSize = 0;
+        uint64 WriteTimeTicks = 0;
+        if (!FSourceLoader::QueryFileInfo(NormalizedPath, FileSize, WriteTimeTicks))
+        {
+            return false;
+        }
+
+        OutRecord = {};
+        OutRecord.NormalizedPath = NormalizedPath;
+        OutRecord.FileSize = FileSize;
+        OutRecord.LastWriteTimeTicks = WriteTimeTicks;
+        return true;
     }
-
-    return &It->second;
-}
-
-void FSourceCache::Invalidate(const FWString& Path)
-{
-    const FWString NormalizedPath = FPaths::Normalize(Path);
-    if (!NormalizedPath.empty())
-    {
-        Records.erase(NormalizedPath);
-    }
-}
-
-void FSourceCache::Clear() { Records.clear(); }
-
-bool FSourceCache::HasFileChanged(const FSourceRecord& Record, uint64 CurrentFileSize,
-                                  uint64 CurrentWriteTimeTicks) const
-{
-    return Record.FileSize != CurrentFileSize || Record.LastWriteTimeTicks != CurrentWriteTimeTicks;
-}
-
-bool FSourceCache::ReloadRecord(const FWString& NormalizedPath, FSourceRecord& OutRecord) const
-{
-    uint64 FileSize = 0;
-    uint64 WriteTimeTicks = 0;
-    if (!FSourceLoader::QueryFileInfo(NormalizedPath, FileSize, WriteTimeTicks))
-    {
-        return false;
-    }
-
-    OutRecord = {};
-    OutRecord.NormalizedPath = NormalizedPath;
-    OutRecord.FileSize = FileSize;
-    OutRecord.LastWriteTimeTicks = WriteTimeTicks;
-    return true;
-}
 
 } // namespace Asset

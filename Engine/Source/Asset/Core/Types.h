@@ -4,13 +4,11 @@
 
 namespace Asset
 {
-
-struct FVertexPNCT
-{
-    FVector  Position;
-    FVector  Normal;
-    FVector  Color;
-    FVector2 UV;
+    enum class EPixelFormat : uint8
+    {
+        Unknown = 0,
+        R8,
+        RGB8,
+        RGBA8,
+    };
 };
-
-} // namespace Asset

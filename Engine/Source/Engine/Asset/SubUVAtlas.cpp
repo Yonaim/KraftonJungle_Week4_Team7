@@ -1,3 +1,3 @@
-#include "Engine/Asset/SubUVAtlas.h"
+#include "Asset/SubUVAtlas.h"
 
-REGISTER_CLASS(USubUVAtlas)
+REGISTER_CLASS(, USubUVAtlas)

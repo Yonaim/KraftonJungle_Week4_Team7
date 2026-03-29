@@ -1,38 +1,46 @@
 #pragma once
 
 #include <memory>
+#include <utility>
 
+#include "Asset/Asset.h"
 #include "Asset/Data/SubUVAtlasCookedData.h"
-#include "Engine/Asset/Asset.h"
-#include "Renderer/Resource/TextureResource.h"
+#include "Asset/Runtime/SubUVAtlasRenderResource.h"
+
+using namespace Asset;
 
 class USubUVAtlas : public UAsset
 {
     DECLARE_RTTI(USubUVAtlas, UAsset)
 
   public:
-    void SetCookedData(const std::shared_ptr<FSubUVAtlasCookedData>& InCookedData)
+    const std::shared_ptr<FSubUVAtlasCookedData>& GetCookedData() const { return CookedData; }
+
+    void SetCookedData(std::shared_ptr<FSubUVAtlasCookedData> InCookedData)
     {
-        CookedData = InCookedData;
-    }
-    void SetAtlasResource(const std::shared_ptr<FTextureResource>& InAtlasResource)
-    {
-        AtlasResource = InAtlasResource;
+        CookedData = std::move(InCookedData);
     }
 
-    std::shared_ptr<FSubUVAtlasCookedData> GetCookedData() const { return CookedData; }
-
-    const FSubUVFrame* FindFrame(uint32 InId) const
+    const std::shared_ptr<FSubUVAtlasRenderResource>& GetRenderResource() const
     {
-        return CookedData ? CookedData->FindFrame(InId) : nullptr;
+        return RenderResource;
     }
 
-    ID3D11ShaderResourceView* GetSRV() const
+    void SetRenderResource(std::shared_ptr<FSubUVAtlasRenderResource> InRenderResource)
     {
-        return AtlasResource ? AtlasResource->GetSRV() : nullptr;
+        RenderResource = std::move(InRenderResource);
+    }
+
+    void ResetRenderResource()
+    {
+        if (RenderResource)
+        {
+            RenderResource->Reset();
+        }
+        RenderResource.reset();
     }
 
   private:
-    std::shared_ptr<FSubUVAtlasCookedData> CookedData;
-    std::shared_ptr<FTextureResource>      AtlasResource;
+    std::shared_ptr<FSubUVAtlasCookedData>     CookedData;
+    std::shared_ptr<FSubUVAtlasRenderResource> RenderResource;
 };

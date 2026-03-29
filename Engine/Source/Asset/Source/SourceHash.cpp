@@ -7,16 +7,16 @@
 namespace Asset
 {
 
-bool FSourceHash::Compute(const TArray<uint8>& Bytes, FString& OutHash)
-{
-    std::string_view View(reinterpret_cast<const char*>(Bytes.data()), Bytes.size());
+    bool FSourceHash::Compute(const TArray<uint8>& Bytes, FString& OutHash)
+    {
+        std::string_view View(reinterpret_cast<const char*>(Bytes.data()), Bytes.size());
 
-    const size_t HashValue = std::hash<std::string_view>{}(View);
+        const size_t HashValue = std::hash<std::string_view>{}(View);
 
-    std::ostringstream Oss;
-    Oss << std::hex << HashValue;
-    OutHash = Oss.str();
-    return true;
-}
+        std::ostringstream Oss;
+        Oss << std::hex << HashValue;
+        OutHash = Oss.str();
+        return true;
+    }
 
 } // namespace Asset

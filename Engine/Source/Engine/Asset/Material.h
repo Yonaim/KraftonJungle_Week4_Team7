@@ -1,21 +1,46 @@
 #pragma once
 
 #include <memory>
+#include <utility>
 
+#include "Asset/Asset.h"
 #include "Asset/Data/MaterialCookedData.h"
-#include "Engine/Asset/MaterialInterface.h"
+#include "Asset/Runtime/MaterialRenderResource.h"
 
-class UMaterial : public UMaterialInterface
+using namespace Asset;
+
+class UMaterial : public UAsset
 {
-    DECLARE_RTTI(UMaterial, UMaterialInterface)
+    DECLARE_RTTI(UMaterial, UAsset)
 
   public:
-    void SetCookedData(const std::shared_ptr<FMaterialCookedData>& InCookedData)
+    const std::shared_ptr<FMaterialCookedData>& GetCookedData() const { return CookedData; }
+
+    void SetCookedData(std::shared_ptr<FMaterialCookedData> InCookedData)
     {
-        CookedData = InCookedData;
+        CookedData = std::move(InCookedData);
     }
-    std::shared_ptr<FMaterialCookedData> GetCookedData() const { return CookedData; }
+
+    const std::shared_ptr<FMaterialRenderResource>& GetRenderResource() const
+    {
+        return RenderResource;
+    }
+
+    void SetRenderResource(std::shared_ptr<FMaterialRenderResource> InRenderResource)
+    {
+        RenderResource = std::move(InRenderResource);
+    }
+
+    void ResetRenderResource()
+    {
+        if (RenderResource)
+        {
+            RenderResource->Reset();
+        }
+        RenderResource.reset();
+    }
 
   private:
-    std::shared_ptr<FMaterialCookedData> CookedData;
+    std::shared_ptr<FMaterialCookedData>     CookedData;
+    std::shared_ptr<FMaterialRenderResource> RenderResource;
 };

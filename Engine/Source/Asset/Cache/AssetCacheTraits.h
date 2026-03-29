@@ -1,16 +1,16 @@
 #pragma once
 
-#include "Asset/Core/AssetTags.h"
+#include "Asset/Cache/AssetTags.h"
 #include "Asset/Intermediate/IntermediateTextureData.h"
 #include "Asset/Intermediate/IntermediateMaterialData.h"
 #include "Asset/Intermediate/IntermediateStaticMeshData.h"
 #include "Asset/Intermediate/IntermediateSubUVAtlasData.h"
 #include "Asset/Intermediate/IntermediateFontAtlasData.h"
-#include "Asset/Data/TextureCookedData.h"
-#include "Asset/Data/MaterialCookedData.h"
-#include "Asset/Data/StaticMeshCookedData.h"
-#include "Asset/Data/SubUVAtlasCookedData.h"
-#include "Asset/Data/FontAtlasCookedData.h"
+#include "Asset/Cooked/TextureCookedData.h"
+#include "Asset/Cooked/MaterialCookedData.h"
+#include "Asset/Cooked/StaticMeshCookedData.h"
+#include "Asset/Cooked/SubUVAtlasCookedData.h"
+#include "Asset/Cooked/FontAtlasCookedData.h"
 
 namespace Asset
 {

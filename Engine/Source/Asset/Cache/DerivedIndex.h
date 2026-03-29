@@ -1,7 +1,11 @@
 #pragma once
 
 #include "Core/CoreMinimal.h"
-#include "Asset/Core/AssetKey.h"
+#include "Asset/Cache/AssetKey.h"
+#include "Asset/Cache/DerivedKey.h"
+
+namespace Asset
+{
 
 class FDerivedIndex
 {
@@ -20,3 +24,5 @@ class FDerivedIndex
   private:
     TMap<FPathKey, FDerivedKey> Records;
 };
+
+} // namespace Asset

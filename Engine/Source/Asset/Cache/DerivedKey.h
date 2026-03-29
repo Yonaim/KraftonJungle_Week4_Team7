@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Asset/Core/AssetKey.h"
+#include "Asset/Cache/AssetKey.h"
 
 inline FDerivedKey MakeDerivedKey(const FString& SourceHash, const FString& BuildSettingsKey)
 {

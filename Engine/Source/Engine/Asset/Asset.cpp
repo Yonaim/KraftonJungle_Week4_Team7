@@ -1,3 +1,3 @@
-#include "Engine/Asset/Asset.h"
+#include "Asset/Asset.h"
 
 REGISTER_CLASS(, UAsset)

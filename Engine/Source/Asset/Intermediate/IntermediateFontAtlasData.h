@@ -1,17 +1,16 @@
 #pragma once
 
-#include "Asset/Core/Types.h"
-#include "Asset/Data/FontAtlasCookedData.h"
+#include "Asset/Cooked/FontAtlasCookedData.h"
 
 namespace Asset
 {
 
-struct FIntermediateFontAtlasData
-{
-    FFontInfo                Info;
-    FFontCommon              Common;
-    TMap<uint32, FFontGlyph> Glyphs;
-    FWString                 AtlasImagePath;
-};
+    struct FIntermediateFontAtlasData
+    {
+        FFontInfo                Info;
+        FFontCommon              Common;
+        TMap<uint32, FFontGlyph> Glyphs;
+        FWString                 AtlasImagePath;
+    };
 
 } // namespace Asset
