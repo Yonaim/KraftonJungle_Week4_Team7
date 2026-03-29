@@ -24,12 +24,19 @@ class UStaticMesh : public UObject
     const FString& GetAssetPathFileName() { return StaticMeshAsset->PathFileName; }
     void           SetStaticMeshAsset(FStaticMesh* InStaticMesh) { StaticMeshAsset = InStaticMesh; }
 
+    FString GetMeshName() const;
+
     const TArray<FNormalVertex>& GetVerticesData() const;
     const TArray<uint32>&        GetIndicesData() const;
+
+    uint32 GetVerticesCount() const;
+    uint32 GetIndicesCount() const;
 
     const Geometry::FAABB GetLocalAABB() const { return CachedAABB; }
 
     void Build();
+
+    bool IsValidLowLevel() const;
 
   private:
     void CalculateAABB();
