@@ -58,6 +58,10 @@ private:
     void ClearDepthBuffer();
     
     void ExecuteRenderPass(ERenderLayer InRenderLayer);
+    void DrawAllAABBLines(ERenderLayer InRenderLayer);
+    
+    /** AABB 전용 리소스 초기화 */
+    void InitializeAABBResources();
     
 private:
     std::unique_ptr<CRenderStateManager> RenderStateManager = nullptr;
@@ -95,6 +99,11 @@ private:
     /** 기본 공유 리소스 */
     static std::shared_ptr<FMaterial> DefaultMaterial;
     std::shared_ptr<FMaterial> DefaultTextureMaterial;
+    
+    /** AABB 전용 리소스 */
+    std::shared_ptr<FMeshData> AABBMeshData;
+    std::shared_ptr<FMaterial> AABBMaterial;
+    
     ID3D11SamplerState* NormalSampler = nullptr;
     
 public:

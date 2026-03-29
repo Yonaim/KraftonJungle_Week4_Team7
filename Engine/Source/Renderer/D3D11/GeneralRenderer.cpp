@@ -123,6 +123,9 @@ bool FGeneralRenderer::InitializeDefaultMaterial()
         }
         FMaterialManager::Get().Register("M_Default", DefaultMaterial);
     }
+    
+    InitializeAABBResources();
+
     return true;
 }
 
@@ -287,8 +290,11 @@ void FGeneralRenderer::ExecuteCommands()
     UpdateFrameConstantBuffer();
 
     ExecuteRenderPass(ERenderLayer::Default);
+    DrawAllAABBLines(ERenderLayer::Default);
+    
     ClearDepthBuffer();
     ExecuteRenderPass(ERenderLayer::Overlay);
+    DrawAllAABBLines(ERenderLayer::Overlay);
 
     // if (PostRenderCallback) PostRenderCallback(this);
 }
@@ -544,5 +550,84 @@ void FGeneralRenderer::ExecuteRenderPass(ERenderLayer InRenderLayer)
             DeviceContext->DrawIndexed(static_cast<UINT>(Cmd.MeshData->Indices.size()), 0, 0);
         else if (!Cmd.MeshData->Vertices.empty())
             DeviceContext->Draw(static_cast<UINT>(Cmd.MeshData->Vertices.size()), 0);
+    }
+}
+
+void FGeneralRenderer::InitializeAABBResources()
+{
+    /** 1. AABB용 Material 생성 (NewShaderLine.hlsl) */
+    std::wstring ShaderDirW = FPaths::ShaderDir();
+    std::wstring LineVSPath = ShaderDirW + L"\\NewShaderLine.hlsl";
+    std::wstring LinePSPath = ShaderDirW + L"\\NewShaderLine.hlsl";
+
+    auto VS = FShaderMap::Get().GetOrCreateVertexShader(Device, LineVSPath, L"VSMain");
+    auto PS = FShaderMap::Get().GetOrCreatePixelShader(Device, LinePSPath, L"PSMain");
+
+    AABBMaterial = std::make_shared<FMaterial>();
+    AABBMaterial->SetOriginName("M_AABB");
+    AABBMaterial->SetVertexShader(VS);
+    AABBMaterial->SetPixelShader(PS);
+
+    // 라인 렌더링용 상태 설정
+    FRasterizerStateOption rasterizerOption;
+    rasterizerOption.FillMode = D3D11_FILL_SOLID;
+    rasterizerOption.CullMode = D3D11_CULL_NONE; // 라인이므로 컬링 불필요
+    AABBMaterial->SetRasterizerOption(rasterizerOption);
+    AABBMaterial->SetRasterizerState(RenderStateManager->GetOrCreateRasterizerState(rasterizerOption));
+
+    FDepthStencilStateOption depthStencilOption;
+    depthStencilOption.DepthEnable = true;
+    depthStencilOption.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO; // AABB는 깊이 쓰기 안함
+    AABBMaterial->SetDepthStencilOption(depthStencilOption);
+    AABBMaterial->SetDepthStencilState(RenderStateManager->GetOrCreateDepthStencilState(depthStencilOption));
+
+    /** 2. AABB용 MeshData 생성 (1x1x1 Wireframe Cube) */
+    AABBMeshData = std::make_unique<FMeshData>();
+    AABBMeshData->Topology = EMeshTopology::EMT_LineList;
+
+    // 정점 8개 (0~1 범위), 노란색(1,1,0,1)
+    FVector4 Yellow(1.0f, 1.0f, 0.0f, 1.0f);
+    AABBMeshData->Vertices = {
+        { FVector(0, 0, 0), Yellow }, { FVector(1, 0, 0), Yellow }, { FVector(1, 1, 0), Yellow }, { FVector(0, 1, 0), Yellow },
+        { FVector(0, 0, 1), Yellow }, { FVector(1, 0, 1), Yellow }, { FVector(1, 1, 1), Yellow }, { FVector(0, 1, 1), Yellow }
+    };
+
+    // 인덱스 24개 (12개 선)
+    AABBMeshData->Indices = {
+        0, 1, 1, 2, 2, 3, 3, 0, // 바닥
+        4, 5, 5, 6, 6, 7, 7, 4, // 천장
+        0, 4, 1, 5, 2, 6, 3, 7  // 기둥
+    };
+
+    AABBMeshData->CreateVertexAndIndexBuffer(Device);
+}
+
+void FGeneralRenderer::DrawAllAABBLines(ERenderLayer InRenderLayer)
+{
+    if (!AABBMeshData || !AABBMaterial)
+        return;
+
+    AABBMaterial->Bind(DeviceContext);
+    RenderStateManager->BindState(AABBMaterial->GetRasterizerState());
+    RenderStateManager->BindState(AABBMaterial->GetDepthStencilState());
+
+    AABBMeshData->Bind(DeviceContext);
+    DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+
+    for (const auto& Cmd : CommandList)
+    {
+        if (Cmd.RenderLayer != InRenderLayer || !Cmd.bDrawAABB)
+            continue;
+
+        // AABB Min/Max를 이용해 Scale & Translation 행렬 생성
+        const FVector& Min = Cmd.WorldAABB.Min;
+        const FVector& Max = Cmd.WorldAABB.Max;
+        const FVector  Size = Max - Min;
+
+        // 0~1 범위 큐브를 AABB 크기와 위치에 맞게 변형
+        FMatrix AABBMatrix = FMatrix::MakeScale(Size) * FMatrix::MakeTranslation(Min);
+
+        UpdateObjectConstantBuffer(AABBMatrix);
+        DeviceContext->DrawIndexed(static_cast<UINT>(AABBMeshData->Indices.size()), 0, 0);
     }
 }

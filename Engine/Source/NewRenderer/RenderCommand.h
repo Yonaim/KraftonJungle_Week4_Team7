@@ -4,25 +4,28 @@
 
 class FMaterial;
 
-enum class ERenderLayer {
-	Default,
-	Overlay,
-	UI,
+enum class ERenderLayer
+{
+    Default,
+    Overlay,
+    UI,
 };
 
 struct ENGINE_API FRenderCommand
 {
-	FMeshData* MeshData = nullptr;
-	FMatrix WorldMatrix;
-	FMaterial* Material = nullptr;
-	uint64 SortKey = 0;
+    FMeshData*      MeshData = nullptr;
+    FMatrix         WorldMatrix;
+    FMaterial*      Material = nullptr;
+    uint64          SortKey = 0;
+    Geometry::FAABB WorldAABB;
+    bool            bDrawAABB = false;
 
-	ERenderLayer RenderLayer = ERenderLayer::Default;
-	bool bDisableDepthTest = false;
-	bool bDisableDepthWrite = false;
-	bool bDisableCulling = false;
+    ERenderLayer RenderLayer = ERenderLayer::Default;
+    bool         bDisableDepthTest = false;
+    bool         bDisableDepthWrite = false;
+    bool         bDisableCulling = false;
 
-	static uint64 MakeSortKey(const FMaterial* InMaterial, const FMeshData* InMeshData);
+    static uint64 MakeSortKey(const FMaterial* InMaterial, const FMeshData* InMeshData);
 };
 
 /**
@@ -30,26 +33,26 @@ struct ENGINE_API FRenderCommand
  */
 struct ENGINE_API FRenderCommandQueue
 {
-	/** 일반 메시 렌더링 명령 목록 (텍스트, SubUV 포함 통합) */
-	TArray<FRenderCommand> Commands;
+    /** 일반 메시 렌더링 명령 목록 (텍스트, SubUV 포함 통합) */
+    TArray<FRenderCommand> Commands;
 
-	/** 프레임의 카메라 행렬 */
-	FMatrix ViewMatrix;
-	FMatrix ProjectionMatrix;
+    /** 프레임의 카메라 행렬 */
+    FMatrix ViewMatrix;
+    FMatrix ProjectionMatrix;
 
-	void Reserve(size_t Count)
-	{
-		Commands.reserve(Count);
-	}
+    void Reserve(size_t Count)
+    {
+        Commands.reserve(Count);
+    }
 
-	void AddCommand(const FRenderCommand& Cmd)
-	{
-		Commands.push_back(Cmd);
-	}
+    void AddCommand(const FRenderCommand& Cmd)
+    {
+        Commands.push_back(Cmd);
+    }
 
-	/** 큐 초기화 */
-	void Clear()
-	{
-		Commands.clear();
-	}
+    /** 큐 초기화 */
+    void Clear()
+    {
+        Commands.clear();
+    }
 };

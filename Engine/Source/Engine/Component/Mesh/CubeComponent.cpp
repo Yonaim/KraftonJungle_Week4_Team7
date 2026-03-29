@@ -6,6 +6,8 @@
 #include "Renderer/D3D11/GeneralRenderer.h"
 #include <memory>
 
+#include "Engine/Game/Actor.h"
+
 namespace Engine::Component
 {
     bool UCubeComponent::GetLocalTriangles(TArray<Geometry::FTriangle>& OutTriangles) const
@@ -57,6 +59,8 @@ namespace Engine::Component
         RenderCommand.MeshData = cubePrimitive.GetMeshData();
         RenderCommand.Material = FGeneralRenderer::GetDefaultMaterial();
         RenderCommand.WorldMatrix = GetRelativeMatrix();
+        RenderCommand.bDrawAABB = GetOwnerActor()->IsSelected();
+        RenderCommand.WorldAABB = GetWorldAABB();
         OutRenderData.RenderCommands.push_back(RenderCommand);
         
         // === 테스트용 데이터 삽입
