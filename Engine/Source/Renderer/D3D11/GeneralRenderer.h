@@ -40,6 +40,7 @@ public:
     // void SetPostRenderCallback(FPostRenderCallback InCallback) { PostRenderCallback = std::move(InCallback); }
     
     static FMaterial* GetDefaultMaterial() { return DefaultMaterial.get(); }
+    static FMaterial* GetDefaultSpriteMaterial() { return DefaultSpriteMaterial.get(); }
     FMaterial* GetLineMaterial() const { return AABBMaterial.get(); }
     std::unique_ptr<CRenderStateManager>& GetRenderStateManager() { return RenderStateManager; }
     ID3D11Device* GetDevice() const { return Device; }
@@ -105,6 +106,7 @@ private:
     
     /** 기본 공유 리소스 */
     static std::shared_ptr<FMaterial> DefaultMaterial;
+    static std::shared_ptr<FMaterial> DefaultSpriteMaterial;
     std::shared_ptr<FMaterial> DefaultTextureMaterial;
     
     /** AABB 전용 리소스 */

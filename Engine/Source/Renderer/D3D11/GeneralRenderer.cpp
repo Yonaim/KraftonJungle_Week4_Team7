@@ -8,6 +8,7 @@
 #include "NewRenderer/ShaderType.h"
 
 std::shared_ptr<FMaterial> FGeneralRenderer::DefaultMaterial;
+std::shared_ptr<FMaterial> FGeneralRenderer::DefaultSpriteMaterial;
 
 FGeneralRenderer::FGeneralRenderer(HWND InHwnd, int32 InWidth, int32 InHeight)
 {
@@ -77,6 +78,45 @@ bool FGeneralRenderer::Initialize(HWND InHwnd, int32 Width, int32 Height)
 
 bool FGeneralRenderer::InitializeDefaultMaterial()
 {
+    if (NormalSampler == nullptr)
+    {
+        D3D11_SAMPLER_DESC SamplerDesc = {};
+        SamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+        SamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+        SamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+        SamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+        SamplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+        SamplerDesc.MinLOD = 0;
+        SamplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+        Device->CreateSamplerState(&SamplerDesc, &NormalSampler);
+    }
+
+    // Create a 1x1 white texture for DefaultMaterial
+    ID3D11ShaderResourceView* WhiteSRV = nullptr;
+    {
+        uint32_t WhiteData = 0xFFFFFFFF;
+        D3D11_TEXTURE2D_DESC TexDesc = {};
+        TexDesc.Width = 1;
+        TexDesc.Height = 1;
+        TexDesc.MipLevels = 1;
+        TexDesc.ArraySize = 1;
+        TexDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        TexDesc.SampleDesc.Count = 1;
+        TexDesc.Usage = D3D11_USAGE_IMMUTABLE;
+        TexDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+
+        D3D11_SUBRESOURCE_DATA InitData = {};
+        InitData.pSysMem = &WhiteData;
+        InitData.SysMemPitch = 4;
+
+        ID3D11Texture2D* WhiteTex = nullptr;
+        if (SUCCEEDED(Device->CreateTexture2D(&TexDesc, &InitData, &WhiteTex)))
+        {
+            Device->CreateShaderResourceView(WhiteTex, nullptr, &WhiteSRV);
+            WhiteTex->Release();
+        }
+    }
+
     std::wstring ShaderDirW = FPaths::ShaderDir(); // 임시 Dir 경로
     // TODO: 매직 넘버 제거
     std::wstring VSPath = ShaderDirW + L"\\NewShaderMesh.hlsl";
@@ -95,6 +135,13 @@ bool FGeneralRenderer::InitializeDefaultMaterial()
         DefaultMaterial->SetOriginName("M_Default");
         DefaultMaterial->SetVertexShader(VS);
         DefaultMaterial->SetPixelShader(PS);
+
+        if (WhiteSRV)
+        {
+            auto Tex = std::make_shared<FMaterialTexture>();
+            Tex->TextureSRV = WhiteSRV;
+            DefaultMaterial->SetMaterialTexture(Tex);
+        }
 
         FRasterizerStateOption rasterizerOption;
         rasterizerOption.FillMode = D3D11_FILL_SOLID;
@@ -124,6 +171,28 @@ bool FGeneralRenderer::InitializeDefaultMaterial()
             DefaultMaterial->GetConstantBuffer(SlotIndex)->SetData(White, sizeof(White));
         }
         FMaterialManager::Get().Register("M_Default", DefaultMaterial);
+    }
+
+    /** 기본 Sprite Material 생성 */
+    {
+        DefaultSpriteMaterial = DefaultMaterial->CreateDynamicMaterial();
+        DefaultSpriteMaterial->SetOriginName("M_DefaultSprite");
+        DefaultSpriteMaterial->SetInstanceName("M_DefaultSprite");
+
+        FBlendStateOption blendStateOption;
+        blendStateOption.BlendEnable = true;
+        blendStateOption.SrcBlend = D3D11_BLEND_SRC_ALPHA;
+        blendStateOption.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+        blendStateOption.BlendOp = D3D11_BLEND_OP_ADD;
+        blendStateOption.SrcBlendAlpha = D3D11_BLEND_ONE;
+        blendStateOption.DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
+        blendStateOption.BlendOpAlpha = D3D11_BLEND_OP_ADD;
+
+        auto BS = RenderStateManager->GetOrCreateBlendState(blendStateOption);
+        DefaultSpriteMaterial->SetBlendOption(blendStateOption);
+        DefaultSpriteMaterial->SetBlendState(BS);
+
+        FMaterialManager::Get().Register("M_DefaultSprite", DefaultSpriteMaterial);
     }
     
     InitializeAABBResources();
@@ -323,6 +392,9 @@ void FGeneralRenderer::ExecuteCommands()
     DrawAllAABBLines(ERenderLayer::Overlay);
 
     // if (PostRenderCallback) PostRenderCallback(this);
+
+    // Clear command list after execution to avoid accumulation in multi-viewport setups
+    ClearCommandList();
 }
 
 void FGeneralRenderer::SetGUICallbacks(FGUICallback InInit, FGUICallback     InShutdown,

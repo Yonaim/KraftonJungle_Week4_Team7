@@ -11,8 +11,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Source\CoreUObject\ObjectIterator.h" />
-    <ClInclude Include="Source\Engine\Game\MeshActor.h" />
     <ClInclude Include="Resources\Mesh\Cone.h" />
     <ClInclude Include="Resources\Mesh\Cube.h" />
     <ClInclude Include="Resources\Mesh\Cylinder.h" />
@@ -81,6 +79,7 @@
     <ClInclude Include="Source\Core\Path.h" />
     <ClInclude Include="Source\CoreUObject\Object.h" />
     <ClInclude Include="Source\CoreUObject\ObjectFactory.h" />
+    <ClInclude Include="Source\CoreUObject\ObjectIterator.h" />
     <ClInclude Include="Source\Engine\Component\Core\BatchLineComponent.h" />
     <ClInclude Include="Source\Engine\Component\Core\ComponentProperty.h" />
     <ClInclude Include="Source\Engine\Component\Core\PrimitiveComponent.h" />
@@ -88,19 +87,20 @@
     <ClInclude Include="Source\Engine\Component\Core\UnknownComponent.h" />
     <ClInclude Include="Source\Engine\Component\Mesh\ConeComponent.h" />
     <ClInclude Include="Source\Engine\Component\Mesh\CubeComponent.h" />
-    <ClInclude Include="Source\Engine\Component\Mesh\LineBatchComponent.h" />
     <ClInclude Include="Source\Engine\Component\Mesh\CylinderComponent.h" />
+    <ClInclude Include="Source\Engine\Component\Mesh\LineBatchComponent.h" />
+    <ClInclude Include="Source\Engine\Component\Mesh\MeshComponent.h" />
     <ClInclude Include="Source\Engine\Component\Mesh\QuadComponent.h" />
     <ClInclude Include="Source\Engine\Component\Mesh\RingComponent.h" />
     <ClInclude Include="Source\Engine\Component\Mesh\SphereComponent.h" />
     <ClInclude Include="Source\Engine\Component\Mesh\StaticMeshComponent.h" />
     <ClInclude Include="Source\Engine\Component\Mesh\TriangleComponent.h" />
-    <ClInclude Include="Source\Engine\Component\Mesh\MeshComponent.h" />
     <ClInclude Include="Source\Engine\Component\Sprite\AtlasComponent.h" />
     <ClInclude Include="Source\Engine\Component\Sprite\PaperSpriteComponent.h" />
     <ClInclude Include="Source\Engine\Component\Sprite\SubUVAnimatedComponent.h" />
     <ClInclude Include="Source\Engine\Component\Sprite\SubUVComponent.h" />
     <ClInclude Include="Source\Engine\Component\Text\AtlasTextComponent.h" />
+    <ClInclude Include="Source\Engine\Component\Text\TextRenderComponent.h" />
     <ClInclude Include="Source\Engine\Component\Text\UUIDComponent.h" />
     <ClInclude Include="Source\Engine\EngineStatics.h" />
     <ClInclude Include="Source\Engine\Game\Actor.h" />
@@ -110,9 +110,11 @@
     <ClInclude Include="Source\Engine\Game\CylinderActor.h" />
     <ClInclude Include="Source\Engine\Game\EffectActor.h" />
     <ClInclude Include="Source\Engine\Game\FlipbookActor.h" />
+    <ClInclude Include="Source\Engine\Game\MeshActor.h" />
     <ClInclude Include="Source\Engine\Game\RingActor.h" />
     <ClInclude Include="Source\Engine\Game\SphereActor.h" />
     <ClInclude Include="Source\Engine\Game\SpriteActor.h" />
+    <ClInclude Include="Source\Engine\Game\StaticMeshActor.h" />
     <ClInclude Include="Source\Engine\Game\TextActor.h" />
     <ClInclude Include="Source\Engine\Game\TriangleActor.h" />
     <ClInclude Include="Source\Engine\Game\UnknownActor.h" />
@@ -124,7 +126,6 @@
     <ClInclude Include="Source\Launch\EngineLoop.h" />
     <ClInclude Include="Source\NewRenderer\Material.h" />
     <ClInclude Include="Source\NewRenderer\MaterialManager.h" />
-    <ClInclude Include="Source\NewRenderer\PrimitiveVertex.h" />
     <ClInclude Include="Source\NewRenderer\Primitive\PrimitiveBase.h" />
     <ClInclude Include="Source\NewRenderer\Primitive\PrimitiveCone.h" />
     <ClInclude Include="Source\NewRenderer\Primitive\PrimitiveCube.h" />
@@ -138,6 +139,7 @@
     <ClInclude Include="Source\NewRenderer\Primitive\PrimitiveSphere.h" />
     <ClInclude Include="Source\NewRenderer\Primitive\PrimitiveTriangle.h" />
     <ClInclude Include="Source\NewRenderer\Primitive\UnrealEditorStyledGizmo.h" />
+    <ClInclude Include="Source\NewRenderer\PrimitiveVertex.h" />
     <ClInclude Include="Source\NewRenderer\RenderCommand.h" />
     <ClInclude Include="Source\NewRenderer\Renderer.h" />
     <ClInclude Include="Source\NewRenderer\RenderState.h" />
@@ -155,7 +157,6 @@
     <ClInclude Include="Source\Renderer\D3D11\D3D11ObjectIdRenderer.h" />
     <ClInclude Include="Source\Renderer\D3D11\D3D11OutlineRenderer.h" />
     <ClInclude Include="Source\Renderer\D3D11\D3D11RHI.h" />
-    <ClInclude Include="Source\Renderer\D3D11\D3D11SpriteBatchRenderer.h" />
     <ClInclude Include="Source\Renderer\D3D11\D3D11TextBatchRenderer.h" />
     <ClInclude Include="Source\Renderer\D3D11\GeneralRenderer.h" />
     <ClInclude Include="Source\Renderer\EditorRenderData.h" />
@@ -166,7 +167,7 @@
     <ClInclude Include="Source\Renderer\SceneRenderData.h" />
     <ClInclude Include="Source\Renderer\SceneView.h" />
     <ClInclude Include="Source\Renderer\Submitter\OverlayMeshSubmitter.h" />
-    <ClInclude Include="Source\Renderer\Submitter\SpriteSubmitter.h" />
+    <ClInclude Include="Source\Renderer\Submitter\SceneMeshSubmitter.h" />
     <ClInclude Include="Source\Renderer\Submitter\TextSubmitter.h" />
     <ClInclude Include="Source\Renderer\Types\AxisColors.h" />
     <ClInclude Include="Source\Renderer\Types\BasicMeshType.h" />
@@ -186,16 +187,12 @@
     <ClInclude Include="Source\SceneIO\SceneSerializer.h" />
     <ClInclude Include="Source\SceneIO\SceneTypeRegistry.h" />
     <ClInclude Include="Source\ThirdParty\Json\json.hpp" />
-    <ClInclude Include="Source\Engine\Game\StaticMeshActor.h" />
-    <ClInclude Include="Source\Engine\Component\Text\TextRenderComponent.h" />
     <ClInclude Include="Source\ThirdParty\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\CoreUObject\ObjectIterator.cpp" />
-    <ClCompile Include="Source\Engine\Game\MeshActor.cpp" />
     <ClCompile Include="Resources\Mesh\StaticMesh.cpp" />
     <ClCompile Include="Source\ApplicationCore\Input\InputRouter.cpp" />
     <ClCompile Include="Source\ApplicationCore\Input\InputSystem.cpp" />
@@ -230,25 +227,27 @@
     <ClCompile Include="Source\Core\Path.cpp" />
     <ClCompile Include="Source\CoreUObject\Object.cpp" />
     <ClCompile Include="Source\CoreUObject\ObjectFactory.cpp" />
+    <ClCompile Include="Source\CoreUObject\ObjectIterator.cpp" />
     <ClCompile Include="Source\Engine\Component\Core\BatchLineComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Core\PrimitiveComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Core\SceneComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Core\UnknownComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Mesh\ConeComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Mesh\CubeComponent.cpp" />
-    <ClCompile Include="Source\Engine\Component\Mesh\LineBatchComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Mesh\CylinderComponent.cpp" />
+    <ClCompile Include="Source\Engine\Component\Mesh\LineBatchComponent.cpp" />
+    <ClCompile Include="Source\Engine\Component\Mesh\MeshComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Mesh\QuadComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Mesh\RingComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Mesh\SphereComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Mesh\StaticMeshComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Mesh\TriangleComponent.cpp" />
-    <ClCompile Include="Source\Engine\Component\Mesh\MeshComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Sprite\AtlasComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Sprite\PaperSpriteComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Sprite\SubUVAnimatedComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Sprite\SubUVComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Text\AtlasTextComponent.cpp" />
+    <ClCompile Include="Source\Engine\Component\Text\TextRenderComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Text\UUIDComponent.cpp" />
     <ClCompile Include="Source\Engine\EngineStatics.cpp" />
     <ClCompile Include="Source\Engine\Game\Actor.cpp" />
@@ -258,9 +257,11 @@
     <ClCompile Include="Source\Engine\Game\CylinderActor.cpp" />
     <ClCompile Include="Source\Engine\Game\EffectActor.cpp" />
     <ClCompile Include="Source\Engine\Game\FlipbookActor.cpp" />
+    <ClCompile Include="Source\Engine\Game\MeshActor.cpp" />
     <ClCompile Include="Source\Engine\Game\RingActor.cpp" />
     <ClCompile Include="Source\Engine\Game\SphereActor.cpp" />
     <ClCompile Include="Source\Engine\Game\SpriteActor.cpp" />
+    <ClCompile Include="Source\Engine\Game\StaticMeshActor.cpp" />
     <ClCompile Include="Source\Engine\Game\TextActor.cpp" />
     <ClCompile Include="Source\Engine\Game\TriangleActor.cpp" />
     <ClCompile Include="Source\Engine\Game\UnknownActor.cpp" />
@@ -296,19 +297,15 @@
     <ClCompile Include="Source\Renderer\D3D11\D3D11ObjectIdRenderer.cpp" />
     <ClCompile Include="Source\Renderer\D3D11\D3D11OutlineRenderer.cpp" />
     <ClCompile Include="Source\Renderer\D3D11\D3D11RHI.cpp" />
-    <ClCompile Include="Source\Renderer\D3D11\D3D11SpriteBatchRenderer.cpp" />
     <ClCompile Include="Source\Renderer\D3D11\D3D11TextBatchRenderer.cpp" />
     <ClCompile Include="Source\Renderer\D3D11\GeneralRenderer.cpp" />
     <ClCompile Include="Source\Renderer\RendererModule.cpp" />
     <ClCompile Include="Source\Renderer\Submitter\OverlayMeshSubmitter.cpp" />
     <ClCompile Include="Source\Renderer\Submitter\SceneMeshSubmitter.cpp" />
-    <ClCompile Include="Source\Renderer\Submitter\SpriteSubmitter.cpp" />
     <ClCompile Include="Source\Renderer\Submitter\TextSubmitter.cpp" />
     <ClCompile Include="Source\SceneIO\SceneJson.cpp" />
     <ClCompile Include="Source\SceneIO\SceneSerializer.cpp" />
     <ClCompile Include="Source\SceneIO\SceneTypeRegistry.cpp" />
-    <ClCompile Include="Source\Engine\Game\StaticMeshActor.cpp" />
-    <ClCompile Include="Source\Engine\Component\Text\TextRenderComponent.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

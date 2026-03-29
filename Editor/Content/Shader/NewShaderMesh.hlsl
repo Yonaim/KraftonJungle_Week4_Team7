@@ -1,10 +1,13 @@
+Texture2D MaterialTexture : register(t0);
+SamplerState NormalSampler : register(s0);
+
 cbuffer FrameConstants : register(b0)
 {
     row_major float4x4 ViewMatrix;
     row_major float4x4 ProjectionMatrix;
 }
 
-cbuffer FMeshUnlitConstants : register(b1)
+cbuffer ObjectConstants : register(b1)
 {
     row_major float4x4 WorldMatrix;
 };
@@ -21,6 +24,7 @@ struct PSInput
 {
     float4 Position : SV_POSITION;
     float4 Color    : COLOR;
+    float2 UV       : TEXCOORD;
 };
 
 PSInput VSMain(VSInput In)
@@ -29,10 +33,13 @@ PSInput VSMain(VSInput In)
     float4x4 MVP = mul(mul(WorldMatrix, ViewMatrix), ProjectionMatrix);
     Out.Position = mul(float4(In.Position, 1.0f), MVP);
     Out.Color = In.Color;
+    Out.UV = In.UV;
     return Out;
 }
 
 float4 PSMain(PSInput In) : SV_TARGET
 {
-    return In.Color;
+    float4 TexColor = MaterialTexture.Sample(NormalSampler, In.UV);
+    
+    return TexColor * In.Color;
 }

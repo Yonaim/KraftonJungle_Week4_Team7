@@ -8,14 +8,12 @@
 #include "Renderer/D3D11/D3D11ObjectIdRenderer.h"
 #include "Renderer/D3D11/D3D11OutlineRenderer.h"
 #include "Renderer/D3D11/D3D11RHI.h"
-#include "Renderer/D3D11/D3D11SpriteBatchRenderer.h"
 #include "Renderer/D3D11/D3D11TextBatchRenderer.h"
 #include "Renderer/D3D11/GeneralRenderer.h"
 #include "Renderer/EditorRenderData.h"
 #include "Renderer/SceneRenderData.h"
 #include "Renderer/Submitter/OverlayMeshSubmitter.h"
 #include "Renderer/Submitter/SceneMeshSubmitter.h"
-#include "Renderer/Submitter/SpriteSubmitter.h"
 #include "Renderer/Submitter/TextSubmitter.h"
 #include "Renderer/Types/PickResult.h"
 
@@ -52,12 +50,10 @@ class ENGINE_API FRendererModule
     FD3D11MeshBatchRenderer  MeshBatchRenderer;
     FD3D11OutlineRenderer    OutlineRenderer;
     FD3D11TextBatchRenderer  TextRenderer;
-    FD3D11SpriteBatchRenderer SpriteRenderer;
     FD3D11ObjectIdRenderer   ObjectIdRenderer;
 
     FSceneMeshSubmitter  SceneMeshSubmitter;
     FOverlayMeshSubmitter OverlayMeshSubmitter;
-    FSpriteSubmitter     SpriteSubmitter;
     FTextSubmitter       TextSubmitter;
 
     TComPtr<ID3D11Debug> DebugDevice;

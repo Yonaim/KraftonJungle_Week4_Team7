@@ -109,12 +109,6 @@ bool FRendererModule::StartupModule(HWND hWnd)
         return false;
     }
 
-    if (!SpriteRenderer.Initialize(&RHI))
-    {
-        ShutdownModule();
-        return false;
-    }
-
     if (!ObjectIdRenderer.Initialize(&RHI))
     {
         ShutdownModule();
@@ -137,7 +131,6 @@ void FRendererModule::ShutdownModule()
     DebugDevice.Reset();
 
     ObjectIdRenderer.Shutdown();
-    SpriteRenderer.Shutdown();
     TextRenderer.Shutdown();
     MeshBatchRenderer.Shutdown();
 
