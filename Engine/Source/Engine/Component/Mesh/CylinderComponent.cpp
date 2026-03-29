@@ -1,6 +1,10 @@
 #include "CylinderComponent.h"
 
 #include "Resources/Mesh/Cylinder.h"
+#include "NewRenderer/Primitive/PrimitiveCylinder.h"
+#include "Renderer/D3D11/GeneralRenderer.h"
+#include "Renderer/SceneRenderData.h"
+#include "Engine/Game/Actor.h"
 
 namespace Engine::Component
 {
@@ -19,19 +23,15 @@ namespace Engine::Component
             const uint16_t I1 = cylinder_indices[i + 1];
             const uint16_t I2 = cylinder_indices[i + 2];
 
-            if (I0 >= cylinder_vertex_count || I1 >= cylinder_vertex_count ||
-                I2 >= cylinder_vertex_count)
+            if (I0 >= cylinder_vertex_count || I1 >= cylinder_vertex_count || I2 >= cylinder_vertex_count)
             {
                 continue;
             }
 
             Geometry::FTriangle Triangle;
-            Triangle.V0 = FVector{cylinder_vertices[I0].x, cylinder_vertices[I0].y,
-                                  cylinder_vertices[I0].z};
-            Triangle.V1 = FVector{cylinder_vertices[I1].x, cylinder_vertices[I1].y,
-                                  cylinder_vertices[I1].z};
-            Triangle.V2 = FVector{cylinder_vertices[I2].x, cylinder_vertices[I2].y,
-                                  cylinder_vertices[I2].z};
+            Triangle.V0 = FVector{cylinder_vertices[I0].x, cylinder_vertices[I0].y, cylinder_vertices[I0].z};
+            Triangle.V1 = FVector{cylinder_vertices[I1].x, cylinder_vertices[I1].y, cylinder_vertices[I1].z};
+            Triangle.V2 = FVector{cylinder_vertices[I2].x, cylinder_vertices[I2].y, cylinder_vertices[I2].z};
 
             OutTriangles.push_back(Triangle);
         }
@@ -39,7 +39,21 @@ namespace Engine::Component
         return OutTriangles.size() > 0;
     }
 
+    void UCylinderComponent::CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const
+    {
+        FRenderCommand RenderCommand;
+
+        static CPrimitiveCylinder cylinderPrimitive;
+        RenderCommand.MeshData = cylinderPrimitive.GetMeshData();
+        RenderCommand.Material = FGeneralRenderer::GetDefaultMaterial();
+        RenderCommand.WorldMatrix = GetRelativeMatrix();
+        RenderCommand.bDrawAABB = GetOwnerActor()->IsSelected();
+        RenderCommand.WorldAABB = GetWorldAABB();
+        OutRenderData.RenderCommands.push_back(RenderCommand);
+    }
+
     Geometry::FAABB UCylinderComponent::GetLocalAABB() const
+
     {
         FVector Min(FLT_MAX, FLT_MAX, FLT_MAX);
         FVector Max(-FLT_MAX, -FLT_MAX, -FLT_MAX);

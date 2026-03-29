@@ -1,6 +1,10 @@
 #include "SphereComponent.h"
 
 #include "Resources/Mesh/Sphere.h"
+#include "NewRenderer/Primitive/PrimitiveSphere.h"
+#include "Renderer/D3D11/GeneralRenderer.h"
+#include "Renderer/SceneRenderData.h"
+#include "Engine/Game/Actor.h"
 
 namespace Engine::Component
 {
@@ -33,6 +37,19 @@ namespace Engine::Component
         }
 
         return OutTriangles.size() > 0;
+    }
+
+    void USphereComponent::CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const
+    {
+        FRenderCommand RenderCommand;
+
+        static CPrimitiveSphere spherePrimitive;
+        RenderCommand.MeshData = spherePrimitive.GetMeshData();
+        RenderCommand.Material = FGeneralRenderer::GetDefaultMaterial();
+        RenderCommand.WorldMatrix = GetRelativeMatrix();
+        RenderCommand.bDrawAABB = GetOwnerActor()->IsSelected();
+        RenderCommand.WorldAABB = GetWorldAABB();
+        OutRenderData.RenderCommands.push_back(RenderCommand);
     }
 
     Geometry::FAABB USphereComponent::GetLocalAABB() const

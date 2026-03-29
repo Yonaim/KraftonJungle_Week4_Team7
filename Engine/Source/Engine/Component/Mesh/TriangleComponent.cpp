@@ -1,6 +1,10 @@
 #include "TriangleComponent.h"
 
 #include "Resources/Mesh/Triangle.h"
+#include "NewRenderer/Primitive/PrimitiveTriangle.h"
+#include "Renderer/D3D11/GeneralRenderer.h"
+#include "Renderer/SceneRenderData.h"
+#include "Engine/Game/Actor.h"
 
 namespace Engine::Component
 {
@@ -35,6 +39,19 @@ namespace Engine::Component
         return OutTriangles.size() > 0;
     }
 
+    void UTriangleComponent::CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const
+    {
+        FRenderCommand RenderCommand;
+
+        static CPrimitiveTriangle trianglePrimitive;
+        RenderCommand.MeshData = trianglePrimitive.GetMeshData();
+        RenderCommand.Material = FGeneralRenderer::GetDefaultMaterial();
+        RenderCommand.WorldMatrix = GetRelativeMatrix();
+        RenderCommand.bDrawAABB = GetOwnerActor()->IsSelected();
+        RenderCommand.WorldAABB = GetWorldAABB();
+        OutRenderData.RenderCommands.push_back(RenderCommand);
+    }
+
     Geometry::FAABB UTriangleComponent::GetLocalAABB() const
     {
         FVector Min(FLT_MAX, FLT_MAX, FLT_MAX);
@@ -55,8 +72,6 @@ namespace Engine::Component
 
         return Geometry::FAABB(Min, Max);
     }
-
-    EBasicMeshType UTriangleComponent::GetBasicMeshType() const { return EBasicMeshType::Triangle; }
 
     REGISTER_CLASS(Engine::Component, UTriangleComponent)
 } // namespace Engine::Component

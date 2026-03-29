@@ -16,6 +16,8 @@ namespace Engine::Component
 
         bool GetLocalTriangles(TArray<Geometry::FTriangle>& OutTriangles) const override;
 
+        void CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const override;
+
       protected:
         Geometry::FAABB GetLocalAABB() const override;
     };

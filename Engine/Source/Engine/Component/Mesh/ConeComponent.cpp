@@ -1,6 +1,10 @@
 #include "ConeComponent.h"
 
 #include "Resources/Mesh/Cone.h"
+#include "NewRenderer/Primitive/PrimitiveCone.h"
+#include "Renderer/D3D11/GeneralRenderer.h"
+#include "Renderer/SceneRenderData.h"
+#include "Engine/Game/Actor.h"
 
 namespace Engine::Component
 {
@@ -33,6 +37,19 @@ namespace Engine::Component
         }
 
         return OutTriangles.size() > 0;
+    }
+
+    void UConeComponent::CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const
+    {
+        FRenderCommand RenderCommand;
+
+        static CPrimitiveCone conePrimitive;
+        RenderCommand.MeshData = conePrimitive.GetMeshData();
+        RenderCommand.Material = FGeneralRenderer::GetDefaultMaterial();
+        RenderCommand.WorldMatrix = GetRelativeMatrix();
+        RenderCommand.bDrawAABB = GetOwnerActor()->IsSelected();
+        RenderCommand.WorldAABB = GetWorldAABB();
+        OutRenderData.RenderCommands.push_back(RenderCommand);
     }
 
     Geometry::FAABB UConeComponent::GetLocalAABB() const
