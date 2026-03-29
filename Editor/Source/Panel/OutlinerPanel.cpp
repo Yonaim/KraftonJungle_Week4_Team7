@@ -8,6 +8,7 @@
 #include "Engine/Game/SphereActor.h"
 #include "Engine/Game/UnknownActor.h"
 #include "Engine/Scene.h"
+#include "Engine/World.h"
 #include "Input/ContextModeTypes.h"
 #include "imgui.h"
 #include "Engine/Game/ConeActor.h"
@@ -136,7 +137,8 @@ void FOutlinerPanel::Draw()
         return;
     }
 
-    if (GetContext() == nullptr || GetContext()->Scene == nullptr)
+    FScene* Scene = (GetContext() != nullptr && GetContext()->World != nullptr) ? GetContext()->World->GetActiveScene() : nullptr;
+    if (GetContext() == nullptr || Scene == nullptr)
     {
         DrawEmptyState();
         ImGui::End();
@@ -146,7 +148,7 @@ void FOutlinerPanel::Draw()
     DrawToolbar();
     ImGui::Separator();
 
-    const TArray<AActor*>* Actors = GetContext()->Scene->GetActors();
+    const TArray<AActor*>* Actors = Scene->GetActors();
     if (Actors == nullptr || Actors->empty())
     {
         DrawEmptyState();
@@ -251,12 +253,13 @@ void FOutlinerPanel::DrawActorRow(AActor* Actor) const
 
 void FOutlinerPanel::SpawnActors() const
 {
-    if (GetContext() == nullptr || GetContext()->Scene == nullptr)
+    FScene* Scene = (GetContext() != nullptr && GetContext()->World != nullptr) ? GetContext()->World->GetActiveScene() : nullptr;
+    if (GetContext() == nullptr || Scene == nullptr)
     {
         return;
     }
 
-    const TArray<AActor*>* Actors = GetContext()->Scene->GetActors();
+    const TArray<AActor*>* Actors = Scene->GetActors();
     const size_t           ExistingActorCount = (Actors != nullptr) ? Actors->size() : 0;
     AActor*                LastSpawnedActor = nullptr;
 
@@ -278,7 +281,7 @@ void FOutlinerPanel::SpawnActors() const
         }
         else
         {
-            GetContext()->Scene->AddActor(NewActor);
+            Scene->AddActor(NewActor);
         }
 
         LastSpawnedActor = NewActor;

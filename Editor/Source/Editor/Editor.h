@@ -14,6 +14,7 @@
 #include "Viewport/Global/EditorGlobalController.h"
 #include "Input/EditorGlobalContext.h"
 #include "Engine/Scene.h"
+#include "Engine/World.h"
 #include "Logging/EditorLogBuffer.h"
 #include "Viewport/EditorViewportTab.h"
 #include "Renderer/EditorRenderData.h"
@@ -153,7 +154,7 @@ class FEditor
     TArray<FSceneRenderData>  SceneRenderDatas;
     //FSceneView        SceneView;
 
-    FScene*             CurScene = nullptr;
+    FWorld*             CurWorld = nullptr;
     FSceneDocumentState SceneDocument;
 
     /* Logging */

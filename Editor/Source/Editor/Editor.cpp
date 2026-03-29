@@ -7,6 +7,7 @@
 #include "Core/Path.h"
 #include "Engine/Component/Core/SceneComponent.h"
 #include "Engine/EngineStatics.h"
+#include "Engine/World.h"
 #include "Engine/Game/Actor.h"
 #include "Renderer/RenderAsset/TextureResource.h"
 #include "SceneIO/SceneSerializer.h"
@@ -310,22 +311,16 @@ void FEditor::Create()
     EditorContext.ContentIndex = &ContentIndex;
     ContentIndex.Refresh();
 
-    //  TEMP SCENE
-    CurScene = new FScene();
-    //ViewportTab.GetViewport(0)->GetViewportClient()->SetScene(CurScene);
-    GlobalInputController.SetScene(CurScene);
+    CurWorld = new FWorld();
+    EditorContext.World = CurWorld;
 
-    UE_LOG(FEditor, ELogVerbosity::Log, "Hello Editor");
-    EditorContext.Scene = CurScene;
-     
     ViewportTab.Construct();
-    //ViewportClient.Create();
     for (auto Viewport : ViewportTab.GetViewports())
     {
         if (Viewport->IsValid())
         {
             Viewport->GetViewportClient()->SetEditorContext(&EditorContext);
-            Viewport->GetViewportClient()->SetScene(CurScene);
+            Viewport->GetViewportClient()->SetWorld(CurWorld);
         }
     }
 
@@ -359,6 +354,8 @@ void FEditor::Create()
     // PanelManager->RegisterPanelInstance<FSamplePanel>(&LogBuffer);
 
     //  TODO : Gizmo
+
+    UE_LOG(FEditor, ELogVerbosity::Log, "Hello Editor");
 }
 
 void FEditor::Release()
@@ -375,13 +372,12 @@ void FEditor::Release()
         PanelManager = nullptr;
     }
 
-    delete CurScene;
-    CurScene = nullptr;
+    delete CurWorld;
+    CurWorld = nullptr;
     GlobalInputContext.SetNavigationController(nullptr);
-    GlobalInputController.SetScene(nullptr);
     GlobalInputController.SetSelectionController(nullptr);
     GlobalInputController.SetEditorContext(nullptr);
-    EditorContext.Scene = nullptr;
+    EditorContext.World = nullptr;
     EditorContext.ContentIndex = nullptr;
 
     MenuRegistry.Clear();
@@ -396,19 +392,18 @@ void FEditor::Release()
 
 void FEditor::Initialize()
 {
-    if (CurScene == nullptr)
+    if (CurWorld == nullptr)
     {
-        CurScene = new FScene();
+        CurWorld = new FWorld();
         for (auto Viewport : ViewportTab.GetViewports())
         {
             if (Viewport->IsValid())
             {
-                Viewport->GetViewportClient()->SetScene(CurScene);
+                Viewport->GetViewportClient()->SetWorld(CurWorld);
             }
         }
-        //ViewportTab.GetViewport(0)->GetViewportClient()->SetScene(CurScene);
-        GlobalInputController.SetScene(CurScene);
-        EditorContext.Scene = CurScene;
+        // GlobalInputController.Context->World = CurWorld;
+        EditorContext.World = CurWorld;
     }
 }
 
@@ -425,7 +420,7 @@ void FEditor::SetRuntimeServices(FD3D11RHI* InRHI, UAssetManager* InAssetManager
     AboutImageResource = nullptr;
     bAttemptedAboutImageLoad = false;
     EnsureAboutImageLoaded();
-    ResolveSceneAssetReferences(CurScene);
+    ResolveSceneAssetReferences(CurWorld != nullptr ? CurWorld->GetActiveScene() : nullptr);
 }
 
 void FEditor::LoadEditorSettings()
@@ -574,15 +569,15 @@ void FEditor::PerformNewScene()
 
 void FEditor::PerformClearScene()
 {
-    if (CurScene == nullptr)
+    FScene* ActiveScene = (CurWorld != nullptr) ? CurWorld->GetActiveScene() : nullptr;
+    if (ActiveScene == nullptr)
     {
         ReplaceCurrentScene(std::make_unique<FScene>());
         return;
     }
 
-    const TArray<AActor*>* SceneActors = CurScene->GetActors();
+    const TArray<AActor*>* SceneActors = ActiveScene->GetActors();
     const bool             bHadActors = SceneActors != nullptr && !SceneActors->empty();
-
     for (auto Viewport : ViewportTab.GetViewports())
     {
         if (Viewport->IsValid())
@@ -590,8 +585,7 @@ void FEditor::PerformClearScene()
             Viewport->GetViewportClient()->GetSelectionController().ClearSelection();
         }
     }
-    //ViewportTab.GetViewport(0)->GetViewportClient()->GetSelectionController().ClearSelection();
-    CurScene->Clear();
+    ActiveScene->Clear();
 
     if (bHadActors || !SceneDocument.CurrentScenePath.empty())
     {
@@ -601,14 +595,15 @@ void FEditor::PerformClearScene()
 
 bool FEditor::SaveSceneToPath(const std::filesystem::path& FilePath, bool bUpdateCurrentPath)
 {
-    if (CurScene == nullptr)
+    FScene* ActiveScene = (CurWorld != nullptr) ? CurWorld->GetActiveScene() : nullptr;
+    if (ActiveScene == nullptr)
     {
         UE_LOG(FEditor, ELogVerbosity::Error, "No scene is available to save.");
         return false;
     }
 
     FString ErrorMessage;
-    if (!FSceneSerializer::SaveToFile(*CurScene, FilePath, &ErrorMessage))
+    if (!FSceneSerializer::SaveToFile(*ActiveScene, FilePath, &ErrorMessage))
     {
         UE_LOG(FEditor, ELogVerbosity::Error, "Failed to save scene: %s", ErrorMessage.c_str());
         return false;
@@ -653,26 +648,29 @@ void FEditor::ReplaceCurrentScene(std::unique_ptr<FScene> NewScene)
     }
     //ViewportTab.GetViewport(0)->GetViewportClient()->GetSelectionController().ClearSelection();
 
-    delete CurScene;
-    CurScene = NewScene.release();
-    if (CurScene == nullptr)
+    if (CurWorld == nullptr)
     {
-        CurScene = new FScene();
+        CurWorld = new FWorld();
+        EditorContext.World = CurWorld;
     }
+
+    if (NewScene == nullptr)
+    {
+        NewScene = std::make_unique<FScene>();
+    }
+
+    CurWorld->ReplaceActiveScene(std::move(NewScene));
 
     for (auto Viewport : ViewportTab.GetViewports())
     {
         if (Viewport->IsValid())
         {
-            Viewport->GetViewportClient()->SetScene(CurScene);
+            Viewport->GetViewportClient()->SetWorld(CurWorld);
         }
     }
-    //ViewportTab.GetViewport(0)->GetViewportClient()->SetScene(CurScene);
-    GlobalInputController.SetScene(CurScene);
-    EditorContext.Scene = CurScene;
     EditorContext.SelectedObject = nullptr;
     EditorContext.SelectedActors.clear();
-    ResolveSceneAssetReferences(CurScene);
+    ResolveSceneAssetReferences(CurWorld->GetActiveScene());
 }
 
 void FEditor::ResolveActorAssetReferences(AActor* Actor)
@@ -772,9 +770,9 @@ void FEditor::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
         PanelManager->Tick(DeltaTime);
     }
 
-    if (CurScene)
+    if (CurWorld)
     {
-        CurScene->Tick(DeltaTime);
+        CurWorld->Tick(DeltaTime);
     }
 
     BuildRenderData();
@@ -910,13 +908,13 @@ void FEditor::AddActorToScene(AActor* InActor, bool bSelectActor)
         return;
     }
 
-    if (CurScene == nullptr)
+    if (CurWorld == nullptr || CurWorld->GetActiveScene() == nullptr)
     {
         delete InActor;
         return;
     }
 
-    CurScene->AddActor(InActor);
+    CurWorld->GetActiveScene()->AddActor(InActor);
     ResolveActorAssetReferences(InActor);
     MarkSceneDirty();
 
@@ -1517,14 +1515,14 @@ void FEditor::BuildRenderData()
     EditorRenderDatas.clear();
     SceneRenderDatas.clear();
 
+    BuildSceneView();
+
     for (auto Viewport : ViewportTab.GetViewports())
     {
         if (Viewport->IsValid())
         {
             FEditorRenderData EditorRenderData = FEditorRenderData{};
-            FSceneRenderData SceneRenderData = FSceneRenderData{};
-
-            BuildSceneView();
+            FSceneRenderData  SceneRenderData = FSceneRenderData{};
 
             EditorRenderData.SceneView = Viewport;
             SceneRenderData.SceneView = Viewport;
@@ -1532,21 +1530,15 @@ void FEditor::BuildRenderData()
                 Viewport->GetViewportClient()->GetRenderSetting().GetViewMode();
 
             const EEditorShowFlags EditorShowFlags =
-                Viewport
-                ->GetViewportClient()
-                ->GetRenderSetting()
-                .BuildEditorShowFlags(true);
+                Viewport->GetViewportClient()->GetRenderSetting().BuildEditorShowFlags(true);
             const ESceneShowFlags SceneShowFlags =
-                Viewport
-                ->GetViewportClient()
-                ->GetRenderSetting()
-                .BuildSceneShowFlags();
+                Viewport->GetViewportClient()->GetRenderSetting().BuildSceneShowFlags();
 
             Viewport->GetViewportClient()->BuildRenderData(EditorRenderData, EditorShowFlags);
 
-            if (CurScene != nullptr)
+            if (CurWorld != nullptr)
             {
-                CurScene->BuildRenderData(SceneRenderData, SceneShowFlags);
+                CurWorld->BuildRenderData(SceneRenderData, SceneShowFlags);
             }
 
             EditorRenderDatas.push_back(EditorRenderData);

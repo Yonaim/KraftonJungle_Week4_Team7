@@ -76,7 +76,7 @@ class FSceneView
     int32 GetWorldY(int32 Y) const { return Y + ViewRect.Y; }
 
     void SetViewportClient(FEditorViewportClient* newViewportClient) { ViewportClient = newViewportClient; }
-    FEditorViewportClient* const& GetViewportClient() { return ViewportClient; }
+    FEditorViewportClient* const& GetViewportClient() const { return ViewportClient; }
     void RemoveViewportClient() { ViewportClient = nullptr; }
     bool IsValid() { return ViewportClient != nullptr; }
 
