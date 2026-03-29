@@ -102,8 +102,6 @@ class FEditor
     const TArray<FEditorRenderData>& GetEditorRenderData() const { return EditorRenderDatas; }
     const TArray<FSceneRenderData>&  GetSceneRenderData() const { return SceneRenderDatas; }
     SEditorViewportTab&              GetViewportTab() { return ViewportTab; }
-    //FEditorViewportClient&       GetViewportClient() { return ViewportClient; }
-    //const FEditorViewportClient& GetViewportClient() const { return ViewportClient; }
 
     void DrawPanel();
 
@@ -154,7 +152,6 @@ class FEditor
 
     TArray<FEditorRenderData> EditorRenderDatas;
     TArray<FSceneRenderData>  SceneRenderDatas;
-    //FSceneView        SceneView;
 
     FWorld*             CurWorld = nullptr;
     FSceneDocumentState SceneDocument;

@@ -362,7 +362,7 @@ void FEditor::Create()
 void FEditor::Release()
 {
     SaveEditorSettings();
-    //ViewportClient.Release();
+
     AboutImageResource = nullptr;
     bAttemptedAboutImageLoad = false;
 
@@ -473,10 +473,7 @@ void FEditor::LoadEditorSettings()
                 .SetRotationSpeed(SettingsData.CameraRotationSpeed);
         }
     }
-    //ViewportTab.GetViewport(0)->GetViewportClient()->GetNavigationController().SetMoveSpeed(
-    //    SettingsData.CameraMoveSpeed);
-    //ViewportTab.GetViewport(0)->GetViewportClient()->GetNavigationController().SetRotationSpeed(
-    //    SettingsData.CameraRotationSpeed);
+
     EditorContext.ContentBrowserLeftPaneWidth =
         std::max(SettingsData.ContentBrowserLeftPaneWidth, 120.0f);
 }
@@ -647,7 +644,6 @@ void FEditor::ReplaceCurrentScene(std::unique_ptr<FScene> NewScene)
             Viewport->GetViewportClient()->GetSelectionController().ClearSelection();
         }
     }
-    //ViewportTab.GetViewport(0)->GetViewportClient()->GetSelectionController().ClearSelection();
 
     if (CurWorld == nullptr)
     {
@@ -754,7 +750,6 @@ void FEditor::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
 
         if (HoveredViewport != nullptr)
             HoveredViewport->GetViewportClient()->HandleInputEvent(Event, InputState);
-        //ViewportTab.GetViewport(1)->GetViewportClient()->HandleInputEvent(Event, InputState);
     }
 
     for (auto Viewport : ViewportTab.GetViewports())
@@ -764,7 +759,6 @@ void FEditor::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
             Viewport->GetViewportClient()->Tick(DeltaTime, InputState);
         }
     }
-    //ViewportTab.GetViewport(0)->GetViewportClient()->Tick(DeltaTime, InputState);
 
     if (PanelManager != nullptr)
     {
@@ -793,8 +787,6 @@ void FEditor::OnWindowResized(float Width, float Height)
     EditorContext.WindowHeight = Height;
 
     OnViewportResized();
-    //ViewportTab.GetViewport(0)->GetViewportClient()->OnResize(static_cast<uint32>(Width),
-                                                              //static_cast<uint32>(Height));
 }
 
 void FEditor::OnViewportResized() 
@@ -916,7 +908,6 @@ void FEditor::SetSelectedObject(UObject* InSelectedObject)
             Viewport->GetViewportClient()->SyncSelectionFromContext();
         }
     }
-    //ViewportTab.GetViewport(0)->GetViewportClient()->SyncSelectionFromContext();
 }
 
 void FEditor::AddActorToScene(AActor* InActor, bool bSelectActor)
@@ -946,8 +937,6 @@ void FEditor::AddActorToScene(AActor* InActor, bool bSelectActor)
                     InActor, ESelectionMode::Replace);
             }
         }
-        //ViewportTab.GetViewport(0)->GetViewportClient()->GetSelectionController().SelectActor(
-        //    InActor, ESelectionMode::Replace);
     }
 }
 
@@ -1417,23 +1406,6 @@ void FEditor::BuildSceneView()
             Viewport->GetViewportClient()->GetCamera().GetFarPlane());
         }
     }
-    //ViewportTab.GetViewport(0)->SetViewMatrix(
-    //    ViewportTab.GetViewport(0)->GetViewportClient()->GetCamera().GetViewMatrix());
-    //ViewportTab.GetViewport(0)->SetProjectionMatrix(
-    //    ViewportTab.GetViewport(0)->GetViewportClient()->GetCamera().GetProjectionMatrix());
-    //ViewportTab.GetViewport(0)->SetViewLocation(
-    //    ViewportTab.GetViewport(0)->GetViewportClient()->GetCamera().GetLocation());
-
-    //FViewportRect ViewRect;
-    //ViewRect.X = 0;
-    //ViewRect.Y = 0;
-    //ViewRect.Width = static_cast<int32>(WindowWidth);
-    //ViewRect.Height = static_cast<int32>(WindowHeight);
-
-    //ViewportTab.GetViewport(0)->SetViewRect(ViewRect);
-    //ViewportTab.GetViewport(0)->SetClipPlanes(
-    //    ViewportTab.GetViewport(0)->GetViewportClient()->GetCamera().GetNearPlane(),
-    //    ViewportTab.GetViewport(0)->GetViewportClient()->GetCamera().GetFarPlane());
 }
 
 void FEditor::DrawRootDockSpace()
@@ -1520,7 +1492,6 @@ void FEditor::DrawPanel()
             Viewport->GetViewportClient()->DrawViewportOverlay();
         }
     }
-    //ViewportTab.GetViewport(0)->GetViewportClient()->DrawViewportOverlay();
 
     EditorChrome.Draw(ChromeMenus);
     DrawAboutPopup();
@@ -1564,7 +1535,4 @@ void FEditor::BuildRenderData()
             SceneRenderDatas.push_back(SceneRenderData);
         }
     }
-
-    //ViewportTab.GetViewport(0)->GetViewportClient()->BuildRenderData(EditorRenderData,
-    //                                                                 EditorShowFlags);
 }
