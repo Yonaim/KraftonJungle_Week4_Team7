@@ -6,6 +6,7 @@
 #include "Interaction/ViewportInteractionState.h"
 #include "RenderSetting/ViewportRenderSetting.h"
 #include "Engine/ViewPort/ViewportClient.h"
+#include "Engine/World.h"
 #include "Input/NavigationInputContext.h"
 #include "Input/SelectionInputContext.h"
 #include "Input/GizmoInputContext.h"
@@ -23,7 +24,7 @@ class FEditorViewportClient : public Engine::Viewport::IViewportClient
     void Create() override;
     void Release() override;
 
-    void Initialize(FScene* Scene, uint32 ViewportWidth, uint32 ViewportHeight) override;
+    void Initialize(FWorld* World, uint32 ViewportWidth, uint32 ViewportHeight) override;
 
     void Tick(float DeltaTime, const Engine::ApplicationCore::FInputState& State) override;
     void Draw() override;
@@ -35,7 +36,7 @@ class FEditorViewportClient : public Engine::Viewport::IViewportClient
 
     void OnResize(uint32 InWidth, uint32 InHeight);
     void SetEditorContext(FEditorContext* InContext);
-    void SetScene(FScene* InScene);
+    void SetWorld(FWorld* InWorld);
     void SyncSelectionFromContext();
 
     FViewportNavigationController& GetNavigationController() { return NavigationController; }
@@ -69,7 +70,7 @@ private:
 
 
   private:
-    FScene* CurScene = nullptr;
+    FWorld* CurWorld = nullptr;
 
     FViewportCamera ViewportCamera;
 

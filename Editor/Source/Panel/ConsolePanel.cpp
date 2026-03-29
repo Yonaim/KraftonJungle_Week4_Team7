@@ -11,6 +11,7 @@
 #include "Engine/Game/CubeActor.h"
 #include "Engine/Game/SphereActor.h"
 #include "Engine/Scene.h"
+#include "Engine/World.h"
 #include "Content/EditorContentIndex.h"
 #include "Renderer/Types/ViewMode.h"
 #include "Viewport/EditorViewportClient.h"
@@ -569,7 +570,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
 
     FEditorContext* Context = GetContext();
     FEditor*        Editor = Context != nullptr ? Context->Editor : nullptr;
-    FScene*         Scene = Context != nullptr ? Context->Scene : nullptr;
+    FScene*         Scene = (Context != nullptr && Context->World != nullptr) ? Context->World->GetActiveScene() : nullptr;
     const TArray<FString> Tokens = TokenizeCommandLine(TrimmedCommand);
     if (Tokens.empty())
     {

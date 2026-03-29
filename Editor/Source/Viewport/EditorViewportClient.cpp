@@ -3,6 +3,7 @@
 #include "ApplicationCore/Input/InputRouter.h"
 #include "Editor/EditorContext.h"
 #include "Engine/Scene.h"
+#include "Engine/World.h"
 #include "Engine/Game/Actor.h"
 
 #include "imgui.h"
@@ -39,13 +40,14 @@ void FEditorViewportClient::Release()
     }
 }
 
-void FEditorViewportClient::Initialize(FScene* Scene, uint32 ViewportWidth, uint32 ViewportHeight)
+void FEditorViewportClient::Initialize(FWorld* World, uint32 ViewportWidth, uint32 ViewportHeight)
 {
-    SetScene(Scene);
+    SetWorld(World);
 
     ViewportCamera.OnResize(ViewportWidth, ViewportHeight);
 
-    SelectionController.SetActors(Scene->GetActors());
+    FScene* ActiveScene = (World != nullptr) ? World->GetActiveScene() : nullptr;
+    SelectionController.SetActors(ActiveScene != nullptr ? ActiveScene->GetActors() : nullptr);
     SelectionController.SetCamera(&ViewportCamera);
     SelectionController.SetViewportSize(ViewportWidth, ViewportHeight);
 }
@@ -57,6 +59,16 @@ void FEditorViewportClient::Tick(float DeltaTime, const Engine::ApplicationCore:
     if (InputRouter)
     {
         InputRouter->Tick(State);
+    }
+
+    if (CurWorld != nullptr)
+    {
+        FScene* ActiveScene = CurWorld->GetActiveScene();
+        SelectionController.SetActors(ActiveScene != nullptr ? ActiveScene->GetActors() : nullptr);
+    }
+    else
+    {
+        SelectionController.SetActors(nullptr);
     }
 
     SelectionController.SyncSelectionFromContext();
@@ -130,10 +142,11 @@ void FEditorViewportClient::SetEditorContext(FEditorContext* InContext)
     SelectionController.SetEditorContext(InContext);
 }
 
-void FEditorViewportClient::SetScene(FScene* InScene)
+void FEditorViewportClient::SetWorld(FWorld* InWorld)
 {
-    CurScene = InScene;
-    SelectionController.SetActors(InScene != nullptr ? InScene->GetActors() : nullptr);
+    CurWorld = InWorld;
+    FScene* ActiveScene = (CurWorld != nullptr) ? CurWorld->GetActiveScene() : nullptr;
+    SelectionController.SetActors(ActiveScene != nullptr ? ActiveScene->GetActors() : nullptr);
 }
 
 void FEditorViewportClient::SyncSelectionFromContext()

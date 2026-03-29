@@ -3,7 +3,6 @@
 
 #include "Engine/ViewPort/ViewportController.h"
 
-class FScene;
 struct FEditorContext;
 class FViewportSelectionController;
 
@@ -13,7 +12,6 @@ public:
     FEditorGlobalController() = default;
     ~FEditorGlobalController() override = default;
 
-    void SetScene(FScene* InScene) { Scene = InScene; }
     void SetEditorContext(FEditorContext* InContext) { Context = InContext; }
     void SetSelectionController(FViewportSelectionController* InSelectionController)
     {
@@ -30,7 +28,6 @@ public:
     void RequestAboutPopup();
 
 private:
-    FScene* Scene = nullptr;
     FEditorContext* Context = nullptr;
     FViewportSelectionController* SelectionController = nullptr;
 };
