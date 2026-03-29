@@ -11,16 +11,11 @@ namespace Engine::Component
     {
         DECLARE_RTTI(UTriangleComponent, UPrimitiveComponent)
       public:
-        UTriangleComponent() = default;
+        UTriangleComponent();
         virtual ~UTriangleComponent() override = default;
 
         EBasicMeshType GetBasicMeshType() const override { return EBasicMeshType::Triangle; }
 
-        bool GetLocalTriangles(TArray<Geometry::FTriangle>& OutTriangles) const override;
-
         void CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const override;
-
-      protected:
-        Geometry::FAABB GetLocalAABB() const override;
     };
 } // namespace Engine::Component

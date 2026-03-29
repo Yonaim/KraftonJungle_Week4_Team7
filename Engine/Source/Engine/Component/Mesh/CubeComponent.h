@@ -9,17 +9,12 @@ namespace Engine::Component
     {
         DECLARE_RTTI(UCubeComponent, UPrimitiveComponent)
     public:
-        UCubeComponent() = default;
+        UCubeComponent();
         ~UCubeComponent() override = default;
 
         EBasicMeshType GetBasicMeshType() const override { return EBasicMeshType::Cube; }
         
-        bool GetLocalTriangles(TArray<Geometry::FTriangle>& OutTriangles) const override;
-        
         // 테스트용 오버라이딩
         void CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const override;
-        
-    protected:
-        Geometry::FAABB GetLocalAABB() const override;
     };
 } // namespace Engine::Component

@@ -1,6 +1,5 @@
 #include "SphereComponent.h"
 
-#include "Resources/Mesh/Sphere.h"
 #include "NewRenderer/Primitive/PrimitiveSphere.h"
 #include "Renderer/D3D11/GeneralRenderer.h"
 #include "Renderer/SceneRenderData.h"
@@ -8,69 +7,20 @@
 
 namespace Engine::Component
 {
-    bool USphereComponent::GetLocalTriangles(TArray<Geometry::FTriangle>& OutTriangles) const
+    USphereComponent::USphereComponent()
     {
-        OutTriangles.clear();
-
-        if (sphere_topology != EMeshPrimitiveTopology::TriangleList)
-        {
-            return false;
-        }
-
-        for (uint32_t i = 0; i + 2 < sphere_index_count; i += 3)
-        {
-            const uint16_t I0 = sphere_indices[i + 0];
-            const uint16_t I1 = sphere_indices[i + 1];
-            const uint16_t I2 = sphere_indices[i + 2];
-
-            if (I0 >= sphere_vertex_count || I1 >= sphere_vertex_count || I2 >= sphere_vertex_count)
-            {
-                continue;
-            }
-
-            Geometry::FTriangle Triangle;
-            Triangle.V0 = FVector{sphere_vertices[I0].x, sphere_vertices[I0].y, sphere_vertices[I0].z};
-            Triangle.V1 = FVector{sphere_vertices[I1].x, sphere_vertices[I1].y, sphere_vertices[I1].z};
-            Triangle.V2 = FVector{sphere_vertices[I2].x, sphere_vertices[I2].y, sphere_vertices[I2].z};
-
-            OutTriangles.push_back(Triangle);
-        }
-
-        return OutTriangles.size() > 0;
+        static CPrimitiveSphere spherePrimitive;
+        RenderCommand.MeshData = spherePrimitive.GetMeshData();
     }
 
     void USphereComponent::CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const
     {
-        FRenderCommand RenderCommand;
-
-        static CPrimitiveSphere spherePrimitive;
-        RenderCommand.MeshData = spherePrimitive.GetMeshData();
-        RenderCommand.Material = FGeneralRenderer::GetDefaultMaterial();
-        RenderCommand.WorldMatrix = GetRelativeMatrix();
-        RenderCommand.bDrawAABB = GetOwnerActor()->IsSelected();
-        RenderCommand.WorldAABB = GetWorldAABB();
-        OutRenderData.RenderCommands.push_back(RenderCommand);
-    }
-
-    Geometry::FAABB USphereComponent::GetLocalAABB() const
-    {
-        FVector Min(FLT_MAX, FLT_MAX, FLT_MAX);
-        FVector Max(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-
-        for (uint32_t i = 0; i < sphere_vertex_count; ++i)
-        {
-            const FVector P(sphere_vertices[i].x, sphere_vertices[i].y, sphere_vertices[i].z);
-
-            Min.X = std::min(Min.X, P.X);
-            Min.Y = std::min(Min.Y, P.Y);
-            Min.Z = std::min(Min.Z, P.Z);
-
-            Max.X = std::max(Max.X, P.X);
-            Max.Y = std::max(Max.Y, P.Y);
-            Max.Z = std::max(Max.Z, P.Z);
-        }
-
-        return Geometry::FAABB(Min, Max);
+        FRenderCommand& MutableRenderCommand = const_cast<FRenderCommand&>(RenderCommand);
+        MutableRenderCommand.Material = FGeneralRenderer::GetDefaultMaterial();
+        MutableRenderCommand.WorldMatrix = GetRelativeMatrix();
+        MutableRenderCommand.bDrawAABB = GetOwnerActor()->IsSelected();
+        MutableRenderCommand.WorldAABB = GetWorldAABB();
+        OutRenderData.RenderCommands.push_back(MutableRenderCommand);
     }
 
     REGISTER_CLASS(Engine::Component, USphereComponent)

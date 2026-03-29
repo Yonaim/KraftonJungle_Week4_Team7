@@ -5,6 +5,7 @@
 #include "Core/Math/Color.h"
 #include "SceneComponent.h"
 #include "Renderer/Types/SceneShowFlags.h"
+#include "NewRenderer/RenderCommand.h"
 
 enum class EBasicMeshType : uint8;
 struct FSceneRenderData;
@@ -38,7 +39,7 @@ namespace Engine::Component
         virtual void CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const;
 
     protected:
-        virtual Geometry::FAABB GetLocalAABB() const = 0;
+        virtual Geometry::FAABB GetLocalAABB() const;
         virtual void            UpdateBounds();
         void                    OnTransformChanged() override;
 
@@ -47,5 +48,6 @@ namespace Engine::Component
         Geometry::FAABB WorldAABB;
         bool            bShowAABB = false;
         bool            bBoundsDirty = true;
+        FRenderCommand  RenderCommand;
     };
 } // namespace Engine::Component

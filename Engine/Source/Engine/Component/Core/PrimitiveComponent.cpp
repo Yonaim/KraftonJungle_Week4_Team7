@@ -36,7 +36,41 @@ namespace Engine::Component
 
     bool UPrimitiveComponent::GetLocalTriangles(TArray<Geometry::FTriangle>& OutTriangles) const
     {
-        return false;
+        OutTriangles.clear();
+
+        if (RenderCommand.MeshData == nullptr)
+        {
+            return false;
+        }
+
+        if (RenderCommand.MeshData->Topology != EMeshTopology::EMT_TriangleList)
+        {
+            return false;
+        }
+
+        const auto& Vertices = RenderCommand.MeshData->Vertices;
+        const auto& Indices = RenderCommand.MeshData->Indices;
+
+        for (uint32_t i = 0; i + 2 < Indices.size(); i += 3)
+        {
+            const uint32_t I0 = Indices[i + 0];
+            const uint32_t I1 = Indices[i + 1];
+            const uint32_t I2 = Indices[i + 2];
+
+            if (I0 >= Vertices.size() || I1 >= Vertices.size() || I2 >= Vertices.size())
+            {
+                continue;
+            }
+
+            Geometry::FTriangle Triangle;
+            Triangle.V0 = Vertices[I0].Position;
+            Triangle.V1 = Vertices[I1].Position;
+            Triangle.V2 = Vertices[I2].Position;
+
+            OutTriangles.push_back(Triangle);
+        }
+
+        return OutTriangles.size() > 0;
     }
 
     void UPrimitiveComponent::Update(float DeltaTime)
@@ -93,6 +127,16 @@ namespace Engine::Component
         PrimitiveItem.State.SetHovered(Actor->IsHovered());
 
         OutRenderData.Primitives.push_back(PrimitiveItem);
+    }
+
+    Geometry::FAABB UPrimitiveComponent::GetLocalAABB() const
+    {
+        if (RenderCommand.MeshData)
+        {
+            return Geometry::FAABB(RenderCommand.MeshData->GetMinCoord(), RenderCommand.MeshData->GetMaxCoord());
+        }
+
+        return Geometry::FAABB();
     }
 
     void UPrimitiveComponent::UpdateBounds()

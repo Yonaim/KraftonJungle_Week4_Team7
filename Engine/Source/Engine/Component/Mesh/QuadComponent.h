@@ -9,16 +9,11 @@ namespace Engine::Component
     {
         DECLARE_RTTI(UQuadComponent, UPrimitiveComponent)
       public:
-        UQuadComponent() = default;
+        UQuadComponent();
         ~UQuadComponent() override = default;
 
         EBasicMeshType GetBasicMeshType() const override { return EBasicMeshType::Quad; }
 
-        bool GetLocalTriangles(TArray<Geometry::FTriangle>& OutTriangles) const override;
-
         void CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const override;
-
-      protected:
-        Geometry::FAABB GetLocalAABB() const override;
     };
 } // namespace Engine::Component
