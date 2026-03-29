@@ -1,0 +1,14 @@
+#pragma once
+
+#include "Core/CoreMinimal.h"
+
+namespace Asset
+{
+    enum class EPixelFormat : uint8
+    {
+        Unknown = 0,
+        R8,
+        RGB8,
+        RGBA8,
+    };
+};

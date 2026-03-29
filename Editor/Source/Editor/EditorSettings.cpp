@@ -1,6 +1,6 @@
 #include "EditorSettings.h"
 
-#include "Core/Path.h"
+#include "Core/Misc/Paths.h"
 
 #include <algorithm>
 #include <cstdlib>
