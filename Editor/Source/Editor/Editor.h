@@ -73,6 +73,7 @@ class FEditor
     void SetRuntimeServices(FD3D11RHI* InRHI, UAssetManager* InAssetManager);
 
     void OnWindowResized(float Width, float Height);
+    void OnViewportResized();
     void SetMainLoopFPS(float FPS)
     {
         CurFPS = FPS;
@@ -136,6 +137,7 @@ class FEditor
 
 
   private:
+    uint32_t           RootDockSpaceId = 0;
     SEditorViewportTab ViewportTab; 
 
     Engine::ApplicationCore::FInputRouter GlobalInputRouter;

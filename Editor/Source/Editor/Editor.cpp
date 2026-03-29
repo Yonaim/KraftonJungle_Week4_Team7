@@ -21,6 +21,7 @@
 #include "Panel/StatePanel.h"
 
 #include "imgui.h"
+#include "imgui_internal.h"
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
 
@@ -742,8 +743,8 @@ void FEditor::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
     {
         Event.MouseX -= Rect.X;
         Event.MouseY -= Rect.Y;
-        InputState.ChangeToLocal(Event.MouseX, Event.MouseY);
-        
+
+        InputState.ChangeToLocal(Event.MouseX, Event.MouseY);    
         int32 LocalY = Event.MouseY - Rect.Y;
 
         if (GlobalInputRouter.RouteEvent(Event, InputState))
@@ -775,6 +776,7 @@ void FEditor::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
         CurWorld->Tick(DeltaTime);
     }
 
+    OnViewportResized();
     BuildRenderData();
 }
 
@@ -790,10 +792,26 @@ void FEditor::OnWindowResized(float Width, float Height)
     EditorContext.WindowWidth = Width;
     EditorContext.WindowHeight = Height;
 
-    ViewportTab.OnResize({0, 0, (int)WindowWidth, (int)WindowHeight});
-
+    OnViewportResized();
     //ViewportTab.GetViewport(0)->GetViewportClient()->OnResize(static_cast<uint32>(Width),
                                                               //static_cast<uint32>(Height));
+}
+
+void FEditor::OnViewportResized() 
+{
+    if (RootDockSpaceId != 0)
+    {
+        if (ImGuiDockNode* node = ImGui::DockBuilderGetCentralNode(RootDockSpaceId))
+        {
+            if (node->Size.x > 0 && node->Size.y > 0)
+                ViewportTab.OnResize({(int32)node->Pos.x, (int32)node->Pos.y, (int32)node->Size.x,
+                                      (int32)node->Size.y});
+        }
+    }
+    else
+    {
+        ViewportTab.OnResize({0, 0, (int32)WindowWidth, (int32)WindowHeight});
+    }
 }
 
 void FEditor::CreateNewScene()
@@ -1470,7 +1488,8 @@ void FEditor::DrawRootDockSpace()
 
     if (ImGui::Begin("##EditorRootDockSpace", nullptr, WindowFlags))
     {
-        ImGui::DockSpace(ImGui::GetID("EditorRootDockSpace"), ImVec2(0.0f, 0.0f),
+        RootDockSpaceId = ImGui::GetID("EditorRootDockSpace");
+        ImGui::DockSpace(RootDockSpaceId, ImVec2(0.0f, 0.0f),
                          RootDockSpaceFlags);
     }
 

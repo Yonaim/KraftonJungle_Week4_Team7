@@ -40,6 +40,10 @@ void SEditorViewportTab::Construct()
 
 void SEditorViewportTab::OnResize(FViewportRect WindowRect)
 { 
+    if (WindowRect.X == CurrentRect.X && WindowRect.Y == CurrentRect.Y &&
+        WindowRect.Width == CurrentRect.Width && WindowRect.Height == CurrentRect.Height)
+        return;
+
     CurrentRect = WindowRect;
     ViewportLayout->Resize(WindowRect);
 
