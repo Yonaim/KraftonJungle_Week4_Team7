@@ -5,6 +5,7 @@
 #include "Engine/Component/Core/SceneComponent.h"
 #include "Engine/Game/Actor.h"
 #include "Engine/Scene.h"
+#include "Engine/World.h"
 #include "Viewport/Selection/ViewportSelectionController.h"
 
 bool FEditorGlobalController::CanDeleteSelectedActors() const
@@ -25,6 +26,7 @@ bool FEditorGlobalController::CanDeleteSelectedActors() const
     }
 
     auto* SelectedComponent = Cast<Engine::Component::USceneComponent>(Context->SelectedObject);
+    FScene* Scene = (Context->World != nullptr) ? Context->World->GetActiveScene() : nullptr;
     if (SelectedComponent == nullptr || Scene == nullptr)
     {
         return false;
@@ -49,6 +51,7 @@ bool FEditorGlobalController::CanDeleteSelectedActors() const
 
 bool FEditorGlobalController::DeleteSelectedActors()
 {
+    FScene* Scene = (Context != nullptr && Context->World != nullptr) ? Context->World->GetActiveScene() : nullptr;
     if (Scene == nullptr || Context == nullptr)
     {
         return false;

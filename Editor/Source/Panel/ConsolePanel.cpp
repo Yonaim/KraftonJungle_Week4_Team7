@@ -11,6 +11,7 @@
 #include "Engine/Game/CubeActor.h"
 #include "Engine/Game/SphereActor.h"
 #include "Engine/Scene.h"
+#include "Engine/World.h"
 #include "Content/EditorContentIndex.h"
 #include "Renderer/Types/ViewMode.h"
 #include "Viewport/EditorViewportClient.h"
@@ -569,7 +570,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
 
     FEditorContext* Context = GetContext();
     FEditor*        Editor = Context != nullptr ? Context->Editor : nullptr;
-    FScene*         Scene = Context != nullptr ? Context->Scene : nullptr;
+    FScene*         Scene = (Context != nullptr && Context->World != nullptr) ? Context->World->GetActiveScene() : nullptr;
     const TArray<FString> Tokens = TokenizeCommandLine(TrimmedCommand);
     if (Tokens.empty())
     {
@@ -893,7 +894,11 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
     {
         if (RequireEditor())
         {
-            Editor->GetViewportClient().GetSelectionController().ClearSelection();
+            Editor->GetViewportTab()
+                .GetViewport(0)
+                ->GetViewportClient()
+                ->GetSelectionController()
+                .ClearSelection();
             UE_LOG(Console, ELogVerbosity::Log, "Selection cleared.");
         }
         bScrollToBottom = true;
@@ -904,7 +909,11 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
     {
         if (RequireEditor())
         {
-            Editor->GetViewportClient().GetNavigationController().FocusActors();
+            Editor->GetViewportTab()
+                .GetViewport(0)
+                ->GetViewportClient()
+                ->GetNavigationController()
+                .FocusActors();
             UE_LOG(Console, ELogVerbosity::Log, "Focused camera on current selection.");
         }
         bScrollToBottom = true;
@@ -939,7 +948,8 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
     {
         if (RequireEditor())
         {
-            FViewportCamera& Camera = Editor->GetViewportClient().GetCamera();
+            FViewportCamera& Camera =
+                Editor->GetViewportTab().GetViewport(0)->GetViewportClient()->GetCamera();
             Camera.SetProjectionType(EViewportProjectionType::Perspective);
             Camera.SetFOV(3.141592f * 0.5f);
             Camera.SetNearPlane(0.1f);
@@ -956,8 +966,10 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
     {
         if (RequireEditor())
         {
-            FViewportNavigationController& NavigationController =
-                Editor->GetViewportClient().GetNavigationController();
+            FViewportNavigationController& NavigationController = Editor->GetViewportTab()
+                                                                      .GetViewport(0)
+                                                                      ->GetViewportClient()
+                                                                      ->GetNavigationController();
 
             if (Tokens.size() < 2)
             {
@@ -987,8 +999,10 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
     {
         if (RequireEditor())
         {
-            FViewportNavigationController& NavigationController =
-                Editor->GetViewportClient().GetNavigationController();
+            FViewportNavigationController& NavigationController = Editor->GetViewportTab()
+                                                                      .GetViewport(0)
+                                                                      ->GetViewportClient()
+                                                                      ->GetNavigationController();
 
             if (Tokens.size() < 2)
             {
@@ -1043,7 +1057,8 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
     {
         if (RequireEditor())
         {
-            FViewportRenderSetting& RenderSetting = Editor->GetViewportClient().GetRenderSetting();
+            FViewportRenderSetting& RenderSetting =
+                Editor->GetViewportTab().GetViewport(0)->GetViewportClient()->GetRenderSetting();
             if (Tokens.size() < 2)
             {
                 UE_LOG(Console, ELogVerbosity::Log, "View mode = %s",
@@ -1133,7 +1148,8 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
     {
         if (RequireEditor())
         {
-            FViewportRenderSetting& RenderSetting = Editor->GetViewportClient().GetRenderSetting();
+            FViewportRenderSetting& RenderSetting =
+                Editor->GetViewportTab().GetViewport(0)->GetViewportClient()->GetRenderSetting();
             if (Tokens.size() < 2)
             {
                 UE_LOG(Console, ELogVerbosity::Log, "Grid visibility = %s",
@@ -1162,7 +1178,8 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
     {
         if (RequireEditor())
         {
-            FViewportRenderSetting& RenderSetting = Editor->GetViewportClient().GetRenderSetting();
+            FViewportRenderSetting& RenderSetting =
+                Editor->GetViewportTab().GetViewport(0)->GetViewportClient()->GetRenderSetting();
             if (Tokens.size() < 2)
             {
                 UE_LOG(Console, ELogVerbosity::Log, "Selection outline visibility = %s",

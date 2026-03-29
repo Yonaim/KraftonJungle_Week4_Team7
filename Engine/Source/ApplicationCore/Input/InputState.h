@@ -30,5 +30,11 @@ namespace Engine::ApplicationCore
         {
             return KeysDown[static_cast<int32>(Key)];
         }
+
+        void ChangeToLocal(int32 LocalX, int32 LocalY)
+        { 
+            MouseX = LocalX;
+            MouseY = LocalY;
+        }
     };
 }

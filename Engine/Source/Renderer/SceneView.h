@@ -4,7 +4,22 @@
 #include "Core/Math/Matrix.h"
 #include "Core/Math/Vector.h"
 
+#include <d3d11.h>
+
 // TODO: Reverse-Z 적용
+
+class FEditorViewportClient;
+
+enum class ELevelViewportType : uint8
+{
+    LVT_Perspective,
+    LVT_OrthoTop,
+    LVT_OrthoBottom,
+    LVT_OrthoLeft,
+    LVT_OrthoRight,
+    LVT_OrthoFront,
+    LVT_OrthoBack,
+};
 
 struct FViewportRect
 {
@@ -29,7 +44,15 @@ class FSceneView
         RebuildViewProjectionMatrix();
     }
 
-    void SetViewRect(const FViewportRect& InViewRect) { ViewRect = InViewRect; }
+    void OnResize(const FViewportRect& NewViewRect) { 
+        ViewRect = NewViewRect;
+        Viewport = {(float)ViewRect.X,
+                    (float)ViewRect.Y,
+                    (float)ViewRect.Width,
+                    (float)ViewRect.Height,
+                    0.0f,
+                    1.0f};
+    }
 
     void SetViewLocation(const FVector& InViewLocation) { ViewLocation = InViewLocation; }
 
@@ -39,14 +62,23 @@ class FSceneView
         FarZ = InFarZ;
     }
 
-    const FMatrix&       GetViewMatrix() const { return ViewMatrix; }
-    const FMatrix&       GetProjectionMatrix() const { return ProjectionMatrix; }
-    const FMatrix&       GetViewProjectionMatrix() const { return ViewProjectionMatrix; }
-    const FVector&       GetViewLocation() const { return ViewLocation; }
-    const FViewportRect& GetViewRect() const { return ViewRect; }
+    const FMatrix&        GetViewMatrix() const { return ViewMatrix; }
+    const FMatrix&        GetProjectionMatrix() const { return ProjectionMatrix; }
+    const FMatrix&        GetViewProjectionMatrix() const { return ViewProjectionMatrix; }
+    const FVector&        GetViewLocation() const { return ViewLocation; }
+    const FViewportRect&  GetViewRect() const { return ViewRect; }
+    const D3D11_VIEWPORT& GetViewport() const { return Viewport; }
 
     float GetCameraWidth() const { return static_cast<float>(ViewRect.Width); }
     float GetCameraHeight() const { return static_cast<float>(ViewRect.Height); }
+
+    int32 GetWorldX(int32 X) const { return X + ViewRect.X; }
+    int32 GetWorldY(int32 Y) const { return Y + ViewRect.Y; }
+
+    void SetViewportClient(FEditorViewportClient* newViewportClient) { ViewportClient = newViewportClient; }
+    FEditorViewportClient* const& GetViewportClient() const { return ViewportClient; }
+    void RemoveViewportClient() { ViewportClient = nullptr; }
+    bool IsValid() { return ViewportClient != nullptr; }
 
   private:
     void RebuildViewProjectionMatrix() { ViewProjectionMatrix = ViewMatrix * ProjectionMatrix; }
@@ -62,4 +94,6 @@ class FSceneView
     float FarZ = 1000.0f;
 
     FViewportRect ViewRect;
+    D3D11_VIEWPORT         Viewport;
+    FEditorViewportClient* ViewportClient = nullptr;
 };

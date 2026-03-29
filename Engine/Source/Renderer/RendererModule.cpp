@@ -143,6 +143,8 @@ void FRendererModule::BeginFrame()
 
 void FRendererModule::EndFrame() { RHI.EndFrame(); }
 
+void FRendererModule::SetViewport(const D3D11_VIEWPORT& InViewport) { RHI.SetViewport(InViewport); }
+
 void FRendererModule::OnWindowResized(int32 InWidth, int32 InHeight)
 {
     if (InWidth <= 0 || InHeight <= 0)
