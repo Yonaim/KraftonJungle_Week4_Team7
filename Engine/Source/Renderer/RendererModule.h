@@ -50,8 +50,8 @@ class ENGINE_API FRendererModule
     FD3D11MeshBatchRenderer  MeshBatchRenderer;
     FD3D11OutlineRenderer    OutlineRenderer;
     FD3D11LineBatchRenderer  LineRenderer;
-    FD3D11TextBatchRenderer  TextRenderer;
-    FD3D11SpriteBatchRenderer SpriteRenderer;
+    //FD3D11TextBatchRenderer  TextRenderer;
+    //FD3D11SpriteBatchRenderer SpriteRenderer;
     FD3D11ObjectIdRenderer   ObjectIdRenderer;
 
     FSceneMeshSubmitter  SceneMeshSubmitter;

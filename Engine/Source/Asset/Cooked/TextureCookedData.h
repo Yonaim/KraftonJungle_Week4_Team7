@@ -8,13 +8,12 @@ namespace Asset
 
     struct FTextureCookedData : public FCookedData
     {
-        FString       SourcePath;
         uint32        Width = 0;
         uint32        Height = 0;
         uint32        Channels = 0;
         bool          bSRGB = true;
         TArray<uint8> Pixels;
-        EPixelFormat  Format;
+        EPixelFormat  Format = EPixelFormat::Unknown;
 
         virtual EAssetType GetAssetType() const override { return EAssetType::Texture; }
 
@@ -28,6 +27,7 @@ namespace Asset
             Channels = 0;
             bSRGB = true;
             Pixels.clear();
+            Format = EPixelFormat::Unknown;
         }
     };
 

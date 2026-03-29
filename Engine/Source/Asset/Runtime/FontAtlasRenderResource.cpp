@@ -20,11 +20,20 @@ namespace Asset
 
         std::shared_ptr<FFontAtlasRenderResource> Resource =
             std::make_shared<FFontAtlasRenderResource>();
+        Resource->Info = CookedData.Info;
+        Resource->Common = CookedData.Common;
+        Resource->Glyphs = CookedData.Glyphs;
         Resource->AtlasTexture = std::move(TextureResource->Texture);
         return Resource;
     }
 
     bool FFontAtlasRenderResource::IsValid() const { return AtlasTexture != nullptr; }
 
-    void FFontAtlasRenderResource::Reset() { AtlasTexture.reset(); }
+    void FFontAtlasRenderResource::Reset()
+    {
+        Info = {};
+        Common = {};
+        Glyphs.clear();
+        AtlasTexture.reset();
+    }
 } // namespace Asset

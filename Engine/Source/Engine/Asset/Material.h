@@ -3,8 +3,8 @@
 #include <memory>
 #include <utility>
 
-#include "Asset/Asset.h"
-#include "Asset/Data/MaterialCookedData.h"
+#include "Engine/Asset/Asset.h"
+#include "Asset/Cooked/MaterialCookedData.h"
 #include "Asset/Runtime/MaterialRenderResource.h"
 
 using namespace Asset;

@@ -35,13 +35,22 @@ namespace Asset
 
         std::shared_ptr<FTextureRenderResource> Resource =
             std::make_shared<FTextureRenderResource>();
+        Resource->Width = CookedData.Width;
+        Resource->Height = CookedData.Height;
+        Resource->Format = Desc.Format;
         Resource->Texture = std::move(Texture2D);
         return Resource;
     }
 
     bool FTextureRenderResource::IsValid() const { return Texture != nullptr; }
 
-    void FTextureRenderResource::Reset() { Texture.reset(); }
+    void FTextureRenderResource::Reset()
+    {
+        Width = 0;
+        Height = 0;
+        Format = RHI::EPixelFormat::Unknown;
+        Texture.reset();
+    }
 
     RHI::EPixelFormat FTextureRenderResource::ResolvePixelFormat(uint32 Channels)
     {

@@ -1,12 +1,5 @@
 #include "SceneTypeRegistry.h"
 
-#include "Engine/Component/Mesh/ConeComponent.h"
-#include "Engine/Component/Mesh/CubeComponent.h"
-#include "Engine/Component/Mesh/CylinderComponent.h"
-#include "Engine/Component/Mesh/QuadComponent.h"
-#include "Engine/Component/Mesh/RingComponent.h"
-#include "Engine/Component/Mesh/SphereComponent.h"
-#include "Engine/Component/Mesh/TriangleComponent.h"
 #include "Engine/Component/Sprite/AtlasComponent.h"
 #include "Engine/Component/Sprite/PaperSpriteComponent.h"
 #include "Engine/Component/Sprite/SubUVComponent.h"
@@ -101,13 +94,6 @@ namespace
         RegisterActorType<AUnknownActor>("AUnknownActor");
         RegisterActorType<AStaticMeshActor>("AStaticMeshActor");
 
-        RegisterComponentType<Engine::Component::UConeComponent>("UConeComponent");
-        RegisterComponentType<Engine::Component::UCubeComponent>("UCubeComponent");
-        RegisterComponentType<Engine::Component::UCylinderComponent>("UCylinderComponent");
-        RegisterComponentType<Engine::Component::UQuadComponent>("UQuadComponent");
-        RegisterComponentType<Engine::Component::URingComponent>("URingComponent");
-        RegisterComponentType<Engine::Component::USphereComponent>("USphereComponent");
-        RegisterComponentType<Engine::Component::UTriangleComponent>("UTriangleComponent");
         RegisterComponentType<Engine::Component::UPaperSpriteComponent>("UPaperSpriteComponent");
         RegisterComponentType<Engine::Component::UAtlasComponent>("UAtlasComponent");
         RegisterComponentType<Engine::Component::USubUVComponent>("USubUVComponent");

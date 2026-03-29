@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Core/CoreMinimal.h"
+
 namespace Asset
 {
     enum class EAssetType : uint8

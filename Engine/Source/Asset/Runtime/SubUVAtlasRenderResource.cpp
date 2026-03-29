@@ -22,11 +22,25 @@ namespace Asset
 
         std::shared_ptr<FSubUVAtlasRenderResource> Resource =
             std::make_shared<FSubUVAtlasRenderResource>();
+        Resource->Info = CookedData.Info;
+        Resource->Common.ScaleW = TextureResource->Width;
+        Resource->Common.ScaleH = TextureResource->Height;
+        Resource->Common.Pages = 1;
+        Resource->Common.bPacked = false;
+        Resource->Frames = CookedData.Frames;
+        Resource->Sequences = CookedData.Sequences;
         Resource->AtlasTexture = std::move(TextureResource->Texture);
         return Resource;
     }
 
     bool FSubUVAtlasRenderResource::IsValid() const { return AtlasTexture != nullptr; }
 
-    void FSubUVAtlasRenderResource::Reset() { AtlasTexture.reset(); }
+    void FSubUVAtlasRenderResource::Reset()
+    {
+        Info = {};
+        Common = {};
+        Frames.clear();
+        Sequences.clear();
+        AtlasTexture.reset();
+    }
 } // namespace Asset

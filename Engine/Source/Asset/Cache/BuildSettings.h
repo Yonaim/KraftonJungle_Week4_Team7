@@ -2,6 +2,8 @@
 
 #include <sstream>
 
+#include "Core/CoreMinimal.h"
+
 namespace Asset
 {
 

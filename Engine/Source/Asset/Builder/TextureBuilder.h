@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "Asset/Cache/AssetBuildCache.h"
+#include "Asset/Cache/BuildSettings.h"
 #include "Asset/Cooked/TextureCookedData.h"
 #include "Asset/Intermediate/IntermediateTextureData.h"
 

@@ -35,7 +35,7 @@ namespace Asset
 
         auto& IntermediateCache = Cache.GetIntermediateCache(FMaterialAssetTag{});
         std::shared_ptr<FIntermediateMaterialData> Intermediate =
-            IntermediateCache.Find(Source->ContentHash);
+            IntermediateCache.Find(MakeIntermediateKey(EAssetType::Material, Source->ContentHash));
         if (!Intermediate)
         {
             Intermediate = ParseMaterial(*Source);
@@ -43,10 +43,10 @@ namespace Asset
             {
                 return nullptr;
             }
-            IntermediateCache.Insert(Source->ContentHash, Intermediate);
+            IntermediateCache.Insert(MakeIntermediateKey(EAssetType::Material, Source->ContentHash), Intermediate);
         }
 
-        const FDerivedKey DerivedKey = MakeDerivedKey(Source->ContentHash, "MaterialCook");
+        const FDerivedKey DerivedKey = MakeCookedKey(EAssetType::Material, Source->ContentHash, "MaterialCook");
 
         auto& CookedCache = Cache.GetCookedCache(FMaterialAssetTag{});
         std::shared_ptr<FMaterialCookedData> Cooked = CookedCache.Find(DerivedKey);

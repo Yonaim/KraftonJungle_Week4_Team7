@@ -30,7 +30,7 @@ class AActor;
 class UObject;
 class FD3D11RHI;
 class UAssetManager;
-struct FTextureResource;
+//struct FTextureResource;
 
 enum class EDeferredSceneActionType
 {

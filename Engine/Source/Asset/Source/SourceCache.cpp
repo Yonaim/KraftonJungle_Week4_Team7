@@ -1,14 +1,42 @@
 #include "Asset/Source/SourceCache.h"
+
+#include <filesystem>
+
 #include "Asset/Source/SourceHash.h"
 #include "Asset/Source/SourceLoader.h"
-#include "Core/Misc/Paths.h"
 
 namespace Asset
 {
 
+    namespace
+    {
+        static FWString NormalizePath(const FWString& InPath)
+        {
+            if (InPath.empty())
+            {
+                return {};
+            }
+
+            std::error_code Ec;
+            std::filesystem::path P(InPath);
+            P = std::filesystem::weakly_canonical(P, Ec);
+            if (Ec)
+            {
+                Ec.clear();
+                P = std::filesystem::absolute(P, Ec);
+                if (Ec)
+                {
+                    return {};
+                }
+            }
+
+            return P.native();
+        }
+    } // namespace
+
     const FSourceRecord* FSourceCache::GetOrLoad(const FWString& Path)
     {
-        const FWString NormalizedPath = FPaths::Normalize(Path);
+        const FWString NormalizedPath = NormalizePath(Path);
         if (NormalizedPath.empty())
         {
             return nullptr;
@@ -45,7 +73,7 @@ namespace Asset
 
     bool FSourceCache::EnsureContentHashLoaded(const FWString& Path)
     {
-        const FWString NormalizedPath = FPaths::Normalize(Path);
+        const FWString NormalizedPath = NormalizePath(Path);
         if (NormalizedPath.empty())
         {
             return false;
@@ -81,7 +109,7 @@ namespace Asset
 
     const FSourceRecord* FSourceCache::Find(const FWString& Path) const
     {
-        const FWString NormalizedPath = FPaths::Normalize(Path);
+        const FWString NormalizedPath = NormalizePath(Path);
         if (NormalizedPath.empty())
         {
             return nullptr;
@@ -98,7 +126,7 @@ namespace Asset
 
     void FSourceCache::Invalidate(const FWString& Path)
     {
-        const FWString NormalizedPath = FPaths::Normalize(Path);
+        const FWString NormalizedPath = NormalizePath(Path);
         if (!NormalizedPath.empty())
         {
             Records.erase(NormalizedPath);

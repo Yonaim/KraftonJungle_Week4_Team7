@@ -212,7 +212,7 @@ namespace Asset
 
         auto& IntermediateCache = Cache.GetIntermediateCache(FStaticMeshAssetTag{});
         std::shared_ptr<FIntermediateStaticMeshData> Intermediate =
-            IntermediateCache.Find(Source->ContentHash);
+            IntermediateCache.Find(MakeIntermediateKey(EAssetType::StaticMesh, Source->ContentHash));
         if (!Intermediate)
         {
             Intermediate = ParseObj(*Source);
@@ -220,10 +220,10 @@ namespace Asset
             {
                 return nullptr;
             }
-            IntermediateCache.Insert(Source->ContentHash, Intermediate);
+            IntermediateCache.Insert(MakeIntermediateKey(EAssetType::StaticMesh, Source->ContentHash), Intermediate);
         }
 
-        const FDerivedKey DerivedKey = MakeDerivedKey(Source->ContentHash, Settings.ToKeyString());
+        const FDerivedKey DerivedKey = MakeCookedKey(EAssetType::StaticMesh, Source->ContentHash, Settings.ToKeyString());
 
         auto& CookedCache = Cache.GetCookedCache(FStaticMeshAssetTag{});
         std::shared_ptr<FStaticMeshCookedData> Cooked = CookedCache.Find(DerivedKey);

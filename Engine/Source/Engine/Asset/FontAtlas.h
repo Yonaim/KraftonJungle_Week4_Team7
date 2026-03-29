@@ -3,15 +3,15 @@
 #include <memory>
 #include <utility>
 
-#include "Asset/Asset.h"
-#include "Asset/Data/FontAtlasCookedData.h"
+#include "Engine/Asset/Asset.h"
+#include "Asset/Cooked/FontAtlasCookedData.h"
 #include "Asset/Runtime/FontAtlasRenderResource.h"
 
 using namespace Asset;
 
-class UFont : public UAsset
+class UFontAtlas : public UAsset
 {
-    DECLARE_RTTI(UFont, UAsset)
+    DECLARE_RTTI(UFontAtlas, UAsset)
 
   public:
     const std::shared_ptr<FFontAtlasCookedData>& GetCookedData() const { return CookedData; }

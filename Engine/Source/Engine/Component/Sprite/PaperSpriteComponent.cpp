@@ -1,24 +1,27 @@
 #include "PaperSpriteComponent.h"
 
-#include "Asset/AssetManager.h"
-#include "Asset/Texture2DAsset.h"
 #include "Engine/Component/Core/ComponentProperty.h"
-#include "SceneIO/SceneAssetPath.h"
-
 #include "Resources/Mesh/Quad.h"
-
 
 namespace Engine::Component
 {
-    void UPaperSpriteComponent::SetTextureResource(FTextureResource* InTextureResource)
+    void UPaperSpriteComponent::SetTextureAsset(UTexture* InTextureAsset)
     {
-        TextureResource = InTextureResource;
+        TextureAsset = InTextureAsset;
     }
 
-    void UPaperSpriteComponent::SetTexturePath(const FString& InPath)
+    const FTextureRenderResource* UPaperSpriteComponent::GetTextureRenderResource() const
     {
-        TexturePath = InPath;
-        TextureResource = nullptr;
+        return (TextureAsset != nullptr && TextureAsset->GetRenderResource())
+                   ? TextureAsset->GetRenderResource().get()
+                   : nullptr;
+    }
+
+    FTextureRenderResource* UPaperSpriteComponent::GetTextureRenderResource()
+    {
+        return (TextureAsset != nullptr && TextureAsset->GetRenderResource())
+                   ? TextureAsset->GetRenderResource().get()
+                   : nullptr;
     }
 
     void UPaperSpriteComponent::SetBillboard(bool bInBillboard) { bBillboard = bInBillboard; }
@@ -32,49 +35,9 @@ namespace Engine::Component
     {
         UMeshComponent::DescribeProperties(Builder);
 
-        FComponentPropertyOptions TexturePathOptions;
-        TexturePathOptions.ExpectedAssetPathKind = EComponentAssetPathKind::TextureImage;
-
-        Builder.AddAssetPath(
-            "texture_path", L"Texture Path", [this]() { return GetTexturePath(); },
-            [this](const FString& InValue) { SetTexturePath(InValue); }, TexturePathOptions);
-
         Builder.AddBool(
             "billboard", L"Billboard", [this]() { return GetBillboard(); },
             [this](bool bInValue) { SetBillboard(bInValue); });
-    }
-
-    void UPaperSpriteComponent::ResolveAssetReferences(UAssetManager* InAssetManager)
-    {
-        TextureResource = nullptr;
-
-        if (InAssetManager == nullptr || TexturePath.empty())
-        {
-            return;
-        }
-
-        const std::filesystem::path AbsolutePath =
-            Engine::SceneIO::ResolveSceneAssetPathToAbsolute(TexturePath);
-        if (AbsolutePath.empty())
-        {
-            UE_LOG(Asset, ELogVerbosity::Warning,
-                   "Failed to resolve texture path for SpriteComponent: %s", TexturePath.c_str());
-            return;
-        }
-
-        FAssetLoadParams LoadParams;
-        LoadParams.ExplicitType = EAssetType::Texture;
-
-        UAsset*          LoadedAsset = InAssetManager->Load(AbsolutePath.native(), LoadParams);
-        UTexture2DAsset* TextureAsset = Cast<UTexture2DAsset>(LoadedAsset);
-        if (TextureAsset == nullptr)
-        {
-            UE_LOG(Asset, ELogVerbosity::Warning,
-                   "Failed to load texture asset for SpriteComponent: %s", TexturePath.c_str());
-            return;
-        }
-
-        SetTextureResource(TextureAsset->GetResource());
     }
 
     bool UPaperSpriteComponent::GetLocalTriangles(TArray<Geometry::FTriangle>& OutTriangles) const
@@ -108,7 +71,7 @@ namespace Engine::Component
         return OutTriangles.size() > 0;
     }
 
-        Geometry::FAABB UPaperSpriteComponent::GetLocalAABB() const
+    Geometry::FAABB UPaperSpriteComponent::GetLocalAABB() const
     {
         FVector Min(FLT_MAX, FLT_MAX, FLT_MAX);
         FVector Max(-FLT_MAX, -FLT_MAX, -FLT_MAX);

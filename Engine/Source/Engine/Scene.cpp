@@ -18,51 +18,51 @@ namespace
     void ResolveSpriteUVs(const Engine::Component::UPaperSpriteComponent& SpriteComponent,
                           FVector2& OutUVMin, FVector2& OutUVMax)
     {
-        OutUVMin = FVector2(0.0f, 0.0f);
-        OutUVMax = FVector2(1.0f, 1.0f);
+        //OutUVMin = FVector2(0.0f, 0.0f);
+        //OutUVMax = FVector2(1.0f, 1.0f);
 
-        /*const auto* SubUVComponent =
-            Cast<Engine::Component::USubUVComponent>(SpriteComponent.GetClass());*/
-         const auto* SubUVComponent =
-             dynamic_cast<const Engine::Component::USubUVComponent*>(&SpriteComponent);
-        if (SubUVComponent == nullptr)
-        {
-            return;
-        }
+        ///*const auto* SubUVComponent =
+        //    Cast<Engine::Component::USubUVComponent>(SpriteComponent.GetClass());*/
+        // const auto* SubUVComponent =
+        //     dynamic_cast<const Engine::Component::USubUVComponent*>(&SpriteComponent);
+        //if (SubUVComponent == nullptr)
+        //{
+        //    return;
+        //}
 
-        if (const FSubUVAtlasResource* AtlasResource = SubUVComponent->GetSubUVAtlasResource())
-        {
-            const int32 FrameCount = std::max(SubUVComponent->GetFrameCount(), 1);
-            const int32 FrameIndex = std::clamp(SubUVComponent->GetFrameIndex(), 0, FrameCount - 1);
-            const FSubUVFrame* Frame = AtlasResource->FindFrame(static_cast<uint32>(FrameIndex));
+        //if (const FSubUVAtlasResource* AtlasResource = SubUVComponent->GetSubUVAtlasResource())
+        //{
+        //    const int32 FrameCount = std::max(SubUVComponent->GetFrameCount(), 1);
+        //    const int32 FrameIndex = std::clamp(SubUVComponent->GetFrameIndex(), 0, FrameCount - 1);
+        //    const FSubUVFrame* Frame = AtlasResource->FindFrame(static_cast<uint32>(FrameIndex));
 
-            const float AtlasWidth = static_cast<float>(
-                std::max(AtlasResource->Common.ScaleW, AtlasResource->Atlas.Width));
-            const float AtlasHeight = static_cast<float>(
-                std::max(AtlasResource->Common.ScaleH, AtlasResource->Atlas.Height));
-            if (Frame != nullptr && AtlasWidth > 0.0f && AtlasHeight > 0.0f)
-            {
-                OutUVMin = FVector2(static_cast<float>(Frame->X) / AtlasWidth,
-                                    static_cast<float>(Frame->Y) / AtlasHeight);
-                OutUVMax = FVector2(static_cast<float>(Frame->X + Frame->Width) / AtlasWidth,
-                                    static_cast<float>(Frame->Y + Frame->Height) / AtlasHeight);
-                return;
-            }
-        }
+        //    const float AtlasWidth = static_cast<float>(
+        //        std::max(AtlasResource->Common.ScaleW, AtlasResource->Atlas.Width));
+        //    const float AtlasHeight = static_cast<float>(
+        //        std::max(AtlasResource->Common.ScaleH, AtlasResource->Atlas.Height));
+        //    if (Frame != nullptr && AtlasWidth > 0.0f && AtlasHeight > 0.0f)
+        //    {
+        //        OutUVMin = FVector2(static_cast<float>(Frame->X) / AtlasWidth,
+        //                            static_cast<float>(Frame->Y) / AtlasHeight);
+        //        OutUVMax = FVector2(static_cast<float>(Frame->X + Frame->Width) / AtlasWidth,
+        //                            static_cast<float>(Frame->Y + Frame->Height) / AtlasHeight);
+        //        return;
+        //    }
+        //}
 
-        const int32 Columns = std::max(SubUVComponent->GetAtlasColumns(), 1);
-        const int32 Rows = std::max(SubUVComponent->GetAtlasRows(), 1);
-        const int32 FrameCount = std::max(Columns * Rows, 1);
-        const int32 FrameIndex = std::clamp(SubUVComponent->GetFrameIndex(), 0, FrameCount - 1);
+        //const int32 Columns = std::max(SubUVComponent->GetAtlasColumns(), 1);
+        //const int32 Rows = std::max(SubUVComponent->GetAtlasRows(), 1);
+        //const int32 FrameCount = std::max(Columns * Rows, 1);
+        //const int32 FrameIndex = std::clamp(SubUVComponent->GetFrameIndex(), 0, FrameCount - 1);
 
-        const int32 ColumnIndex = FrameIndex % Columns;
-        const int32 RowIndex = FrameIndex / Columns;
+        //const int32 ColumnIndex = FrameIndex % Columns;
+        //const int32 RowIndex = FrameIndex / Columns;
 
-        const float InvColumns = 1.0f / static_cast<float>(Columns);
-        const float InvRows = 1.0f / static_cast<float>(Rows);
+        //const float InvColumns = 1.0f / static_cast<float>(Columns);
+        //const float InvRows = 1.0f / static_cast<float>(Rows);
 
-        OutUVMin = FVector2(ColumnIndex * InvColumns, RowIndex * InvRows);
-        OutUVMax = FVector2((ColumnIndex + 1) * InvColumns, (RowIndex + 1) * InvRows);
+        //OutUVMin = FVector2(ColumnIndex * InvColumns, RowIndex * InvRows);
+        //OutUVMax = FVector2((ColumnIndex + 1) * InvColumns, (RowIndex + 1) * InvRows);
     }
 } // namespace
 

@@ -3,8 +3,8 @@
 #include <memory>
 #include <utility>
 
-#include "Asset/Asset.h"
-#include "Asset/Data/TextureCookedData.h"
+#include "Engine/Asset/Asset.h"
+#include "Asset/Cooked/TextureCookedData.h"
 #include "Asset/Runtime/TextureRenderResource.h"
 
 using namespace Asset;
