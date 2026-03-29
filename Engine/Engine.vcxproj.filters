@@ -417,9 +417,6 @@
     <ClCompile Include="Source\Renderer\D3D11\D3D11RHI.cpp">
       <Filter>Source\Renderer\D3D11</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Renderer\D3D11\D3D11TextBatchRenderer.cpp">
-      <Filter>Source\Renderer\D3D11</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Renderer\D3D11\GeneralRenderer.cpp">
       <Filter>Source\Renderer\D3D11</Filter>
     </ClCompile>
@@ -430,9 +427,6 @@
       <Filter>Source\Renderer\Submitter</Filter>
     </ClCompile>
     <ClCompile Include="Source\Renderer\Submitter\SceneMeshSubmitter.cpp">
-      <Filter>Source\Renderer\Submitter</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Renderer\Submitter\TextSubmitter.cpp">
       <Filter>Source\Renderer\Submitter</Filter>
     </ClCompile>
     <ClCompile Include="Source\SceneIO\SceneJson.cpp">
@@ -884,9 +878,6 @@
     <ClInclude Include="Source\Renderer\D3D11\D3D11RHI.h">
       <Filter>Source\Renderer\D3D11</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Renderer\D3D11\D3D11TextBatchRenderer.h">
-      <Filter>Source\Renderer\D3D11</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Renderer\D3D11\GeneralRenderer.h">
       <Filter>Source\Renderer\D3D11</Filter>
     </ClInclude>
@@ -915,9 +906,6 @@
       <Filter>Source\Renderer\Submitter</Filter>
     </ClInclude>
     <ClInclude Include="Source\Renderer\Submitter\SceneMeshSubmitter.h">
-      <Filter>Source\Renderer\Submitter</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Renderer\Submitter\TextSubmitter.h">
       <Filter>Source\Renderer\Submitter</Filter>
     </ClInclude>
     <ClInclude Include="Source\Renderer\Types\AxisColors.h">

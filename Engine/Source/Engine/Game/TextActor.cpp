@@ -1,20 +1,20 @@
 #include "TextActor.h"
 
 #include "Engine/Component/Core/PrimitiveComponent.h"
-#include "Engine/Component/Text/AtlasTextComponent.h"
+#include "Engine/Component/Text/TextRenderComponent.h"
 
 ATextActor::ATextActor()
 {
-    auto* TextComponent = new Engine::Component::UAtlasTextComponent();
+    auto* TextComponent = new Engine::Component::UTextRenderComponent();
     TextComponent->SetColor({0.8f, 0.8f, 0.8f, 1.f});
     AddOwnedComponent(TextComponent, true);
 
     Name = "TextActor";
 }
 
-Engine::Component::UAtlasTextComponent* ATextActor::GetTextComponent() const
+Engine::Component::UTextRenderComponent* ATextActor::GetTextComponent() const
 {
-    return Cast<Engine::Component::UAtlasTextComponent>(RootComponent);
+    return Cast<Engine::Component::UTextRenderComponent>(RootComponent);
 }
 
 bool ATextActor::IsRenderable() const { return GetPrimitiveComponent() != nullptr; }

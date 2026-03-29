@@ -157,7 +157,6 @@
     <ClInclude Include="Source\Renderer\D3D11\D3D11ObjectIdRenderer.h" />
     <ClInclude Include="Source\Renderer\D3D11\D3D11OutlineRenderer.h" />
     <ClInclude Include="Source\Renderer\D3D11\D3D11RHI.h" />
-    <ClInclude Include="Source\Renderer\D3D11\D3D11TextBatchRenderer.h" />
     <ClInclude Include="Source\Renderer\D3D11\GeneralRenderer.h" />
     <ClInclude Include="Source\Renderer\EditorRenderData.h" />
     <ClInclude Include="Source\Renderer\RenderAsset\FontResource.h" />
@@ -168,7 +167,6 @@
     <ClInclude Include="Source\Renderer\SceneView.h" />
     <ClInclude Include="Source\Renderer\Submitter\OverlayMeshSubmitter.h" />
     <ClInclude Include="Source\Renderer\Submitter\SceneMeshSubmitter.h" />
-    <ClInclude Include="Source\Renderer\Submitter\TextSubmitter.h" />
     <ClInclude Include="Source\Renderer\Types\AxisColors.h" />
     <ClInclude Include="Source\Renderer\Types\BasicMeshType.h" />
     <ClInclude Include="Source\Renderer\Types\EditorShowFlags.h" />
@@ -297,12 +295,10 @@
     <ClCompile Include="Source\Renderer\D3D11\D3D11ObjectIdRenderer.cpp" />
     <ClCompile Include="Source\Renderer\D3D11\D3D11OutlineRenderer.cpp" />
     <ClCompile Include="Source\Renderer\D3D11\D3D11RHI.cpp" />
-    <ClCompile Include="Source\Renderer\D3D11\D3D11TextBatchRenderer.cpp" />
     <ClCompile Include="Source\Renderer\D3D11\GeneralRenderer.cpp" />
     <ClCompile Include="Source\Renderer\RendererModule.cpp" />
     <ClCompile Include="Source\Renderer\Submitter\OverlayMeshSubmitter.cpp" />
     <ClCompile Include="Source\Renderer\Submitter\SceneMeshSubmitter.cpp" />
-    <ClCompile Include="Source\Renderer\Submitter\TextSubmitter.cpp" />
     <ClCompile Include="Source\SceneIO\SceneJson.cpp" />
     <ClCompile Include="Source\SceneIO\SceneSerializer.cpp" />
     <ClCompile Include="Source\SceneIO\SceneTypeRegistry.cpp" />

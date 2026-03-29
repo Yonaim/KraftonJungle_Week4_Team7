@@ -103,12 +103,6 @@ bool FRendererModule::StartupModule(HWND hWnd)
         return false;
     }
 
-    if (!TextRenderer.Initialize(&RHI))
-    {
-        ShutdownModule();
-        return false;
-    }
-
     if (!ObjectIdRenderer.Initialize(&RHI))
     {
         ShutdownModule();
@@ -131,7 +125,6 @@ void FRendererModule::ShutdownModule()
     DebugDevice.Reset();
 
     ObjectIdRenderer.Shutdown();
-    TextRenderer.Shutdown();
     MeshBatchRenderer.Shutdown();
 
 #if defined(_DEBUG)
@@ -243,23 +236,6 @@ void FRendererModule::RenderWorldPass(const FEditorRenderData& InEditorRenderDat
         }
 
         MeshBatchRenderer.EndFrame();
-    }
-
-    if (InSceneRenderData.SceneView != nullptr && !InSceneRenderData.Texts.empty())
-    {
-        if (InSceneRenderData.ViewMode == EViewModeIndex::VMI_Wireframe)
-        {
-            if (!InSceneRenderData.LineBatchers.empty())
-            {
-                TextSubmitter.Submit(*InSceneRenderData.LineBatchers[0], InSceneRenderData);
-            }
-        }
-        else
-        {
-            TextRenderer.BeginFrame(InSceneRenderData.SceneView);
-            TextSubmitter.Submit(TextRenderer, InSceneRenderData);
-            TextRenderer.EndFrame(InSceneRenderData.SceneView);
-        }
     }
 }
 
