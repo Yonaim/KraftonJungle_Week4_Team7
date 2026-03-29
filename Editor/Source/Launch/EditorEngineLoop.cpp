@@ -204,12 +204,12 @@ bool FEditorEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
             {
                 FPickResult Result;
 
-                FViewportRect Rect = Editor->GetViewportTab().GetViewports()[i]->GetViewRect();
-                int32         WorldX = X + Rect.X;
-                int32         WorldY = Y + Rect.Y;
-
                 // EngineLoop는 Renderer와 Editor 모두에 접근 가능하므로 픽킹을 직접 수행해서 반환
-                Renderer->Pick(Editor->GetEditorRenderData()[i], WorldX, WorldY, Result);
+                Renderer->Pick(Editor->GetEditorRenderData()[i], 
+                    Editor->GetViewportTab().GetViewports()[i]->GetWorldX(X), 
+                    Editor->GetViewportTab().GetViewports()[i]->GetWorldY(Y), 
+                    Result);
+
                 return Result;
             };
         }
@@ -637,13 +637,7 @@ bool FEditorEngineLoop::RunFrameOnceWithoutResize()
     {
         if (Views[i]->IsValid())
         { 
-            FViewportRect  Rect = Views[i]->GetViewRect();
-            D3D11_VIEWPORT Viewport = {
-                (float)Rect.X, (float)Rect.Y, 
-                (float)Rect.Width, (float)Rect.Height, 
-                0.0f, 1.0f};
-
-            Renderer->SetViewport(Viewport);
+            Renderer->SetViewport(Views[i]->GetViewport());
             Renderer->Render(Editor->GetEditorRenderData()[i], Editor->GetSceneRenderData()[i]);
         }
     }
