@@ -210,6 +210,7 @@ bool FEditorEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
             };
         }
     }
+    Editor->GetViewportTab().Initialize();
 
     //Editor->GetViewportTab().GetViewport(1)->GetViewportClient()->OnPickRequested =
     //    [this](int32 X, int32 Y) -> FPickResult

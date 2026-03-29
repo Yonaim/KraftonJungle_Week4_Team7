@@ -16,7 +16,8 @@ public:
 
 public:
     void Construct();
-    void OnResize(FViewportRect WindowRect);
+    void Initialize();
+    void OnResize(FViewportRect WindowRect, bool Force = 0);
 
     TArray<FSceneView*> const& GetViewports() const { return SceneViews; }
     FSceneView* const&         GetViewport(int32 index) const { return SceneViews[index]; }

@@ -38,9 +38,14 @@ void SEditorViewportTab::Construct()
     SetLayout(EViewportLayoutType::_1l3);
 }
 
-void SEditorViewportTab::OnResize(FViewportRect WindowRect)
+void SEditorViewportTab::Initialize()
 { 
-    if (WindowRect.X == CurrentRect.X && WindowRect.Y == CurrentRect.Y &&
+    SetLayout(EViewportLayoutType::Single); 
+}
+
+void SEditorViewportTab::OnResize(FViewportRect WindowRect, bool Force)
+{ 
+    if (!Force && WindowRect.X == CurrentRect.X && WindowRect.Y == CurrentRect.Y &&
         WindowRect.Width == CurrentRect.Width && WindowRect.Height == CurrentRect.Height)
         return;
 
@@ -69,7 +74,7 @@ void SEditorViewportTab::SetLayout(EViewportLayoutType NewType)
     ViewportLayout = FEditorViewportLayoutFactory::Create(NewType);
     ViewportLayout->Initialize(CurrentRect);
 
-    OnResize(CurrentRect);
+    OnResize(CurrentRect, true);
     CurrentLayoutType = NewType;
 }
 
