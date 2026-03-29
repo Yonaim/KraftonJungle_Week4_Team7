@@ -11,10 +11,6 @@
 #include <cstring>
 
 #include "Core/Misc/NameSubsystem.h"
-#include "Asset/AssetManager.h"
-#include "Asset/FontAtlasLoader.h"
-#include "Asset/SubUVAtlasLoader.h"
-#include "Asset/TextureLoader.h"
 
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND HWnd, UINT Message,

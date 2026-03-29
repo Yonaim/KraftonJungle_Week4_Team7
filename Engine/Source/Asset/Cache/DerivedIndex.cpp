@@ -1,13 +1,39 @@
 #include "Asset/Cache/DerivedIndex.h"
 
-#include "Core/Misc/Paths.h"
+#include <filesystem>
 
 namespace Asset
 {
 
+namespace
+{
+    static FWString NormalizePath(const FWString& InPath)
+    {
+        if (InPath.empty())
+        {
+            return {};
+        }
+
+        std::error_code Ec;
+        std::filesystem::path P(InPath);
+        P = std::filesystem::weakly_canonical(P, Ec);
+        if (Ec)
+        {
+            Ec.clear();
+            P = std::filesystem::absolute(P, Ec);
+            if (Ec)
+            {
+                return {};
+            }
+        }
+
+        return P.native();
+    }
+}
+
 const FDerivedKey* FDerivedIndex::Find(const FWString& Path) const
 {
-    const FWString NormalizedPath = FPaths::Normalize(Path);
+    const FWString NormalizedPath = NormalizePath(Path);
     if (NormalizedPath.empty())
     {
         return nullptr;
@@ -29,7 +55,7 @@ const FDerivedKey* FDerivedIndex::Find(const FPathKey& PathKey) const
 
 void FDerivedIndex::Set(const FWString& Path, const FDerivedKey& DerivedKey)
 {
-    const FWString NormalizedPath = FPaths::Normalize(Path);
+    const FWString NormalizedPath = NormalizePath(Path);
     if (NormalizedPath.empty())
     {
         return;
@@ -50,7 +76,7 @@ void FDerivedIndex::Set(const FPathKey& PathKey, const FDerivedKey& DerivedKey)
 
 bool FDerivedIndex::Remove(const FWString& Path)
 {
-    const FWString NormalizedPath = FPaths::Normalize(Path);
+    const FWString NormalizedPath = NormalizePath(Path);
     if (NormalizedPath.empty())
     {
         return false;

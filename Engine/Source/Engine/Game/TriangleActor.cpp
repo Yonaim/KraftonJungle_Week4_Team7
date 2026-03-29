@@ -1,6 +1,5 @@
 #include "TriangleActor.h"
 
-#include "Engine/Component/Mesh/TriangleComponent.h"
 #include "Engine/Component/Core/PrimitiveComponent.h"
 
 ATriangleActor::ATriangleActor()

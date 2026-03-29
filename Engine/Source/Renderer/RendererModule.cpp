@@ -80,17 +80,17 @@ bool FRendererModule::StartupModule(HWND hWnd)
         return false;
     }
 
-    if (!TextRenderer.Initialize(&RHI))
-    {
-        ShutdownModule();
-        return false;
-    }
+    //if (!TextRenderer.Initialize(&RHI))
+    //{
+    //    ShutdownModule();
+    //    return false;
+    //}
 
-    if (!SpriteRenderer.Initialize(&RHI))
-    {
-        ShutdownModule();
-        return false;
-    }
+    //if (!SpriteRenderer.Initialize(&RHI))
+    //{
+    //    ShutdownModule();
+    //    return false;
+    //}
 
     if (!ObjectIdRenderer.Initialize(&RHI))
     {

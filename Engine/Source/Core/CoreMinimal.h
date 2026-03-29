@@ -11,7 +11,7 @@
 // Core Globals / Export Macros
 // 전역 코어 설정, 공용 전역 변수/매크로, DLL export/import 매크로
 //=============================================================================
-#include "EngineAPI.h"
+#include "Core/EngineAPI.h"
 #include "CoreGlobals.h"
 
 //=============================================================================

@@ -1,5 +1,5 @@
 #include "StaticMesh.h"
-#include "Core/Path.h"
+#include "Core/Misc/Paths.h"
 
 REGISTER_CLASS(, UStaticMesh)
 

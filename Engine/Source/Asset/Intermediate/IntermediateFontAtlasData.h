@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Asset/Cooked/FontAtlasCookedData.h"
+#include "Asset/Core/FontTypes.h"
 
 namespace Asset
 {

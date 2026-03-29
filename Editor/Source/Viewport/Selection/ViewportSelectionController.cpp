@@ -7,7 +7,6 @@
 #include "Engine/Component/Core/SceneComponent.h"
 #include "Engine/Game/Actor.h"
 #include "Core/Geometry/Primitives/Ray.h"
-#include "Engine/Component/Mesh/QuadComponent.h"
 #include "Renderer/Types/VertexTypes.h"
 
 void FViewportSelectionController::ClickSelect(int32 MouseX, int32 MouseY, ESelectionMode Mode)
@@ -272,78 +271,79 @@ AActor* FViewportSelectionController::PickActor(int32 MouseX, int32 MouseY) cons
         FMatrix WorldMatrix = PrimitiveComponent->GetRelativeMatrix();
         
         bool  bHitTriangle = false;
-        float ClosestTriangleT = FLT_MAX;
+        float ClosestTriangleT = FLT_MAX; 
 
-        if (auto* QuadComponent = dynamic_cast<Engine::Component::UQuadComponent*>(
-            PrimitiveComponent))
-        {
-            if (QuadComponent != nullptr)
-            {
-                const FMatrix CameraMatrix = ViewportCamera->GetViewMatrix().GetInverse();
-                FVector       RightAxis = CameraMatrix.GetRightVector();
-                FVector       UpAxis = CameraMatrix.GetUpVector();
+        // TODO: 쿼드 컴포넌트 없어짐
+        //if (auto* QuadComponent = dynamic_cast<Engine::Component::UQuadComponent*>(
+        //    PrimitiveComponent))
+        //{
+        //    if (QuadComponent != nullptr)
+        //    {
+        //        const FMatrix CameraMatrix = ViewportCamera->GetViewMatrix().GetInverse();
+        //        FVector       RightAxis = CameraMatrix.GetRightVector();
+        //        FVector       UpAxis = CameraMatrix.GetUpVector();
 
-                RightAxis = RightAxis * WorldMatrix.GetScaleVector().X;
-                UpAxis = UpAxis * WorldMatrix.GetScaleVector().Z;
+        //        RightAxis = RightAxis * WorldMatrix.GetScaleVector().X;
+        //        UpAxis = UpAxis * WorldMatrix.GetScaleVector().Z;
 
-                FVector Origin = WorldMatrix.GetOrigin();
+        //        FVector Origin = WorldMatrix.GetOrigin();
 
-                FVector BottomLeft = Origin - RightAxis - UpAxis;
-                
-                FVector V0 = BottomLeft;
-                FVector V1 = BottomLeft + RightAxis * 2.0f;
-                FVector V2 = BottomLeft + UpAxis * 2.0f + RightAxis * 2.0f;
-                FVector V3 = BottomLeft + UpAxis * 2.0f;
+        //        FVector BottomLeft = Origin - RightAxis - UpAxis;
+        //        
+        //        FVector V0 = BottomLeft;
+        //        FVector V1 = BottomLeft + RightAxis * 2.0f;
+        //        FVector V2 = BottomLeft + UpAxis * 2.0f + RightAxis * 2.0f;
+        //        FVector V3 = BottomLeft + UpAxis * 2.0f;
 
-                Geometry::FTriangle QuadTriangles[2] ={};
-                
-                QuadTriangles[0].V0 = V0;
-                QuadTriangles[0].V1 = V1;
-                QuadTriangles[0].V2 = V2;
-                
-                QuadTriangles[1].V0 = V0;
-                QuadTriangles[1].V1 = V2;
-                QuadTriangles[1].V2 = V3;
-                
-                float TriangleHitT = 0.0f;
-                if (Geometry::IntersectRayTriangle(PickRay, QuadTriangles[0], TriangleHitT))
-                {
-                    if (TriangleHitT >= 0.0f && TriangleHitT < ClosestTriangleT)
-                    {
-                        ClosestTriangleT = TriangleHitT;
-                        bHitTriangle = true;
-                    }
-                }
-                if (Geometry::IntersectRayTriangle(PickRay, QuadTriangles[1], TriangleHitT))
-                {
-                    if (TriangleHitT >= 0.0f && TriangleHitT < ClosestTriangleT)
-                    {
-                        ClosestTriangleT = TriangleHitT;
-                        bHitTriangle = true;
-                    }
-                }
-            }
-        }
-        else
-        {
-            for (const Geometry::FTriangle& LocalTriangle : LocalTriangles)
-            {
-                Geometry::FTriangle WorldTriangle;
-                WorldTriangle.V0 = WorldMatrix.TransformPosition(LocalTriangle.V0);
-                WorldTriangle.V1 = WorldMatrix.TransformPosition(LocalTriangle.V1);
-                WorldTriangle.V2 = WorldMatrix.TransformPosition(LocalTriangle.V2);
+        //        Geometry::FTriangle QuadTriangles[2] ={};
+        //        
+        //        QuadTriangles[0].V0 = V0;
+        //        QuadTriangles[0].V1 = V1;
+        //        QuadTriangles[0].V2 = V2;
+        //        
+        //        QuadTriangles[1].V0 = V0;
+        //        QuadTriangles[1].V1 = V2;
+        //        QuadTriangles[1].V2 = V3;
+        //        
+        //        float TriangleHitT = 0.0f;
+        //        if (Geometry::IntersectRayTriangle(PickRay, QuadTriangles[0], TriangleHitT))
+        //        {
+        //            if (TriangleHitT >= 0.0f && TriangleHitT < ClosestTriangleT)
+        //            {
+        //                ClosestTriangleT = TriangleHitT;
+        //                bHitTriangle = true;
+        //            }
+        //        }
+        //        if (Geometry::IntersectRayTriangle(PickRay, QuadTriangles[1], TriangleHitT))
+        //        {
+        //            if (TriangleHitT >= 0.0f && TriangleHitT < ClosestTriangleT)
+        //            {
+        //                ClosestTriangleT = TriangleHitT;
+        //                bHitTriangle = true;
+        //            }
+        //        }
+        //    }
+        //}
+        //else
+        //{
+        //    for (const Geometry::FTriangle& LocalTriangle : LocalTriangles)
+        //    {
+        //        Geometry::FTriangle WorldTriangle;
+        //        WorldTriangle.V0 = WorldMatrix.TransformPosition(LocalTriangle.V0);
+        //        WorldTriangle.V1 = WorldMatrix.TransformPosition(LocalTriangle.V1);
+        //        WorldTriangle.V2 = WorldMatrix.TransformPosition(LocalTriangle.V2);
 
-                float TriangleHitT = 0.0f;
-                if (Geometry::IntersectRayTriangle(PickRay, WorldTriangle, TriangleHitT))
-                {
-                    if (TriangleHitT >= 0.0f && TriangleHitT < ClosestTriangleT)
-                    {
-                        ClosestTriangleT = TriangleHitT;
-                        bHitTriangle = true;
-                    }
-                }
-            }
-        }
+        //        float TriangleHitT = 0.0f;
+        //        if (Geometry::IntersectRayTriangle(PickRay, WorldTriangle, TriangleHitT))
+        //        {
+        //            if (TriangleHitT >= 0.0f && TriangleHitT < ClosestTriangleT)
+        //            {
+        //                ClosestTriangleT = TriangleHitT;
+        //                bHitTriangle = true;
+        //            }
+        //        }
+        //    }
+        //}
 
         if (bHitTriangle && ClosestTriangleT < ClosestT)
         {

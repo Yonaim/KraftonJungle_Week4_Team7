@@ -1,7 +1,7 @@
 #pragma once
 
+#include "Asset/Texture.h"
 #include "Engine/Component/Mesh/MeshComponent.h"
-#include "Renderer/RenderAsset/TextureResource.h"
 #include "Renderer/Types/BasicMeshType.h"
 
 namespace Engine::Component
@@ -9,18 +9,19 @@ namespace Engine::Component
     class ENGINE_API UPaperSpriteComponent : public UMeshComponent
     {
         DECLARE_RTTI(UPaperSpriteComponent, UMeshComponent)
+
       public:
         UPaperSpriteComponent() = default;
         ~UPaperSpriteComponent() override = default;
 
         EBasicMeshType GetBasicMeshType() const override { return EBasicMeshType::Quad; }
 
-        const FTextureResource* GetTextureResource() const { return TextureResource; }
-        FTextureResource*       GetTextureResource() { return TextureResource; }
-        void                    SetTextureResource(FTextureResource* InTextureResource);
+        const UTexture* GetTextureAsset() const { return TextureAsset; }
+        UTexture*       GetTextureAsset() { return TextureAsset; }
+        void            SetTextureAsset(UTexture* InTextureAsset);
 
-        FString GetTexturePath() const { return TexturePath; }
-        void    SetTexturePath(const FString& InPath);
+        const FTextureRenderResource* GetTextureRenderResource() const;
+        FTextureRenderResource*       GetTextureRenderResource();
 
         bool GetBillboard() const { return bBillboard; }
         void SetBillboard(bool bInBillboard);
@@ -29,7 +30,6 @@ namespace Engine::Component
         void           SetBillboardOffset(const FVector& InBillboardOffset);
 
         void DescribeProperties(FComponentPropertyBuilder& Builder) override;
-        void ResolveAssetReferences(UAssetManager* InAssetManager) override;
 
         bool GetLocalTriangles(TArray<Geometry::FTriangle>& OutTriangles) const override;
 
@@ -37,9 +37,8 @@ namespace Engine::Component
         Geometry::FAABB GetLocalAABB() const override;
 
       protected:
-        FTextureResource* TextureResource = nullptr;
-        FString           TexturePath = {};
-        bool              bBillboard = false;
-        FVector           BillboardOffset = FVector(0.0f, 0.0f, 0.0f);
+        UTexture* TextureAsset = nullptr;
+        bool      bBillboard = false;
+        FVector   BillboardOffset = FVector(0.0f, 0.0f, 0.0f);
     };
 } // namespace Engine::Component

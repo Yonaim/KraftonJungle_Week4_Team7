@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Asset/Cooked/SubUVAtlasCookedData.h"
+#include "Asset/Core/SubUVTypes.h"
 
 namespace Asset
 {

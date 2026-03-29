@@ -78,7 +78,7 @@ struct FPrimitiveRenderItem
 
 struct FSpriteRenderItem
 {
-    const FTextureResource* TextureResource = nullptr;
+    //const FTextureResource* TextureResource = nullptr;
 
     FColor   Color = FColor::White();
     FVector2 UVMin = FVector2(0.0f, 0.0f);
@@ -90,7 +90,7 @@ struct FSpriteRenderItem
 
 struct FTextRenderItem
 {
-    const FFontResource* FontResource = nullptr;
+    //const FFontResource* FontResource = nullptr;
     FString              Text;
     FColor               Color = FColor::White();
 

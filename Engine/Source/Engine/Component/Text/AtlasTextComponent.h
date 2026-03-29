@@ -1,7 +1,7 @@
 #pragma once
 
+#include "Asset/FontAtlas.h"
 #include "TextRenderComponent.h"
-#include "Renderer/RenderAsset/FontResource.h"
 
 class AActor;
 
@@ -15,12 +15,12 @@ namespace Engine::Component
         UAtlasTextComponent() = default;
         ~UAtlasTextComponent() override = default;
 
+        const UFontAtlas* GetFontAsset() const { return FontAsset; }
+        UFontAtlas*       GetFontAsset() { return FontAsset; }
+        void              SetFontAsset(UFontAtlas* InFontAsset);
 
-        const FFontResource* GetFontResource() const { return FontResource; }
-        FFontResource*       GetFontResource() { return FontResource; }
-        void                 SetFontResource(FFontResource* InFontResource);
-        const FString&       GetFontPath() const { return FontPath; }
-        void                 SetFontPath(const FString& InFontPath);
+        const FFontAtlasRenderResource* GetFontRenderResource() const;
+        FFontAtlasRenderResource*       GetFontRenderResource();
 
         float GetTextScale() const { return TextScale; }
         void  SetTextScale(float InTextScale);
@@ -30,9 +30,8 @@ namespace Engine::Component
 
         float GetLineSpacing() const { return LineSpacing; }
         void  SetLineSpacing(float InLineSpacing);
- 
+
         void            DescribeProperties(FComponentPropertyBuilder& Builder) override;
-        void            ResolveAssetReferences(UAssetManager* InAssetManager) override;
         virtual FMatrix GetRenderPlacementWorld(const AActor& InOwnerActor) const;
         virtual FVector GetRenderPlacementOffset(const AActor& InOwnerActor) const;
 
@@ -41,13 +40,10 @@ namespace Engine::Component
       protected:
         Geometry::FAABB GetLocalAABB() const override { return {}; }
 
-    
-        FFontResource* FontResource = nullptr;
-        FString        FontPath;
+        UFontAtlas* FontAsset = nullptr;
 
         float TextScale = 1.0f;
         float LetterSpacing = 0.0f;
         float LineSpacing = 0.0f;
-
     };
 } // namespace Engine::Component

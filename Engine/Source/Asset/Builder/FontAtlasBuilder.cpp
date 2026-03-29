@@ -20,7 +20,7 @@ namespace Asset
 
         auto& IntermediateCache = Cache.GetIntermediateCache(FFontAtlasAssetTag{});
         std::shared_ptr<FIntermediateFontAtlasData> Intermediate =
-            IntermediateCache.Find(Source->ContentHash);
+            IntermediateCache.Find(MakeIntermediateKey(EAssetType::FontAtlas, Source->ContentHash));
         if (!Intermediate)
         {
             Intermediate = ParseFontAtlas(*Source);
@@ -28,11 +28,11 @@ namespace Asset
             {
                 return nullptr;
             }
-            IntermediateCache.Insert(Source->ContentHash, Intermediate);
+            IntermediateCache.Insert(MakeIntermediateKey(EAssetType::FontAtlas, Source->ContentHash), Intermediate);
         }
 
         const FDerivedKey DerivedKey =
-            MakeDerivedKey(Source->ContentHash, AtlasTextureSettings.ToKeyString());
+            MakeCookedKey(EAssetType::FontAtlas, Source->ContentHash, AtlasTextureSettings.ToKeyString());
 
         auto& CookedCache = Cache.GetCookedCache(FFontAtlasAssetTag{});
         std::shared_ptr<FFontAtlasCookedData> Cooked = CookedCache.Find(DerivedKey);

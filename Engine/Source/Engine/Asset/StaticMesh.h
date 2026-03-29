@@ -4,7 +4,7 @@
 #include <utility>
 
 #include "Asset/Asset.h"
-#include "Asset/Data/StaticMeshCookedData.h"
+#include "Asset/Cooked/StaticMeshCookedData.h"
 #include "Asset/Runtime/StaticMeshRenderResource.h"
 
 using namespace Asset;

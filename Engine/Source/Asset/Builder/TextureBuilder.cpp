@@ -1,7 +1,7 @@
 #include "Asset/Builder/TextureBuilder.h"
-#include "Asset/Cache/BuildSettings.h"
 
 #include <cstring>
+#include <filesystem>
 
 #include "Asset/Cache/DerivedKey.h"
 #include "ThirdParty/stb/stb_image.h"
@@ -17,21 +17,17 @@ namespace Asset
                 return {};
             }
 
-            const int RequiredSize =
-                WideCharToMultiByte(CP_UTF8, 0, InPath.c_str(), -1, nullptr, 0, nullptr, nullptr);
+            return std::filesystem::path(InPath).string();
+        }
 
-            if (RequiredSize <= 1)
+        static FString StringFromWide(const FWString& InPath)
+        {
+            if (InPath.empty())
             {
                 return {};
             }
 
-            std::string Result;
-            Result.resize(static_cast<size_t>(RequiredSize - 1));
-
-            WideCharToMultiByte(CP_UTF8, 0, InPath.c_str(), -1, Result.data(), RequiredSize,
-                                nullptr, nullptr);
-
-            return Result;
+            return std::filesystem::path(InPath).string();
         }
     } // namespace
 
@@ -47,8 +43,11 @@ namespace Asset
         }
 
         auto& IntermediateCache = Cache.GetIntermediateCache(FTextureAssetTag{});
+        const FDerivedKey IntermediateKey =
+            MakeIntermediateKey(EAssetType::Texture, Source->ContentHash);
+
         std::shared_ptr<FIntermediateTextureData> Intermediate =
-            IntermediateCache.Find(Source->ContentHash);
+            IntermediateCache.Find(IntermediateKey);
 
         if (!Intermediate)
         {
@@ -58,14 +57,14 @@ namespace Asset
                 return nullptr;
             }
 
-            IntermediateCache.Insert(Source->ContentHash, Intermediate);
+            IntermediateCache.Insert(IntermediateKey, Intermediate);
         }
 
-        const FDerivedKey DerivedKey = MakeDerivedKey(
-            Source->ContentHash, Settings.bSRGB ? "TextureCook_sRGB" : "TextureCook_Linear");
+        const FDerivedKey CookedKey =
+            MakeCookedKey(EAssetType::Texture, Source->ContentHash, Settings.ToKeyString());
 
-        auto&                               CookedCache = Cache.GetCookedCache(FTextureAssetTag{});
-        std::shared_ptr<FTextureCookedData> Cooked = CookedCache.Find(DerivedKey);
+        auto& CookedCache = Cache.GetCookedCache(FTextureAssetTag{});
+        std::shared_ptr<FTextureCookedData> Cooked = CookedCache.Find(CookedKey);
 
         if (!Cooked)
         {
@@ -75,17 +74,17 @@ namespace Asset
                 return nullptr;
             }
 
-            CookedCache.Insert(DerivedKey, Cooked);
+            CookedCache.Insert(CookedKey, Cooked);
         }
 
         return Cooked;
     }
 
-    bool FTextureBuilder::DecodeTexture(const FSourceRecord&      Source,
+    bool FTextureBuilder::DecodeTexture(const FSourceRecord& Source,
                                         FIntermediateTextureData& OutData) const
     {
-        const std::string Utf8Path = NarrowFromWide(Source.NormalizedPath);
-        if (Utf8Path.empty())
+        const std::string PathString = NarrowFromWide(Source.NormalizedPath);
+        if (PathString.empty())
         {
             return false;
         }
@@ -95,7 +94,7 @@ namespace Asset
         int ChannelsInFile = 0;
 
         stbi_uc* DecodedPixels =
-            stbi_load(Utf8Path.c_str(), &Width, &Height, &ChannelsInFile, STBI_rgb_alpha);
+            stbi_load(PathString.c_str(), &Width, &Height, &ChannelsInFile, STBI_rgb_alpha);
 
         if (DecodedPixels == nullptr)
         {
@@ -108,7 +107,7 @@ namespace Asset
             return false;
         }
 
-        const size_t PixelBytes = static_cast<size_t>(Width) * static_cast<size_t>(Height) * 4;
+        const size_t PixelBytes = static_cast<size_t>(Width) * static_cast<size_t>(Height) * 4u;
 
         OutData.Width = static_cast<uint32>(Width);
         OutData.Height = static_cast<uint32>(Height);
@@ -117,15 +116,14 @@ namespace Asset
         OutData.Pixels.resize(PixelBytes);
 
         std::memcpy(OutData.Pixels.data(), DecodedPixels, PixelBytes);
-
         stbi_image_free(DecodedPixels);
         return true;
     }
 
     std::shared_ptr<FTextureCookedData>
-    FTextureBuilder::CookTexture(const FSourceRecord&            Source,
+    FTextureBuilder::CookTexture(const FSourceRecord& Source,
                                  const FIntermediateTextureData& Intermediate,
-                                 const FTextureBuildSettings&    Settings) const
+                                 const FTextureBuildSettings& Settings) const
     {
         if (Intermediate.Width == 0 || Intermediate.Height == 0)
         {
@@ -138,7 +136,7 @@ namespace Asset
         }
 
         auto Result = std::make_shared<FTextureCookedData>();
-        Result->SourcePath = Source.NormalizedPath;
+        Result->SourcePath = StringFromWide(Source.NormalizedPath);
         Result->Width = Intermediate.Width;
         Result->Height = Intermediate.Height;
         Result->Channels = Intermediate.Channels;

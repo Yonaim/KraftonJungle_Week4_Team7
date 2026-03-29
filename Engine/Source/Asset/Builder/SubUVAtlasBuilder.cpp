@@ -73,7 +73,7 @@ namespace Asset
 
         auto& IntermediateCache = Cache.GetIntermediateCache(FSubUVAtlasAssetTag{});
         std::shared_ptr<FIntermediateSubUVAtlasData> Intermediate =
-            IntermediateCache.Find(Source->ContentHash);
+            IntermediateCache.Find(MakeIntermediateKey(EAssetType::SubUVAtlas, Source->ContentHash));
         if (!Intermediate)
         {
             Intermediate = ParseAtlas(*Source);
@@ -81,11 +81,11 @@ namespace Asset
             {
                 return nullptr;
             }
-            IntermediateCache.Insert(Source->ContentHash, Intermediate);
+            IntermediateCache.Insert(MakeIntermediateKey(EAssetType::SubUVAtlas, Source->ContentHash), Intermediate);
         }
 
         const FDerivedKey DerivedKey =
-            MakeDerivedKey(Source->ContentHash, AtlasTextureSettings.ToKeyString());
+            MakeCookedKey(EAssetType::SubUVAtlas, Source->ContentHash, AtlasTextureSettings.ToKeyString());
 
         auto& CookedCache = Cache.GetCookedCache(FSubUVAtlasAssetTag{});
         std::shared_ptr<FSubUVAtlasCookedData> Cooked = CookedCache.Find(DerivedKey);

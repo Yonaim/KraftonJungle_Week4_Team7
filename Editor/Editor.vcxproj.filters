@@ -52,6 +52,9 @@
     <Filter Include="Source\Viewport\Interaction">
       <UniqueIdentifier>{272e7142-94bf-a8cb-262e-e0148bdeb16a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Viewport\Layout">
+      <UniqueIdentifier>{188f9ff8-1c34-70a8-42ee-658f3598b494}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source\Viewport\Navigation">
       <UniqueIdentifier>{8f405a6f-69cc-5924-64a5-aeb8f417b3cb}</UniqueIdentifier>
     </Filter>
@@ -156,6 +159,9 @@
     <ClCompile Include="Source\Viewport\EditorViewportClient.cpp">
       <Filter>Source\Viewport</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Viewport\EditorViewportTab.cpp">
+      <Filter>Source\Viewport</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Viewport\Gizmo\ViewportGizmoController.cpp">
       <Filter>Source\Viewport\Gizmo</Filter>
     </ClCompile>
@@ -164,6 +170,12 @@
     </ClCompile>
     <ClCompile Include="Source\Viewport\Interaction\ViewportInteractionState.cpp">
       <Filter>Source\Viewport\Interaction</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Viewport\Layout\FEditorViewportLayoutFourPanes.cpp">
+      <Filter>Source\Viewport\Layout</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Viewport\Layout\Window.cpp">
+      <Filter>Source\Viewport\Layout</Filter>
     </ClCompile>
     <ClCompile Include="Source\Viewport\Navigation\ViewportNavigationController.cpp">
       <Filter>Source\Viewport\Navigation</Filter>
@@ -174,9 +186,6 @@
     <ClCompile Include="Source\Viewport\Selection\ViewportSelectionController.cpp">
       <Filter>Source\Viewport\Selection</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Viewport\EditorViewportTab.cpp" />
-    <ClCompile Include="Source\Viewport\Layout\Window.cpp" />
-    <ClCompile Include="Source\Viewport\Layout\FEditorViewportLayoutFourPanes.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Camera\ViewportCamera.h">
@@ -290,6 +299,9 @@
     <ClInclude Include="Source\Viewport\EditorViewportClient.h">
       <Filter>Source\Viewport</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Viewport\EditorViewportTab.h">
+      <Filter>Source\Viewport</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Viewport\Gizmo\ViewportGizmoController.h">
       <Filter>Source\Viewport\Gizmo</Filter>
     </ClInclude>
@@ -298,6 +310,15 @@
     </ClInclude>
     <ClInclude Include="Source\Viewport\Interaction\ViewportInteractionState.h">
       <Filter>Source\Viewport\Interaction</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayout.h">
+      <Filter>Source\Viewport\Layout</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Viewport\Layout\FEditorViewportLayoutFourPanes.h">
+      <Filter>Source\Viewport\Layout</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Viewport\Layout\Window.h">
+      <Filter>Source\Viewport\Layout</Filter>
     </ClInclude>
     <ClInclude Include="Source\Viewport\Navigation\ViewportNavigationController.h">
       <Filter>Source\Viewport\Navigation</Filter>
@@ -308,10 +329,6 @@
     <ClInclude Include="Source\Viewport\Selection\ViewportSelectionController.h">
       <Filter>Source\Viewport\Selection</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Viewport\EditorViewportTab.h" />
-    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayout.h" />
-    <ClInclude Include="Source\Viewport\Layout\Window.h" />
-    <ClInclude Include="Source\Viewport\Layout\FEditorViewportLayoutFourPanes.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\ThirdParty\ImGui\imgui.natstepfilter">

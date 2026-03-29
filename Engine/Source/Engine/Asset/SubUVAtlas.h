@@ -4,7 +4,7 @@
 #include <utility>
 
 #include "Asset/Asset.h"
-#include "Asset/Data/SubUVAtlasCookedData.h"
+#include "Asset/Cooked/SubUVAtlasCookedData.h"
 #include "Asset/Runtime/SubUVAtlasRenderResource.h"
 
 using namespace Asset;
