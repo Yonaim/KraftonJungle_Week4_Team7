@@ -7,6 +7,7 @@
 #include "Viewport/Layout/EditorViewportLayoutFactory.h"
 
 #include "Renderer/SceneView.h"
+#include "Panel/ControlPanel.h"
 
 class SEditorViewportTab
 {
@@ -27,6 +28,10 @@ public:
 
     void AdjustViewportCount(EViewportLayoutType NewType);
 
+    // UI
+    void InitializeControlPanels(FEditorContext* Context);
+    void DrawControlPanels();
+
 private:
     FViewportRect                  CurrentRect = {0, 0, 0, 0};
     TArray<FSceneView*>            SceneViews;
@@ -34,4 +39,6 @@ private:
 
     FEditorViewportLayout*         ViewportLayout = nullptr;
     EViewportLayoutType            CurrentLayoutType;
+
+    TArray<FControlPanel*> ControlPanels;
 };

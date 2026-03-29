@@ -5,15 +5,20 @@ SEditorViewportTab::SEditorViewportTab() {}
 
 SEditorViewportTab::~SEditorViewportTab() 
 {
-    for (auto V : SceneViews)
+    for (auto* V : SceneViews)
 	{
         delete V;
 	}
 
-	for (auto C : ViewportClients)
+	for (auto* C : ViewportClients)
     {
         C->Release();
         delete C;
+    }
+
+    for (auto* P : ControlPanels)
+    {
+        delete P;
     }
 
     delete ViewportLayout;
@@ -93,5 +98,25 @@ void SEditorViewportTab::AdjustViewportCount(EViewportLayoutType NewType)
         {
             SceneViews[i]->RemoveViewportClient();
         }
+    }
+}
+
+void SEditorViewportTab::InitializeControlPanels(FEditorContext* Context)
+{
+    for (int i = 0; i < SceneViews.size(); i++)
+    {
+        FControlPanel* Panel = new FControlPanel();
+        Panel->Initialize(Context, nullptr);
+        Panel->SetViewportIndex(i);
+        ControlPanels.push_back(Panel);
+    }
+}
+
+void SEditorViewportTab::DrawControlPanels() 
+{
+    for (int i = 0; i < SceneViews.size(); i++)
+    {
+        if (SceneViews[i]->IsValid())
+            ControlPanels[i]->Draw(); 
     }
 }

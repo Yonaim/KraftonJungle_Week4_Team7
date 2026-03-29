@@ -346,11 +346,14 @@ void FEditor::Create()
                                                        { RegisterWindowPanelCommand(Descriptor); });
     PanelManager->RegisterPanelInstance<FConsolePanel>(&LogBuffer);
     PanelManager->RegisterPanelType<FContentBrowserPanel>();
-    PanelManager->RegisterPanelInstance<FControlPanel>();
+    //PanelManager->RegisterPanelInstance<FControlPanel>();
     PanelManager->RegisterPanelInstance<FOutlinerPanel>();
     PanelManager->RegisterPanelInstance<FPropertiesPanel>();
     PanelManager->RegisterPanelInstance<FShortcutsPanel>();
     PanelManager->RegisterPanelInstance<FStatePanel>();
+
+    // TODO: ViewportTab도 Panel로 만들기
+    ViewportTab.InitializeControlPanels(&EditorContext);
 
     // PanelManager->RegisterPanelInstance<FSamplePanel>(&LogBuffer);
 
@@ -1485,6 +1488,7 @@ void FEditor::DrawPanel()
         PanelManager->DrawPanels();
     }
 
+    ViewportTab.DrawControlPanels();
     for (auto Viewport : ViewportTab.GetViewports())
     {
         if (Viewport->IsValid())

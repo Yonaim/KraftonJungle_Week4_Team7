@@ -19,7 +19,7 @@ namespace
         ImGui::PushID(Label);
         ImGui::TextUnformatted(Label);
         ImGui::SameLine(120.0f);
-        ImGui::SetNextItemWidth(-1.0f);
+        ImGui::SetNextItemWidth(300.0f);
         ImGui::DragFloat3("##Value", Value.XYZ, Speed);
         ImGui::PopID();
     }
@@ -53,7 +53,20 @@ const wchar_t* FControlPanel::GetDisplayName() const
 
 void FControlPanel::Draw()
 {
-    if (!ImGui::Begin("Control Panel", nullptr))
+    FViewportRect Rect = GetContext()->Editor->GetViewportTab().GetViewport(ViewportIndex)->GetViewRect();
+    
+    ImGui::SetNextWindowPos(ImVec2(Rect.X, Rect.Y), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(Rect.Width, 40.0f), ImGuiCond_Always);
+    ImGui::SetNextWindowBgAlpha(0.8f);
+
+    ImGuiWindowFlags Flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
+                             ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar |
+                             ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoNavFocus |
+                             ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking;
+
+    const FString WindowId = "##Control Panel" + std::to_string(ViewportIndex);
+
+    if (!ImGui::Begin(WindowId.c_str(), nullptr, Flags))
     {
         ImGui::End();
         return;
@@ -67,17 +80,18 @@ void FControlPanel::Draw()
         return;
     }
 
-    DrawTransformSection(*Camera);
-    ImGui::Separator();
-    DrawProjectionSection(*Camera);
-    ImGui::Separator();
-    DrawViewModeSection();
-    ImGui::Separator();
-    DrawShowFlagsSection();
-    ImGui::Separator();
-    DrawNavigationSection();
-    ImGui::Separator();
-    DrawWorldSection();
+    DrawSectionButton("Transform", "TransformPopup", [&]() { if (Camera) DrawTransformSection(*Camera);});
+    ImGui::SameLine();
+    DrawSectionButton("Projection", "ProjectionPopup", [&]() { if (Camera) DrawProjectionSection(*Camera); });
+    ImGui::SameLine();
+    DrawSectionButton("View Mode", "ViewModePopup", [&]() { DrawViewModeSection(); });
+    ImGui::SameLine();
+    DrawSectionButton("Show Flags", "ShowFlagsPopup", [&]() { DrawShowFlagsSection(); });
+    ImGui::SameLine();
+    DrawSectionButton("Navigation", "NavigationPopup", [&]() { DrawNavigationSection(); });
+    ImGui::SameLine();
+    DrawSectionButton("World", "WorldPopup", [&]() { DrawWorldSection(); });
+    ImGui::SameLine();
 
     ImGui::End();
 }
@@ -89,7 +103,11 @@ FViewportCamera* FControlPanel::ResolveViewportCamera() const
         return nullptr;
     }
 
-    return &GetContext()->Editor->GetViewportTab().GetViewport(0)->GetViewportClient()->GetCamera();
+    return &GetContext()
+                ->Editor->GetViewportTab()
+                .GetViewport(ViewportIndex)
+                ->GetViewportClient()
+                ->GetCamera();
 }
 
 void FControlPanel::DrawUnavailableState() const
@@ -162,7 +180,7 @@ void FControlPanel::DrawViewModeSection() const
 
     FViewportRenderSetting& RenderSetting = GetContext()
                                                 ->Editor->GetViewportTab()
-                                                .GetViewport(0)
+                                                .GetViewport(ViewportIndex)
                                                 ->GetViewportClient()
                                                 ->GetRenderSetting();
 
@@ -191,7 +209,7 @@ void FControlPanel::DrawShowFlagsSection() const
 
     FViewportRenderSetting& RenderSetting = GetContext()
                                                 ->Editor->GetViewportTab()
-                                                .GetViewport(0)
+                                                .GetViewport(ViewportIndex)
                                                 ->GetViewportClient()
                                                 ->GetRenderSetting();
 
@@ -265,7 +283,7 @@ void FControlPanel::DrawNavigationSection() const
 
     FViewportNavigationController& NavigationController = GetContext()
                                                               ->Editor->GetViewportTab()
-                                                              .GetViewport(0)
+                                                              .GetViewport(ViewportIndex)
                                                               ->GetViewportClient()
                                                               ->GetNavigationController();
 
