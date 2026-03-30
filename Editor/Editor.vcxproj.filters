@@ -189,6 +189,10 @@
     <ClCompile Include="Source\Viewport\Selection\ViewportSelectionController.cpp">
       <Filter>Source\Viewport\Selection</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Launch\ViewerEngineLoop.cpp">
+      <Filter>Source\Launch</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Viewer\Viewer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Camera\ViewportCamera.h">
@@ -338,6 +342,10 @@
     <ClInclude Include="Source\Viewport\Viewport.h">
       <Filter>Source\Viewport</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Launch\ViewerEngineLoop.h">
+      <Filter>Source\Launch</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Viewer\Viewer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\ThirdParty\ImGui\imgui.natstepfilter">

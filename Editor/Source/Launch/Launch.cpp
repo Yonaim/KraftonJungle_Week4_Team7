@@ -1,21 +1,28 @@
-#include "Launch.h"
+#ifdef IS_OBJ_VIEWER
+#include "Launch/ViewerEngineLoop.h"
+#else
 #include "Launch/EditorEngineLoop.h"
+#endif
 
 namespace 
 {
     int GuardedMain(HINSTANCE HInstance, int NCmdShow)
     {
-        FEditorEngineLoop EditorEngineLoop;
+#ifdef IS_OBJ_VIEWER
+        FViewerEngineLoop EngineLoop;
+#else
+        FEditorEngineLoop EngineLoop;
+#endif  
         
-        if (!EditorEngineLoop.PreInit(HInstance, NCmdShow))
+        if (!EngineLoop.PreInit(HInstance, NCmdShow))
         {
             //  Error Code
             return -1;
         }
         
-        const int32 ExitCode = EditorEngineLoop.Run();
+        const int32 ExitCode = EngineLoop.Run();
         
-        EditorEngineLoop.ShutDown();
+        EngineLoop.ShutDown();
         
         return ExitCode;
     }
