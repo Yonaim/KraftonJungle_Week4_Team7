@@ -97,6 +97,9 @@ void FViewportNavigationController::MoveForward(float Value, float DeltaTime)
     {
         return;
     }
+    if (ViewportCamera->GetProjectionType() == EViewportProjectionType::Orthographic)
+        return;
+
     //  Orbiting 중에는 이동 입력을 무시합니다.
     if (bOrbiting)
     {
@@ -118,6 +121,9 @@ void FViewportNavigationController::MoveRight(float Value, float DeltaTime)
     {
         return;
     }
+    if (ViewportCamera->GetProjectionType() == EViewportProjectionType::Orthographic)
+        return;
+
     //  Orbiting 중에는 이동 입력을 무시합니다.
     if (bOrbiting)
     {
@@ -131,6 +137,9 @@ void FViewportNavigationController::MoveRight(float Value, float DeltaTime)
 void FViewportNavigationController::MoveUp(float Value, float DeltaTime)
 {
     if (ViewportCamera == nullptr || FMath::IsNearlyZero(Value))
+        return;
+
+    if (ViewportCamera->GetProjectionType() == EViewportProjectionType::Orthographic)
         return;
 
     EnsureTargetLocationInitialized();
