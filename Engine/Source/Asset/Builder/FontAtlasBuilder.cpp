@@ -4,38 +4,44 @@
 #include <fstream>
 #include <sstream>
 
-#include "Asset/Cache/DerivedKey.h"
+#include "Asset/Cache/AssetKeyUtils.h"
 
 namespace Asset
 {
     std::shared_ptr<FFontAtlasCookedData>
-    FFontAtlasBuilder::Build(const FWString&              Path,
+    FFontAtlasBuilder::Build(const std::filesystem::path& Path,
                              const FTextureBuildSettings& AtlasTextureSettings)
     {
-        const FSourceRecord* Source = Cache.GetSource(Path);
+        const FSourceRecord* Source = Cache.GetSource(FFontAtlasAssetTag{}, Path);
         if (Source == nullptr)
         {
             return nullptr;
         }
 
         auto& IntermediateCache = Cache.GetIntermediateCache(FFontAtlasAssetTag{});
-        std::shared_ptr<FIntermediateFontAtlasData> Intermediate =
-            IntermediateCache.Find(MakeIntermediateKey(EAssetType::FontAtlas, Source->ContentHash));
+        std::shared_ptr<FIntermediateFontAtlasData> Intermediate = ParseFontAtlas(*Source);
         if (!Intermediate)
         {
-            Intermediate = ParseFontAtlas(*Source);
-            if (!Intermediate)
-            {
-                return nullptr;
-            }
-            IntermediateCache.Insert(MakeIntermediateKey(EAssetType::FontAtlas, Source->ContentHash), Intermediate);
+            return nullptr;
         }
 
-        const FDerivedKey DerivedKey =
-            MakeCookedKey(EAssetType::FontAtlas, Source->ContentHash, AtlasTextureSettings.ToKeyString());
+        const FFontAtlasIntermediateKey IntermediateKey = KeyUtils::MakeIntermediateKey(*Intermediate);
+        std::shared_ptr<FIntermediateFontAtlasData> CachedIntermediate =
+            IntermediateCache.Find(IntermediateKey);
+        if (CachedIntermediate)
+        {
+            Intermediate = CachedIntermediate;
+        }
+        else
+        {
+            IntermediateCache.Insert(IntermediateKey, Intermediate);
+        }
+
+        const FFontAtlasCookedKey CookedKey =
+            KeyUtils::MakeCookedKey(IntermediateKey, AtlasTextureSettings);
 
         auto& CookedCache = Cache.GetCookedCache(FFontAtlasAssetTag{});
-        std::shared_ptr<FFontAtlasCookedData> Cooked = CookedCache.Find(DerivedKey);
+        std::shared_ptr<FFontAtlasCookedData> Cooked = CookedCache.Find(CookedKey);
         if (!Cooked)
         {
             Cooked = CookFontAtlas(*Source, *Intermediate, AtlasTextureSettings);
@@ -43,7 +49,7 @@ namespace Asset
             {
                 return nullptr;
             }
-            CookedCache.Insert(DerivedKey, Cooked);
+            CookedCache.Insert(CookedKey, Cooked);
         }
 
         return Cooked;
@@ -212,9 +218,9 @@ namespace Asset
         return Result->IsValid() ? Result : nullptr;
     }
 
-    bool FFontAtlasBuilder::ReadAllText(const FWString& Path, FString& OutText)
+    bool FFontAtlasBuilder::ReadAllText(const std::filesystem::path& Path, FString& OutText)
     {
-        std::ifstream File(std::filesystem::path(Path), std::ios::in | std::ios::binary);
+        std::ifstream File(Path, std::ios::in | std::ios::binary);
         if (!File)
         {
             return false;
@@ -294,11 +300,11 @@ namespace Asset
         return bParsedAny;
     }
 
-    FWString FFontAtlasBuilder::ResolveRelativePath(const FWString& BasePath,
+    FWString FFontAtlasBuilder::ResolveRelativePath(const std::filesystem::path& BasePath,
                                                     const FString&  RelativePath)
     {
         const std::filesystem::path BaseDirectory = std::filesystem::path(BasePath).parent_path();
-        return (BaseDirectory / std::filesystem::path(RelativePath)).lexically_normal().wstring();
+        return (BaseDirectory / std::filesystem::path(RelativePath)).lexically_normal();
     }
 
 } // namespace Asset

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Asset/Core/Types.h"
+#include "Asset/Core/TextureTypes.h"
 
 namespace Asset
 {

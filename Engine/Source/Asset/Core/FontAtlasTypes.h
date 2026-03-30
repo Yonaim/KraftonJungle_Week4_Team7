@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/CoreMinimal.h"
+#include "Asset/Core/AssetCommonTypes.h"
 
 namespace Asset
 {

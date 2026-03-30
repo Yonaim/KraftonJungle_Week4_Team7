@@ -2,124 +2,317 @@
 
 #include <filesystem>
 #include <functional>
-#include <type_traits>
+#include <string>
 
 #include "Core/CoreMinimal.h"
 
-// =============================== Asset Key Type ==============================
-
-enum class EAssetKeyType : uint8
+namespace Asset
 {
-    Unknown = 0,
-    Path,
-    Derived,
-};
-
-// ================================ Asset Key =================================
-
-struct FAssetKey
-{
-    EAssetKeyType KeyType = EAssetKeyType::Unknown;
-    FString       Value;
-
-    FAssetKey() = default;
-
-    FAssetKey(EAssetKeyType InKeyType, FString InValue)
-        : KeyType(InKeyType), Value(std::move(InValue))
+    namespace KeyHash
     {
-    }
+        template <typename T> inline void Combine(size_t& Seed, const T& Value)
+        {
+            const size_t H = std::hash<T>{}(Value);
+            Seed ^= H + 0x9e3779b9 + (Seed << 6) + (Seed >> 2);
+        }
 
-    bool IsValid() const { return !Value.empty(); }
+        inline void CombinePath(size_t& Seed, const std::filesystem::path& Value)
+        {
+            Combine(Seed, Value);
+        }
+        inline void CombineString(size_t& Seed, const FString& Value) { Combine(Seed, Value); }
 
-    void Reset()
+        inline void CombineWString(size_t& Seed, const FWString& Value) { Combine(Seed, Value); }
+    } // namespace KeyHash
+
+    struct FTextureSourceKey
     {
-        KeyType = EAssetKeyType::Unknown;
-        Value.clear();
-    }
+        std::filesystem::path    NormalizedPath;
+        static FTextureSourceKey FromPath(const std::filesystem::path& InPath) { return {InPath}; }
+        bool                     operator==(const FTextureSourceKey& Other) const
+        {
+            return NormalizedPath == Other.NormalizedPath;
+        }
+    };
 
-    bool operator==(const FAssetKey& Other) const
+    struct FMaterialSourceKey
     {
-        return KeyType == Other.KeyType && Value == Other.Value;
-    }
+        std::filesystem::path     NormalizedPath;
+        static FMaterialSourceKey FromPath(const std::filesystem::path& InPath) { return {InPath}; }
+        bool                      operator==(const FMaterialSourceKey& Other) const
+        {
+            return NormalizedPath == Other.NormalizedPath;
+        }
+    };
 
-    bool operator!=(const FAssetKey& Other) const { return !(*this == Other); }
-};
-
-// ================================ Path Key ==================================
-
-struct FPathKey : public FAssetKey
-{
-    FPathKey()
-        : FAssetKey(EAssetKeyType::Path, FString{})
+    struct FStaticMeshSourceKey
     {
-    }
+        std::filesystem::path       NormalizedPath;
+        static FStaticMeshSourceKey FromPath(const std::filesystem::path& InPath)
+        {
+            return {InPath};
+        }
+        bool operator==(const FStaticMeshSourceKey& Other) const
+        {
+            return NormalizedPath == Other.NormalizedPath;
+        }
+    };
 
-    explicit FPathKey(const FString& InPath)
-        : FAssetKey(EAssetKeyType::Path, InPath)
+    struct FSubUVAtlasSourceKey
     {
-    }
+        std::filesystem::path       NormalizedPath;
+        static FSubUVAtlasSourceKey FromPath(const std::filesystem::path& InPath)
+        {
+            return {InPath};
+        }
+        bool operator==(const FSubUVAtlasSourceKey& Other) const
+        {
+            return NormalizedPath == Other.NormalizedPath;
+        }
+    };
 
-    explicit FPathKey(FString&& InPath)
-        : FAssetKey(EAssetKeyType::Path, std::move(InPath))
+    struct FFontAtlasSourceKey
     {
-    }
+        std::filesystem::path      NormalizedPath;
+        static FFontAtlasSourceKey FromPath(const std::filesystem::path& InPath)
+        {
+            return {InPath};
+        }
+        bool operator==(const FFontAtlasSourceKey& Other) const
+        {
+            return NormalizedPath == Other.NormalizedPath;
+        }
+    };
 
-    explicit FPathKey(const FWString& InPath)
-        : FAssetKey(EAssetKeyType::Path, std::filesystem::path(InPath).string())
+    struct FTextureIntermediateKey
     {
-    }
-};
+        FString ParsedHash;
+        bool    operator==(const FTextureIntermediateKey& Other) const
+        {
+            return ParsedHash == Other.ParsedHash;
+        }
+    };
 
-// =============================== Derived Key ================================
-
-struct FDerivedKey : public FAssetKey
-{
-    FDerivedKey()
-        : FAssetKey(EAssetKeyType::Derived, FString{})
+    struct FMaterialIntermediateKey
     {
-    }
+        FString ParsedHash;
+        bool    operator==(const FMaterialIntermediateKey& Other) const
+        {
+            return ParsedHash == Other.ParsedHash;
+        }
+    };
 
-    explicit FDerivedKey(const FString& InValue)
-        : FAssetKey(EAssetKeyType::Derived, InValue)
+    struct FStaticMeshIntermediateKey
     {
-    }
+        FString ParsedHash;
+        bool    operator==(const FStaticMeshIntermediateKey& Other) const
+        {
+            return ParsedHash == Other.ParsedHash;
+        }
+    };
 
-    explicit FDerivedKey(FString&& InValue)
-        : FAssetKey(EAssetKeyType::Derived, std::move(InValue))
+    struct FSubUVAtlasIntermediateKey
     {
-    }
-};
+        FString ParsedHash;
+        bool    operator==(const FSubUVAtlasIntermediateKey& Other) const
+        {
+            return ParsedHash == Other.ParsedHash;
+        }
+    };
 
-// ================================ Hash Glue =================================
+    struct FFontAtlasIntermediateKey
+    {
+        FString ParsedHash;
+        bool    operator==(const FFontAtlasIntermediateKey& Other) const
+        {
+            return ParsedHash == Other.ParsedHash;
+        }
+    };
+
+    struct FTextureCookedKey
+    {
+        FTextureIntermediateKey IntermediateKey;
+        uint32                  CookVersion = 0;
+        FString                 BuildKey;
+        bool                    operator==(const FTextureCookedKey& Other) const
+        {
+            return IntermediateKey == Other.IntermediateKey && CookVersion == Other.CookVersion &&
+                   BuildKey == Other.BuildKey;
+        }
+    };
+
+    struct FMaterialCookedKey
+    {
+        FMaterialIntermediateKey IntermediateKey;
+        uint32                   CookVersion = 0;
+        FString                  BuildKey;
+        bool                     operator==(const FMaterialCookedKey& Other) const
+        {
+            return IntermediateKey == Other.IntermediateKey && CookVersion == Other.CookVersion &&
+                   BuildKey == Other.BuildKey;
+        }
+    };
+
+    struct FStaticMeshCookedKey
+    {
+        FStaticMeshIntermediateKey IntermediateKey;
+        uint32                     CookVersion = 0;
+        FString                    BuildKey;
+        bool                       operator==(const FStaticMeshCookedKey& Other) const
+        {
+            return IntermediateKey == Other.IntermediateKey && CookVersion == Other.CookVersion &&
+                   BuildKey == Other.BuildKey;
+        }
+    };
+
+    struct FSubUVAtlasCookedKey
+    {
+        FSubUVAtlasIntermediateKey IntermediateKey;
+        uint32                     CookVersion = 0;
+        FString                    BuildKey;
+        bool                       operator==(const FSubUVAtlasCookedKey& Other) const
+        {
+            return IntermediateKey == Other.IntermediateKey && CookVersion == Other.CookVersion &&
+                   BuildKey == Other.BuildKey;
+        }
+    };
+
+    struct FFontAtlasCookedKey
+    {
+        FFontAtlasIntermediateKey IntermediateKey;
+        uint32                    CookVersion = 0;
+        FString                   BuildKey;
+        bool                      operator==(const FFontAtlasCookedKey& Other) const
+        {
+            return IntermediateKey == Other.IntermediateKey && CookVersion == Other.CookVersion &&
+                   BuildKey == Other.BuildKey;
+        }
+    };
+
+} // namespace Asset
 
 namespace std
 {
-    template <>
-    struct hash<FAssetKey>
+    template <> struct hash<Asset::FTextureSourceKey>
     {
-        size_t operator()(const FAssetKey& Key) const
+        size_t operator()(const Asset::FTextureSourceKey& Key) const
         {
-            const size_t TypeHash = std::hash<int>{}(static_cast<int>(Key.KeyType));
-            const size_t ValueHash = std::hash<FString>{}(Key.Value);
-            return TypeHash ^ (ValueHash + 0x9e3779b9 + (TypeHash << 6) + (TypeHash >> 2));
+            return std::hash<std::filesystem::path>{}(Key.NormalizedPath);
+        }
+    };
+    template <> struct hash<Asset::FMaterialSourceKey>
+    {
+        size_t operator()(const Asset::FMaterialSourceKey& Key) const
+        {
+            return std::hash<std::filesystem::path>{}(Key.NormalizedPath);
+        }
+    };
+    template <> struct hash<Asset::FStaticMeshSourceKey>
+    {
+        size_t operator()(const Asset::FStaticMeshSourceKey& Key) const
+        {
+            return std::hash<std::filesystem::path>{}(Key.NormalizedPath);
+        }
+    };
+    template <> struct hash<Asset::FSubUVAtlasSourceKey>
+    {
+        size_t operator()(const Asset::FSubUVAtlasSourceKey& Key) const
+        {
+            return std::hash<std::filesystem::path>{}(Key.NormalizedPath);
+        }
+    };
+    template <> struct hash<Asset::FFontAtlasSourceKey>
+    {
+        size_t operator()(const Asset::FFontAtlasSourceKey& Key) const
+        {
+            return std::hash<std::filesystem::path>{}(Key.NormalizedPath);
         }
     };
 
-    template <>
-    struct hash<FPathKey>
+    template <> struct hash<Asset::FTextureIntermediateKey>
     {
-        size_t operator()(const FPathKey& Key) const
+        size_t operator()(const Asset::FTextureIntermediateKey& Key) const
         {
-            return std::hash<FAssetKey>{}(static_cast<const FAssetKey&>(Key));
+            return std::hash<FString>{}(Key.ParsedHash);
+        }
+    };
+    template <> struct hash<Asset::FMaterialIntermediateKey>
+    {
+        size_t operator()(const Asset::FMaterialIntermediateKey& Key) const
+        {
+            return std::hash<FString>{}(Key.ParsedHash);
+        }
+    };
+    template <> struct hash<Asset::FStaticMeshIntermediateKey>
+    {
+        size_t operator()(const Asset::FStaticMeshIntermediateKey& Key) const
+        {
+            return std::hash<FString>{}(Key.ParsedHash);
+        }
+    };
+    template <> struct hash<Asset::FSubUVAtlasIntermediateKey>
+    {
+        size_t operator()(const Asset::FSubUVAtlasIntermediateKey& Key) const
+        {
+            return std::hash<FString>{}(Key.ParsedHash);
+        }
+    };
+    template <> struct hash<Asset::FFontAtlasIntermediateKey>
+    {
+        size_t operator()(const Asset::FFontAtlasIntermediateKey& Key) const
+        {
+            return std::hash<FString>{}(Key.ParsedHash);
         }
     };
 
-    template <>
-    struct hash<FDerivedKey>
+    template <> struct hash<Asset::FTextureCookedKey>
     {
-        size_t operator()(const FDerivedKey& Key) const
+        size_t operator()(const Asset::FTextureCookedKey& Key) const
         {
-            return std::hash<FAssetKey>{}(static_cast<const FAssetKey&>(Key));
+            size_t Seed = std::hash<Asset::FTextureIntermediateKey>{}(Key.IntermediateKey);
+            Asset::KeyHash::Combine(Seed, Key.CookVersion);
+            Asset::KeyHash::CombineString(Seed, Key.BuildKey);
+            return Seed;
         }
     };
-}
+    template <> struct hash<Asset::FMaterialCookedKey>
+    {
+        size_t operator()(const Asset::FMaterialCookedKey& Key) const
+        {
+            size_t Seed = std::hash<Asset::FMaterialIntermediateKey>{}(Key.IntermediateKey);
+            Asset::KeyHash::Combine(Seed, Key.CookVersion);
+            Asset::KeyHash::CombineString(Seed, Key.BuildKey);
+            return Seed;
+        }
+    };
+    template <> struct hash<Asset::FStaticMeshCookedKey>
+    {
+        size_t operator()(const Asset::FStaticMeshCookedKey& Key) const
+        {
+            size_t Seed = std::hash<Asset::FStaticMeshIntermediateKey>{}(Key.IntermediateKey);
+            Asset::KeyHash::Combine(Seed, Key.CookVersion);
+            Asset::KeyHash::CombineString(Seed, Key.BuildKey);
+            return Seed;
+        }
+    };
+    template <> struct hash<Asset::FSubUVAtlasCookedKey>
+    {
+        size_t operator()(const Asset::FSubUVAtlasCookedKey& Key) const
+        {
+            size_t Seed = std::hash<Asset::FSubUVAtlasIntermediateKey>{}(Key.IntermediateKey);
+            Asset::KeyHash::Combine(Seed, Key.CookVersion);
+            Asset::KeyHash::CombineString(Seed, Key.BuildKey);
+            return Seed;
+        }
+    };
+    template <> struct hash<Asset::FFontAtlasCookedKey>
+    {
+        size_t operator()(const Asset::FFontAtlasCookedKey& Key) const
+        {
+            size_t Seed = std::hash<Asset::FFontAtlasIntermediateKey>{}(Key.IntermediateKey);
+            Asset::KeyHash::Combine(Seed, Key.CookVersion);
+            Asset::KeyHash::CombineString(Seed, Key.BuildKey);
+            return Seed;
+        }
+    };
+} // namespace std

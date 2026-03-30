@@ -165,9 +165,6 @@
     <ClCompile Include="Source\Asset\Builder\TextureBuilder.cpp">
       <Filter>Source\Asset\Builder</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Asset\Cache\DerivedIndex.cpp">
-      <Filter>Source\Asset\Cache</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Asset\Runtime\FontAtlasRenderResource.cpp">
       <Filter>Source\Asset\Runtime</Filter>
     </ClCompile>
@@ -506,20 +503,14 @@
     <ClInclude Include="Source\Asset\Cache\AssetKey.h">
       <Filter>Source\Asset\Cache</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Asset\Cache\AssetKeyUtils.h">
+      <Filter>Source\Asset\Cache</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Asset\Cache\AssetTags.h">
       <Filter>Source\Asset\Cache</Filter>
     </ClInclude>
     <ClInclude Include="Source\Asset\Cache\BuildSettings.h">
       <Filter>Source\Asset\Cache</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Asset\Cache\DerivedIndex.h">
-      <Filter>Source\Asset\Cache</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Asset\Cache\DerivedKey.h">
-      <Filter>Source\Asset\Cache</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Asset\Cooked\CookedData.h">
-      <Filter>Source\Asset\Cooked</Filter>
     </ClInclude>
     <ClInclude Include="Source\Asset\Cooked\FontAtlasCookedData.h">
       <Filter>Source\Asset\Cooked</Filter>
@@ -536,16 +527,22 @@
     <ClInclude Include="Source\Asset\Cooked\TextureCookedData.h">
       <Filter>Source\Asset\Cooked</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Asset\Core\AssetDataBase.h">
+    <ClInclude Include="Source\Asset\Core\AssetCommonTypes.h">
       <Filter>Source\Asset\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Asset\Core\FontTypes.h">
+    <ClInclude Include="Source\Asset\Core\FontAtlasTypes.h">
       <Filter>Source\Asset\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Asset\Core\SubUVTypes.h">
+    <ClInclude Include="Source\Asset\Core\MaterialTypes.h">
       <Filter>Source\Asset\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Asset\Core\Types.h">
+    <ClInclude Include="Source\Asset\Core\StaticMeshTypes.h">
+      <Filter>Source\Asset\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Asset\Core\SubUVAtlasTypes.h">
+      <Filter>Source\Asset\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Asset\Core\TextureTypes.h">
       <Filter>Source\Asset\Core</Filter>
     </ClInclude>
     <ClInclude Include="Source\Asset\Intermediate\IntermediateFontAtlasData.h">

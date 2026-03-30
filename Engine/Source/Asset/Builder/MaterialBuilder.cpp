@@ -4,7 +4,7 @@
 #include <fstream>
 #include <sstream>
 
-#include "Asset/Cache/DerivedKey.h"
+#include "Asset/Cache/AssetKeyUtils.h"
 
 namespace Asset
 {
@@ -25,31 +25,37 @@ namespace Asset
         }
     } // namespace
 
-    std::shared_ptr<FMaterialCookedData> FMaterialBuilder::Build(const FWString& Path)
+    std::shared_ptr<FMaterialCookedData> FMaterialBuilder::Build(const std::filesystem::path& Path)
     {
-        const FSourceRecord* Source = Cache.GetSource(Path);
+        const FSourceRecord* Source = Cache.GetSource(FMaterialAssetTag{}, Path);
         if (Source == nullptr)
         {
             return nullptr;
         }
 
         auto& IntermediateCache = Cache.GetIntermediateCache(FMaterialAssetTag{});
-        std::shared_ptr<FIntermediateMaterialData> Intermediate =
-            IntermediateCache.Find(MakeIntermediateKey(EAssetType::Material, Source->ContentHash));
+        std::shared_ptr<FIntermediateMaterialData> Intermediate = ParseMaterial(*Source);
         if (!Intermediate)
         {
-            Intermediate = ParseMaterial(*Source);
-            if (!Intermediate)
-            {
-                return nullptr;
-            }
-            IntermediateCache.Insert(MakeIntermediateKey(EAssetType::Material, Source->ContentHash), Intermediate);
+            return nullptr;
         }
 
-        const FDerivedKey DerivedKey = MakeCookedKey(EAssetType::Material, Source->ContentHash, "MaterialCook");
+        const FMaterialIntermediateKey IntermediateKey = KeyUtils::MakeIntermediateKey(*Intermediate);
+        std::shared_ptr<FIntermediateMaterialData> CachedIntermediate =
+            IntermediateCache.Find(IntermediateKey);
+        if (CachedIntermediate)
+        {
+            Intermediate = CachedIntermediate;
+        }
+        else
+        {
+            IntermediateCache.Insert(IntermediateKey, Intermediate);
+        }
+
+        const FMaterialCookedKey CookedKey = KeyUtils::MakeCookedKey(IntermediateKey);
 
         auto& CookedCache = Cache.GetCookedCache(FMaterialAssetTag{});
-        std::shared_ptr<FMaterialCookedData> Cooked = CookedCache.Find(DerivedKey);
+        std::shared_ptr<FMaterialCookedData> Cooked = CookedCache.Find(CookedKey);
         if (!Cooked)
         {
             Cooked = CookMaterial(*Source, *Intermediate);
@@ -57,7 +63,7 @@ namespace Asset
             {
                 return nullptr;
             }
-            CookedCache.Insert(DerivedKey, Cooked);
+            CookedCache.Insert(CookedKey, Cooked);
         }
 
         return Cooked;
@@ -177,9 +183,9 @@ namespace Asset
         return Result->IsValid() ? Result : nullptr;
     }
 
-    bool FMaterialBuilder::ReadAllText(const FWString& Path, FString& OutText)
+    bool FMaterialBuilder::ReadAllText(const std::filesystem::path& Path, FString& OutText)
     {
-        std::ifstream File(std::filesystem::path(Path), std::ios::in | std::ios::binary);
+        std::ifstream File(Path, std::ios::in | std::ios::binary);
         if (!File)
         {
             return false;
@@ -224,11 +230,11 @@ namespace Asset
         return EMaterialTextureSlot::Diffuse;
     }
 
-    FWString FMaterialBuilder::ResolveRelativePath(const FWString& BasePath,
+    FWString FMaterialBuilder::ResolveRelativePath(const std::filesystem::path& BasePath,
                                                    const FString&  RelativePath)
     {
         const std::filesystem::path BaseDirectory = std::filesystem::path(BasePath).parent_path();
-        return (BaseDirectory / std::filesystem::path(RelativePath)).lexically_normal().wstring();
+        return (BaseDirectory / std::filesystem::path(RelativePath)).lexically_normal();
     }
 
 } // namespace Asset

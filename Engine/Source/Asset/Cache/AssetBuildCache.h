@@ -1,201 +1,139 @@
 #pragma once
 
-#include "Asset/Source/SourceCache.h"
+#include <filesystem>
+
 #include "Asset/Cache/AssetCache.h"
 #include "Asset/Cache/AssetCacheTraits.h"
+#include "Asset/Source/SourceCache.h"
 
 namespace Asset
 {
 
-    // key = MakeDerivedKey
-    class FAssetBuildCache
+class FAssetBuildCache
+{
+  public:
+    template <typename TTag> const FSourceRecord* GetSource(TTag Tag, const std::filesystem::path& Path)
     {
-      public:
-        // ============================ Dispatcher =================================
+        using TSourceKey = TSourceKeyOf<TTag>;
 
-        const FSourceRecord* GetSource(const FWString& Path)
+        auto& CacheRef = GetSourceCacheImpl(Tag);
+        const std::filesystem::path NormalizedPath = SourceCacheDetail::NormalizePath(Path);
+        if (NormalizedPath.empty())
         {
-            const FSourceRecord* Source = SourceCache.GetOrLoad(Path);
-            if (Source == nullptr)
-            {
-                return nullptr;
-            }
-
-            if (!SourceCache.EnsureContentHashLoaded(Path))
-            {
-                return nullptr;
-            }
-
-            return SourceCache.Find(Path);
+            return nullptr;
         }
 
-        void InvalidateSource(const FWString& Path) { SourceCache.Invalidate(Path); }
-
-        void ClearAll()
+        const TSourceKey SourceKey = TSourceKey::FromPath(NormalizedPath);
+        const FSourceRecord* Source = CacheRef.GetOrLoad(SourceKey);
+        if (Source == nullptr)
         {
-            SourceCache.Clear();
+            return nullptr;
+        }
+        if (!CacheRef.EnsureContentHashLoaded(SourceKey))
+        {
+            return nullptr;
+        }
+        return CacheRef.Find(SourceKey);
+    }
 
-            IntermediateTextureCache.Clear();
-            IntermediateMaterialCache.Clear();
-            IntermediateStaticMeshCache.Clear();
-            IntermediateSubUVAtlasCache.Clear();
-            IntermediateFontAtlasCache.Clear();
+    template <typename TTag> const FSourceRecord* GetSource(TTag Tag, const FWString& Path)
+    {
+        return GetSource(Tag, std::filesystem::path(Path));
+    }
 
-            TextureCookedCache.Clear();
-            MaterialCookedCache.Clear();
-            StaticMeshCookedCache.Clear();
-            SubUVAtlasCookedCache.Clear();
-            FontAtlasCookedCache.Clear();
+    template <typename TTag> void InvalidateSource(TTag Tag, const std::filesystem::path& Path)
+    {
+        using TSourceKey = TSourceKeyOf<TTag>;
+
+        const std::filesystem::path NormalizedPath = SourceCacheDetail::NormalizePath(Path);
+        if (NormalizedPath.empty())
+        {
+            return;
         }
 
-        // ======================== GetCache() Dispatcher ==========================
-        // dispatch by tag
+        GetSourceCacheImpl(Tag).Invalidate(TSourceKey::FromPath(NormalizedPath));
+    }
 
-        template <typename TTag>
-        TIntermediateCache<TIntermediateTypeOf<TTag>>& GetIntermediateCache(TTag Tag)
-        {
-            return GetIntermediateCacheImpl(Tag);
-        }
+    template <typename TTag> void InvalidateSource(TTag Tag, const FWString& Path)
+    {
+        InvalidateSource(Tag, std::filesystem::path(Path));
+    }
 
-        template <typename TTag>
-        const TIntermediateCache<TIntermediateTypeOf<TTag>>& GetIntermediateCache(TTag Tag) const
-        {
-            return GetIntermediateCacheImpl(Tag);
-        }
+    void ClearAll()
+    {
+        TextureSourceCache.Clear();
+        MaterialSourceCache.Clear();
+        StaticMeshSourceCache.Clear();
+        SubUVAtlasSourceCache.Clear();
+        FontAtlasSourceCache.Clear();
 
-        template <typename TTag> TCookedCache<TCookedTypeOf<TTag>>& GetCookedCache(TTag Tag)
-        {
-            return GetCookedCacheImpl(Tag);
-        }
+        IntermediateTextureCache.Clear();
+        IntermediateMaterialCache.Clear();
+        IntermediateStaticMeshCache.Clear();
+        IntermediateSubUVAtlasCache.Clear();
+        IntermediateFontAtlasCache.Clear();
 
-        template <typename TTag>
-        const TCookedCache<TCookedTypeOf<TTag>>& GetCookedCache(TTag Tag) const
-        {
-            return GetCookedCacheImpl(Tag);
-        }
+        TextureCookedCache.Clear();
+        MaterialCookedCache.Clear();
+        StaticMeshCookedCache.Clear();
+        SubUVAtlasCookedCache.Clear();
+        FontAtlasCookedCache.Clear();
+    }
 
-      private:
-        // ===================== Intermediate Cache Dispatcher =====================
+    template <typename TTag>
+    TIntermediateCache<TIntermediateKeyOf<TTag>, TIntermediateTypeOf<TTag>>& GetIntermediateCache(TTag Tag)
+    {
+        return GetIntermediateCacheImpl(Tag);
+    }
 
-        TIntermediateCache<FIntermediateTextureData>& GetIntermediateCacheImpl(FTextureAssetTag)
-        {
-            return IntermediateTextureCache;
-        }
-        const TIntermediateCache<FIntermediateTextureData>&
-        GetIntermediateCacheImpl(FTextureAssetTag) const
-        {
-            return IntermediateTextureCache;
-        }
+    template <typename TTag>
+    TCookedCache<TCookedKeyOf<TTag>, TCookedTypeOf<TTag>>& GetCookedCache(TTag Tag)
+    {
+        return GetCookedCacheImpl(Tag);
+    }
 
-        TIntermediateCache<FIntermediateMaterialData>& GetIntermediateCacheImpl(FMaterialAssetTag)
-        {
-            return IntermediateMaterialCache;
-        }
-        const TIntermediateCache<FIntermediateMaterialData>&
-        GetIntermediateCacheImpl(FMaterialAssetTag) const
-        {
-            return IntermediateMaterialCache;
-        }
+  private:
+    TSourceCache<FTextureSourceKey>& GetSourceCacheImpl(FTextureAssetTag) { return TextureSourceCache; }
+    TSourceCache<FMaterialSourceKey>& GetSourceCacheImpl(FMaterialAssetTag) { return MaterialSourceCache; }
+    TSourceCache<FStaticMeshSourceKey>& GetSourceCacheImpl(FStaticMeshAssetTag) { return StaticMeshSourceCache; }
+    TSourceCache<FSubUVAtlasSourceKey>& GetSourceCacheImpl(FSubUVAtlasAssetTag) { return SubUVAtlasSourceCache; }
+    TSourceCache<FFontAtlasSourceKey>& GetSourceCacheImpl(FFontAtlasAssetTag) { return FontAtlasSourceCache; }
 
-        TIntermediateCache<FIntermediateStaticMeshData>&
-        GetIntermediateCacheImpl(FStaticMeshAssetTag)
-        {
-            return IntermediateStaticMeshCache;
-        }
-        const TIntermediateCache<FIntermediateStaticMeshData>&
-        GetIntermediateCacheImpl(FStaticMeshAssetTag) const
-        {
-            return IntermediateStaticMeshCache;
-        }
+    TIntermediateCache<FTextureIntermediateKey, FIntermediateTextureData>&
+    GetIntermediateCacheImpl(FTextureAssetTag) { return IntermediateTextureCache; }
+    TIntermediateCache<FMaterialIntermediateKey, FIntermediateMaterialData>&
+    GetIntermediateCacheImpl(FMaterialAssetTag) { return IntermediateMaterialCache; }
+    TIntermediateCache<FStaticMeshIntermediateKey, FIntermediateStaticMeshData>&
+    GetIntermediateCacheImpl(FStaticMeshAssetTag) { return IntermediateStaticMeshCache; }
+    TIntermediateCache<FSubUVAtlasIntermediateKey, FIntermediateSubUVAtlasData>&
+    GetIntermediateCacheImpl(FSubUVAtlasAssetTag) { return IntermediateSubUVAtlasCache; }
+    TIntermediateCache<FFontAtlasIntermediateKey, FIntermediateFontAtlasData>&
+    GetIntermediateCacheImpl(FFontAtlasAssetTag) { return IntermediateFontAtlasCache; }
 
-        TIntermediateCache<FIntermediateSubUVAtlasData>&
-        GetIntermediateCacheImpl(FSubUVAtlasAssetTag)
-        {
-            return IntermediateSubUVAtlasCache;
-        }
-        const TIntermediateCache<FIntermediateSubUVAtlasData>&
-        GetIntermediateCacheImpl(FSubUVAtlasAssetTag) const
-        {
-            return IntermediateSubUVAtlasCache;
-        }
+    TCookedCache<FTextureCookedKey, FTextureCookedData>& GetCookedCacheImpl(FTextureAssetTag) { return TextureCookedCache; }
+    TCookedCache<FMaterialCookedKey, FMaterialCookedData>& GetCookedCacheImpl(FMaterialAssetTag) { return MaterialCookedCache; }
+    TCookedCache<FStaticMeshCookedKey, FStaticMeshCookedData>& GetCookedCacheImpl(FStaticMeshAssetTag) { return StaticMeshCookedCache; }
+    TCookedCache<FSubUVAtlasCookedKey, FSubUVAtlasCookedData>& GetCookedCacheImpl(FSubUVAtlasAssetTag) { return SubUVAtlasCookedCache; }
+    TCookedCache<FFontAtlasCookedKey, FFontAtlasCookedData>& GetCookedCacheImpl(FFontAtlasAssetTag) { return FontAtlasCookedCache; }
 
-        TIntermediateCache<FIntermediateFontAtlasData>& GetIntermediateCacheImpl(FFontAtlasAssetTag)
-        {
-            return IntermediateFontAtlasCache;
-        }
-        const TIntermediateCache<FIntermediateFontAtlasData>&
-        GetIntermediateCacheImpl(FFontAtlasAssetTag) const
-        {
-            return IntermediateFontAtlasCache;
-        }
+  private:
+    TSourceCache<FTextureSourceKey> TextureSourceCache;
+    TSourceCache<FMaterialSourceKey> MaterialSourceCache;
+    TSourceCache<FStaticMeshSourceKey> StaticMeshSourceCache;
+    TSourceCache<FSubUVAtlasSourceKey> SubUVAtlasSourceCache;
+    TSourceCache<FFontAtlasSourceKey> FontAtlasSourceCache;
 
-        // ======================== Cooked Cache Dispatcher ========================
+    TIntermediateCache<FTextureIntermediateKey, FIntermediateTextureData> IntermediateTextureCache;
+    TIntermediateCache<FMaterialIntermediateKey, FIntermediateMaterialData> IntermediateMaterialCache;
+    TIntermediateCache<FStaticMeshIntermediateKey, FIntermediateStaticMeshData> IntermediateStaticMeshCache;
+    TIntermediateCache<FSubUVAtlasIntermediateKey, FIntermediateSubUVAtlasData> IntermediateSubUVAtlasCache;
+    TIntermediateCache<FFontAtlasIntermediateKey, FIntermediateFontAtlasData> IntermediateFontAtlasCache;
 
-        TCookedCache<FTextureCookedData>& GetCookedCacheImpl(FTextureAssetTag)
-        {
-            return TextureCookedCache;
-        }
-        const TCookedCache<FTextureCookedData>& GetCookedCacheImpl(FTextureAssetTag) const
-        {
-            return TextureCookedCache;
-        }
-
-        TCookedCache<FMaterialCookedData>& GetCookedCacheImpl(FMaterialAssetTag)
-        {
-            return MaterialCookedCache;
-        }
-        const TCookedCache<FMaterialCookedData>& GetCookedCacheImpl(FMaterialAssetTag) const
-        {
-            return MaterialCookedCache;
-        }
-
-        TCookedCache<FStaticMeshCookedData>& GetCookedCacheImpl(FStaticMeshAssetTag)
-        {
-            return StaticMeshCookedCache;
-        }
-        const TCookedCache<FStaticMeshCookedData>& GetCookedCacheImpl(FStaticMeshAssetTag) const
-        {
-            return StaticMeshCookedCache;
-        }
-
-        TCookedCache<FSubUVAtlasCookedData>& GetCookedCacheImpl(FSubUVAtlasAssetTag)
-        {
-            return SubUVAtlasCookedCache;
-        }
-        const TCookedCache<FSubUVAtlasCookedData>& GetCookedCacheImpl(FSubUVAtlasAssetTag) const
-        {
-            return SubUVAtlasCookedCache;
-        }
-
-        TCookedCache<FFontAtlasCookedData>& GetCookedCacheImpl(FFontAtlasAssetTag)
-        {
-            return FontAtlasCookedCache;
-        }
-        const TCookedCache<FFontAtlasCookedData>& GetCookedCacheImpl(FFontAtlasAssetTag) const
-        {
-            return FontAtlasCookedCache;
-        }
-
-      private:
-        // ============================== Source Cache =============================
-
-        FSourceCache SourceCache;
-
-        // =========================== Intermediate Cache ==========================
-
-        TIntermediateCache<FIntermediateTextureData>    IntermediateTextureCache;
-        TIntermediateCache<FIntermediateMaterialData>   IntermediateMaterialCache;
-        TIntermediateCache<FIntermediateStaticMeshData> IntermediateStaticMeshCache;
-        TIntermediateCache<FIntermediateSubUVAtlasData> IntermediateSubUVAtlasCache;
-        TIntermediateCache<FIntermediateFontAtlasData>  IntermediateFontAtlasCache;
-
-        // ============================== Cooked Cache =============================
-
-        TCookedCache<FTextureCookedData>    TextureCookedCache;
-        TCookedCache<FMaterialCookedData>   MaterialCookedCache;
-        TCookedCache<FStaticMeshCookedData> StaticMeshCookedCache;
-        TCookedCache<FSubUVAtlasCookedData> SubUVAtlasCookedCache;
-        TCookedCache<FFontAtlasCookedData>  FontAtlasCookedCache;
-    };
+    TCookedCache<FTextureCookedKey, FTextureCookedData> TextureCookedCache;
+    TCookedCache<FMaterialCookedKey, FMaterialCookedData> MaterialCookedCache;
+    TCookedCache<FStaticMeshCookedKey, FStaticMeshCookedData> StaticMeshCookedCache;
+    TCookedCache<FSubUVAtlasCookedKey, FSubUVAtlasCookedData> SubUVAtlasCookedCache;
+    TCookedCache<FFontAtlasCookedKey, FFontAtlasCookedData> FontAtlasCookedCache;
+};
 
 } // namespace Asset

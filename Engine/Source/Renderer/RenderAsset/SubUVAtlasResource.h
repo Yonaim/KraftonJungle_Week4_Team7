@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Asset/Core/SubUVTypes.h"
+#include "Asset/Core/SubUVAtlasTypes.h"
 #include "Asset/Runtime/SubUVAtlasRenderResource.h"
 #include "Renderer/RenderAsset/TextureResource.h"
 

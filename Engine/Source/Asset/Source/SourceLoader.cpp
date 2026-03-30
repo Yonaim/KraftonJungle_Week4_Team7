@@ -18,27 +18,25 @@ namespace Asset
         }
     } // namespace
 
-    bool FSourceLoader::QueryFileInfo(const FWString& Path, uint64& OutFileSize,
+    bool FSourceLoader::QueryFileInfo(const std::filesystem::path& Path, uint64& OutFileSize,
                                       uint64& OutWriteTimeTicks)
     {
         OutFileSize = 0;
         OutWriteTimeTicks = 0;
 
-        std::error_code             Ec;
-        const std::filesystem::path FilePath(Path);
-
-        if (!std::filesystem::exists(FilePath, Ec) || Ec)
+        std::error_code Ec;
+        if (!std::filesystem::exists(Path, Ec) || Ec)
         {
             return false;
         }
 
-        OutFileSize = static_cast<uint64>(std::filesystem::file_size(FilePath, Ec));
+        OutFileSize = static_cast<uint64>(std::filesystem::file_size(Path, Ec));
         if (Ec)
         {
             return false;
         }
 
-        const auto WriteTime = std::filesystem::last_write_time(FilePath, Ec);
+        const auto WriteTime = std::filesystem::last_write_time(Path, Ec);
         if (Ec)
         {
             return false;
@@ -48,11 +46,11 @@ namespace Asset
         return true;
     }
 
-    bool FSourceLoader::ReadAllBytes(const FWString& Path, TArray<uint8>& OutBytes)
+    bool FSourceLoader::ReadAllBytes(const std::filesystem::path& Path, TArray<uint8>& OutBytes)
     {
         OutBytes.clear();
 
-        std::ifstream File(std::filesystem::path(Path), std::ios::binary);
+        std::ifstream File(Path, std::ios::binary);
         if (!File)
         {
             return false;

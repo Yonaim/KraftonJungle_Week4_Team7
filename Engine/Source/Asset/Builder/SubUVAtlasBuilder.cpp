@@ -5,7 +5,7 @@
 #include <regex>
 #include <sstream>
 
-#include "Asset/Cache/DerivedKey.h"
+#include "Asset/Cache/AssetKeyUtils.h"
 
 namespace Asset
 {
@@ -62,33 +62,39 @@ namespace Asset
     } // namespace
 
     std::shared_ptr<FSubUVAtlasCookedData>
-    FSubUVAtlasBuilder::Build(const FWString&              Path,
+    FSubUVAtlasBuilder::Build(const std::filesystem::path& Path,
                               const FTextureBuildSettings& AtlasTextureSettings)
     {
-        const FSourceRecord* Source = Cache.GetSource(Path);
+        const FSourceRecord* Source = Cache.GetSource(FSubUVAtlasAssetTag{}, Path);
         if (Source == nullptr)
         {
             return nullptr;
         }
 
         auto& IntermediateCache = Cache.GetIntermediateCache(FSubUVAtlasAssetTag{});
-        std::shared_ptr<FIntermediateSubUVAtlasData> Intermediate =
-            IntermediateCache.Find(MakeIntermediateKey(EAssetType::SubUVAtlas, Source->ContentHash));
+        std::shared_ptr<FIntermediateSubUVAtlasData> Intermediate = ParseAtlas(*Source);
         if (!Intermediate)
         {
-            Intermediate = ParseAtlas(*Source);
-            if (!Intermediate)
-            {
-                return nullptr;
-            }
-            IntermediateCache.Insert(MakeIntermediateKey(EAssetType::SubUVAtlas, Source->ContentHash), Intermediate);
+            return nullptr;
         }
 
-        const FDerivedKey DerivedKey =
-            MakeCookedKey(EAssetType::SubUVAtlas, Source->ContentHash, AtlasTextureSettings.ToKeyString());
+        const FSubUVAtlasIntermediateKey IntermediateKey = KeyUtils::MakeIntermediateKey(*Intermediate);
+        std::shared_ptr<FIntermediateSubUVAtlasData> CachedIntermediate =
+            IntermediateCache.Find(IntermediateKey);
+        if (CachedIntermediate)
+        {
+            Intermediate = CachedIntermediate;
+        }
+        else
+        {
+            IntermediateCache.Insert(IntermediateKey, Intermediate);
+        }
+
+        const FSubUVAtlasCookedKey CookedKey =
+            KeyUtils::MakeCookedKey(IntermediateKey, AtlasTextureSettings);
 
         auto& CookedCache = Cache.GetCookedCache(FSubUVAtlasAssetTag{});
-        std::shared_ptr<FSubUVAtlasCookedData> Cooked = CookedCache.Find(DerivedKey);
+        std::shared_ptr<FSubUVAtlasCookedData> Cooked = CookedCache.Find(CookedKey);
         if (!Cooked)
         {
             Cooked = CookAtlas(*Source, *Intermediate, AtlasTextureSettings);
@@ -96,7 +102,7 @@ namespace Asset
             {
                 return nullptr;
             }
-            CookedCache.Insert(DerivedKey, Cooked);
+            CookedCache.Insert(CookedKey, Cooked);
         }
 
         return Cooked;
@@ -204,9 +210,9 @@ namespace Asset
         return Result->IsValid() ? Result : nullptr;
     }
 
-    bool FSubUVAtlasBuilder::ReadAllText(const FWString& Path, FString& OutText)
+    bool FSubUVAtlasBuilder::ReadAllText(const std::filesystem::path& Path, FString& OutText)
     {
-        std::ifstream File(std::filesystem::path(Path), std::ios::in | std::ios::binary);
+        std::ifstream File(Path, std::ios::in | std::ios::binary);
         if (!File)
         {
             return false;
@@ -230,11 +236,11 @@ namespace Asset
         return Value.substr(Begin, End - Begin + 1);
     }
 
-    FWString FSubUVAtlasBuilder::ResolveRelativePath(const FWString& BasePath,
+    FWString FSubUVAtlasBuilder::ResolveRelativePath(const std::filesystem::path& BasePath,
                                                      const FString&  RelativePath)
     {
         const std::filesystem::path BaseDirectory = std::filesystem::path(BasePath).parent_path();
-        return (BaseDirectory / std::filesystem::path(RelativePath)).lexically_normal().wstring();
+        return (BaseDirectory / std::filesystem::path(RelativePath)).lexically_normal();
     }
 
 } // namespace Asset

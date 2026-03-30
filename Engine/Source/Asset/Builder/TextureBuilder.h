@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <memory>
 
 #include "Asset/Cache/AssetBuildCache.h"
@@ -14,8 +15,13 @@ namespace Asset
       public:
         explicit FTextureBuilder(FAssetBuildCache& InCache);
 
-        std::shared_ptr<FTextureCookedData> Build(const FWString&              Path,
+        std::shared_ptr<FTextureCookedData> Build(const std::filesystem::path& Path,
                                                   const FTextureBuildSettings& Settings = {});
+        std::shared_ptr<FTextureCookedData> Build(const FWString&              Path,
+                                                  const FTextureBuildSettings& Settings = {})
+        {
+            return Build(std::filesystem::path(Path), Settings);
+        }
 
       private:
         bool DecodeTexture(const FSourceRecord& Source, FIntermediateTextureData& OutData) const;
