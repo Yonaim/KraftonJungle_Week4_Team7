@@ -714,14 +714,14 @@ void FEditor::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
     Engine::ApplicationCore::FInputEvent        Event;
     Engine::ApplicationCore::FInputState InputState = InputSystem->GetInputState();
 
-    FSceneView* HoveredViewport = nullptr;
+    FViewport* HoveredViewport = nullptr;
     FViewportRect Rect;
     for (auto Viewport : ViewportTab.GetViewports())
     {
         if (!Viewport->IsValid())
             continue;
 
-        Rect = Viewport->GetViewRect();
+        Rect = Viewport->GetSceneView()->GetViewRect();
         if (InputState.MouseX >= Rect.X && InputState.MouseX < Rect.X + Rect.Width &&
             InputState.MouseY >= Rect.Y && InputState.MouseY < Rect.Y + Rect.Height)
         {
@@ -1401,11 +1401,13 @@ void FEditor::BuildSceneView()
     {
         if (Viewport->IsValid())
         {
-            Viewport->SetViewMatrix(Viewport->GetViewportClient()->GetCamera().GetViewMatrix());
-            Viewport->SetProjectionMatrix(Viewport->GetViewportClient()->GetCamera().GetProjectionMatrix());
-            Viewport->SetViewLocation(Viewport->GetViewportClient()->GetCamera().GetLocation());
-        
-            Viewport->SetClipPlanes(Viewport->GetViewportClient()->GetCamera().GetNearPlane(),
+            Viewport->GetSceneView()->SetViewMatrix(Viewport->GetViewportClient()->GetCamera().GetViewMatrix());
+            Viewport->GetSceneView()->SetProjectionMatrix(
+                Viewport->GetViewportClient()->GetCamera().GetProjectionMatrix());
+            Viewport->GetSceneView()->SetViewLocation(
+                Viewport->GetViewportClient()->GetCamera().GetLocation());
+            Viewport->GetSceneView()->SetClipPlanes(
+                Viewport->GetViewportClient()->GetCamera().GetNearPlane(),
             Viewport->GetViewportClient()->GetCamera().GetFarPlane());
         }
     }
@@ -1518,8 +1520,8 @@ void FEditor::BuildRenderData()
             FEditorRenderData EditorRenderData = FEditorRenderData{};
             FSceneRenderData  SceneRenderData = FSceneRenderData{};
 
-            EditorRenderData.SceneView = Viewport;
-            SceneRenderData.SceneView = Viewport;
+            EditorRenderData.SceneView = Viewport->GetSceneView();
+            SceneRenderData.SceneView = Viewport->GetSceneView();
             SceneRenderData.ViewMode =
                 Viewport->GetViewportClient()->GetRenderSetting().GetViewMode();
 

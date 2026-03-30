@@ -53,7 +53,7 @@ const wchar_t* FControlPanel::GetDisplayName() const
 
 void FControlPanel::Draw()
 {
-    FViewportRect Rect = GetContext()->Editor->GetViewportTab().GetViewport(ViewportIndex)->GetViewRect();
+    FViewportRect Rect = GetContext()->Editor->GetViewportTab().GetViewport(ViewportIndex)->GetSceneView()->GetViewRect();
     
     ImGui::SetNextWindowPos(ImVec2(Rect.X, Rect.Y), ImGuiCond_Always);
     ImGui::SetNextWindowSize(ImVec2(Rect.Width, 40.0f), ImGuiCond_Always);

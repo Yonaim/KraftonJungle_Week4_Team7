@@ -8,19 +8,6 @@
 
 // TODO: Reverse-Z 적용
 
-class FEditorViewportClient;
-
-enum class ELevelViewportType : uint8
-{
-    LVT_Perspective,
-    LVT_OrthoTop,
-    LVT_OrthoBottom,
-    LVT_OrthoLeft,
-    LVT_OrthoRight,
-    LVT_OrthoFront,
-    LVT_OrthoBack,
-};
-
 struct FViewportRect
 {
     int32 X = 0;
@@ -75,11 +62,6 @@ class FSceneView
     int32 GetWorldX(int32 X) const { return X + ViewRect.X; }
     int32 GetWorldY(int32 Y) const { return Y + ViewRect.Y; }
 
-    void SetViewportClient(FEditorViewportClient* newViewportClient) { ViewportClient = newViewportClient; }
-    FEditorViewportClient* const& GetViewportClient() const { return ViewportClient; }
-    void RemoveViewportClient() { ViewportClient = nullptr; }
-    bool IsValid() { return ViewportClient != nullptr; }
-
   private:
     void RebuildViewProjectionMatrix() { ViewProjectionMatrix = ViewMatrix * ProjectionMatrix; }
 
@@ -95,5 +77,4 @@ class FSceneView
 
     FViewportRect ViewRect;
     D3D11_VIEWPORT         Viewport;
-    FEditorViewportClient* ViewportClient = nullptr;
 };

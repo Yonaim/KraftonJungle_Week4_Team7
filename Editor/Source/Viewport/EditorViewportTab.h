@@ -2,11 +2,10 @@
 
 #include "Core/CoreMinimal.h"
 
-#include "Viewport/EditorViewportClient.h"
+#include "Viewport/Viewport.h"
 #include "Viewport/Layout/EditorViewportLayout.h"
 #include "Viewport/Layout/EditorViewportLayoutFactory.h"
 
-#include "Renderer/SceneView.h"
 #include "Panel/ControlPanel.h"
 
 class SEditorViewportTab
@@ -20,8 +19,8 @@ public:
     void Initialize();
     void OnResize(FViewportRect WindowRect, bool Force = 0);
 
-    TArray<FSceneView*> const& GetViewports() const { return SceneViews; }
-    FSceneView* const&         GetViewport(int32 index) const { return SceneViews[index]; }
+    TArray<FViewport*> const& GetViewports() const { return Viewports; }
+    FViewport* const&         GetViewport(int32 index) const { return Viewports[index]; }
 
     EViewportLayoutType GetCurrentLayoutType() { return CurrentLayoutType; }
     void SetLayout(EViewportLayoutType NewType);
@@ -34,7 +33,7 @@ public:
 
 private:
     FViewportRect                  CurrentRect = {0, 0, 0, 0};
-    TArray<FSceneView*>            SceneViews;
+    TArray<FViewport*>             Viewports;
     TArray<FEditorViewportClient*> ViewportClients;
 
     FEditorViewportLayout*         ViewportLayout = nullptr;

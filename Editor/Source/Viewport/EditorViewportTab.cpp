@@ -5,16 +5,11 @@ SEditorViewportTab::SEditorViewportTab() {}
 
 SEditorViewportTab::~SEditorViewportTab() 
 {
-    for (auto* V : SceneViews)
+    for (auto* Viewport : Viewports)
 	{
-        delete V;
+        Viewport->Release();
+        delete Viewport;
 	}
-
-	for (auto* C : ViewportClients)
-    {
-        C->Release();
-        delete C;
-    }
 
     for (auto* P : ControlPanels)
     {
@@ -30,14 +25,16 @@ void SEditorViewportTab::Construct()
     // 현재 최대 4개 Viewport만 가능
     for (int32 i = 0; i < 4; i++)
     {
-        FSceneView*            NewViewport = new FSceneView();
-        FEditorViewportClient* NewClient = new FEditorViewportClient();
+        FViewport*             NewViewport = new FViewport();
+        FSceneView*            NewSceneView = new FSceneView();
+        FEditorViewportClient* NewViewportClient = new FEditorViewportClient();
 
-        NewClient->Create();
-        NewViewport->SetViewportClient(NewClient);
+        NewViewportClient->Create();
+        NewViewport->SetSceneView(NewSceneView);
+        NewViewport->SetViewportClient(NewViewportClient);
 
-        SceneViews.push_back(NewViewport);
-        ViewportClients.push_back(NewClient);
+        Viewports.push_back(NewViewport);
+        ViewportClients.push_back(NewViewportClient);
     }
 
     SetLayout(EViewportLayoutType::_1l3);
@@ -60,10 +57,10 @@ void SEditorViewportTab::OnResize(FViewportRect WindowRect, bool Force)
     auto windows = ViewportLayout->GetLeafWindows();
     for (int i = 0; i < windows.size(); i++)
     {
-        if (SceneViews[i]->IsValid())
+        if (Viewports[i]->IsValid())
         {
-            SceneViews[i]->OnResize(windows[i]->GetViewportRect());
-            SceneViews[i]->GetViewportClient()->OnResize(windows[i]->GetViewportRect().Width,
+            Viewports[i]->GetSceneView()->OnResize(windows[i]->GetViewportRect());
+            Viewports[i]->GetViewportClient()->OnResize(windows[i]->GetViewportRect().Width,
                                                          windows[i]->GetViewportRect().Height);
         }
     }
@@ -87,23 +84,23 @@ void SEditorViewportTab::AdjustViewportCount(EViewportLayoutType NewType)
 {
     int32 Required = GetRequiredViewportCount(NewType);
 
-    for (int32 i = 0; i < (int32)SceneViews.size(); i++)
+    for (int32 i = 0; i < (int32)Viewports.size(); i++)
     {
         if (i < Required)
         {
-            if (!SceneViews[i]->IsValid())
-                SceneViews[i]->SetViewportClient(ViewportClients[i]);
+            if (!Viewports[i]->IsValid())
+                Viewports[i]->SetViewportClient(ViewportClients[i]);
         }
         else
         {
-            SceneViews[i]->RemoveViewportClient();
+            Viewports[i]->RemoveViewportClient();
         }
     }
 }
 
 void SEditorViewportTab::InitializeControlPanels(FEditorContext* Context)
 {
-    for (int i = 0; i < SceneViews.size(); i++)
+    for (int i = 0; i < Viewports.size(); i++)
     {
         FControlPanel* Panel = new FControlPanel();
         Panel->Initialize(Context, nullptr);
@@ -114,9 +111,9 @@ void SEditorViewportTab::InitializeControlPanels(FEditorContext* Context)
 
 void SEditorViewportTab::DrawControlPanels() 
 {
-    for (int i = 0; i < SceneViews.size(); i++)
+    for (int i = 0; i < Viewports.size(); i++)
     {
-        if (SceneViews[i]->IsValid())
+        if (Viewports[i]->IsValid())
             ControlPanels[i]->Draw(); 
     }
 }

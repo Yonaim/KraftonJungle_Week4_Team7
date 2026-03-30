@@ -341,6 +341,7 @@
     <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutFourPanes.h" />
     <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutType.h" />
     <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutSinglePane.h" />
+    <ClInclude Include="Source\Viewport\Viewport.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\ThirdParty\ImGui\imgui.natstepfilter">

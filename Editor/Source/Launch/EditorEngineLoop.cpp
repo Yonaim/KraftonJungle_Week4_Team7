@@ -202,8 +202,8 @@ bool FEditorEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
 
                 // EngineLoop는 Renderer와 Editor 모두에 접근 가능하므로 픽킹을 직접 수행해서 반환
                 Renderer->Pick(Editor->GetEditorRenderData()[i], 
-                    Editor->GetViewportTab().GetViewports()[i]->GetWorldX(X), 
-                    Editor->GetViewportTab().GetViewports()[i]->GetWorldY(Y), 
+                    Editor->GetViewportTab().GetViewports()[i]->GetSceneView()->GetWorldX(X), 
+                    Editor->GetViewportTab().GetViewports()[i]->GetSceneView()->GetWorldY(Y), 
                     Result);
 
                 return Result;
@@ -620,12 +620,12 @@ bool FEditorEngineLoop::RunFrameOnceWithoutResize()
 
     Renderer->BeginFrame();
 
-    TArray<FSceneView*> Views = Editor->GetViewportTab().GetViewports();
+    TArray<FViewport*> Views = Editor->GetViewportTab().GetViewports();
     for (int i = 0; i < Views.size(); i++)
     {
         if (Views[i]->IsValid())
         { 
-            Renderer->SetViewport(Views[i]->GetViewport());
+            Renderer->SetViewport(Views[i]->GetSceneView()->GetViewport());
             Renderer->Render(Editor->GetEditorRenderData()[i], Editor->GetSceneRenderData()[i]);
         }
     }
