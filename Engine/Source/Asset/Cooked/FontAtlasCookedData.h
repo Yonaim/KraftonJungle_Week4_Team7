@@ -2,40 +2,39 @@
 
 #include <memory>
 
-#include "Asset/Cooked/CookedData.h"
+#include "Asset/Core/FontAtlasTypes.h"
 #include "Asset/Cooked/TextureCookedData.h"
-#include "Asset/Core/FontTypes.h"
 
 namespace Asset
 {
 
-    struct FFontAtlasCookedData : public FCookedData
+struct FFontAtlasCookedData
+{
+    FString                              SourcePath;
+    std::shared_ptr<FTextureCookedData> AtlasTexture;
+    FFontInfo                           Info;
+    FFontCommon                         Common;
+    TMap<uint32, FFontGlyph>            Glyphs;
+
+    const FFontGlyph* FindGlyph(uint32 InCodePoint) const
     {
-        std::shared_ptr<FTextureCookedData> AtlasTexture;
-        FFontInfo                           Info;
-        FFontCommon                         Common;
-        TMap<uint32, FFontGlyph>            Glyphs;
+        auto It = Glyphs.find(InCodePoint);
+        return It != Glyphs.end() ? &It->second : nullptr;
+    }
 
-        const FFontGlyph* FindGlyph(uint32 InCodePoint) const
-        {
-            auto It = Glyphs.find(InCodePoint);
-            return It != Glyphs.end() ? &It->second : nullptr;
-        }
+    bool IsValid() const
+    {
+        return AtlasTexture != nullptr && AtlasTexture->IsValid() && !Glyphs.empty();
+    }
 
-        virtual EAssetType GetAssetType() const override { return EAssetType::FontAtlas; }
-
-        virtual bool IsValid() const override
-        {
-            return AtlasTexture != nullptr && AtlasTexture->IsValid() && !Glyphs.empty();
-        }
-
-        virtual void Reset() override
-        {
-            AtlasTexture.reset();
-            Info = {};
-            Common = {};
-            Glyphs.clear();
-        }
-    };
+    void Reset()
+    {
+        SourcePath.clear();
+        AtlasTexture.reset();
+        Info = {};
+        Common = {};
+        Glyphs.clear();
+    }
+};
 
 } // namespace Asset
