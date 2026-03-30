@@ -35,15 +35,30 @@ namespace Engine::Component
         }
     } // namespace
 
-    FString UStaticMeshComponent::GetStaticMeshPath() const
-    {
-        return MeshPath;
-    }
+    FString UStaticMeshComponent::GetStaticMeshPath() const { return MeshPath; }
 
     void UStaticMeshComponent::SetStaticMeshPath(const FString& InPath) { MeshPath = InPath; }
 
+    void UStaticMeshComponent::SetStaticMeshAsset(UStaticMesh* InStaticMesh)
+    {
+        StaticMesh = InStaticMesh;
+        SyncMaterialOverridesWithStaticMesh();
+    }
+
+    void UStaticMeshComponent::SyncMaterialOverridesWithStaticMesh()
+    {
+        OverrideMaterials.clear();
+
+        if (StaticMesh == nullptr)
+        {
+            return;
+        }
+
+        OverrideMaterials.resize(StaticMesh->GetMaterialSlots().size(), nullptr);
+    }
+
     void UStaticMeshComponent::CollectRenderData(FSceneRenderData& OutRenderData,
-        ESceneShowFlags InShowFlags) const
+                                                 ESceneShowFlags   InShowFlags) const
     {
         if (!IsFlagSet(InShowFlags, ESceneShowFlags::SF_Primitives))
         {
@@ -57,7 +72,7 @@ namespace Engine::Component
         }
 
         FRenderCommand& MutableRenderCommand = const_cast<FRenderCommand&>(RenderCommand);
-        
+
         // Generate FMeshData
         FMeshData* MeshData = new FMeshData();
         if (StaticMesh)
@@ -65,17 +80,14 @@ namespace Engine::Component
             MeshData->Topology = EMeshTopology::EMT_TriangleList;
             MeshData->VertexBufferCount = StaticMesh->GetVerticesCount();
             MeshData->IndexBufferCount = StaticMesh->GetIndicesCount();
-            MeshData->VertexBuffer = StaticMesh->GetRenderResource()->VertexBuffer; 
+            MeshData->VertexBuffer = StaticMesh->GetRenderResource()->VertexBuffer;
             MeshData->IndexBuffer = StaticMesh->GetRenderResource()->IndexBuffer;
             // DEBUG: 렌더링을 위해 Vertices와 Indices의 count 채우기
-            MeshData->Vertices.insert(MeshData->Vertices.begin(), 
-                                    StaticMesh->GetRenderResource()->VertexCount,
-                                    FPrimitiveVertex()
-                                    );
-            MeshData->Indices.insert(MeshData->Indices.begin(), 
-                                    StaticMesh->GetRenderResource()->IndexCount,
-                                    0
-                                    );
+            MeshData->Vertices.insert(MeshData->Vertices.begin(),
+                                      StaticMesh->GetRenderResource()->VertexCount,
+                                      FPrimitiveVertex());
+            MeshData->Indices.insert(MeshData->Indices.begin(),
+                                     StaticMesh->GetRenderResource()->IndexCount, 0);
             MeshData->bIsDirty = false;
         }
         MutableRenderCommand.MeshData = MeshData;
@@ -167,5 +179,103 @@ namespace Engine::Component
         }
 
         return {};
+    }
+
+    int32 UStaticMeshComponent::GetMaterialSlotCount() const
+    {
+        if (StaticMesh == nullptr)
+        {
+            return 0;
+        }
+        return static_cast<int32>(StaticMesh->GetMaterialSlots().size());
+    }
+
+    bool UStaticMeshComponent::IsValidMaterialSlotIndex(int32 SlotIndex) const
+    {
+        return SlotIndex >= 0 && SlotIndex < GetMaterialSlotCount();
+    }
+
+    FString UStaticMeshComponent::GetMaterialSlotName(int32 SlotIndex) const
+    {
+        if (!IsValidMaterialSlotIndex(SlotIndex))
+        {
+            return {};
+        }
+
+        return "Material Slot " + std::to_string(SlotIndex);
+    }
+
+    UMaterial* UStaticMeshComponent::GetMaterial(int32 SlotIndex) const
+    {
+        if (!IsValidMaterialSlotIndex(SlotIndex))
+        {
+            return nullptr;
+        }
+
+        if (UMaterial* OverrideMaterial = GetOverrideMaterial(SlotIndex))
+        {
+            return OverrideMaterial;
+        }
+
+        const auto& Slots = StaticMesh->GetMaterialSlots();
+        return Slots[SlotIndex];
+    }
+
+    UMaterial* UStaticMeshComponent::GetOverrideMaterial(int32 SlotIndex) const
+    {
+        if (!IsValidMaterialSlotIndex(SlotIndex))
+        {
+            return nullptr;
+        }
+
+        if (static_cast<size_t>(SlotIndex) >= OverrideMaterials.size())
+        {
+            return nullptr;
+        }
+
+        return OverrideMaterials[SlotIndex];
+    }
+
+    bool UStaticMeshComponent::HasMaterialOverride(int32 SlotIndex) const
+    {
+        return GetOverrideMaterial(SlotIndex) != nullptr;
+    }
+
+    void UStaticMeshComponent::SetMaterial(int32 SlotIndex, UMaterial* InMaterial)
+    {
+        if (!IsValidMaterialSlotIndex(SlotIndex))
+        {
+            return;
+        }
+
+        if (OverrideMaterials.size() < StaticMesh->GetMaterialSlots().size())
+        {
+            OverrideMaterials.resize(StaticMesh->GetMaterialSlots().size(), nullptr);
+        }
+
+        OverrideMaterials[SlotIndex] = InMaterial;
+    }
+
+    void UStaticMeshComponent::ClearMaterialOverride(int32 SlotIndex)
+    {
+        if (!IsValidMaterialSlotIndex(SlotIndex))
+        {
+            return;
+        }
+
+        if (static_cast<size_t>(SlotIndex) >= OverrideMaterials.size())
+        {
+            return;
+        }
+
+        OverrideMaterials[SlotIndex] = nullptr;
+    }
+
+    void UStaticMeshComponent::ClearAllMaterialOverrides()
+    {
+        for (UMaterial*& OverrideMaterial : OverrideMaterials)
+        {
+            OverrideMaterial = nullptr;
+        }
     }
 } // namespace Engine::Component

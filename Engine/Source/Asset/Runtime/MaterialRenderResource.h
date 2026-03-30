@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "Asset/Cooked/MaterialCookedData.h"
+#include "Asset/Cooked/MtlCookedData.h"
 #include "RHI/DynamicRHI.h"
 #include "RHI/RHIBuffer.h"
 #include "RHI/RHITexture.h"
@@ -17,7 +17,7 @@ namespace Asset
         std::shared_ptr<RHI::FRHIConstantBuffer> ParameterBuffer;
 
         static std::shared_ptr<FMaterialRenderResource>
-        Create(const FMaterialCookedData& CookedData, RHI::FDynamicRHI& RHI);
+        Create(const FMtlCookedData& CookedData, RHI::FDynamicRHI& RHI);
 
         bool IsValid() const;
         void Reset();
@@ -34,10 +34,10 @@ namespace Asset
         };
 
         static std::shared_ptr<RHI::FRHITexture>
-        CreateTextureForSlot(const FMaterialCookedData& CookedData, EMaterialTextureSlot Slot,
+        CreateTextureForSlot(const FMtlCookedData& CookedData, EMaterialTextureSlot Slot,
                              RHI::FDynamicRHI& RHI);
 
         static std::shared_ptr<RHI::FRHIConstantBuffer>
-        CreateParameterBuffer(const FMaterialCookedData& CookedData, RHI::FDynamicRHI& RHI);
+        CreateParameterBuffer(const FMtlCookedData& CookedData, RHI::FDynamicRHI& RHI);
     };
 } // namespace Asset

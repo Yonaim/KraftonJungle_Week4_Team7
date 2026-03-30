@@ -37,6 +37,7 @@ namespace Asset
     FTextureBuilder::Build(const std::filesystem::path& Path,
                            const FTextureBuildSettings& Settings)
     {
+        LastBuildReport.Reset();
         const FSourceRecord* Source = Cache.GetSource(FTextureAssetTag{}, Path);
         if (Source == nullptr)
         {
@@ -61,6 +62,7 @@ namespace Asset
         if (CachedIntermediate)
         {
             Intermediate = CachedIntermediate;
+            LastBuildReport.bUsedCachedIntermediate = true;
         }
         else
         {
@@ -75,6 +77,7 @@ namespace Asset
 
         if (!Cooked)
         {
+            LastBuildReport.bBuiltNewCooked = true;
             Cooked = CookTexture(*Source, *Intermediate, Settings);
             if (!Cooked)
             {
@@ -82,6 +85,23 @@ namespace Asset
             }
 
             CookedCache.Insert(CookedKey, Cooked);
+        }
+        else
+        {
+            LastBuildReport.bUsedCachedCooked = true;
+        }
+
+        if (LastBuildReport.bUsedCachedCooked)
+        {
+            LastBuildReport.ResultSource = EAssetBuildResultSource::CookedCache;
+        }
+        else if (LastBuildReport.bUsedCachedIntermediate)
+        {
+            LastBuildReport.ResultSource = EAssetBuildResultSource::BuiltFromCachedIntermediate;
+        }
+        else if (Cooked)
+        {
+            LastBuildReport.ResultSource = EAssetBuildResultSource::BuiltFromFreshIntermediate;
         }
 
         return Cooked;

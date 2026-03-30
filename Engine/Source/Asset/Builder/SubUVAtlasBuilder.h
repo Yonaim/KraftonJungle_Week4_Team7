@@ -3,6 +3,8 @@
 #include <filesystem>
 #include <memory>
 
+#include "Asset/Builder/AssetBuildReport.h"
+
 #include "Asset/Cache/AssetBuildCache.h"
 #include "Asset/Builder/TextureBuilder.h"
 #include "Asset/Cache/BuildSettings.h"
@@ -25,6 +27,8 @@ class FSubUVAtlasBuilder
         return Build(std::filesystem::path(Path), AtlasTextureSettings);
     }
 
+    const FAssetBuildReport& GetLastBuildReport() const { return LastBuildReport; }
+
   private:
     std::shared_ptr<FIntermediateSubUVAtlasData> ParseAtlas(const FSourceRecord& Source);
     std::shared_ptr<FSubUVAtlasCookedData>       CookAtlas(const FSourceRecord&             Source,
@@ -37,6 +41,7 @@ class FSubUVAtlasBuilder
 
   private:
     FAssetBuildCache& Cache;
+    FAssetBuildReport LastBuildReport;
 };
 
 } // namespace Asset

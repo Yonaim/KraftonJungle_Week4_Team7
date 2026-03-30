@@ -5,8 +5,8 @@
 #include "Asset/Cache/AssetKey.h"
 #include "Asset/Cache/BuildSettings.h"
 #include "Asset/Intermediate/IntermediateFontAtlasData.h"
-#include "Asset/Intermediate/IntermediateMaterialData.h"
-#include "Asset/Intermediate/IntermediateStaticMeshData.h"
+#include "Asset/Intermediate/IntermediateMtlData.h"
+#include "Asset/Intermediate/IntermediateObjData.h"
 #include "Asset/Intermediate/IntermediateSubUVAtlasData.h"
 #include "Asset/Intermediate/IntermediateTextureData.h"
 
@@ -42,9 +42,8 @@ namespace KeyUtils
         return {FinalizeHash(Seed)};
     }
 
-    inline FMaterialIntermediateKey MakeIntermediateKey(const FIntermediateMaterialData& Data)
+    inline void HashMaterialData(size_t& Seed, const FIntermediateMtlData& Data)
     {
-        size_t Seed = 0;
         KeyHash::CombineString(Seed, Data.Name);
         HashVector(Seed, Data.DiffuseColor);
         HashVector(Seed, Data.AmbientColor);
@@ -56,16 +55,37 @@ namespace KeyUtils
             KeyHash::CombineString(Seed, Ref.SlotName);
             KeyHash::CombineString(Seed, Ref.TexturePath);
         }
+    }
+
+    inline FMaterialIntermediateKey MakeIntermediateKey(const FIntermediateMtlData& Data)
+    {
+        size_t Seed = 0;
+        HashMaterialData(Seed, Data);
         return {FinalizeHash(Seed)};
     }
 
-    inline FStaticMeshIntermediateKey MakeIntermediateKey(const FIntermediateStaticMeshData& Data)
+    inline FMaterialIntermediateKey MakeIntermediateKey(const FIntermediateMtlLibraryData& Data)
+    {
+        size_t Seed = 0;
+        KeyHash::CombineString(Seed, Data.SourcePath);
+        for (const auto& Material : Data.Materials)
+        {
+            HashMaterialData(Seed, Material);
+        }
+        return {FinalizeHash(Seed)};
+    }
+
+    inline FStaticMeshIntermediateKey MakeIntermediateKey(const FIntermediateObjData& Data)
     {
         size_t Seed = 0;
         for (const auto& V : Data.Positions) HashVector(Seed, V);
         for (const auto& V : Data.Colors) HashVector(Seed, V);
         for (const auto& V : Data.Normals) HashVector(Seed, V);
         for (const auto& UV : Data.UVs) HashVector2(Seed, UV);
+        for (const auto& LibraryPath : Data.MaterialLibraries)
+        {
+            KeyHash::CombineString(Seed, LibraryPath);
+        }
         for (const auto& Face : Data.Faces)
         {
             KeyHash::CombineString(Seed, Face.MaterialName);
@@ -143,7 +163,7 @@ namespace KeyUtils
 
     inline FMaterialCookedKey MakeCookedKey(const FMaterialIntermediateKey& IntermediateKey,
                                             uint32 CookVersion = 1,
-                                            const FString& BuildKey = "MaterialCook")
+                                            const FString& BuildKey = "MaterialLibraryCook")
     {
         return {IntermediateKey, CookVersion, BuildKey};
     }

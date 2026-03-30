@@ -3,6 +3,8 @@
 #include <filesystem>
 #include <memory>
 
+#include "Asset/Builder/AssetBuildReport.h"
+
 #include "Asset/Cache/AssetBuildCache.h"
 #include "Asset/Cache/BuildSettings.h"
 #include "Asset/Cooked/TextureCookedData.h"
@@ -23,7 +25,9 @@ namespace Asset
             return Build(std::filesystem::path(Path), Settings);
         }
 
-      private:
+        const FAssetBuildReport& GetLastBuildReport() const { return LastBuildReport; }
+
+  private:
         bool DecodeTexture(const FSourceRecord& Source, FIntermediateTextureData& OutData) const;
 
         std::shared_ptr<FTextureCookedData>
@@ -32,5 +36,6 @@ namespace Asset
 
       private:
         FAssetBuildCache& Cache;
+    FAssetBuildReport LastBuildReport;
     };
 } // namespace Asset

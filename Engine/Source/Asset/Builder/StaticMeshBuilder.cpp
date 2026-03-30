@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 #include "Asset/Cache/AssetKeyUtils.h"
+#include "Asset/Builder/MaterialBuilder.h"
 
 namespace Asset
 {
@@ -133,8 +134,8 @@ namespace Asset
         }
 
         static bool ParseFaceVertexToken(const FString&                     Token,
-                                         FIntermediateMeshFaceVertex&       OutVertex,
-                                         const FIntermediateStaticMeshData& MeshData)
+                                         FIntermediateObjFaceVertex&       OutVertex,
+                                         const FIntermediateObjData& MeshData)
         {
             std::stringstream Ss(Token);
             FString           Segment;
@@ -215,7 +216,7 @@ namespace Asset
         }
     } // namespace
 
-    // std::shared_ptr<FStaticMeshCookedData>
+    // std::shared_ptr<FObjCookedData>
     // FStaticMeshBuilder::Build(const std::filesystem::path& Path,
     //                          const FStaticMeshBuildSettings& Settings)
     // {
@@ -226,7 +227,7 @@ namespace Asset
     //     }
 
     //     auto& IntermediateCache = Cache.GetIntermediateCache(FStaticMeshAssetTag{});
-    //     std::shared_ptr<FIntermediateStaticMeshData> Intermediate = ParseObj(*Source);
+    //     std::shared_ptr<FIntermediateObjData> Intermediate = ParseObj(*Source);
     //     if (!Intermediate)
     //     {
     //         return nullptr;
@@ -234,7 +235,7 @@ namespace Asset
 
     //     const FStaticMeshIntermediateKey IntermediateKey =
     //     KeyUtils::MakeIntermediateKey(*Intermediate);
-    //     std::shared_ptr<FIntermediateStaticMeshData> CachedIntermediate =
+    //     std::shared_ptr<FIntermediateObjData> CachedIntermediate =
     //         IntermediateCache.Find(IntermediateKey);
     //     if (CachedIntermediate)
     //     {
@@ -249,7 +250,7 @@ namespace Asset
     //     Settings);
 
     //     auto& CookedCache = Cache.GetCookedCache(FStaticMeshAssetTag{});
-    //     std::shared_ptr<FStaticMeshCookedData> Cooked = CookedCache.Find(CookedKey);
+    //     std::shared_ptr<FObjCookedData> Cooked = CookedCache.Find(CookedKey);
     //     if (!Cooked)
     //     {
     //         Cooked = CookMesh(*Source, *Intermediate, Settings);
@@ -263,10 +264,11 @@ namespace Asset
     //     return Cooked;
     // }
 
-    std::shared_ptr<FStaticMeshCookedData>
+    std::shared_ptr<FObjCookedData>
     FStaticMeshBuilder::Build(const std::filesystem::path&    Path,
                               const FStaticMeshBuildSettings& Settings)
     {
+        LastBuildReport.Reset();
         const FSourceRecord* Source = Cache.GetSource(FStaticMeshAssetTag{}, Path);
         if (Source == nullptr)
         {
@@ -274,7 +276,7 @@ namespace Asset
         }
 
         auto& IntermediateCache = Cache.GetIntermediateCache(FStaticMeshAssetTag{});
-        std::shared_ptr<FIntermediateStaticMeshData> Intermediate = ParseObj(*Source);
+        std::shared_ptr<FIntermediateObjData> Intermediate = ParseObj(*Source);
         if (!Intermediate)
         {
             return nullptr;
@@ -282,11 +284,12 @@ namespace Asset
 
         const FStaticMeshIntermediateKey IntermediateKey =
             KeyUtils::MakeIntermediateKey(*Intermediate);
-        std::shared_ptr<FIntermediateStaticMeshData> CachedIntermediate =
+        std::shared_ptr<FIntermediateObjData> CachedIntermediate =
             IntermediateCache.Find(IntermediateKey);
         if (CachedIntermediate)
         {
             Intermediate = CachedIntermediate;
+            LastBuildReport.bUsedCachedIntermediate = true;
         }
         else
         {
@@ -296,9 +299,10 @@ namespace Asset
         const FStaticMeshCookedKey CookedKey = KeyUtils::MakeCookedKey(IntermediateKey, Settings);
 
         auto& CookedCache = Cache.GetCookedCache(FStaticMeshAssetTag{});
-        std::shared_ptr<FStaticMeshCookedData> Cooked = CookedCache.Find(CookedKey);
+        std::shared_ptr<FObjCookedData> Cooked = CookedCache.Find(CookedKey);
         if (!Cooked)
         {
+            LastBuildReport.bBuiltNewCooked = true;
             Cooked = CookMesh(*Source, *Intermediate, Settings);
             if (!Cooked)
             {
@@ -306,11 +310,28 @@ namespace Asset
             }
             CookedCache.Insert(CookedKey, Cooked);
         }
+        else
+        {
+            LastBuildReport.bUsedCachedCooked = true;
+        }
+
+        if (LastBuildReport.bUsedCachedCooked)
+        {
+            LastBuildReport.ResultSource = EAssetBuildResultSource::CookedCache;
+        }
+        else if (LastBuildReport.bUsedCachedIntermediate)
+        {
+            LastBuildReport.ResultSource = EAssetBuildResultSource::BuiltFromCachedIntermediate;
+        }
+        else if (Cooked)
+        {
+            LastBuildReport.ResultSource = EAssetBuildResultSource::BuiltFromFreshIntermediate;
+        }
 
         return Cooked;
     }
 
-    std::shared_ptr<FIntermediateStaticMeshData>
+    std::shared_ptr<FIntermediateObjData>
     FStaticMeshBuilder::ParseObj(const FSourceRecord& Source)
     {
         std::ifstream File(std::filesystem::path(Source.NormalizedPath));
@@ -319,7 +340,7 @@ namespace Asset
             return nullptr;
         }
 
-        auto Result = std::make_shared<FIntermediateStaticMeshData>();
+        auto Result = std::make_shared<FIntermediateObjData>();
 
         FString CurrentMaterialName;
         FString Line;
@@ -359,19 +380,28 @@ namespace Asset
                 Iss >> X >> Y >> Z;
                 Result->Normals.emplace_back(X, Y, Z);
             }
+            else if (Tag == "mtllib")
+            {
+                FString LibraryPath;
+                Iss >> LibraryPath;
+                if (!LibraryPath.empty())
+                {
+                    Result->MaterialLibraries.push_back(LibraryPath);
+                }
+            }
             else if (Tag == "usemtl")
             {
                 Iss >> CurrentMaterialName;
             }
             else if (Tag == "f")
             {
-                FIntermediateMeshFace Face;
+                FIntermediateObjFace Face;
                 Face.MaterialName = CurrentMaterialName;
 
                 FString VertexToken;
                 while (Iss >> VertexToken)
                 {
-                    FIntermediateMeshFaceVertex FaceVertex;
+                    FIntermediateObjFaceVertex FaceVertex;
                     if (ParseFaceVertexToken(VertexToken, FaceVertex, *Result))
                     {
                         Face.Vertices.push_back(FaceVertex);
@@ -393,21 +423,21 @@ namespace Asset
         return Result;
     }
 
-    std::shared_ptr<FStaticMeshCookedData>
+    std::shared_ptr<FObjCookedData>
     FStaticMeshBuilder::CookMesh(const FSourceRecord&               Source,
-                                 const FIntermediateStaticMeshData& Intermediate,
+                                 const FIntermediateObjData& Intermediate,
                                  const FStaticMeshBuildSettings&    Settings)
     {
-        auto Result = std::make_shared<FStaticMeshCookedData>();
+        auto Result = std::make_shared<FObjCookedData>();
 
         bool bHasColors = !Intermediate.Colors.empty() &&
                           Intermediate.Colors.size() == Intermediate.Positions.size();
         bool bHasNormals = !Intermediate.Normals.empty();
         bool bHasUVs = !Intermediate.UVs.empty();
 
-        for (const FIntermediateMeshFace& Face : Intermediate.Faces)
+        for (const FIntermediateObjFace& Face : Intermediate.Faces)
         {
-            for (const FIntermediateMeshFaceVertex& FaceVertex : Face.Vertices)
+            for (const FIntermediateObjFaceVertex& FaceVertex : Face.Vertices)
             {
                 if (FaceVertex.NormalIndex < 0)
                 {
@@ -432,28 +462,51 @@ namespace Asset
         Result->VertexStride = ResolveVertexStride(Result->VertexFormat);
 
         std::unordered_map<FObjVertexKey, uint32, FObjVertexKeyHasher> VertexMap;
+        std::unordered_map<FString, uint32>                             MaterialSlotLookup;
+        TArray<TArray<uint32>>                                          MaterialBuckets;
 
-        FString                 ActiveMaterialName;
-        FStaticMeshSectionData* CurrentSection = nullptr;
-
-        auto EnsureSection = [&](const FString& MaterialName)
+        auto ResolveMaterialAssetPath = [&](const FString& MaterialName) -> FString
         {
-            if (CurrentSection != nullptr && ActiveMaterialName == MaterialName)
+            if (Intermediate.MaterialLibraries.empty())
             {
-                return;
+                return MaterialName.empty() ? FString("Default") : MaterialName;
             }
 
-            ActiveMaterialName = MaterialName;
+            std::filesystem::path LibraryPath(Intermediate.MaterialLibraries.front());
+            if (LibraryPath.is_relative())
+            {
+                LibraryPath = std::filesystem::path(Source.NormalizedPath).parent_path() / LibraryPath;
+            }
 
-            FStaticMeshSectionData Section;
-            Section.MaterialSlotName = MaterialName.empty() ? "Default" : MaterialName;
-            Section.StartIndex = static_cast<uint32>(Result->Indices.size());
-            Section.IndexCount = 0;
-            Result->Sections.push_back(Section);
-            CurrentSection = &Result->Sections.back();
+            std::error_code ErrorCode;
+            std::filesystem::path CanonicalLibraryPath =
+                std::filesystem::weakly_canonical(LibraryPath, ErrorCode);
+            if (ErrorCode)
+            {
+                CanonicalLibraryPath = LibraryPath.lexically_normal();
+            }
+
+            return FMaterialBuilder::MakeMaterialAssetPath(
+                CanonicalLibraryPath, MaterialName.empty() ? FString("Default") : MaterialName);
         };
 
-        auto BuildKey = [&](const FIntermediateMeshFaceVertex& FaceVertex) -> FObjVertexKey
+        auto GetOrCreateMaterialIndex = [&](const FString& MaterialName) -> uint32
+        {
+            const FString ResolvedMaterialName = ResolveMaterialAssetPath(MaterialName);
+            auto          It = MaterialSlotLookup.find(ResolvedMaterialName);
+            if (It != MaterialSlotLookup.end())
+            {
+                return It->second;
+            }
+
+            const uint32 NewMaterialIndex = static_cast<uint32>(Result->MaterialSlotNames.size());
+            MaterialSlotLookup.emplace(ResolvedMaterialName, NewMaterialIndex);
+            Result->MaterialSlotNames.push_back(ResolvedMaterialName);
+            MaterialBuckets.emplace_back();
+            return NewMaterialIndex;
+        };
+
+        auto BuildKey = [&](const FIntermediateObjFaceVertex& FaceVertex) -> FObjVertexKey
         {
             FObjVertexKey Key;
             Key.PositionIndex = FaceVertex.PositionIndex;
@@ -563,7 +616,7 @@ namespace Asset
             AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
         };
 
-        auto GetOrCreateVertexIndex = [&](const FIntermediateMeshFaceVertex& FaceVertex) -> uint32
+        auto GetOrCreateVertexIndex = [&](const FIntermediateObjFaceVertex& FaceVertex) -> uint32
         {
             const FObjVertexKey Key = BuildKey(FaceVertex);
             auto                It = VertexMap.find(Key);
@@ -579,31 +632,52 @@ namespace Asset
             return NewIndex;
         };
 
-        for (const FIntermediateMeshFace& Face : Intermediate.Faces)
+        for (const FIntermediateObjFace& Face : Intermediate.Faces)
         {
-            EnsureSection(Face.MaterialName);
+            const uint32 MaterialIndex = GetOrCreateMaterialIndex(Face.MaterialName);
+            TArray<uint32>& Bucket = MaterialBuckets[MaterialIndex];
 
-            const uint32 BaseIndex = static_cast<uint32>(Result->Indices.size());
             for (size_t VertexIndex = 1; VertexIndex + 1 < Face.Vertices.size(); ++VertexIndex)
             {
-                Result->Indices.push_back(GetOrCreateVertexIndex(Face.Vertices[0]));
-                Result->Indices.push_back(GetOrCreateVertexIndex(Face.Vertices[VertexIndex]));
-                Result->Indices.push_back(GetOrCreateVertexIndex(Face.Vertices[VertexIndex + 1]));
+                Bucket.push_back(GetOrCreateVertexIndex(Face.Vertices[0]));
+                Bucket.push_back(GetOrCreateVertexIndex(Face.Vertices[VertexIndex]));
+                Bucket.push_back(GetOrCreateVertexIndex(Face.Vertices[VertexIndex + 1]));
+            }
+        }
+
+        Result->Indices.clear();
+        Result->Sections.clear();
+
+        uint32 StartIndex = 0;
+        for (uint32 MaterialIndex = 0; MaterialIndex < static_cast<uint32>(MaterialBuckets.size());
+             ++MaterialIndex)
+        {
+            const TArray<uint32>& Bucket = MaterialBuckets[MaterialIndex];
+            if (Bucket.empty())
+            {
+                continue;
             }
 
-            if (CurrentSection != nullptr)
-            {
-                CurrentSection->IndexCount +=
-                    static_cast<uint32>(Result->Indices.size() - BaseIndex);
-            }
+            FStaticMeshSectionData Section;
+            Section.MaterialSlotName = Result->MaterialSlotNames[MaterialIndex];
+            Section.StartIndex = StartIndex;
+            Section.IndexCount = static_cast<uint32>(Bucket.size());
+            Section.MaterialIndex = MaterialIndex;
+            Result->Sections.push_back(Section);
+
+            Result->Indices.insert(Result->Indices.end(), Bucket.begin(), Bucket.end());
+            StartIndex += Section.IndexCount;
         }
 
         if (Result->Sections.empty())
         {
+            const uint32 MaterialIndex = GetOrCreateMaterialIndex("Default");
+
             FStaticMeshSectionData Section;
-            Section.MaterialSlotName = "Default";
+            Section.MaterialSlotName = Result->MaterialSlotNames[MaterialIndex];
             Section.StartIndex = 0;
             Section.IndexCount = static_cast<uint32>(Result->Indices.size());
+            Section.MaterialIndex = MaterialIndex;
             Result->Sections.push_back(Section);
         }
 
