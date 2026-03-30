@@ -193,6 +193,7 @@
       <Filter>Source\Launch</Filter>
     </ClCompile>
     <ClCompile Include="Source\Viewer\Viewer.cpp" />
+    <ClCompile Include="Source\Viewer\ViewerNavigationController.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Camera\ViewportCamera.h">
@@ -346,6 +347,7 @@
       <Filter>Source\Launch</Filter>
     </ClInclude>
     <ClInclude Include="Source\Viewer\Viewer.h" />
+    <ClInclude Include="Source\Viewer\ViewerNavigationController.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\ThirdParty\ImGui\imgui.natstepfilter">

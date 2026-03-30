@@ -3,6 +3,7 @@
 #include "Renderer/RendererModule.h"
 #include "ApplicationCore/Input/InputSystem.h"
 #include "Camera/ViewportCamera.h"
+#include "ViewerNavigationController.h"
 
 class FViewer
 {
@@ -30,6 +31,8 @@ class FViewer
     FSceneView*       SceneView = nullptr;
     FSceneRenderData  SceneRenderData;
     FViewportCamera   ViewportCamera;
+
+    FViewerNavigationController NavigationController;
 
     FD3D11RHI* RHI = nullptr;
 

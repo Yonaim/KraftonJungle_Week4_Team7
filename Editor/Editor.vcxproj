@@ -131,6 +131,7 @@ if exist "$(ProjectDir)..\Engine\Bin\$(Configuration)\Engine.pdb" copy /Y "$(Pro
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Viewer\ViewerNavigationController.cpp" />
     <ClCompile Include="Source\Camera\ViewportCamera.cpp" />
     <ClCompile Include="Source\Chrome\EditorChrome.cpp" />
     <ClCompile Include="Source\Content\EditorContentIndex.cpp" />
@@ -177,6 +178,7 @@ if exist "$(ProjectDir)..\Engine\Bin\$(Configuration)\Engine.pdb" copy /Y "$(Pro
     <ClCompile Include="Source\Viewer\Viewer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Viewer\ViewerNavigationController.h" />
     <ClInclude Include="Source\Camera\ViewportCamera.h" />
     <ClInclude Include="Source\Chrome\EditorChrome.h" />
     <ClInclude Include="Source\Content\ContentBrowserDragDrop.h" />

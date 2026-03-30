@@ -13,32 +13,20 @@ void FViewer::Create()
 {
     SceneView = new FSceneView();
 
-    FPrimitiveRenderItem item;
-
-    item.MeshType = EBasicMeshType::Cube;
-    item.World = FMatrix::Identity;
-
-
     ViewportCamera.SetFOV(3.141592f * 0.5f);
     ViewportCamera.SetNearPlane(0.1f);
     ViewportCamera.SetFarPlane(2000.0f);
-    ViewportCamera.SetLocation(FVector(-5.0f, 0.0f, 1.0f));
+    ViewportCamera.SetLocation(FVector(-3.0f, 0.0f, 0.0f));
     ViewportCamera.SetRotation(FRotator::ZeroRotator);
 
-    SceneView->SetViewLocation(ViewportCamera.GetLocation());
-    SceneView->SetViewMatrix(ViewportCamera.GetViewMatrix());
-    SceneView->SetProjectionMatrix(ViewportCamera.GetProjectionMatrix());
-
-    SceneRenderData.SceneView = SceneView;
-    SceneRenderData.Primitives.clear();
-    SceneRenderData.Primitives.push_back(item);
+    NavigationController.SetCamera(&ViewportCamera);
 }
 
 void FViewer::Release()
 {
     // 리소스 해제
-     delete SceneView; 
-     SceneView = nullptr;
+    delete SceneView;
+    SceneView = nullptr;
 }
 
 void FViewer::SetRuntimeServices(FD3D11RHI* InRHI)
@@ -49,9 +37,60 @@ void FViewer::SetRuntimeServices(FD3D11RHI* InRHI)
 
 void FViewer::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* InputSystem)
 {
-    // 입력 처리
-    // 예: 카메라 입력 → Viewport 갱신
-    // Mesh/OBJ 데이터 갱신 필요시 처리
+
+    const Engine::ApplicationCore::FInputState& InputState = InputSystem->GetInputState();
+    const FVector2 MousePosition = {static_cast<float>(InputState.MouseX),
+                                    static_cast<float>(InputState.MouseY)};
+
+    // Orbit (좌클릭)
+    if (InputState.IsKeyDown(Engine::ApplicationCore::EKey::MouseLeft))
+    {
+        if (!NavigationController.IsOrbiting())
+        {
+            NavigationController.BeginOrbit(MousePosition);
+        }
+
+        NavigationController.UpdateOrbit(MousePosition);
+    }
+    else if (NavigationController.IsOrbiting())
+    {
+        NavigationController.EndOrbit();
+    }
+
+    // Pan (우클릭)
+    if (InputState.IsKeyDown(Engine::ApplicationCore::EKey::MouseRight))
+    {
+        if (!NavigationController.IsPanning())
+            NavigationController.BeginPan(MousePosition);
+        else
+            NavigationController.UpdatePan(MousePosition);
+    }
+    else if (NavigationController.IsPanning())
+    {
+        NavigationController.EndPan();
+    }
+
+    // Zoom (휠)
+    float WheelDelta = InputState.WheelDelta;
+    if (WheelDelta != 0.0f)
+    {
+        NavigationController.Zoom(WheelDelta);
+    }
+
+    NavigationController.Tick(DeltaTime);
+
+    FPrimitiveRenderItem item;
+
+    item.MeshType = EBasicMeshType::Cube;
+    item.World = FMatrix::Identity;
+
+    SceneView->SetViewLocation(ViewportCamera.GetLocation());
+    SceneView->SetViewMatrix(ViewportCamera.GetViewMatrix());
+    SceneView->SetProjectionMatrix(ViewportCamera.GetProjectionMatrix());
+
+    SceneRenderData.SceneView = SceneView;
+    SceneRenderData.Primitives.clear();
+    SceneRenderData.Primitives.push_back(item);
 }
 
 void FViewer::OnWindowResized(float Width, float Height)
@@ -60,7 +99,7 @@ void FViewer::OnWindowResized(float Width, float Height)
     if (SceneView)
     {
         SceneView->OnResize({0, 0, static_cast<int32>(Width), static_cast<int32>(Height)});
-        //ViewportCamera.OnResize(Width, Height);
+        // ViewportCamera.OnResize(Width, Height);
     }
 }
 
