@@ -11,9 +11,46 @@
 
 namespace
 {
-    constexpr const char* ProjectionTypeLabels[] = {"Perspective", "Orthographic"};
-    constexpr const char* ViewModeLabels[] = {"Lit", "Unlit", "Wireframe"};
+    // Projection
+    struct FProjectionButton
+    {
+        const char*               Label;
+        EViewportProjectionType   ProjectionType;
+        EViewportOrthographicType OrthoType;
+        bool                      bIsOrtho;
+    };
 
+    constexpr FProjectionButton ProjectionTypeButtons[] = {
+        {ICON_FA_CUBE        "Perspective", EViewportProjectionType::Perspective,
+         EViewportOrthographicType::Top,    false},
+        {ICON_FA_ARROW_UP    "Top",         EViewportProjectionType::Orthographic,
+         EViewportOrthographicType::Top,    true},
+        {ICON_FA_ARROW_DOWN  "Bottom",      EViewportProjectionType::Orthographic,
+         EViewportOrthographicType::Bottom, true},
+        {ICON_FA_ARROW_LEFT  "Left",        EViewportProjectionType::Orthographic,
+         EViewportOrthographicType::Left,   true},
+        {ICON_FA_ARROW_RIGHT "Right",       EViewportProjectionType::Orthographic,
+         EViewportOrthographicType::Right,  true},
+        {ICON_FA_SQUARE      "Front",       EViewportProjectionType::Orthographic,
+         EViewportOrthographicType::Front,  true},
+        {ICON_FA_SQUARE_O    "Back",        EViewportProjectionType::Orthographic,
+         EViewportOrthographicType::Back,   true},
+    };
+
+    // View Mode
+    struct FViewModeButton
+    {
+        const char*    Label;
+        EViewModeIndex ViewMode;
+    };
+
+    constexpr FViewModeButton ViewModeButtons[] = {
+        {ICON_FA_SUN_O   " Lit",       EViewModeIndex::VMI_Lit},
+        {ICON_FA_MOON_O  " Unlit",     EViewModeIndex::VMI_Unlit},
+        {ICON_FA_CODEPEN " Wireframe", EViewModeIndex::VMI_Wireframe},
+    };
+
+    // Layout
     struct FLayoutPreview
     {
         EViewportLayoutType Type;
@@ -181,15 +218,37 @@ void FControlPanel::DrawTransformSection(FViewportCamera& Camera) const
 void FControlPanel::DrawProjectionSection(FViewportCamera& Camera) const
 {
     ImGui::TextUnformatted("Projection");
+    ImGui::SeparatorText("Perspective");
 
-    int CurrentProjection = static_cast<int>(Camera.GetProjectionType());
-    if (ImGui::Combo("Projection Type", &CurrentProjection, ProjectionTypeLabels,
-                     IM_ARRAYSIZE(ProjectionTypeLabels)))
+    const bool bIsPerspective = Camera.GetProjectionType() == EViewportProjectionType::Perspective;
+    const EViewportOrthographicType CurrentOrthoType = Camera.GetOrthographicType();
+
+    ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
+    for (int i = 0; i < IM_ARRAYSIZE(ProjectionTypeButtons); ++i)
     {
-        Camera.SetProjectionType(static_cast<EViewportProjectionType>(CurrentProjection));
-    }
+        if (i == 1)
+            ImGui::SeparatorText("Orthographic");
 
-    if (Camera.GetProjectionType() == EViewportProjectionType::Perspective)
+        const bool bActive = ProjectionTypeButtons[i].bIsOrtho
+                ? (!bIsPerspective && CurrentOrthoType == ProjectionTypeButtons[i].OrthoType)
+                                 : bIsPerspective;
+
+        if (bActive)
+            ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+        if (ImGui::Button(ProjectionTypeButtons[i].Label, ImVec2(120, 0)))
+        {
+            Camera.SetProjectionType(ProjectionTypeButtons[i].ProjectionType);
+            if (ProjectionTypeButtons[i].bIsOrtho)
+                Camera.SetOrthographicType(ProjectionTypeButtons[i].OrthoType);
+        }
+        if (bActive)
+            ImGui::PopStyleColor();
+    }
+    ImGui::PopStyleVar();
+    ImGui::Spacing();
+
+    ImGui::SeparatorText("View");
+    if (bIsPerspective)
     {
         float FOVDegrees = FMath::RadiansToDegrees(Camera.GetFOV());
         if (ImGui::SliderFloat("FOV", &FOVDegrees, 30.0f, 120.0f, "%.1f deg"))
@@ -226,11 +285,23 @@ void FControlPanel::DrawViewModeSection() const
 
     ImGui::TextUnformatted("View Mode");
 
-    int CurrentViewMode = static_cast<int>(RenderSetting.GetViewMode());
-    if (ImGui::Combo("Shading", &CurrentViewMode, ViewModeLabels, IM_ARRAYSIZE(ViewModeLabels)))
+    const EViewModeIndex CurrentViewMode = RenderSetting.GetViewMode();
+
+    ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
+
+    for (int i = 0; i < IM_ARRAYSIZE(ViewModeButtons); ++i)
     {
-        RenderSetting.SetViewMode(static_cast<EViewModeIndex>(CurrentViewMode));
+        const bool bActive = CurrentViewMode == ViewModeButtons[i].ViewMode;
+
+        if (bActive)
+            ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+        if (ImGui::Button(ViewModeButtons[i].Label, ImVec2(120, 0)))
+            RenderSetting.SetViewMode(ViewModeButtons[i].ViewMode);
+        if (bActive)
+            ImGui::PopStyleColor();
     }
+
+    ImGui::PopStyleVar();
 }
 
 void FControlPanel::DrawLayoutSection() const 
