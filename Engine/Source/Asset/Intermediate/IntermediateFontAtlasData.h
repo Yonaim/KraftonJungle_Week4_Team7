@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Asset/Core/FontTypes.h"
+#include "Asset/Core/FontAtlasTypes.h"
 
 namespace Asset
 {

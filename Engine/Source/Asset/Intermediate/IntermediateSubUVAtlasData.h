@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Asset/Core/SubUVTypes.h"
+#include "Asset/Core/SubUVAtlasTypes.h"
 
 namespace Asset
 {
