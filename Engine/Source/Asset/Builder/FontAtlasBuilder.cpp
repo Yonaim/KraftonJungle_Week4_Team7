@@ -5,6 +5,7 @@
 #include <sstream>
 
 #include "Asset/Cache/AssetKeyUtils.h"
+#include "Asset/Cache/AssetBuildCache.h"
 
 namespace Asset
 {
@@ -25,7 +26,8 @@ namespace Asset
             return nullptr;
         }
 
-        const FFontAtlasIntermediateKey IntermediateKey = KeyUtils::MakeIntermediateKey(*Intermediate);
+        const FFontAtlasIntermediateKey IntermediateKey =
+            KeyUtils::MakeIntermediateKey(*Intermediate);
         std::shared_ptr<FIntermediateFontAtlasData> CachedIntermediate =
             IntermediateCache.Find(IntermediateKey);
         if (CachedIntermediate)
@@ -301,7 +303,7 @@ namespace Asset
     }
 
     FWString FFontAtlasBuilder::ResolveRelativePath(const std::filesystem::path& BasePath,
-                                                    const FString&  RelativePath)
+                                                    const FString&               RelativePath)
     {
         const std::filesystem::path BaseDirectory = std::filesystem::path(BasePath).parent_path();
         return (BaseDirectory / std::filesystem::path(RelativePath)).lexically_normal();

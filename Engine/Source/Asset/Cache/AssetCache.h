@@ -6,7 +6,7 @@
 
 // ============================== Generic Cache ===============================
 
-template <typename TData> class TAssetCache
+template <typename TKey, typename TData> class TAssetCache
 {
   public:
     std::shared_ptr<TData> Find(const TKey& Key) const
