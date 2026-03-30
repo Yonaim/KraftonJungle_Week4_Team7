@@ -2,6 +2,7 @@
 
 #include "Renderer/RendererModule.h"
 #include "ApplicationCore/Input/InputSystem.h"
+#include "Camera/ViewportCamera.h"
 
 class FViewer
 {
@@ -17,8 +18,7 @@ class FViewer
     void OnWindowResized(float Width, float Height);
 
     // 렌더러 연동용
-    FSceneView*              GetViewport() const;
-    const FEditorRenderData& GetEditorRenderData() const;
+    FSceneView*              GetSceneView() const;
     const FSceneRenderData&  GetSceneRenderData() const;
 
     void DrawPanel();
@@ -27,12 +27,10 @@ class FViewer
 
   private:
     // 내부 상태
-    FSceneView*       Viewport = nullptr;
-    FEditorRenderData EditorRenderData;
+    FSceneView*       SceneView = nullptr;
     FSceneRenderData  SceneRenderData;
+    FViewportCamera   ViewportCamera;
 
     FD3D11RHI* RHI = nullptr;
 
-    // 카메라, 입력, Mesh 등 Viewer에 필요한 멤버 추가
-    // 예: MeshData, Camera, UI 상태 등
 };

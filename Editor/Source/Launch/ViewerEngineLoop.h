@@ -4,7 +4,7 @@
 #include "ApplicationCore/GenericPlatform/IApplication.h"
 #include "ApplicationCore/Input/InputSystem.h"
 #include "Launch/EngineLoop.h"
-#include "Renderer/RendererModule.h"
+#include "Renderer/ViewerRendererModule.h"
 
 #if defined(_WIN32)
 #include "ApplicationCore/Windows/WindowsApplication.h"
@@ -33,8 +33,8 @@ class FViewerEngineLoop : public IEngineLoop
     Engine::ApplicationCore::IApplication* Application = nullptr;
     Engine::ApplicationCore::FInputSystem* InputSystem = nullptr;
 
-    FViewer*         Viewer = nullptr;
-    FRendererModule* Renderer = nullptr;
+    FViewer*               Viewer = nullptr;
+    FViewerRendererModule* Renderer = nullptr;
 
     int32 CachedWindowWidth = 0;
     int32 CachedWindowHeight = 0;

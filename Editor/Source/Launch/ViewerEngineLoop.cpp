@@ -40,7 +40,7 @@ bool FViewerEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
     Viewer = new FViewer();
     Viewer->Create();
 
-    Renderer = new FRendererModule();
+    Renderer = new FViewerRendererModule();
     if (Renderer == nullptr)
     {
         return false;
@@ -212,8 +212,8 @@ bool FViewerEngineLoop::RunFrameOnceWithoutResize()
     Renderer->BeginFrame();
 
     // Viewer에서 Viewport, RenderData 등은 Viewer 내부에서 관리한다고 가정
-    Renderer->SetViewport(Viewer->GetViewport()->GetViewport());
-    Renderer->Render(Viewer->GetEditorRenderData(), Viewer->GetSceneRenderData());
+    Renderer->SetViewport(Viewer->GetSceneView()->GetViewport());
+    Renderer->Render(Viewer->GetSceneRenderData());
 
     Viewer->DrawPanel();
     Renderer->EndFrame();
