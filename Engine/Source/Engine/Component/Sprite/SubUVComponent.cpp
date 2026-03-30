@@ -4,7 +4,6 @@
 #include <algorithm>
 
 #include "Renderer/RenderAsset/SubUVAtlasResource.h"
-#include "SceneIO/SceneAssetPath.h"
 
 namespace Engine::Component
 {

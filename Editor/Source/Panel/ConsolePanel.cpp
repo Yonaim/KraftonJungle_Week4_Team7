@@ -10,8 +10,8 @@
 #include "Engine/Game/Actor.h"
 #include "Engine/Game/CubeActor.h"
 #include "Engine/Game/SphereActor.h"
-#include "Engine/Scene.h"
-#include "Engine/World.h"
+#include "Engine/Scene/Scene.h"
+#include "Engine/Scene/World.h"
 #include "Content/EditorContentIndex.h"
 #include "Renderer/Types/ViewMode.h"
 #include "Viewport/EditorViewportClient.h"
@@ -48,11 +48,8 @@ namespace
     {
         FString Lower = Value;
         std::transform(
-            Lower.begin(), Lower.end(), Lower.begin(),
-            [](char Character)
-            {
-                return static_cast<char>(std::tolower(static_cast<unsigned char>(Character)));
-            });
+            Lower.begin(), Lower.end(), Lower.begin(), [](char Character)
+            { return static_cast<char>(std::tolower(static_cast<unsigned char>(Character))); });
         return Lower;
     }
 
@@ -99,7 +96,7 @@ namespace
 
     bool TryParseInt32(const FString& Value, int32& OutValue)
     {
-        char* EndPtr = nullptr;
+        char*      EndPtr = nullptr;
         const long ParsedValue = std::strtol(Value.c_str(), &EndPtr, 10);
         if (EndPtr == Value.c_str() || (EndPtr != nullptr && *EndPtr != '\0'))
         {
@@ -112,7 +109,7 @@ namespace
 
     bool TryParseUInt32(const FString& Value, uint32& OutValue)
     {
-        char* EndPtr = nullptr;
+        char*               EndPtr = nullptr;
         const unsigned long ParsedValue = std::strtoul(Value.c_str(), &EndPtr, 10);
         if (EndPtr == Value.c_str() || (EndPtr != nullptr && *EndPtr != '\0'))
         {
@@ -300,7 +297,7 @@ namespace
     }
 
     bool ComponentMatchesToken(const Engine::Component::USceneComponent* Component,
-                               const FString& Token)
+                               const FString&                            Token)
     {
         if (Component == nullptr)
         {
@@ -327,7 +324,8 @@ namespace
         UE_LOG(Console, ELogVerbosity::Log, "[Actor] name=%s type=%s uuid=%u",
                GetObjectName(Actor).c_str(), Actor->GetTypeName(), Actor->UUID);
         UE_LOG(Console, ELogVerbosity::Log,
-               "        location=(%.2f, %.2f, %.2f) rotation=(%.2f, %.2f, %.2f) scale=(%.2f, %.2f, %.2f)",
+               "        location=(%.2f, %.2f, %.2f) rotation=(%.2f, %.2f, %.2f) scale=(%.2f, %.2f, "
+               "%.2f)",
                Actor->GetLocation().X, Actor->GetLocation().Y, Actor->GetLocation().Z,
                Actor->GetRotation().Rotator().Euler().X, Actor->GetRotation().Rotator().Euler().Y,
                Actor->GetRotation().Rotator().Euler().Z, Actor->GetScale().X, Actor->GetScale().Y,
@@ -335,22 +333,22 @@ namespace
     }
 
     void LogComponentSummary(const Engine::Component::USceneComponent* Component,
-                             const AActor* OwnerActor)
+                             const AActor*                             OwnerActor)
     {
         if (Component == nullptr)
         {
             return;
         }
 
-        UE_LOG(Console, ELogVerbosity::Log,
-               "[Component] name=%s type=%s uuid=%u owner=%s",
+        UE_LOG(Console, ELogVerbosity::Log, "[Component] name=%s type=%s uuid=%u owner=%s",
                GetObjectName(Component).c_str(), Component->GetTypeName(), Component->UUID,
                OwnerActor != nullptr ? GetObjectName(OwnerActor).c_str() : "<none>");
         UE_LOG(Console, ELogVerbosity::Log,
-               "            location=(%.2f, %.2f, %.2f) rotation=(%.2f, %.2f, %.2f) scale=(%.2f, %.2f, %.2f)",
+               "            location=(%.2f, %.2f, %.2f) rotation=(%.2f, %.2f, %.2f) scale=(%.2f, "
+               "%.2f, %.2f)",
                Component->GetRelativeLocation().X, Component->GetRelativeLocation().Y,
-               Component->GetRelativeLocation().Z,
-               Component->GetRelativeRotation().Euler().X, Component->GetRelativeRotation().Euler().Y,
+               Component->GetRelativeLocation().Z, Component->GetRelativeRotation().Euler().X,
+               Component->GetRelativeRotation().Euler().Y,
                Component->GetRelativeRotation().Euler().Z, Component->GetRelativeScale3D().X,
                Component->GetRelativeScale3D().Y, Component->GetRelativeScale3D().Z);
     }
@@ -385,21 +383,14 @@ namespace
     }
 } // namespace
 
-FConsolePanel::FConsolePanel(FEditorLogBuffer* InLogBuffer)
-    : LogBuffer(InLogBuffer)
+FConsolePanel::FConsolePanel(FEditorLogBuffer* InLogBuffer) : LogBuffer(InLogBuffer)
 {
     InputBuffer.fill('\0');
 }
 
-const wchar_t* FConsolePanel::GetPanelID() const
-{
-    return L"ConsolePanel";
-}
+const wchar_t* FConsolePanel::GetPanelID() const { return L"ConsolePanel"; }
 
-const wchar_t* FConsolePanel::GetDisplayName() const
-{
-    return L"Console Panel";
-}
+const wchar_t* FConsolePanel::GetDisplayName() const { return L"Console Panel"; }
 
 void FConsolePanel::Draw()
 {
@@ -532,13 +523,16 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
         UE_LOG(Console, ELogVerbosity::Log, "Commands:");
         UE_LOG(Console, ELogVerbosity::Log, "  help, clear, log <text>, warn <text>, error <text>");
         UE_LOG(Console, ELogVerbosity::Log,
-               "  scene.new, scene.open <path>, scene.save, scene.saveas <path>, scene.clear, scene.list, scene.summary");
+               "  scene.new, scene.open <path>, scene.save, scene.saveas <path>, scene.clear, "
+               "scene.list, scene.summary");
         UE_LOG(Console, ELogVerbosity::Log,
-               "  actor.spawn <cube|sphere> [count], actor.delete_selected, actor.list_selected, actor.inspect <name|uuid>");
+               "  actor.spawn <cube|sphere> [count], actor.delete_selected, actor.list_selected, "
+               "actor.inspect <name|uuid>");
         UE_LOG(Console, ELogVerbosity::Log,
                "  component.inspect <name|uuid>, select.clear, select.focus, selection.dump");
         UE_LOG(Console, ELogVerbosity::Log,
-               "  camera.reset, camera.speed [value], camera.rot_speed [value], grid.spacing [value], viewmode <lit|unlit|wireframe>");
+               "  camera.reset, camera.speed [value], camera.rot_speed [value], grid.spacing "
+               "[value], viewmode <lit|unlit|wireframe>");
         UE_LOG(Console, ELogVerbosity::Log,
                "  show.bounds <on|off>, show.grid <on|off>, show.outline <on|off>");
         UE_LOG(Console, ELogVerbosity::Log,
@@ -568,9 +562,11 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
         return;
     }
 
-    FEditorContext* Context = GetContext();
-    FEditor*        Editor = Context != nullptr ? Context->Editor : nullptr;
-    FScene*         Scene = (Context != nullptr && Context->World != nullptr) ? Context->World->GetActiveScene() : nullptr;
+    FEditorContext*       Context = GetContext();
+    FEditor*              Editor = Context != nullptr ? Context->Editor : nullptr;
+    FScene*               Scene = (Context != nullptr && Context->World != nullptr)
+                                      ? Context->World->GetActiveScene()
+                                      : nullptr;
     const TArray<FString> Tokens = TokenizeCommandLine(TrimmedCommand);
     if (Tokens.empty())
     {
@@ -694,9 +690,9 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
     {
         if (RequireScene())
         {
-            uint32 ActorCount = 0;
-            uint32 ComponentCount = 0;
-            uint32 RenderableCount = 0;
+            uint32                 ActorCount = 0;
+            uint32                 ComponentCount = 0;
+            uint32                 RenderableCount = 0;
             const TArray<AActor*>* Actors = Scene->GetActors();
             if (Actors != nullptr)
             {
@@ -732,8 +728,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
         {
             if (Tokens.size() < 2)
             {
-                UE_LOG(Console, ELogVerbosity::Warning,
-                       "Usage: actor.spawn <cube|sphere> [count]");
+                UE_LOG(Console, ELogVerbosity::Warning, "Usage: actor.spawn <cube|sphere> [count]");
             }
             else
             {
@@ -746,7 +741,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
                 {
                     SpawnCount = FMath::Clamp(SpawnCount, 1, 256);
                     const FString ActorType = ToLowerAsciiCopy(Tokens[1]);
-                    int32 CreatedCount = 0;
+                    int32         CreatedCount = 0;
                     for (int32 Index = 0; Index < SpawnCount; ++Index)
                     {
                         AActor* NewActor = nullptr;
@@ -771,8 +766,8 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
 
                     if (CreatedCount > 0)
                     {
-                        UE_LOG(Console, ELogVerbosity::Log, "Spawned %d %s actor(s).",
-                               CreatedCount, ActorType.c_str());
+                        UE_LOG(Console, ELogVerbosity::Log, "Spawned %d %s actor(s).", CreatedCount,
+                               ActorType.c_str());
                     }
                 }
             }
@@ -832,7 +827,8 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
                     LogActorSummary(Actor);
                     UE_LOG(Console, ELogVerbosity::Log, "        components=%u",
                            static_cast<uint32>(Actor->GetOwnedComponents().size()));
-                    for (Engine::Component::USceneComponent* Component : Actor->GetOwnedComponents())
+                    for (Engine::Component::USceneComponent* Component :
+                         Actor->GetOwnedComponents())
                     {
                         LogComponentSummary(Component, Actor);
                     }
@@ -867,7 +863,8 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
                         continue;
                     }
 
-                    for (Engine::Component::USceneComponent* Component : Actor->GetOwnedComponents())
+                    for (Engine::Component::USceneComponent* Component :
+                         Actor->GetOwnedComponents())
                     {
                         if (!ComponentMatchesToken(Component, Tokens[1]))
                         {
@@ -1014,8 +1011,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
                 float RotationSpeed = 0.0f;
                 if (!TryParseFloat(Tokens[1], RotationSpeed))
                 {
-                    UE_LOG(Console, ELogVerbosity::Warning,
-                           "Usage: camera.rot_speed [value]");
+                    UE_LOG(Console, ELogVerbosity::Warning, "Usage: camera.rot_speed [value]");
                 }
                 else
                 {
@@ -1195,8 +1191,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
                 else
                 {
                     RenderSetting.SetSelectionOutlineVisible(bShowOutline);
-                    UE_LOG(Console, ELogVerbosity::Log,
-                           "Selection outline visibility = %s",
+                    UE_LOG(Console, ELogVerbosity::Log, "Selection outline visibility = %s",
                            bShowOutline ? "on" : "off");
                 }
             }
@@ -1213,8 +1208,8 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
         }
         else
         {
-            UE_LOG(Console, ELogVerbosity::Log, "FPS = %.1f (%.3f ms)",
-                   Context->CurrentFPS, Context->DeltaTime * 1000.0f);
+            UE_LOG(Console, ELogVerbosity::Log, "FPS = %.1f (%.3f ms)", Context->CurrentFPS,
+                   Context->DeltaTime * 1000.0f);
         }
         bScrollToBottom = true;
         return;
@@ -1248,8 +1243,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
         {
             Editor->RefreshContentIndex();
             const FContentIndexSnapshot& Snapshot = Context->ContentIndex->GetSnapshot();
-            UE_LOG(Console, ELogVerbosity::Log,
-                   "Content refreshed: folders=%d files=%d root=%s",
+            UE_LOG(Console, ELogVerbosity::Log, "Content refreshed: folders=%d files=%d root=%s",
                    Snapshot.FolderCount, Snapshot.FileCount,
                    PathToUtf8String(Snapshot.ContentRootPath).c_str());
         }
@@ -1270,7 +1264,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
         else
         {
             const FContentIndexSnapshot& Snapshot = Context->ContentIndex->GetSnapshot();
-            TArray<FString> Matches;
+            TArray<FString>              Matches;
             CollectContentMatches(Snapshot.RootFolder, ToLowerAsciiCopy(Tokens[1]), Matches);
 
             if (Matches.empty())

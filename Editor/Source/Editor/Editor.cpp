@@ -2,15 +2,17 @@
 
 #include "Viewport/EditorViewportClient.h"
 
-//#include "Asset/AssetManager.h"
-//#include "Asset/Texture2DAsset.h"
+// #include "Asset/AssetManager.h"
+// #include "Asset/Texture2DAsset.h"
 #include "Core/Misc/Paths.h"
 #include "Engine/Component/Core/SceneComponent.h"
 #include "Engine/EngineStatics.h"
-#include "Engine/World.h"
+#include "Engine/Scene/World.h"
 #include "Engine/Game/Actor.h"
 #include "Renderer/RenderAsset/TextureResource.h"
-#include "SceneIO/SceneSerializer.h"
+#include "Engine/Scene/Serialization/Core/SceneSerializer.h"
+#include "Engine/Scene/Serialization/Core/SceneDeserializer.h"
+#include "Engine/Scene/SceneAssetBinder.h"
 #include "Panel/ConsolePanel.h"
 #include "Panel/ContentBrowserPanel.h"
 #include "Panel/ControlPanel.h"
@@ -174,9 +176,9 @@ namespace
             return {};
         }
 
-        const int RequiredSize = WideCharToMultiByte(CP_UTF8, 0, InText.c_str(),
-                                                     static_cast<int>(InText.size()), nullptr, 0,
-                                                     nullptr, nullptr);
+        const int RequiredSize =
+            WideCharToMultiByte(CP_UTF8, 0, InText.c_str(), static_cast<int>(InText.size()),
+                                nullptr, 0, nullptr, nullptr);
         if (RequiredSize <= 0)
         {
             return {};
@@ -365,7 +367,6 @@ void FEditor::Create()
 void FEditor::Release()
 {
     SaveEditorSettings();
-
     AboutImageResource = nullptr;
     bAttemptedAboutImageLoad = false;
 
@@ -417,10 +418,12 @@ void FEditor::SetChromeHost(IEditorChromeHost* InChromeHost)
     EditorChrome.SetHost(InChromeHost);
 }
 
-void FEditor::SetRuntimeServices(FD3D11RHI* InRHI, UAssetManager* InAssetManager)
+void FEditor::SetRuntimeServices(FD3D11RHI* InRHI, RHI::FDynamicRHI* InDynamicRHI,
+                                 Asset::FAssetCacheManager* InAssetCacheManager)
 {
     EditorContext.RHI = InRHI;
-    EditorContext.AssetManager = InAssetManager;
+    EditorContext.DynamicRHI = InDynamicRHI;
+    EditorContext.AssetCacheManager = InAssetCacheManager;
     AboutImageResource = nullptr;
     bAttemptedAboutImageLoad = false;
     EnsureAboutImageLoaded();
@@ -468,15 +471,12 @@ void FEditor::LoadEditorSettings()
     {
         if (Viewport->IsValid())
         {
-            Viewport->GetViewportClient()
-                ->GetNavigationController()
-                .SetMoveSpeed(SettingsData.CameraMoveSpeed);
-            Viewport->GetViewportClient()
-                ->GetNavigationController()
-                .SetRotationSpeed(SettingsData.CameraRotationSpeed);
+            Viewport->GetViewportClient()->GetNavigationController().SetMoveSpeed(
+                SettingsData.CameraMoveSpeed);
+            Viewport->GetViewportClient()->GetNavigationController().SetRotationSpeed(
+                SettingsData.CameraRotationSpeed);
         }
     }
-
     EditorContext.ContentBrowserLeftPaneWidth =
         std::max(SettingsData.ContentBrowserLeftPaneWidth, 120.0f);
 }
@@ -675,43 +675,32 @@ void FEditor::ReplaceCurrentScene(std::unique_ptr<FScene> NewScene)
 
 void FEditor::ResolveActorAssetReferences(AActor* Actor)
 {
-    if (Actor == nullptr || EditorContext.AssetManager == nullptr)
+    if (Actor == nullptr || EditorContext.AssetCacheManager == nullptr ||
+        EditorContext.DynamicRHI == nullptr)
     {
         return;
     }
 
-    for (Engine::Component::USceneComponent* Component : Actor->GetOwnedComponents())
-    {
-        if (Component != nullptr)
-        {
-            Component->ResolveAssetReferences(EditorContext.AssetManager);
-        }
-    }
+    FSceneAssetBinder::BindActor(Actor, EditorContext.AssetCacheManager,
+                                 EditorContext.DynamicRHI);
 }
 
 void FEditor::ResolveSceneAssetReferences(FScene* Scene)
 {
-    if (Scene == nullptr || EditorContext.AssetManager == nullptr)
+    if (Scene == nullptr || EditorContext.AssetCacheManager == nullptr ||
+        EditorContext.DynamicRHI == nullptr)
     {
         return;
     }
 
-    const TArray<AActor*>* SceneActors = Scene->GetActors();
-    if (SceneActors == nullptr)
-    {
-        return;
-    }
-
-    for (AActor* Actor : *SceneActors)
-    {
-        ResolveActorAssetReferences(Actor);
-    }
+    FSceneAssetBinder::BindScene(Scene, EditorContext.AssetCacheManager,
+                                 EditorContext.DynamicRHI);
 }
 
 void FEditor::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* InputSystem)
 {
     EditorContext.DeltaTime = DeltaTime;
-    Engine::ApplicationCore::FInputEvent        Event;
+    Engine::ApplicationCore::FInputEvent Event;
     Engine::ApplicationCore::FInputState InputState = InputSystem->GetInputState();
 
     FViewport* HoveredViewport = nullptr;
@@ -726,7 +715,7 @@ void FEditor::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
             InputState.MouseY >= Rect.Y && InputState.MouseY < Rect.Y + Rect.Height)
         {
             HoveredViewport = Viewport;
-            break; 
+            break;
         }
     }
 
@@ -820,25 +809,13 @@ void FEditor::CreateNewScene()
     PerformNewScene();
 }
 
-bool FEditor::SaveCurrentSceneToDisk()
-{
-    return SaveScene();
-}
+bool FEditor::SaveCurrentSceneToDisk() { return SaveScene(); }
 
-void FEditor::RequestSaveSceneAs()
-{
-    SaveSceneAs();
-}
+void FEditor::RequestSaveSceneAs() { SaveSceneAs(); }
 
-void FEditor::RequestOpenSceneDialog()
-{
-    RequestOpenScene();
-}
+void FEditor::RequestOpenSceneDialog() { RequestOpenScene(); }
 
-void FEditor::RequestAboutPopUp()
-{
-    RequestAboutPopup();
-}
+void FEditor::RequestAboutPopUp() { RequestAboutPopup(); }
 
 bool FEditor::SaveSceneAsPath(const std::filesystem::path& FilePath)
 {
@@ -855,20 +832,11 @@ bool FEditor::CanDeleteSelectedActors() const
     return GlobalInputController.CanDeleteSelectedActors();
 }
 
-bool FEditor::DeleteSelectedActors()
-{
-    return GlobalInputController.DeleteSelectedActors();
-}
+bool FEditor::DeleteSelectedActors() { return GlobalInputController.DeleteSelectedActors(); }
 
-void FEditor::RefreshContentIndex()
-{
-    ContentIndex.Refresh();
-}
+void FEditor::RefreshContentIndex() { ContentIndex.Refresh(); }
 
-std::filesystem::path FEditor::GetDefaultSceneDirectory() const
-{
-    return GetSceneDirectory();
-}
+std::filesystem::path FEditor::GetDefaultSceneDirectory() const { return GetSceneDirectory(); }
 
 void FEditor::ClearScene()
 {
@@ -947,7 +915,8 @@ void FEditor::MarkSceneDirty() { SceneDocument.bDirty = true; }
 
 void FEditor::EnsureAboutImageLoaded()
 {
-    if (AboutImageResource != nullptr || bAttemptedAboutImageLoad || EditorContext.AssetManager == nullptr)
+    if (AboutImageResource != nullptr || bAttemptedAboutImageLoad ||
+        EditorContext.AssetCacheManager == nullptr)
     {
         return;
     }
@@ -957,20 +926,20 @@ void FEditor::EnsureAboutImageLoaded()
     const std::filesystem::path ImagePath =
         FPaths::Combine(FPaths::AppRoot(), L"Content\\Texture\\Logo\\copass.png");
 
-    //FAssetLoadParams LoadParams;
-    //LoadParams.ExplicitType = EAssetType::Texture;
+    // FAssetLoadParams LoadParams;
+    // LoadParams.ExplicitType = EAssetType::Texture;
 
-    //UAsset* LoadedAsset = EditorContext.AssetManager->Load(ImagePath.wstring(), LoadParams);
-    //UTexture2DAsset* TextureAsset = Cast<UTexture2DAsset>(LoadedAsset);
-    //if (TextureAsset == nullptr || TextureAsset->GetResource() == nullptr
-    //    || TextureAsset->GetSRV() == nullptr)
+    // UAsset* LoadedAsset = EditorContext.AssetCacheManager->...;
+    // UTexture2DAsset* TextureAsset = Cast<UTexture2DAsset>(LoadedAsset);
+    // if (TextureAsset == nullptr || TextureAsset->GetResource() == nullptr
+    //     || TextureAsset->GetSRV() == nullptr)
     //{
-    //    UE_LOG(FEditor, ELogVerbosity::Warning, "Failed to load About image: %s",
-    //           PathToUtf8String(ImagePath).c_str());
-    //    return;
-    //}
+    //     UE_LOG(FEditor, ELogVerbosity::Warning, "Failed to load About image: %s",
+    //            PathToUtf8String(ImagePath).c_str());
+    //     return;
+    // }
 
-    //AboutImageResource = TextureAsset->GetResource();
+    // AboutImageResource = TextureAsset->GetResource();
 }
 
 void FEditor::RequestAboutPopup()
@@ -1119,20 +1088,12 @@ void FEditor::RegisterDefaultCommands()
                                                           .ShortcutLabel = "Ctrl+Y",
                                                           .CanExecute = []() { return false; }});
 
-    MenuRegistry.RegisterCommand(
-        FEditorCommandDefinition{.CommandId = "edit.delete_selection",
-                                 .Label = L"Delete Selection",
-                                 .ShortcutLabel = "Delete",
-                                 .Execute =
-                                     [this]()
-                                 {
-                                     GlobalInputController.DeleteSelectedActors();
-                                 },
-                                 .CanExecute =
-                                     [this]()
-                                 {
-                                     return GlobalInputController.CanDeleteSelectedActors();
-                                 }});
+    MenuRegistry.RegisterCommand(FEditorCommandDefinition{
+        .CommandId = "edit.delete_selection",
+        .Label = L"Delete Selection",
+        .ShortcutLabel = "Delete",
+        .Execute = [this]() { GlobalInputController.DeleteSelectedActors(); },
+        .CanExecute = [this]() { return GlobalInputController.CanDeleteSelectedActors(); }});
 
     MenuRegistry.RegisterCommand(FEditorCommandDefinition{.CommandId = "edit.preferences",
                                                           .Label = L"Preferences (Not Ready)",
@@ -1160,23 +1121,23 @@ void FEditor::RegisterDefaultCommands()
                                                           .Label = L"Build (Not Ready)",
                                                           .CanExecute = []() { return false; }});
 
-    MenuRegistry.RegisterCommand(FEditorCommandDefinition{
-        .CommandId = "help.shortcuts",
-        .Label = L"Shortcuts",
-        .Execute =
-            [this]()
-        {
-            if (PanelManager == nullptr)
-            {
-                return;
-            }
+    MenuRegistry.RegisterCommand(
+        FEditorCommandDefinition{.CommandId = "help.shortcuts",
+                                 .Label = L"Shortcuts",
+                                 .Execute =
+                                     [this]()
+                                 {
+                                     if (PanelManager == nullptr)
+                                     {
+                                         return;
+                                     }
 
-            FPanelOpenRequest Request;
-            Request.PanelType = std::type_index(typeid(FShortcutsPanel));
-            Request.OpenPolicy = EPanelOpenPolicy::FocusIfOpenElseCreate;
-            PanelManager->OpenPanel(Request);
-        },
-        .CanExecute = [this]() { return PanelManager != nullptr; }});
+                                     FPanelOpenRequest Request;
+                                     Request.PanelType = std::type_index(typeid(FShortcutsPanel));
+                                     Request.OpenPolicy = EPanelOpenPolicy::FocusIfOpenElseCreate;
+                                     PanelManager->OpenPanel(Request);
+                                 },
+                                 .CanExecute = [this]() { return PanelManager != nullptr; }});
 
     MenuRegistry.RegisterCommand(
         FEditorCommandDefinition{.CommandId = "help.about",
@@ -1352,8 +1313,8 @@ void FEditor::DrawAboutPopup()
 
         ImGui::Spacing();
 
-        if (AboutImageResource != nullptr && AboutImageResource->GetSRV() != nullptr
-            && AboutImageResource->Width > 0 && AboutImageResource->Height > 0)
+        if (AboutImageResource != nullptr && AboutImageResource->GetSRV() != nullptr &&
+            AboutImageResource->Width > 0 && AboutImageResource->Height > 0)
         {
             ImGui::Spacing();
             ImGui::Separator();
@@ -1361,18 +1322,17 @@ void FEditor::DrawAboutPopup()
 
             const float AvailableWidth = ImGui::GetContentRegionAvail().x;
             const float TargetWidth = std::min(AvailableWidth, 460.0f);
-            const float AspectRatio =
-                static_cast<float>(AboutImageResource->Height)
-                / static_cast<float>(AboutImageResource->Width);
+            const float AspectRatio = static_cast<float>(AboutImageResource->Height) /
+                                      static_cast<float>(AboutImageResource->Width);
             const ImVec2 ImageSize(TargetWidth, TargetWidth * AspectRatio);
             if (AvailableWidth > ImageSize.x)
             {
-                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (AvailableWidth - ImageSize.x) * 0.5f);
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() +
+                                     (AvailableWidth - ImageSize.x) * 0.5f);
             }
 
-            ImGui::Image(ImTextureRef(
-                             static_cast<ImTextureID>(reinterpret_cast<uintptr_t>(
-                                 AboutImageResource->GetSRV()))),
+            ImGui::Image(ImTextureRef(static_cast<ImTextureID>(
+                             reinterpret_cast<uintptr_t>(AboutImageResource->GetSRV()))),
                          ImageSize);
         }
 

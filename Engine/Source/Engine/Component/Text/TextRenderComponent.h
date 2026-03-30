@@ -42,7 +42,6 @@ namespace Engine::Component
         void            SetLayoutMode(ETextLayoutMode InLayoutMode);
 
         void DescribeProperties(FComponentPropertyBuilder& Builder) override;
-        void ResolveAssetReferences(UAssetManager* InAssetManager) override;
 
         EBasicMeshType GetBasicMeshType() const override;
 

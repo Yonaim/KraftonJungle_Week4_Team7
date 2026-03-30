@@ -6,6 +6,7 @@
 #include "Engine/Asset/Asset.h"
 #include "Asset/Cooked/TextureCookedData.h"
 #include "Asset/Runtime/TextureRenderResource.h"
+#include "RHI/DynamicRHI.h"
 
 using namespace Asset;
 
@@ -39,6 +40,10 @@ class UTexture : public UAsset
         }
         RenderResource.reset();
     }
+
+    bool LoadFromCooked(const FString&                      InAssetPath,
+                        std::shared_ptr<FTextureCookedData> InCookedData,
+                        RHI::FDynamicRHI&                   InDynamicRHI);
 
   private:
     std::shared_ptr<FTextureCookedData>     CookedData;

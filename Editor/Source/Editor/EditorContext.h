@@ -2,7 +2,16 @@
 
 #include "Core/Containers/Array.h"
 
-class UAssetManager;
+namespace Asset
+{
+    class FAssetCacheManager;
+}
+
+namespace RHI
+{
+    class FDynamicRHI;
+}
+
 class UObject;
 class FD3D11RHI;
 class FWorld;
@@ -12,11 +21,12 @@ class FEditorContentIndex;
 
 struct FEditorContext
 {
-	FEditor* Editor = nullptr;
-	FWorld* World = nullptr;
-	FD3D11RHI* RHI = nullptr;
-	UAssetManager* AssetManager = nullptr;
-	FEditorContentIndex* ContentIndex = nullptr;
+    FEditor* Editor = nullptr;
+    FWorld* World = nullptr;
+    FD3D11RHI* RHI = nullptr;
+    RHI::FDynamicRHI* DynamicRHI = nullptr;
+    Asset::FAssetCacheManager* AssetCacheManager = nullptr;
+    FEditorContentIndex* ContentIndex = nullptr;
 
     TArray<AActor*> SelectedActors;
     UObject*        SelectedObject = nullptr;

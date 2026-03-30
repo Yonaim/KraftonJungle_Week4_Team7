@@ -10,6 +10,7 @@
 #include "Asset/Cooked/StaticMeshCookedData.h"
 #include "Asset/Runtime/StaticMeshRenderResource.h"
 #include "Core/Geometry/Primitives/AABB.h"
+#include "RHI/DynamicRHI.h"
 
 using namespace Asset;
 
@@ -18,7 +19,6 @@ class UStaticMesh : public UAsset
     DECLARE_RTTI(UStaticMesh, UAsset)
 
   public:
-    // 기존 전자 인터페이스
     const std::shared_ptr<FStaticMeshCookedData>& GetCookedData() const { return CookedData; }
 
     void SetCookedData(std::shared_ptr<FStaticMeshCookedData> InCookedData)
@@ -45,7 +45,10 @@ class UStaticMesh : public UAsset
         RenderResource.reset();
     }
 
-    // 후자 쪽 편의 인터페이스 추가
+    bool LoadFromCooked(const FString&                         InAssetPath,
+                        std::shared_ptr<FStaticMeshCookedData> InCookedData,
+                        RHI::FDynamicRHI&                      InDynamicRHI);
+
     FString GetMeshName() const;
 
     const TArray<uint8>&  GetVerticesData() const;

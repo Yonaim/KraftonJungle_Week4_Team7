@@ -2,8 +2,8 @@
 
 #include "ApplicationCore/Input/InputRouter.h"
 #include "Editor/EditorContext.h"
-#include "Engine/Scene.h"
-#include "Engine/World.h"
+#include "Engine/Scene/Scene.h"
+#include "Engine/Scene/World.h"
 #include "Engine/Game/Actor.h"
 
 #include "imgui.h"
@@ -86,13 +86,13 @@ void FEditorViewportClient::HandleInputEvent(const Engine::ApplicationCore::FInp
     }
 }
 
-void FEditorViewportClient::BuildRenderData(FEditorRenderData& OutRenderData, EEditorShowFlags InShowFlags)
+void FEditorViewportClient::BuildRenderData(FEditorRenderData& OutRenderData,
+                                            EEditorShowFlags   InShowFlags)
 {
     OutRenderData.bShowGrid = IsFlagSet(InShowFlags, EEditorShowFlags::SF_Grid);
     OutRenderData.bShowWorldAxes = IsFlagSet(InShowFlags, EEditorShowFlags::SF_WorldAxes);
     OutRenderData.bShowSelectionOutline =
         IsFlagSet(InShowFlags, EEditorShowFlags::SF_SelectionOutline);
-
 
     if (!SelectionController.GetSelectedActors().empty())
     {
@@ -113,7 +113,8 @@ void FEditorViewportClient::BuildRenderData(FEditorRenderData& OutRenderData, EE
         GizmoController.GizmoScale =
             (ViewportCamera.GetLocation() -
              GizmoController.GetSelectedActor()->GetRootComponent()->GetRelativeLocation())
-                .Size() / 10.f;
+                .Size() /
+            10.f;
         //  Size 여기서 조정
         OutRenderData.Gizmo.Scale = GizmoController.GizmoScale;
         OutRenderData.bShowGizmo = IsFlagSet(InShowFlags, EEditorShowFlags::SF_Gizmo);

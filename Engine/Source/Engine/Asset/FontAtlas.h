@@ -6,6 +6,7 @@
 #include "Engine/Asset/Asset.h"
 #include "Asset/Cooked/FontAtlasCookedData.h"
 #include "Asset/Runtime/FontAtlasRenderResource.h"
+#include "RHI/DynamicRHI.h"
 
 using namespace Asset;
 
@@ -39,6 +40,10 @@ class UFontAtlas : public UAsset
         }
         RenderResource.reset();
     }
+
+    bool LoadFromCooked(const FString& InAssetPath,
+                        std::shared_ptr<FFontAtlasCookedData> InCookedData,
+                        RHI::FDynamicRHI& InDynamicRHI);
 
   private:
     std::shared_ptr<FFontAtlasCookedData>     CookedData;

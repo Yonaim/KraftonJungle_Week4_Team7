@@ -60,7 +60,7 @@ namespace Engine::Component
         AbsScale.Y = std::max(NewScale.Y, 0.0001f);
         AbsScale.Z = std::max(NewScale.Z, 0.0001f);
         WorldTransform.SetScale3D(AbsScale);
-        
+
         OnTransformChanged();
     }
 
@@ -135,8 +135,7 @@ namespace Engine::Component
         }
 
         TArray<USceneComponent*>& SiblingArray = AttachParent->AttachChildren;
-        const auto NewEnd =
-            std::remove(SiblingArray.begin(), SiblingArray.end(), this);
+        const auto NewEnd = std::remove(SiblingArray.begin(), SiblingArray.end(), this);
         if (NewEnd != SiblingArray.end())
         {
             SiblingArray.erase(NewEnd, SiblingArray.end());
@@ -147,20 +146,9 @@ namespace Engine::Component
 
     void USceneComponent::Update(float DeltaTime) {}
 
-    void USceneComponent::DescribeProperties(FComponentPropertyBuilder& Builder)
-    {
-        (void)Builder;
-    }
+    void USceneComponent::DescribeProperties(FComponentPropertyBuilder& Builder) { (void)Builder; }
 
-    void USceneComponent::ResolveAssetReferences(UAssetManager* InAssetManager)
-    {
-        (void)InAssetManager;
-    }
-
-    FMatrix USceneComponent::GetRelativeMatrix() const
-    {
-        return WorldTransform.ToMatrix();
-    }
+    FMatrix USceneComponent::GetRelativeMatrix() const { return WorldTransform.ToMatrix(); }
 
     FMatrix USceneComponent::GetRelativeMatrixNoScale() const
     {
@@ -169,5 +157,5 @@ namespace Engine::Component
 
     bool USceneComponent::IsSelected() const { return bIsSelected; }
     void USceneComponent::SetSelected(bool bInSelected) { bIsSelected = bInSelected; }
-    
+
 } // namespace Engine::Component

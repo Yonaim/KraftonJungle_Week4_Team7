@@ -4,7 +4,7 @@
 #include "Material.h"
 #include "Core/Misc/Paths.h"
 #include "Core/Logging/LogMacros.h"
-#include "ThirdParty/Json/json.hpp"
+#include "ThirdParty/nlohmann/json.hpp"
 #include <fstream>
 
 // ─── HLSL cbuffer 패킹 유틸 ───

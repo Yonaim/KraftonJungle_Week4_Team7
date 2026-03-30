@@ -7,8 +7,8 @@
 #include "Engine/Game/CubeActor.h"
 #include "Engine/Game/SphereActor.h"
 #include "Engine/Game/UnknownActor.h"
-#include "Engine/Scene.h"
-#include "Engine/World.h"
+#include "Engine/Scene/Scene.h"
+#include "Engine/Scene/World.h"
 #include "Input/ContextModeTypes.h"
 #include "imgui.h"
 #include "Engine/Game/ConeActor.h"
@@ -20,7 +20,6 @@
 #include "Engine/Game/TextActor.h"
 #include "Engine/Game/AtlasSpriteActor.h"
 #include "Engine/Game/FlipbookActor.h"
-
 
 namespace
 {
@@ -77,10 +76,10 @@ namespace
         }
     }
 
-    const char* const SpawnActorTypeLabels[] = {
-        "CubeActor",     "SphereActor", "ConeActor",   "CylinderActor", "RingActor",
-        "TriangleActor", "SpriteActor", "EffectActor", "TextActor",     "AtlasSpriteActor", "FlipbookActor"
-    };
+    const char* const SpawnActorTypeLabels[] = {"CubeActor",        "SphereActor",  "ConeActor",
+                                                "CylinderActor",    "RingActor",    "TriangleActor",
+                                                "SpriteActor",      "EffectActor",  "TextActor",
+                                                "AtlasSpriteActor", "FlipbookActor"};
 
     AActor* CreateActorByType(FOutlinerPanel::ESpawnActorType InType)
     {
@@ -106,7 +105,7 @@ namespace
             return new ATextActor();
         case FOutlinerPanel::ESpawnActorType::AtlasSprite:
             return new AAtlasSpriteActor();
-            case FOutlinerPanel::ESpawnActorType::Flipbook:
+        case FOutlinerPanel::ESpawnActorType::Flipbook:
             return new AFlipbookActor();
         default:
             return nullptr;
@@ -137,7 +136,9 @@ void FOutlinerPanel::Draw()
         return;
     }
 
-    FScene* Scene = (GetContext() != nullptr && GetContext()->World != nullptr) ? GetContext()->World->GetActiveScene() : nullptr;
+    FScene* Scene = (GetContext() != nullptr && GetContext()->World != nullptr)
+                        ? GetContext()->World->GetActiveScene()
+                        : nullptr;
     if (GetContext() == nullptr || Scene == nullptr)
     {
         DrawEmptyState();
@@ -213,8 +214,7 @@ void FOutlinerPanel::DrawActorRow(AActor* Actor) const
                               .GetViewport(0)
                               ->GetViewportClient()
                               ->GetSelectionController()
-                              .IsSelected(
-                    Actor);
+                              .IsSelected(Actor);
         }
         else
         {
@@ -240,8 +240,7 @@ void FOutlinerPanel::DrawActorRow(AActor* Actor) const
                 .GetViewport(0)
                 ->GetViewportClient()
                 ->GetSelectionController()
-                .SelectActor(
-                Actor, SelectionMode);
+                .SelectActor(Actor, SelectionMode);
         }
     }
 
@@ -253,7 +252,9 @@ void FOutlinerPanel::DrawActorRow(AActor* Actor) const
 
 void FOutlinerPanel::SpawnActors() const
 {
-    FScene* Scene = (GetContext() != nullptr && GetContext()->World != nullptr) ? GetContext()->World->GetActiveScene() : nullptr;
+    FScene* Scene = (GetContext() != nullptr && GetContext()->World != nullptr)
+                        ? GetContext()->World->GetActiveScene()
+                        : nullptr;
     if (GetContext() == nullptr || Scene == nullptr)
     {
         return;
@@ -294,7 +295,6 @@ void FOutlinerPanel::SpawnActors() const
             .GetViewport(0)
             ->GetViewportClient()
             ->GetSelectionController()
-            .SelectActor(
-            LastSpawnedActor, ESelectionMode::Replace);
+            .SelectActor(LastSpawnedActor, ESelectionMode::Replace);
     }
 }

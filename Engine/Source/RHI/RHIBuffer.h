@@ -8,7 +8,7 @@ namespace RHI
 
     // ======================== Buffer Resource ==========================
 
-    class FRHIBuffer : public FRHIResource
+    class ENGINE_API FRHIBuffer : public FRHIResource
     {
       public:
         virtual ~FRHIBuffer() = default;
@@ -21,7 +21,7 @@ namespace RHI
 
     // ======================== Vertex Buffer ==========================
 
-    class FRHIVertexBuffer : public FRHIBuffer
+    class ENGINE_API FRHIVertexBuffer : public FRHIBuffer
     {
       public:
         virtual ~FRHIVertexBuffer() = default;
@@ -29,7 +29,7 @@ namespace RHI
 
     // ======================== Index Buffer ==========================
 
-    class FRHIIndexBuffer : public FRHIBuffer
+    class ENGINE_API FRHIIndexBuffer : public FRHIBuffer
     {
       public:
         virtual ~FRHIIndexBuffer() = default;
@@ -42,7 +42,7 @@ namespace RHI
 
     // ======================== Constant Buffer ==========================
 
-    class FRHIConstantBuffer : public FRHIBuffer
+    class ENGINE_API FRHIConstantBuffer : public FRHIBuffer
     {
       public:
         virtual ~FRHIConstantBuffer() = default;

@@ -1,3 +1,5 @@
+#include "Asset/Manager/AssetCacheManager.h"
+#include "RHI/D3D11/D3D11DynamicRHI.h"
 #include "EditorEngineLoop.h"
 
 #define WIN32_LEAN_AND_MEAN
@@ -152,14 +154,10 @@ bool FEditorEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
         return false;
     }
 
-    //AssetManager = new UAssetManager();
-    //TextureAssetLoader = new FTextureLoader(&Renderer->GetRHI());
-    //FontAssetLoader = new FFontAtlasLoader(&Renderer->GetRHI());
-    //SubUVAtlasAssetLoader = new FSubUVAtlasLoader(&Renderer->GetRHI());
-    //AssetManager->RegisterLoader(TextureAssetLoader);
-    //AssetManager->RegisterLoader(FontAssetLoader);
-    //AssetManager->RegisterLoader(SubUVAtlasAssetLoader);
-    Editor->SetRuntimeServices(&Renderer->GetRHI(), AssetManager);
+    AssetCacheManager = new Asset::FAssetCacheManager();
+    AssetDynamicRHI = new RHI::D3D11::FD3D11DynamicRHI(Renderer->GetRHI().GetDevice(),
+                                                       Renderer->GetRHI().GetDeviceContext());
+    Editor->SetRuntimeServices(&Renderer->GetRHI(), AssetDynamicRHI, AssetCacheManager);
 
     ImGui::CreateContext();
     ApplyCoPassImGuiStyle();
@@ -242,7 +240,7 @@ void FEditorEngineLoop::ShutDown()
 
     if (Editor != nullptr)
     {
-        Editor->SetRuntimeServices(nullptr, nullptr);
+        Editor->SetRuntimeServices(nullptr, nullptr, nullptr);
     }
 
     delete FontAssetLoader;
@@ -254,8 +252,10 @@ void FEditorEngineLoop::ShutDown()
     delete TextureAssetLoader;
     TextureAssetLoader = nullptr;
 
-    delete AssetManager;
-    AssetManager = nullptr;
+    delete AssetDynamicRHI;
+    AssetDynamicRHI = nullptr;
+    delete AssetCacheManager;
+    AssetCacheManager = nullptr;
 
     if (Renderer != nullptr)
     {

@@ -10,7 +10,8 @@
 #include "Engine/Component/Core/UnknownComponent.h"
 #include "Engine/Game/Actor.h"
 #include "Engine/Game/UnknownActor.h"
-#include "SceneIO/SceneAssetPath.h"
+#include "Engine/Scene/SceneAssetBinder.h"
+#include "Engine/Scene/SceneAssetPath.h"
 #include "imgui.h"
 
 #include <algorithm>
@@ -47,7 +48,7 @@ namespace
         }
 
         return Object->IsA(AUnknownActor::GetClass()) ||
-            Object->IsA(Engine::Component::UUnknownComponent::GetClass());
+               Object->IsA(Engine::Component::UUnknownComponent::GetClass());
     }
 
     const char* GetUnknownSuffix(const UObject* Object)
@@ -82,17 +83,16 @@ namespace
         return DisplayName;
     }
 
-    bool IsComponentOwnedByActor(const AActor* Actor,
+    bool IsComponentOwnedByActor(const AActor*                             Actor,
                                  const Engine::Component::USceneComponent* Component)
     {
         return Actor != nullptr && Component != nullptr && Component->GetOwnerActor() == Actor;
     }
 
-    bool ShouldShowComponentInDetailsTree(const AActor* Actor,
+    bool ShouldShowComponentInDetailsTree(const AActor*                             Actor,
                                           const Engine::Component::USceneComponent* Component)
     {
-        return IsComponentOwnedByActor(Actor, Component) &&
-               Component != nullptr &&
+        return IsComponentOwnedByActor(Actor, Component) && Component != nullptr &&
                Component->ShouldShowInDetailsTree();
     }
 
@@ -171,9 +171,8 @@ namespace
         return Descriptor.Key;
     }
 
-    bool IsCompatibleAssetKind(
-        Engine::Component::EComponentAssetPathKind ExpectedKind,
-        Engine::Component::EComponentAssetPathKind IncomingKind)
+    bool IsCompatibleAssetKind(Engine::Component::EComponentAssetPathKind ExpectedKind,
+                               Engine::Component::EComponentAssetPathKind IncomingKind)
     {
         if (ExpectedKind == Engine::Component::EComponentAssetPathKind::Any)
         {
@@ -183,16 +182,15 @@ namespace
         return ExpectedKind == IncomingKind;
     }
 
-    bool TryAcceptAssetPathDrop(
-        const Engine::Component::FComponentPropertyDescriptor& Descriptor,
-        TMap<FString, FString>* AssetPathEditBuffers)
+    bool TryAcceptAssetPathDrop(const Engine::Component::FComponentPropertyDescriptor& Descriptor,
+                                TMap<FString, FString>* AssetPathEditBuffers)
     {
         if (AssetPathEditBuffers == nullptr || !ImGui::BeginDragDropTarget())
         {
             return false;
         }
 
-        bool bApplied = false;
+        bool                bApplied = false;
         const ImGuiPayload* ActivePayload = ImGui::GetDragDropPayload();
         if (ActivePayload != nullptr &&
             ActivePayload->IsDataType(Editor::Content::ContentBrowserAssetPayloadType))
@@ -203,9 +201,9 @@ namespace
             if (DragPayload != nullptr &&
                 IsCompatibleAssetKind(Descriptor.ExpectedAssetPathKind, DragPayload->AssetKind))
             {
-                const ImGuiPayload* AcceptedPayload = ImGui::AcceptDragDropPayload(
-                    Editor::Content::ContentBrowserAssetPayloadType,
-                    ImGuiDragDropFlags_AcceptBeforeDelivery);
+                const ImGuiPayload* AcceptedPayload =
+                    ImGui::AcceptDragDropPayload(Editor::Content::ContentBrowserAssetPayloadType,
+                                                 ImGuiDragDropFlags_AcceptBeforeDelivery);
                 if (AcceptedPayload != nullptr && AcceptedPayload->IsDelivery())
                 {
                     const FString DroppedVirtualPath = DragPayload->VirtualPath;
@@ -302,7 +300,7 @@ namespace
         }
 
         std::array<char, 1024> Buffer{};
-        const size_t CopyLength = std::min(Buffer.size() - 1, InputValue.size());
+        const size_t           CopyLength = std::min(Buffer.size() - 1, InputValue.size());
         if (CopyLength > 0)
         {
             memcpy(Buffer.data(), InputValue.data(), CopyLength);
@@ -316,7 +314,7 @@ namespace
         const ImGuiInputTextFlags InputFlags =
             bIsAssetPath ? ImGuiInputTextFlags_EnterReturnsTrue : ImGuiInputTextFlags_None;
         const bool bChanged = ImGui::InputText("##Value", Buffer.data(), Buffer.size(), InputFlags);
-        bool bDroppedAssetPath = false;
+        bool       bDroppedAssetPath = false;
         if (bIsAssetPath)
         {
             bDroppedAssetPath = TryAcceptAssetPathDrop(Descriptor, AssetPathEditBuffers);
@@ -347,15 +345,15 @@ namespace
         if (bHovered)
         {
             const std::filesystem::path ResolvedPath =
-                Engine::SceneIO::ResolveSceneAssetPathToAbsolute(
+                Engine::Scene::ResolveSceneAssetPathToAbsolute(
                     bIsAssetPath && AssetPathEditBuffers != nullptr
                         ? (*AssetPathEditBuffers)[Descriptor.Key]
                         : Value);
             if (!ResolvedPath.empty())
             {
                 const std::u8string Utf8Path = ResolvedPath.u8string();
-                const FString TooltipText(reinterpret_cast<const char*>(Utf8Path.data()),
-                                          Utf8Path.size());
+                const FString       TooltipText(reinterpret_cast<const char*>(Utf8Path.data()),
+                                                Utf8Path.size());
                 ImGui::SetTooltip("%s", TooltipText.c_str());
             }
         }
@@ -387,7 +385,7 @@ namespace
                               const Engine::Component::FComponentPropertyDescriptor& Descriptor)
     {
         FColor Value = Descriptor.ColorGetter ? Descriptor.ColorGetter() : FColor::White();
-        float ColorValue[4] = {Value.r, Value.g, Value.b, Value.a};
+        float  ColorValue[4] = {Value.r, Value.g, Value.b, Value.a};
 
         ImGui::PushID(LabelId);
         ImGui::TextUnformatted(DisplayLabel);
@@ -398,20 +396,19 @@ namespace
 
         if (bChanged && Descriptor.ColorSetter)
         {
-            Descriptor.ColorSetter(FColor(ColorValue[0], ColorValue[1], ColorValue[2],
-                                          ColorValue[3]));
+            Descriptor.ColorSetter(
+                FColor(ColorValue[0], ColorValue[1], ColorValue[2], ColorValue[3]));
         }
 
         return bChanged;
     }
 
-    bool DrawComponentPropertyRow(
-        const Engine::Component::FComponentPropertyDescriptor& Descriptor,
-        TMap<FString, FString>* AssetPathEditBuffers)
+    bool DrawComponentPropertyRow(const Engine::Component::FComponentPropertyDescriptor& Descriptor,
+                                  TMap<FString, FString>* AssetPathEditBuffers)
     {
         const FString LabelText = BuildPropertyLabel(Descriptor);
-        const char* LabelId = Descriptor.Key.c_str();
-        const char* DisplayLabel = LabelText.c_str();
+        const char*   LabelId = Descriptor.Key.c_str();
+        const char*   DisplayLabel = LabelText.c_str();
 
         using namespace Engine::Component;
 
@@ -439,15 +436,9 @@ namespace
     }
 } // namespace
 
-const wchar_t* FPropertiesPanel::GetPanelID() const
-{
-    return L"PropertiesPanel";
-}
+const wchar_t* FPropertiesPanel::GetPanelID() const { return L"PropertiesPanel"; }
 
-const wchar_t* FPropertiesPanel::GetDisplayName() const
-{
-    return L"Details";
-}
+const wchar_t* FPropertiesPanel::GetDisplayName() const { return L"Details"; }
 
 void FPropertiesPanel::Draw()
 {
@@ -475,7 +466,7 @@ void FPropertiesPanel::Draw()
         return;
     }
 
-    AActor* SelectedActor = nullptr;
+    AActor*                             SelectedActor = nullptr;
     Engine::Component::USceneComponent* TargetComponent = ResolveTargetComponent(SelectedActor);
     if (TargetComponent == nullptr)
     {
@@ -498,7 +489,8 @@ void FPropertiesPanel::Draw()
     ImGui::End();
 }
 
-void FPropertiesPanel::SetTarget(const FVector& Location, const FVector& Rotation, const FVector& Scale)
+void FPropertiesPanel::SetTarget(const FVector& Location, const FVector& Rotation,
+                                 const FVector& Scale)
 {
     EditLocation = Location;
     EditRotation = Rotation;
@@ -537,7 +529,7 @@ void FPropertiesPanel::SyncEditTransformFromTarget(
     }
 
     const FVector CurrentLocation = TargetComponent->GetRelativeLocation();
-    const FQuat CurrentRotation = TargetComponent->GetRelativeQuaternion();
+    const FQuat   CurrentRotation = TargetComponent->GetRelativeQuaternion();
     const FVector CurrentScale = TargetComponent->GetRelativeScale3D();
 
     const bool bTargetChanged = (CachedTargetComponent != TargetComponent);
@@ -549,8 +541,8 @@ void FPropertiesPanel::SyncEditTransformFromTarget(
     // 회전 편집 중에는 패널이 표시 중인 Euler 값을 유지해야 합니다.
     // 매 프레임 quat -> euler 로 다시 변환하면 Pitch(Y축)가 +/-90 부근에서
     // 등가 회전의 다른 표현으로 튀어 특이점처럼 보이는 현상이 발생합니다.
-    if (bTargetChanged || bLocationChangedExternally || bScaleChangedExternally
-        || bRotationChangedExternally)
+    if (bTargetChanged || bLocationChangedExternally || bScaleChangedExternally ||
+        bRotationChangedExternally)
     {
         if (bTargetChanged)
         {
@@ -562,8 +554,8 @@ void FPropertiesPanel::SyncEditTransformFromTarget(
     }
 }
 
-Engine::Component::USceneComponent* FPropertiesPanel::ResolveTargetComponent(
-    AActor*& OutSelectedActor) const
+Engine::Component::USceneComponent*
+FPropertiesPanel::ResolveTargetComponent(AActor*& OutSelectedActor) const
 {
     OutSelectedActor = ResolveSelectedActor();
     if (GetContext() == nullptr || GetContext()->SelectedObject == nullptr)
@@ -594,13 +586,11 @@ void FPropertiesPanel::DrawNoSelectionState() const
 
 void FPropertiesPanel::DrawMultipleSelectionState() const
 {
-    const size_t SelectedCount =
-        GetContext() != nullptr ? GetContext()->SelectedActors.size() : 0;
+    const size_t SelectedCount = GetContext() != nullptr ? GetContext()->SelectedActors.size() : 0;
 
     ImGui::Text("%zu actors selected.", SelectedCount);
     ImGui::Spacing();
-    ImGui::TextWrapped(
-        "Details currently supports a single selected actor or component.");
+    ImGui::TextWrapped("Details currently supports a single selected actor or component.");
 }
 
 void FPropertiesPanel::DrawUnsupportedSelectionState() const
@@ -671,9 +661,9 @@ void FPropertiesPanel::DrawComponentHierarchy(
     }
 }
 
-void FPropertiesPanel::DrawComponentNode(
-    AActor* OwnerActor, Engine::Component::USceneComponent* Component,
-    Engine::Component::USceneComponent* TargetComponent) const
+void FPropertiesPanel::DrawComponentNode(AActor*                             OwnerActor,
+                                         Engine::Component::USceneComponent* Component,
+                                         Engine::Component::USceneComponent* TargetComponent) const
 {
     if (!ShouldShowComponentInDetailsTree(OwnerActor, Component))
     {
@@ -690,10 +680,9 @@ void FPropertiesPanel::DrawComponentNode(
         }
     }
 
-    ImGuiTreeNodeFlags TreeFlags = ImGuiTreeNodeFlags_OpenOnArrow |
-                                   ImGuiTreeNodeFlags_OpenOnDoubleClick |
-                                   ImGuiTreeNodeFlags_SpanAvailWidth |
-                                   ImGuiTreeNodeFlags_DefaultOpen;
+    ImGuiTreeNodeFlags TreeFlags =
+        ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
+        ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
     if (TargetComponent == Component)
     {
         TreeFlags |= ImGuiTreeNodeFlags_Selected;
@@ -738,8 +727,7 @@ void FPropertiesPanel::DrawComponentNode(
     ImGui::PopID();
 }
 
-void FPropertiesPanel::DrawTransformEditor(
-    Engine::Component::USceneComponent* TargetComponent)
+void FPropertiesPanel::DrawTransformEditor(Engine::Component::USceneComponent* TargetComponent)
 {
     ImGui::TextUnformatted("Transform");
     DrawVectorRow("Location", EditLocation, 0.1f);
@@ -809,9 +797,11 @@ void FPropertiesPanel::DrawComponentPropertyEditor(
             bSceneModified = true;
 
             if (Descriptor.Type == Engine::Component::EComponentPropertyType::AssetPath &&
-                GetContext() != nullptr && GetContext()->AssetManager != nullptr)
+                GetContext() != nullptr && GetContext()->AssetCacheManager != nullptr &&
+                GetContext()->DynamicRHI != nullptr)
             {
-                TargetComponent->ResolveAssetReferences(GetContext()->AssetManager);
+                FSceneAssetBinder::BindComponent(TargetComponent, GetContext()->AssetCacheManager,
+                                                 GetContext()->DynamicRHI);
             }
         }
     }
@@ -827,7 +817,4 @@ void FPropertiesPanel::DrawComponentPropertyEditor(
     }
 }
 
-void FPropertiesPanel::ResetAssetPathEditState()
-{
-    AssetPathEditBuffers.clear();
-}
+void FPropertiesPanel::ResetAssetPathEditState() { AssetPathEditBuffers.clear(); }

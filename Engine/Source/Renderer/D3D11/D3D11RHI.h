@@ -4,8 +4,9 @@
 #include "Core/HAL/PlatformTypes.h"
 #include <Windows.h>
 #include <d3dcompiler.h>
+#include "Core/EngineAPI.h"
 
-class FD3D11RHI
+class ENGINE_API FD3D11RHI
 {
   public:
     bool Initialize(HWND InWindowHandle);
@@ -34,10 +35,10 @@ class FD3D11RHI
     void SetRenderTargets(uint32 InNumRTVs, ID3D11RenderTargetView* const* InRTVs,
                           ID3D11DepthStencilView* InDepthStencilView) const;
     void ClearRenderTarget(ID3D11RenderTargetView* InRenderTargetView,
-                           const FLOAT InClearColor[4]) const;
+                           const FLOAT             InClearColor[4]) const;
     void ClearDepthStencil(ID3D11DepthStencilView* InDepthStencilView, float InDepth = 1.0f,
                            uint8 InStencil = 0,
-                           UINT InClearFlags = D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL) const;
+                           UINT  InClearFlags = D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL) const;
     void SetDefaultRenderTargets();
     void Clear(const FLOAT InClearColor[4], float InDepth = 1.0f, uint8 InStencil = 0);
 

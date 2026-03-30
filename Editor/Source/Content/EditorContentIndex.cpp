@@ -2,6 +2,7 @@
 
 #include "Core/Misc/Paths.h"
 #include "Core/Logging/LogMacros.h"
+#include "Engine/Scene/SceneAssetPath.h"
 
 #include <algorithm>
 #include <cwctype>
@@ -20,23 +21,17 @@ namespace
     {
         FString LowerValue = Value;
         std::transform(
-            LowerValue.begin(), LowerValue.end(), LowerValue.begin(),
-            [](char Character)
-            {
-                return static_cast<char>(std::tolower(static_cast<unsigned char>(Character)));
-            });
+            LowerValue.begin(), LowerValue.end(), LowerValue.begin(), [](char Character)
+            { return static_cast<char>(std::tolower(static_cast<unsigned char>(Character))); });
         return LowerValue;
     }
 
     FWString ToLowerWideCopy(const FWString& Value)
     {
         FWString LowerValue = Value;
-        std::transform(
-            LowerValue.begin(), LowerValue.end(), LowerValue.begin(),
-            [](wchar_t Character)
-            {
-                return static_cast<wchar_t>(std::towlower(Character));
-            });
+        std::transform(LowerValue.begin(), LowerValue.end(), LowerValue.begin(),
+                       [](wchar_t Character)
+                       { return static_cast<wchar_t>(std::towlower(Character)); });
         return LowerValue;
     }
 
@@ -67,37 +62,6 @@ namespace
         return EContentBrowserItemType::UnknownFile;
     }
 
-    FString BuildVirtualPath(const std::filesystem::path& ContentRoot,
-                             const std::filesystem::path& TargetPath)
-    {
-        std::error_code ErrorCode;
-        std::filesystem::path RelativePath = std::filesystem::relative(TargetPath, ContentRoot, ErrorCode);
-        if (ErrorCode)
-        {
-            ErrorCode.clear();
-            RelativePath = TargetPath.lexically_relative(ContentRoot);
-        }
-
-        FString VirtualPath = GameVirtualRoot;
-        if (RelativePath.empty() || RelativePath == ".")
-        {
-            return VirtualPath;
-        }
-
-        for (const std::filesystem::path& Part : RelativePath)
-        {
-            if (Part.empty() || Part == ".")
-            {
-                continue;
-            }
-
-            VirtualPath += "/";
-            VirtualPath += PathToUtf8String(Part);
-        }
-
-        return VirtualPath;
-    }
-
     FString GetFolderDisplayName(const std::filesystem::path& ContentRoot,
                                  const std::filesystem::path& FolderPath)
     {
@@ -111,22 +75,23 @@ namespace
 
     FContentBrowserFolderNode BuildFolderNode(const std::filesystem::path& ContentRoot,
                                               const std::filesystem::path& FolderPath,
-                                              int32& InOutFolderCount,
-                                              int32& InOutFileCount)
+                                              int32& InOutFolderCount, int32& InOutFileCount)
     {
         FContentBrowserFolderNode FolderNode;
         FolderNode.AbsolutePath = FolderPath;
-        FolderNode.VirtualPath = BuildVirtualPath(ContentRoot, FolderPath);
+        FolderNode.VirtualPath =
+            Engine::Scene::BuildSceneAssetVirtualPath(FolderPath);
         FolderNode.DisplayName = GetFolderDisplayName(ContentRoot, FolderPath);
         ++InOutFolderCount;
 
         std::error_code ErrorCode;
-        constexpr auto DirectoryOptions = std::filesystem::directory_options::skip_permission_denied;
+        constexpr auto  DirectoryOptions =
+            std::filesystem::directory_options::skip_permission_denied;
         std::filesystem::directory_iterator Iterator(FolderPath, DirectoryOptions, ErrorCode);
         if (ErrorCode)
         {
-            UE_LOG(ContentBrowser, ELogVerbosity::Warning,
-                   "Failed to enumerate folder: %s", PathToUtf8String(FolderPath).c_str());
+            UE_LOG(ContentBrowser, ELogVerbosity::Warning, "Failed to enumerate folder: %s",
+                   PathToUtf8String(FolderPath).c_str());
             return FolderNode;
         }
 
@@ -149,7 +114,8 @@ namespace
 
             FContentBrowserItem Item;
             Item.AbsolutePath = Entry.path();
-            Item.VirtualPath = BuildVirtualPath(ContentRoot, Entry.path());
+            Item.VirtualPath =
+                Engine::Scene::BuildSceneAssetVirtualPath(Entry.path());
             Item.DisplayName = PathToUtf8String(Entry.path().filename());
             Item.Extension = PathToUtf8String(Entry.path().extension());
             Item.ItemType = ClassifyFileType(Entry.path());
@@ -157,19 +123,14 @@ namespace
             ++InOutFileCount;
         }
 
-        std::ranges::sort(FolderNode.ChildFolders
-                          ,
-                          [](const FContentBrowserFolderNode& Left, const FContentBrowserFolderNode& Right)
-                          {
-	                          return ToLowerAsciiCopy(Left.DisplayName) < ToLowerAsciiCopy(Right.DisplayName);
-                          });
+        std::ranges::sort(
+            FolderNode.ChildFolders,
+            [](const FContentBrowserFolderNode& Left, const FContentBrowserFolderNode& Right)
+            { return ToLowerAsciiCopy(Left.DisplayName) < ToLowerAsciiCopy(Right.DisplayName); });
 
-        std::ranges::sort(FolderNode.Files
-                          ,
-                          [](const FContentBrowserItem& Left, const FContentBrowserItem& Right)
-                          {
-	                          return ToLowerAsciiCopy(Left.DisplayName) < ToLowerAsciiCopy(Right.DisplayName);
-                          });
+        std::ranges::sort(
+            FolderNode.Files, [](const FContentBrowserItem& Left, const FContentBrowserItem& Right)
+            { return ToLowerAsciiCopy(Left.DisplayName) < ToLowerAsciiCopy(Right.DisplayName); });
 
         return FolderNode;
     }
@@ -187,20 +148,18 @@ void FEditorContentIndex::Refresh()
         Snapshot.RootFolder.AbsolutePath = Snapshot.ContentRootPath;
         Snapshot.RootFolder.VirtualPath = GameVirtualRoot;
         Snapshot.RootFolder.DisplayName = "Content";
-        UE_LOG(ContentBrowser, ELogVerbosity::Warning,
-               "Content root was not found: %s",
+        UE_LOG(ContentBrowser, ELogVerbosity::Warning, "Content root was not found: %s",
                PathToUtf8String(Snapshot.ContentRootPath).c_str());
         return;
     }
 
     Snapshot.bHasContentRoot = true;
-    Snapshot.RootFolder =
-        BuildFolderNode(Snapshot.ContentRootPath, Snapshot.ContentRootPath,
-                        Snapshot.FolderCount, Snapshot.FileCount);
+    Snapshot.RootFolder = BuildFolderNode(Snapshot.ContentRootPath, Snapshot.ContentRootPath,
+                                          Snapshot.FolderCount, Snapshot.FileCount);
 }
 
-const FContentBrowserFolderNode* FEditorContentIndex::FindFolderByVirtualPath(
-    const FString& VirtualPath) const
+const FContentBrowserFolderNode*
+FEditorContentIndex::FindFolderByVirtualPath(const FString& VirtualPath) const
 {
     if (!Snapshot.bHasContentRoot)
     {
@@ -210,8 +169,9 @@ const FContentBrowserFolderNode* FEditorContentIndex::FindFolderByVirtualPath(
     return FindFolderRecursive(Snapshot.RootFolder, VirtualPath);
 }
 
-const FContentBrowserFolderNode* FEditorContentIndex::FindFolderRecursive(
-    const FContentBrowserFolderNode& Folder, const FString& VirtualPath) const
+const FContentBrowserFolderNode*
+FEditorContentIndex::FindFolderRecursive(const FContentBrowserFolderNode& Folder,
+                                         const FString&                   VirtualPath) const
 {
     if (Folder.VirtualPath == VirtualPath)
     {

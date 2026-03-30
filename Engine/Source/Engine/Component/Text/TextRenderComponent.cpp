@@ -1,7 +1,6 @@
 #include "TextRenderComponent.h"
 #include "Engine/Component/Core/ComponentProperty.h"
 #include "Engine/Game/Actor.h"
-#include "SceneIO/SceneAssetPath.h"
 #include "Renderer/SceneRenderData.h"
 #include "Renderer/SceneView.h"
 #include "Renderer/D3D11/GeneralRenderer.h"
@@ -213,38 +212,6 @@ namespace Engine::Component
             [this](bool bInValue) { SetBillboard(bInValue); });
     }
 
-    void UTextRenderComponent::ResolveAssetReferences(UAssetManager* InAssetManager)
-    {
-        // FontResource = nullptr;
-        //
-        // if (InAssetManager == nullptr || FontPath.empty())
-        // {
-        //     return;
-        // }
-        //
-        // const std::filesystem::path AbsolutePath =
-        //     Engine::SceneIO::ResolveSceneAssetPathToAbsolute(FontPath);
-        // if (AbsolutePath.empty())
-        // {
-        //     UE_LOG(Asset, ELogVerbosity::Warning,
-        //            "Failed to resolve font path for TextRenderComponent: %s", FontPath.c_str());
-        //     return;
-        // }
-        //
-        // FAssetLoadParams LoadParams;
-        // LoadParams.ExplicitType = EAssetType::Font;
-        //
-        // UAsset*     LoadedAsset = InAssetManager->Load(AbsolutePath.native(), LoadParams);
-        // UFontAsset* FontAsset = Cast<UFontAsset>(LoadedAsset);
-        // if (FontAsset == nullptr)
-        // {
-        //     UE_LOG(Asset, ELogVerbosity::Warning,
-        //            "Failed to load font asset for TextRenderComponent: %s", FontPath.c_str());
-        //     return;
-        // }
-        //
-        // SetFontResource(&FontAsset->GetResource());
-    }
 
     EBasicMeshType UTextRenderComponent::GetBasicMeshType() const { return EBasicMeshType::Quad; }
 

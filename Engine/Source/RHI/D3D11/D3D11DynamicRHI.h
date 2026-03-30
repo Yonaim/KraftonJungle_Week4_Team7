@@ -3,13 +3,14 @@
 #include "RHI/DynamicRHI.h"
 #include "RHI/D3D11/D3D11Texture.h"
 #include "RHI/D3D11/D3D11Buffer.h"
+#include "Core/EngineAPI.h"
 
 namespace RHI::D3D11
 {
 
     // ======================== D3D11 Dynamic RHI ==========================
 
-    class FD3D11DynamicRHI : public FDynamicRHI
+    class ENGINE_API FD3D11DynamicRHI : public FDynamicRHI
     {
       public:
         FD3D11DynamicRHI(TComPtr<ID3D11Device>        InDevice,

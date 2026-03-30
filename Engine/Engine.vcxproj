@@ -57,6 +57,7 @@
     <ClInclude Include="Source\Asset\Intermediate\IntermediateStaticMeshData.h" />
     <ClInclude Include="Source\Asset\Intermediate\IntermediateSubUVAtlasData.h" />
     <ClInclude Include="Source\Asset\Intermediate\IntermediateTextureData.h" />
+    <ClInclude Include="Source\Asset\Manager\AssetCacheManager.h" />
     <ClInclude Include="Source\Asset\Runtime\FontAtlasRenderResource.h" />
     <ClInclude Include="Source\Asset\Runtime\MaterialRenderResource.h" />
     <ClInclude Include="Source\Asset\Runtime\StaticMeshRenderResource.h" />
@@ -137,6 +138,7 @@
     <ClInclude Include="Source\Engine\Game\EffectActor.h" />
     <ClInclude Include="Source\Engine\Game\FlipbookActor.h" />
     <ClInclude Include="Source\Engine\Game\MeshActor.h" />
+    <ClInclude Include="Source\Engine\Game\QuadActor.h" />
     <ClInclude Include="Source\Engine\Game\RingActor.h" />
     <ClInclude Include="Source\Engine\Game\SphereActor.h" />
     <ClInclude Include="Source\Engine\Game\SpriteActor.h" />
@@ -144,11 +146,22 @@
     <ClInclude Include="Source\Engine\Game\TextActor.h" />
     <ClInclude Include="Source\Engine\Game\TriangleActor.h" />
     <ClInclude Include="Source\Engine\Game\UnknownActor.h" />
-    <ClInclude Include="Source\Engine\Scene.h" />
+    <ClInclude Include="Source\Engine\Scene\Scene.h" />
+    <ClInclude Include="Source\Engine\Scene\SceneAssetBinder.h" />
+    <ClInclude Include="Source\Engine\Scene\SceneAssetPath.h" />
+    <ClInclude Include="Source\Engine\Scene\Serialization\Common\SceneJsonConverters.h" />
+    <ClInclude Include="Source\Engine\Scene\Serialization\Common\SceneJsonFieldReader.h" />
+    <ClInclude Include="Source\Engine\Scene\Serialization\Core\SceneDeserializer.h" />
+    <ClInclude Include="Source\Engine\Scene\Serialization\Core\SceneSerializer.h" />
+    <ClInclude Include="Source\Engine\Scene\Serialization\Json\SceneJson.h" />
+    <ClInclude Include="Source\Engine\Scene\Serialization\Legacy\SceneLegacySerialization.h" />
+    <ClInclude Include="Source\Engine\Scene\Serialization\Registry\SceneTypeRegistry.h" />
+    <ClInclude Include="Source\Engine\Scene\Serialization\Runtime\SceneActorSerialization.h" />
+    <ClInclude Include="Source\Engine\Scene\Serialization\Runtime\ScenePropertySerialization.h" />
+    <ClInclude Include="Source\Engine\Scene\World.h" />
     <ClInclude Include="Source\Engine\ViewPort\Viewport.h" />
     <ClInclude Include="Source\Engine\ViewPort\ViewportClient.h" />
     <ClInclude Include="Source\Engine\ViewPort\ViewportController.h" />
-    <ClInclude Include="Source\Engine\World.h" />
     <ClInclude Include="Source\Launch\EngineLoop.h" />
     <ClInclude Include="Source\Renderer\D3D11\D3D11Common.h" />
     <ClInclude Include="Source\Renderer\D3D11\D3D11OutlineRenderer.h" />
@@ -206,11 +219,7 @@
     <ClInclude Include="Source\RHI\RHIResource.h" />
     <ClInclude Include="Source\RHI\RHITexture.h" />
     <ClInclude Include="Source\RHI\RHITypes.h" />
-    <ClInclude Include="Source\SceneIO\SceneAssetPath.h" />
-    <ClInclude Include="Source\SceneIO\SceneJson.h" />
-    <ClInclude Include="Source\SceneIO\SceneSerializer.h" />
-    <ClInclude Include="Source\SceneIO\SceneTypeRegistry.h" />
-    <ClInclude Include="Source\ThirdParty\Json\json.hpp" />
+    <ClInclude Include="Source\ThirdParty\nlohmann\json.hpp" />
     <ClInclude Include="Source\ThirdParty\stb\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
@@ -226,6 +235,7 @@
     <ClCompile Include="Source\Asset\Builder\StaticMeshBuilder.cpp" />
     <ClCompile Include="Source\Asset\Builder\SubUVAtlasBuilder.cpp" />
     <ClCompile Include="Source\Asset\Builder\TextureBuilder.cpp" />
+    <ClCompile Include="Source\Asset\Manager\AssetCacheManager.cpp" />
     <ClCompile Include="Source\Asset\Runtime\FontAtlasRenderResource.cpp" />
     <ClCompile Include="Source\Asset\Runtime\MaterialRenderResource.cpp" />
     <ClCompile Include="Source\Asset\Runtime\StaticMeshRenderResource.cpp" />
@@ -284,6 +294,7 @@
     <ClCompile Include="Source\Engine\Game\EffectActor.cpp" />
     <ClCompile Include="Source\Engine\Game\FlipbookActor.cpp" />
     <ClCompile Include="Source\Engine\Game\MeshActor.cpp" />
+    <ClCompile Include="Source\Engine\Game\QuadActor.cpp" />
     <ClCompile Include="Source\Engine\Game\RingActor.cpp" />
     <ClCompile Include="Source\Engine\Game\SphereActor.cpp" />
     <ClCompile Include="Source\Engine\Game\SpriteActor.cpp" />
@@ -291,9 +302,20 @@
     <ClCompile Include="Source\Engine\Game\TextActor.cpp" />
     <ClCompile Include="Source\Engine\Game\TriangleActor.cpp" />
     <ClCompile Include="Source\Engine\Game\UnknownActor.cpp" />
-    <ClCompile Include="Source\Engine\Scene.cpp" />
+    <ClCompile Include="Source\Engine\Scene\Scene.cpp" />
+    <ClCompile Include="Source\Engine\Scene\SceneAssetBinder.cpp" />
+    <ClCompile Include="Source\Engine\Scene\SceneAssetPath.cpp" />
+    <ClCompile Include="Source\Engine\Scene\Serialization\Common\SceneJsonConverters.cpp" />
+    <ClCompile Include="Source\Engine\Scene\Serialization\Common\SceneJsonFieldReader.cpp" />
+    <ClCompile Include="Source\Engine\Scene\Serialization\Core\SceneDeserializer.cpp" />
+    <ClCompile Include="Source\Engine\Scene\Serialization\Core\SceneSerializer.cpp" />
+    <ClCompile Include="Source\Engine\Scene\Serialization\Json\SceneJson.cpp" />
+    <ClCompile Include="Source\Engine\Scene\Serialization\Legacy\SceneLegacySerialization.cpp" />
+    <ClCompile Include="Source\Engine\Scene\Serialization\Registry\SceneTypeRegistry.cpp" />
+    <ClCompile Include="Source\Engine\Scene\Serialization\Runtime\SceneActorSerialization.cpp" />
+    <ClCompile Include="Source\Engine\Scene\Serialization\Runtime\ScenePropertySerialization.cpp" />
+    <ClCompile Include="Source\Engine\Scene\World.cpp" />
     <ClCompile Include="Source\Engine\ViewPort\Viewport.cpp" />
-    <ClCompile Include="Source\Engine\World.cpp" />
     <ClCompile Include="Source\Renderer\D3D11\D3D11OutlineRenderer.cpp" />
     <ClCompile Include="Source\Renderer\D3D11\D3D11RHI.cpp" />
     <ClCompile Include="Source\Renderer\D3D11\GeneralRenderer.cpp" />
@@ -322,9 +344,6 @@
     <ClCompile Include="Source\Renderer\Shader\ShaderResource.cpp" />
     <ClCompile Include="Source\RHI\D3D11\D3D11Common.cpp" />
     <ClCompile Include="Source\RHI\D3D11\D3D11DynamicRHI.cpp" />
-    <ClCompile Include="Source\SceneIO\SceneJson.cpp" />
-    <ClCompile Include="Source\SceneIO\SceneSerializer.cpp" />
-    <ClCompile Include="Source\SceneIO\SceneTypeRegistry.cpp" />
     <ClCompile Include="Source\ThirdParty\stb\stb_image_impl.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

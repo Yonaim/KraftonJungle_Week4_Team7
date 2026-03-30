@@ -14,7 +14,16 @@
 #endif
 
 class FPanelManager;
-class UAssetManager;
+namespace Asset
+{
+    class FAssetCacheManager;
+}
+
+namespace RHI
+{
+    class FDynamicRHI;
+}
+
 class IAssetLoader;
 
 class FEditorEngineLoop : public IEngineLoop, public IEditorChromeHost
@@ -54,7 +63,8 @@ class FEditorEngineLoop : public IEngineLoop, public IEditorChromeHost
     FEditor* Editor = nullptr;
     FRendererModule* Renderer = nullptr;
     FPanelManager* PanelManager = nullptr;
-    UAssetManager* AssetManager = nullptr;
+    Asset::FAssetCacheManager* AssetCacheManager = nullptr;
+    RHI::FDynamicRHI* AssetDynamicRHI = nullptr;
     IAssetLoader* TextureAssetLoader = nullptr;
     IAssetLoader* FontAssetLoader = nullptr;
     IAssetLoader* SubUVAtlasAssetLoader = nullptr;

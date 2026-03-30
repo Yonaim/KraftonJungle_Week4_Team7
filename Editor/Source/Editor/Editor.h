@@ -13,8 +13,8 @@
 #include "ApplicationCore/Input/InputSystem.h"
 #include "Viewport/Global/EditorGlobalController.h"
 #include "Input/EditorGlobalContext.h"
-#include "Engine/Scene.h"
-#include "Engine/World.h"
+#include "Engine/Scene/Scene.h"
+#include "Engine/Scene/World.h"
 #include "Logging/EditorLogBuffer.h"
 #include "Viewport/EditorViewportTab.h"
 #include "Renderer/EditorRenderData.h"
@@ -29,8 +29,16 @@ struct FPanelDescriptor;
 class AActor;
 class UObject;
 class FD3D11RHI;
-class UAssetManager;
-//struct FTextureResource;
+namespace Asset
+{
+    class FAssetCacheManager;
+}
+
+namespace RHI
+{
+    class FDynamicRHI;
+}
+// struct FTextureResource;
 
 enum class EDeferredSceneActionType
 {
@@ -70,7 +78,8 @@ class FEditor
     void Initialize();
     void Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* InputSystem);
     void SetChromeHost(IEditorChromeHost* InChromeHost);
-    void SetRuntimeServices(FD3D11RHI* InRHI, UAssetManager* InAssetManager);
+    void SetRuntimeServices(FD3D11RHI* InRHI, RHI::FDynamicRHI* InDynamicRHI,
+                            Asset::FAssetCacheManager* InAssetCacheManager);
 
     void OnWindowResized(float Width, float Height);
     void OnViewportResized();
@@ -80,35 +89,34 @@ class FEditor
         EditorContext.CurrentFPS = FPS;
     }
 
-    void     CreateNewScene();
-    void     ClearScene();
-    bool     RequestCloseEditor();
-    bool     SaveCurrentSceneToDisk();
-    bool     SaveSceneAsPath(const std::filesystem::path& FilePath);
-    bool     OpenSceneFromPath(const std::filesystem::path& FilePath);
-    void     RequestSaveSceneAs();
-    void     RequestOpenSceneDialog();
-    void     RequestAboutPopUp();
-    bool     CanDeleteSelectedActors() const;
-    bool     DeleteSelectedActors();
-    void     RefreshContentIndex();
-    void     SetSelectedObject(UObject* InSelectedObject);
-    void     AddActorToScene(AActor* InActor, bool bSelectActor = true);
-    void     MarkSceneDirty();
-    UObject* GetSelectedObject() const { return EditorContext.SelectedObject; }
+    void                  CreateNewScene();
+    void                  ClearScene();
+    bool                  RequestCloseEditor();
+    bool                  SaveCurrentSceneToDisk();
+    bool                  SaveSceneAsPath(const std::filesystem::path& FilePath);
+    bool                  OpenSceneFromPath(const std::filesystem::path& FilePath);
+    void                  RequestSaveSceneAs();
+    void                  RequestOpenSceneDialog();
+    void                  RequestAboutPopUp();
+    bool                  CanDeleteSelectedActors() const;
+    bool                  DeleteSelectedActors();
+    void                  RefreshContentIndex();
+    void                  SetSelectedObject(UObject* InSelectedObject);
+    void                  AddActorToScene(AActor* InActor, bool bSelectActor = true);
+    void                  MarkSceneDirty();
+    UObject*              GetSelectedObject() const { return EditorContext.SelectedObject; }
     std::filesystem::path GetCurrentScenePath() const { return SceneDocument.CurrentScenePath; }
     std::filesystem::path GetDefaultSceneDirectory() const;
 
     const TArray<FEditorRenderData>& GetEditorRenderData() const { return EditorRenderDatas; }
     const TArray<FSceneRenderData>&  GetSceneRenderData() const { return SceneRenderDatas; }
-    SEditorViewportTab&              GetViewportTab() { return ViewportTab; }
+    SEditorViewportTab&        GetViewportTab() { return ViewportTab; }
 
     void DrawPanel();
 
   private:
     void BuildRenderData();
     void BuildSceneView();
-    // 커스텀 타이틀바 아래 전체 영역을 도킹 가능한 루트 dockspace로 사용합니다.
     void DrawRootDockSpace();
     void DrawAboutPopup();
     void EnsureAboutImageLoaded();
@@ -130,25 +138,24 @@ class FEditor
     bool ConfirmProceedWithDirtyScene(const FDeferredSceneAction& Action);
     void ExecuteDeferredSceneAction(FDeferredSceneAction Action);
     std::filesystem::path GetSceneDirectory() const;
-    void ResolveActorAssetReferences(AActor* Actor);
-    void ResolveSceneAssetReferences(FScene* Scene);
-
+    void                  ResolveActorAssetReferences(AActor* Actor);
+    void                  ResolveSceneAssetReferences(FScene* Scene);
 
   private:
     uint32_t           RootDockSpaceId = 0;
     SEditorViewportTab ViewportTab; 
 
     Engine::ApplicationCore::FInputRouter GlobalInputRouter;
-    FEditorGlobalController GlobalInputController;
-    FEditorGlobalContext GlobalInputContext{&GlobalInputController};
+    FEditorGlobalController               GlobalInputController;
+    FEditorGlobalContext                  GlobalInputContext{&GlobalInputController};
 
-    FEditorContext        EditorContext;
-    FEditorSettings       PersistentSettings;
-    FEditorContentIndex   ContentIndex;
-    FPanelManager*        PanelManager = nullptr;
-    FEditorChrome         EditorChrome;
-    FEditorMenuRegistry   MenuRegistry;
-    IEditorChromeHost*    ChromeHost = nullptr;
+    FEditorContext      EditorContext;
+    FEditorSettings     PersistentSettings;
+    FEditorContentIndex ContentIndex;
+    FPanelManager*      PanelManager = nullptr;
+    FEditorChrome       EditorChrome;
+    FEditorMenuRegistry MenuRegistry;
+    IEditorChromeHost*  ChromeHost = nullptr;
 
     TArray<FEditorRenderData> EditorRenderDatas;
     TArray<FSceneRenderData>  SceneRenderDatas;
@@ -156,14 +163,13 @@ class FEditor
     FWorld*             CurWorld = nullptr;
     FSceneDocumentState SceneDocument;
 
-    /* Logging */
     FEditorLogBuffer LogBuffer;
 
-    float WindowWidth = 0.0f;
-    float WindowHeight = 0.0f;
-    float CurFPS = 0.0f;
-    bool  bRequestOpenAboutPopup = false;
-    bool  bAboutPopupOpen = false;
-    bool  bAttemptedAboutImageLoad = false;
+    float             WindowWidth = 0.0f;
+    float             WindowHeight = 0.0f;
+    float             CurFPS = 0.0f;
+    bool              bRequestOpenAboutPopup = false;
+    bool              bAboutPopupOpen = false;
+    bool              bAttemptedAboutImageLoad = false;
     FTextureResource* AboutImageResource = nullptr;
 };

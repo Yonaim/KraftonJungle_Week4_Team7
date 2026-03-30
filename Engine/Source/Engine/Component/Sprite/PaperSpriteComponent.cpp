@@ -9,7 +9,6 @@
 #include "Renderer/D3D11/GeneralRenderer.h"
 #include "Renderer/Material/Material.h"
 #include "Engine/Game/Actor.h"
-#include "SceneIO/SceneAssetPath.h"
 
 namespace Engine::Component
 {
