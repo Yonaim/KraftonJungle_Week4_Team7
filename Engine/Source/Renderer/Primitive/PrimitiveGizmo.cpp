@@ -28,7 +28,7 @@ namespace
 		for (const auto& Vertex : GizmoMesh.vertices)
 		{
 			FColor Color = OverrideColor.value_or(FVector4(Vertex.color.r, Vertex.color.g, Vertex.color.b, Vertex.color.a));
-			Data->Vertices.push_back({ Vertex.position, Color, Vertex.normal });
+			Data->Vertices.push_back({ Vertex.position, Vertex.normal, Color });
 		}
 
 		Data->Indices.reserve(GizmoMesh.indices.size());

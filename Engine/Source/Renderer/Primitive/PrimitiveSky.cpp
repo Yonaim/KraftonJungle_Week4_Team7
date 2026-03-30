@@ -39,7 +39,7 @@ void CPrimitiveSky::Generate(int32 Segments, int32 Rings)
 			FVector Normal = { -X, -Y, -Z };
 			FColor Color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-			Data->Vertices.push_back({ Position, Color, Normal });
+			Data->Vertices.push_back({ Position, Normal, Color });
 		}
 	}
 

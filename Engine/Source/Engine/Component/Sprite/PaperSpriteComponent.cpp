@@ -69,10 +69,10 @@ namespace Engine::Component
             
             // Create a quad on XY plane (Unreal style: X=Forward/Height, Y=Right/Width)
             MeshData->Vertices = {
-                { FVector(-1.0f, -1.0f, 0.0f), FColor::White(), FVector(0,0,1), FVector2(0, 1) }, // Bottom-Left
-                { FVector(-1.0f,  1.0f, 0.0f), FColor::White(), FVector(0,0,1), FVector2(1, 1) }, // Bottom-Right
-                { FVector( 1.0f,  1.0f, 0.0f), FColor::White(), FVector(0,0,1), FVector2(1, 0) }, // Top-Right
-                { FVector( 1.0f, -1.0f, 0.0f), FColor::White(), FVector(0,0,1), FVector2(0, 0) }  // Top-Left
+                { FVector(-1.0f, -1.0f, 0.0f), FVector(0,0,1), FColor::White(), FVector2(0, 1) }, // Bottom-Left
+                { FVector(-1.0f,  1.0f, 0.0f), FVector(0,0,1), FColor::White(), FVector2(1, 1) }, // Bottom-Right
+                { FVector( 1.0f,  1.0f, 0.0f), FVector(0,0,1), FColor::White(), FVector2(1, 0) }, // Top-Right
+                { FVector( 1.0f, -1.0f, 0.0f), FVector(0,0,1), FColor::White(), FVector2(0, 0) }  // Top-Left
             };
             MeshData->Indices = { 0, 2, 1, 0, 3, 2 }; 
         }

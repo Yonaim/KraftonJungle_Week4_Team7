@@ -25,7 +25,7 @@ void CPrimitiveRing::Generate()
 
 	for (uint32_t i = 0; i < ring_vertex_count; ++i)
 	{
-		Data->Vertices.push_back({ { ring_vertices[i].x, ring_vertices[i].y, ring_vertices[i].z }, Color, Normal });
+		Data->Vertices.push_back({ { ring_vertices[i].x, ring_vertices[i].y, ring_vertices[i].z }, Normal, Color });
 	}
 
 	for (uint32_t i = 0; i < ring_index_count; ++i)

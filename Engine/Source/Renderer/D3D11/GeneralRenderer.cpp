@@ -696,8 +696,14 @@ void FGeneralRenderer::InitializeAABBResources()
 
     FVector4 Yellow(1.0f, 1.0f, 0.0f, 1.0f);
     AABBMeshData->Vertices = {
-        { FVector(0, 0, 0), Yellow }, { FVector(1, 0, 0), Yellow }, { FVector(1, 1, 0), Yellow }, { FVector(0, 1, 0), Yellow },
-        { FVector(0, 0, 1), Yellow }, { FVector(1, 0, 1), Yellow }, { FVector(1, 1, 1), Yellow }, { FVector(0, 1, 1), Yellow }
+        { FVector(0, 0, 0), FVector::ForwardVector, Yellow }, 
+        { FVector(1, 0, 0), FVector::ForwardVector, Yellow }, 
+        { FVector(1, 1, 0), FVector::ForwardVector, Yellow }, 
+        { FVector(0, 1, 0), FVector::ForwardVector, Yellow },
+        { FVector(0, 0, 1), FVector::ForwardVector, Yellow }, 
+        { FVector(1, 0, 1), FVector::ForwardVector, Yellow }, 
+        { FVector(1, 1, 1), FVector::ForwardVector, Yellow }, 
+        { FVector(0, 1, 1), FVector::ForwardVector, Yellow }
     };
 
     AABBMeshData->Indices = {

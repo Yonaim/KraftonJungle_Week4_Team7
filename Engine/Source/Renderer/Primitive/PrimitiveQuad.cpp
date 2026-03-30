@@ -25,7 +25,7 @@ void CPrimitiveQuad::Generate()
 
 	for (uint32_t i = 0; i < quad_vertex_count; ++i)
 	{
-		Data->Vertices.push_back({ { quad_vertices[i].x, quad_vertices[i].y, quad_vertices[i].z }, Color, Normal });
+		Data->Vertices.push_back({ { quad_vertices[i].x, quad_vertices[i].y, quad_vertices[i].z }, Normal,  });
 	}
 
 	for (uint32_t i = 0; i < quad_index_count; ++i)

@@ -7,7 +7,7 @@
 struct ENGINE_API FPrimitiveVertex
 {
     FVector Position;
-    FColor Color;
     FVector Normal;
+    FColor Color;
     FVector2 UV;
 };

@@ -5,6 +5,11 @@
 
 #include <cstring>
 
+#include "Engine/Game/Actor.h"
+#include "Renderer/SceneRenderData.h"
+#include "Renderer/D3D11/GeneralRenderer.h"
+#include "RHI/D3D11/D3D11Buffer.h"
+
 namespace Engine::Component
 {
     REGISTER_CLASS(Engine::Component, UStaticMeshComponent)
@@ -40,6 +45,64 @@ namespace Engine::Component
     }
 
     void UStaticMeshComponent::SetStaticMeshPath(const FString& InPath) { MeshPath = InPath; }
+
+    void UStaticMeshComponent::CollectRenderData(FSceneRenderData& OutRenderData,
+        ESceneShowFlags InShowFlags) const
+    {
+        if (!IsFlagSet(InShowFlags, ESceneShowFlags::SF_Primitives))
+        {
+            return;
+        }
+
+        AActor* Actor = GetOwnerActor();
+        if (Actor == nullptr)
+        {
+            return;
+        }
+
+        FRenderCommand& MutableRenderCommand = const_cast<FRenderCommand&>(RenderCommand);
+        
+        // Generate FMeshData
+        FMeshData* MeshData = new FMeshData();
+        if (StaticMesh)
+        {
+            MeshData->Topology = EMeshTopology::EMT_TriangleList;
+            MeshData->VertexBuffer = std::static_pointer_cast<RHI::D3D11::FD3D11VertexBuffer>(StaticMesh->GetRenderResource()->VertexBuffer)->GetBuffer(); 
+            MeshData->IndexBuffer = std::static_pointer_cast<RHI::D3D11::FD3D11IndexBuffer>(StaticMesh->GetRenderResource()->IndexBuffer)->GetBuffer();
+            // DEBUG: 렌더링을 위해 Vertices와 Indices의 count 채우기
+            MeshData->Vertices.insert(MeshData->Vertices.begin(), 
+                                    StaticMesh->GetRenderResource()->VertexCount,
+                                    FPrimitiveVertex()
+                                    );
+            MeshData->Indices.insert(MeshData->Indices.begin(), 
+                                    StaticMesh->GetRenderResource()->IndexCount,
+                                    0
+                                    );
+            MeshData->bIsDirty = false;
+        }
+        MutableRenderCommand.MeshData = MeshData;
+        if (MutableRenderCommand.MeshData == nullptr)
+        {
+            return;
+        }
+
+        if (MutableRenderCommand.Material == nullptr)
+        {
+            MutableRenderCommand.Material = FGeneralRenderer::GetDefaultMaterial();
+        }
+
+        MutableRenderCommand.WorldMatrix = GetRelativeMatrix();
+        MutableRenderCommand.ObjectId = Actor->GetObjectId();
+        MutableRenderCommand.bDrawAABB = Actor->IsSelected() || Actor->IsShowBounds();
+        MutableRenderCommand.WorldAABB = GetWorldAABB();
+
+        MutableRenderCommand.bIsVisible = Actor->IsVisible();
+        MutableRenderCommand.bIsPickable = Actor->IsPickable();
+        MutableRenderCommand.bIsSelected = Actor->IsSelected();
+        MutableRenderCommand.bIsHovered = Actor->IsHovered();
+
+        OutRenderData.RenderCommands.push_back(MutableRenderCommand);
+    }
 
     void UStaticMeshComponent::DescribeProperties(FComponentPropertyBuilder& Builder)
     {

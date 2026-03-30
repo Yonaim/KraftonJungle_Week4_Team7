@@ -25,7 +25,7 @@ void CPrimitiveCylinder::Generate()
 
 	for (uint32_t i = 0; i < cylinder_vertex_count; ++i)
 	{
-		Data->Vertices.push_back({ { cylinder_vertices[i].x, cylinder_vertices[i].y, cylinder_vertices[i].z }, Color, Normal });
+		Data->Vertices.push_back({ { cylinder_vertices[i].x, cylinder_vertices[i].y, cylinder_vertices[i].z }, Normal, Color });
 	}
 
 	for (uint32_t i = 0; i < cylinder_index_count; ++i)

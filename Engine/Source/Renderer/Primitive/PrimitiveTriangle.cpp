@@ -25,7 +25,7 @@ void CPrimitiveTriangle::Generate()
 
 	for (uint32_t i = 0; i < triangle_vertex_count; ++i)
 	{
-		Data->Vertices.push_back({ { triangle_vertices[i].x, triangle_vertices[i].y, triangle_vertices[i].z }, Color, Normal });
+		Data->Vertices.push_back({ { triangle_vertices[i].x, triangle_vertices[i].y, triangle_vertices[i].z }, Normal, Color });
 	}
 
 	for (uint32_t i = 0; i < triangle_index_count; ++i)

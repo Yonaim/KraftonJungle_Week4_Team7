@@ -25,10 +25,10 @@ void CPrimitivePlane::Generate()
 	FColor White = { 1.0f, 1.0f, 1.0f, 1.0f };
 	FVector Normal = { 0.0f, 1.0f, 0.0f };
 
-	Data->Vertices.push_back({ { -5.0f,  5.0f, 0.0f }, White, Normal });
-	Data->Vertices.push_back({ {  5.0f,  5.0f, 0.0f }, White, Normal });
-	Data->Vertices.push_back({ {  5.0f, -5.0f, 0.0f }, White, Normal });
-	Data->Vertices.push_back({ { -5.0f, -5.0f, 0.0f }, White, Normal });
+	Data->Vertices.push_back({ { -5.0f,  5.0f, 0.0f }, Normal, White });
+	Data->Vertices.push_back({ {  5.0f,  5.0f, 0.0f }, Normal, White });
+	Data->Vertices.push_back({ {  5.0f, -5.0f, 0.0f }, Normal, White });
+	Data->Vertices.push_back({ { -5.0f, -5.0f, 0.0f }, Normal, White });
 
 	Data->Indices.push_back(0);
 	Data->Indices.push_back(2);

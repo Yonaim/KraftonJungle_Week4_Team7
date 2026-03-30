@@ -21,6 +21,8 @@ namespace Engine::Component
         void SetStaticMeshAsset(UStaticMesh* InStaticMesh) { StaticMesh = InStaticMesh; }
 
         // Primitive
+        virtual void CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const override;
+
         EBasicMeshType GetBasicMeshType() const override { return EBasicMeshType::None; }
 
         void DescribeProperties(FComponentPropertyBuilder& Builder) override;
