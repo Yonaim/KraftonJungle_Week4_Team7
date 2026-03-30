@@ -144,8 +144,21 @@ void FViewportNavigationController::AddYawInput(float Value)
         return;
     }
 
-    Yaw += Value * RotationSpeed;
-    Yaw = FRotator::NormalizeAxis(Yaw);
+    if (ViewportCamera->GetProjectionType() == EViewportProjectionType::Orthographic)
+    {
+        EnsureTargetLocationInitialized();
+        const FVector Right =
+            FVector::CrossProduct(ViewportCamera->GetOrthoForward(), ViewportCamera->GetOrthoUp())
+                .GetSafeNormal();
+
+        TargetLocation += Right * (Value * PanSpeed);
+        Yaw = 0.0f;
+    }
+    else
+    {
+        Yaw += Value * RotationSpeed;
+        Yaw = FRotator::NormalizeAxis(Yaw);
+    }
 
     if (bOrbiting)
     {
@@ -165,8 +178,18 @@ void FViewportNavigationController::AddPitchInput(float Value)
         return;
     }
 
-    Pitch += Value * RotationSpeed;
-    Pitch = FMath::Clamp(Pitch, -89.f, 89.f); // Pitch는 -89도에서 89도로 제한
+    if (ViewportCamera->GetProjectionType() == EViewportProjectionType::Orthographic)
+    {
+        EnsureTargetLocationInitialized();
+        const FVector Up = ViewportCamera->GetOrthoUp().GetSafeNormal();
+        TargetLocation -= Up * (Value * PanSpeed);
+        Pitch = 0.0f;
+    }
+    else
+    {
+        Pitch += Value * RotationSpeed;
+        Pitch = FMath::Clamp(Pitch, -89.f, 89.f); // Pitch는 -89도에서 89도로 제한
+    }
 
     if (bOrbiting)
     {
