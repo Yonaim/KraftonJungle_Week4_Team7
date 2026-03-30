@@ -32,8 +32,8 @@ template <> struct TAssetCacheTraits<FMaterialAssetTag>
     using SourceKey = FMaterialSourceKey;
     using IntermediateKey = FMaterialIntermediateKey;
     using CookedKey = FMaterialCookedKey;
-    using IntermediateType = FIntermediateMaterialData;
-    using CookedType = FMaterialCookedData;
+    using IntermediateType = FIntermediateMaterialLibraryData;
+    using CookedType = FMaterialCookedLibraryData;
 };
 
 template <> struct TAssetCacheTraits<FStaticMeshAssetTag>

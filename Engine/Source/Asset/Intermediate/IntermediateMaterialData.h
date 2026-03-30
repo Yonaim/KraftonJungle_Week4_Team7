@@ -23,4 +23,23 @@ namespace Asset
         TArray<FIntermediateMaterialTextureRef> TextureRefs;
     };
 
+    struct FIntermediateMaterialLibraryData
+    {
+        FString                     SourcePath;
+        TArray<FIntermediateMaterialData> Materials;
+        TMap<FString, uint32>       NameToIndex;
+
+        bool IsValid() const { return !Materials.empty(); }
+
+        const FIntermediateMaterialData* FindMaterial(const FString& InName) const
+        {
+            auto It = NameToIndex.find(InName);
+            if (It == NameToIndex.end() || It->second >= Materials.size())
+            {
+                return nullptr;
+            }
+            return &Materials[It->second];
+        }
+    };
+
 } // namespace Asset

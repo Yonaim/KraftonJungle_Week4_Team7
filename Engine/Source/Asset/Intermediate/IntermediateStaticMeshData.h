@@ -24,6 +24,7 @@ namespace Asset
         TArray<FVector>               Colors;
         TArray<FVector>               Normals;
         TArray<FVector2>              UVs;
+        TArray<FString>               MaterialLibraries;
         TArray<FIntermediateMeshFace> Faces;
     };
 

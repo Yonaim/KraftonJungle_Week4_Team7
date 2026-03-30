@@ -18,6 +18,12 @@ namespace Asset
             return {};
         }
 
+        std::filesystem::path Candidate(Path);
+        if (Candidate.is_absolute())
+        {
+            return Candidate;
+        }
+
         return Engine::Scene::ResolveSceneAssetPathToAbsolute(Path);
     }
 
@@ -46,7 +52,11 @@ namespace Asset
 
     std::shared_ptr<FMaterialCookedData> FAssetCacheManager::BuildMaterial(const FString& Path)
     {
-        const std::filesystem::path AbsolutePath = ResolveAssetPath(Path);
+        FString LibraryPath = Path;
+        FString MaterialName;
+        FMaterialBuilder::SplitMaterialAssetPath(Path, LibraryPath, MaterialName);
+
+        const std::filesystem::path AbsolutePath = ResolveAssetPath(LibraryPath);
         if (AbsolutePath.empty())
         {
             UE_LOG(FEditor, ELogVerbosity::Error, "Material asset path resolve failed: %s",
@@ -54,10 +64,13 @@ namespace Asset
             return nullptr;
         }
 
+        const FString ResolvedPath = MaterialName.empty()
+                                         ? StringFromPath(AbsolutePath)
+                                         : FMaterialBuilder::MakeMaterialAssetPath(AbsolutePath, MaterialName);
         UE_LOG(FEditor, ELogVerbosity::Log, "Material asset path resolved: %s -> %s", Path.c_str(),
-               StringFromPath(AbsolutePath).c_str());
+               ResolvedPath.c_str());
 
-        return BuildMaterialAbsolute(AbsolutePath);
+        return BuildMaterialAbsolute(AbsolutePath, MaterialName);
     }
 
     std::shared_ptr<FStaticMeshCookedData>
@@ -135,19 +148,21 @@ namespace Asset
     }
 
     std::shared_ptr<FMaterialCookedData>
-    FAssetCacheManager::BuildMaterialAbsolute(const std::filesystem::path& AbsolutePath)
+    FAssetCacheManager::BuildMaterialAbsolute(const std::filesystem::path& AbsolutePath,
+                                              const FString&               MaterialName)
     {
-        std::shared_ptr<FMaterialCookedData> Result = MaterialBuilder.Build(AbsolutePath);
+        std::shared_ptr<FMaterialCookedData> Result = MaterialBuilder.BuildMaterial(AbsolutePath, MaterialName);
 
+        const FString LogPath = MaterialName.empty()
+                                    ? StringFromPath(AbsolutePath)
+                                    : FMaterialBuilder::MakeMaterialAssetPath(AbsolutePath, MaterialName);
         if (Result)
         {
-            UE_LOG(FEditor, ELogVerbosity::Log, "Material asset load succeeded: %s",
-                   StringFromPath(AbsolutePath).c_str());
+            UE_LOG(FEditor, ELogVerbosity::Log, "Material asset load succeeded: %s", LogPath.c_str());
         }
         else
         {
-            UE_LOG(FEditor, ELogVerbosity::Error, "Material asset load failed: %s",
-                   StringFromPath(AbsolutePath).c_str());
+            UE_LOG(FEditor, ELogVerbosity::Error, "Material asset load failed: %s", LogPath.c_str());
         }
 
         return Result;
@@ -174,9 +189,8 @@ namespace Asset
         return Result;
     }
 
-    std::shared_ptr<FSubUVAtlasCookedData>
-    FAssetCacheManager::BuildSubUVAtlasAbsolute(const std::filesystem::path& AbsolutePath,
-                                                const FTextureBuildSettings& AtlasTextureSettings)
+    std::shared_ptr<FSubUVAtlasCookedData> FAssetCacheManager::BuildSubUVAtlasAbsolute(
+        const std::filesystem::path& AbsolutePath, const FTextureBuildSettings& AtlasTextureSettings)
     {
         std::shared_ptr<FSubUVAtlasCookedData> Result =
             SubUVAtlasBuilder.Build(AbsolutePath, AtlasTextureSettings);
@@ -195,9 +209,8 @@ namespace Asset
         return Result;
     }
 
-    std::shared_ptr<FFontAtlasCookedData>
-    FAssetCacheManager::BuildFontAtlasAbsolute(const std::filesystem::path& AbsolutePath,
-                                               const FTextureBuildSettings& AtlasTextureSettings)
+    std::shared_ptr<FFontAtlasCookedData> FAssetCacheManager::BuildFontAtlasAbsolute(
+        const std::filesystem::path& AbsolutePath, const FTextureBuildSettings& AtlasTextureSettings)
     {
         std::shared_ptr<FFontAtlasCookedData> Result =
             FontAtlasBuilder.Build(AbsolutePath, AtlasTextureSettings);

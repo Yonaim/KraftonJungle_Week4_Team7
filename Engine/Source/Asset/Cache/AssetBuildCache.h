@@ -101,7 +101,7 @@ class FAssetBuildCache
 
     TIntermediateCache<FTextureIntermediateKey, FIntermediateTextureData>&
     GetIntermediateCacheImpl(FTextureAssetTag) { return IntermediateTextureCache; }
-    TIntermediateCache<FMaterialIntermediateKey, FIntermediateMaterialData>&
+    TIntermediateCache<FMaterialIntermediateKey, FIntermediateMaterialLibraryData>&
     GetIntermediateCacheImpl(FMaterialAssetTag) { return IntermediateMaterialCache; }
     TIntermediateCache<FStaticMeshIntermediateKey, FIntermediateStaticMeshData>&
     GetIntermediateCacheImpl(FStaticMeshAssetTag) { return IntermediateStaticMeshCache; }
@@ -111,7 +111,7 @@ class FAssetBuildCache
     GetIntermediateCacheImpl(FFontAtlasAssetTag) { return IntermediateFontAtlasCache; }
 
     TCookedCache<FTextureCookedKey, FTextureCookedData>& GetCookedCacheImpl(FTextureAssetTag) { return TextureCookedCache; }
-    TCookedCache<FMaterialCookedKey, FMaterialCookedData>& GetCookedCacheImpl(FMaterialAssetTag) { return MaterialCookedCache; }
+    TCookedCache<FMaterialCookedKey, FMaterialCookedLibraryData>& GetCookedCacheImpl(FMaterialAssetTag) { return MaterialCookedCache; }
     TCookedCache<FStaticMeshCookedKey, FStaticMeshCookedData>& GetCookedCacheImpl(FStaticMeshAssetTag) { return StaticMeshCookedCache; }
     TCookedCache<FSubUVAtlasCookedKey, FSubUVAtlasCookedData>& GetCookedCacheImpl(FSubUVAtlasAssetTag) { return SubUVAtlasCookedCache; }
     TCookedCache<FFontAtlasCookedKey, FFontAtlasCookedData>& GetCookedCacheImpl(FFontAtlasAssetTag) { return FontAtlasCookedCache; }
@@ -124,13 +124,13 @@ class FAssetBuildCache
     TSourceCache<FFontAtlasSourceKey> FontAtlasSourceCache;
 
     TIntermediateCache<FTextureIntermediateKey, FIntermediateTextureData> IntermediateTextureCache;
-    TIntermediateCache<FMaterialIntermediateKey, FIntermediateMaterialData> IntermediateMaterialCache;
+    TIntermediateCache<FMaterialIntermediateKey, FIntermediateMaterialLibraryData> IntermediateMaterialCache;
     TIntermediateCache<FStaticMeshIntermediateKey, FIntermediateStaticMeshData> IntermediateStaticMeshCache;
     TIntermediateCache<FSubUVAtlasIntermediateKey, FIntermediateSubUVAtlasData> IntermediateSubUVAtlasCache;
     TIntermediateCache<FFontAtlasIntermediateKey, FIntermediateFontAtlasData> IntermediateFontAtlasCache;
 
     TCookedCache<FTextureCookedKey, FTextureCookedData> TextureCookedCache;
-    TCookedCache<FMaterialCookedKey, FMaterialCookedData> MaterialCookedCache;
+    TCookedCache<FMaterialCookedKey, FMaterialCookedLibraryData> MaterialCookedCache;
     TCookedCache<FStaticMeshCookedKey, FStaticMeshCookedData> StaticMeshCookedCache;
     TCookedCache<FSubUVAtlasCookedKey, FSubUVAtlasCookedData> SubUVAtlasCookedCache;
     TCookedCache<FFontAtlasCookedKey, FFontAtlasCookedData> FontAtlasCookedCache;

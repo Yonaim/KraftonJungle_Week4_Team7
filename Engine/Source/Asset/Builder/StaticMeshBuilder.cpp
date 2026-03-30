@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 #include "Asset/Cache/AssetKeyUtils.h"
+#include "Asset/Builder/MaterialBuilder.h"
 
 namespace Asset
 {
@@ -359,6 +360,15 @@ namespace Asset
                 Iss >> X >> Y >> Z;
                 Result->Normals.emplace_back(X, Y, Z);
             }
+            else if (Tag == "mtllib")
+            {
+                FString LibraryPath;
+                Iss >> LibraryPath;
+                if (!LibraryPath.empty())
+                {
+                    Result->MaterialLibraries.push_back(LibraryPath);
+                }
+            }
             else if (Tag == "usemtl")
             {
                 Iss >> CurrentMaterialName;
@@ -435,9 +445,34 @@ namespace Asset
         std::unordered_map<FString, uint32>                             MaterialSlotLookup;
         TArray<TArray<uint32>>                                          MaterialBuckets;
 
+        auto ResolveMaterialAssetPath = [&](const FString& MaterialName) -> FString
+        {
+            if (Intermediate.MaterialLibraries.empty())
+            {
+                return MaterialName.empty() ? FString("Default") : MaterialName;
+            }
+
+            std::filesystem::path LibraryPath(Intermediate.MaterialLibraries.front());
+            if (LibraryPath.is_relative())
+            {
+                LibraryPath = std::filesystem::path(Source.NormalizedPath).parent_path() / LibraryPath;
+            }
+
+            std::error_code ErrorCode;
+            std::filesystem::path CanonicalLibraryPath =
+                std::filesystem::weakly_canonical(LibraryPath, ErrorCode);
+            if (ErrorCode)
+            {
+                CanonicalLibraryPath = LibraryPath.lexically_normal();
+            }
+
+            return FMaterialBuilder::MakeMaterialAssetPath(
+                CanonicalLibraryPath, MaterialName.empty() ? FString("Default") : MaterialName);
+        };
+
         auto GetOrCreateMaterialIndex = [&](const FString& MaterialName) -> uint32
         {
-            const FString ResolvedMaterialName = MaterialName.empty() ? "Default" : MaterialName;
+            const FString ResolvedMaterialName = ResolveMaterialAssetPath(MaterialName);
             auto          It = MaterialSlotLookup.find(ResolvedMaterialName);
             if (It != MaterialSlotLookup.end())
             {
