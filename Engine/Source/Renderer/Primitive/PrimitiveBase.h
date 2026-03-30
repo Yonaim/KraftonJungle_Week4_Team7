@@ -1,8 +1,11 @@
 #pragma once
 
-#include <d3d11.h>
-
 #include "Renderer/Types/VertexTypes.h"
+#include "RHI/RHIBuffer.h"
+
+// Forward Declaration
+class FD3D11RHI;
+// Forward Declaration
 
 enum class EMeshTopology
 {
@@ -20,27 +23,33 @@ struct ENGINE_API FMeshData
     {
     }
 
-    ~FMeshData() { Release(); }
+    // NOTE: 이제 Mesh도 에셋 관리자로 중앙집중식 관리하므로 
+    //      FMeshData가 직접 Release하지 않음.
+    ~FMeshData() { /*Release();*/ }
 
     uint32 GetSortId() const { return SortId; }
     bool   bIsDirty = true; // 최초 1회 초기화 보장
 
-    bool UpdateVertexAndIndexBuffer(ID3D11Device* Device);
-    bool CreateVertexAndIndexBuffer(ID3D11Device* Device);
-    void Bind(ID3D11DeviceContext* Context);
-    void Release();
+    void Bind(FD3D11RHI* Context);
 
     // 토폴로지 옵션
     EMeshTopology Topology = EMeshTopology::EMT_Undefined;
 
-    // CPU 데이터
+    // Deprecated
+    // 이제 메시는 FMeshData 대신 SceneAssetBinder에서 관리함
+    // PrimitiveXXX 삭제되면 이것도 삭제할 것.
     TArray<FPrimitiveVertex> Vertices;
+    // Deprecated
+    // 이제 메시는 FMeshData 대신 SceneAssetBinder에서 관리함
+    // PrimitiveXXX 삭제되면 이것도 삭제할 것.
     TArray<uint32>           Indices;
-
-    // GPU 버퍼) 렌더 파이프라인에서 알아서 관리됨.
-    // Submit하기 전에는 신경쓸 필요 없음
-    ID3D11Buffer* VertexBuffer = nullptr;
-    ID3D11Buffer* IndexBuffer = nullptr;
+    
+    uint32 VertexBufferCount;
+    uint32 IndexBufferCount;
+    
+    // SceneAssetBinder에서 설정됨
+    std::shared_ptr<RHI::FRHIVertexBuffer> VertexBuffer = nullptr;
+    std::shared_ptr<RHI::FRHIIndexBuffer> IndexBuffer = nullptr;
 
     /** AABB Box Extent 및 Local Bound Radius 갱신 */
     void  UpdateLocalBound();

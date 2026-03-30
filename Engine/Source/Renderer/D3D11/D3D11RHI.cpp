@@ -1,6 +1,9 @@
 #include "Core/HAL/PlatformTypes.h"
 #include "Renderer/D3D11/D3D11RHI.h"
 
+#include "RHI/RHIBuffer.h"
+#include "RHI/D3D11/D3D11Buffer.h"
+
 bool FD3D11RHI::Initialize(HWND InWindowHandle)
 {
     if (InWindowHandle == nullptr)
@@ -566,20 +569,23 @@ void FD3D11RHI::SetInputLayout(ID3D11InputLayout* InInputLayout) const
     }
 }
 
-void FD3D11RHI::SetVertexBuffer(uint32 InSlot, ID3D11Buffer* InVertexBuffer, uint32 InStride,
+void FD3D11RHI::SetVertexBuffer(uint32 InSlot, RHI::FRHIVertexBuffer* InVertexBuffer, uint32 InStride,
                                        uint32 InOffset) const
 {
     if (DeviceContext == nullptr)
-    {
         return;
-    }
 
     UINT Slot = static_cast<UINT>(InSlot);
     UINT Stride = static_cast<UINT>(InStride);
     UINT Offset = static_cast<UINT>(InOffset);
-    DeviceContext->IASetVertexBuffers(Slot, 1, &InVertexBuffer, &Stride, &Offset);
+    if (InVertexBuffer)
+    {
+        ID3D11Buffer* RawBufferPtr = static_cast<RHI::D3D11::FD3D11VertexBuffer*>(InVertexBuffer)->GetBuffer();
+        DeviceContext->IASetVertexBuffers(Slot, 1, &RawBufferPtr, &Stride, &Offset);
+    }
 }
 
+// TODO: RHI 반영하여 함수 수정
 void FD3D11RHI::SetVertexBuffers(uint32 InStartSlot, uint32 InBufferCount,
                                         ID3D11Buffer* const* InBuffers, const uint32* InStrides,
                                         const uint32* InOffsets) const
@@ -608,12 +614,16 @@ void FD3D11RHI::SetVertexBuffers(uint32 InStartSlot, uint32 InBufferCount,
                                       Offsets);
 }
 
-void FD3D11RHI::SetIndexBuffer(ID3D11Buffer* InIndexBuffer, DXGI_FORMAT InFormat,
+void FD3D11RHI::SetIndexBuffer(RHI::FRHIIndexBuffer* InIndexBuffer, DXGI_FORMAT InFormat,
                                       uint32 InOffset) const
 {
-    if (DeviceContext)
+    if (!DeviceContext) 
+        return;
+    
+    if (InIndexBuffer)
     {
-        DeviceContext->IASetIndexBuffer(InIndexBuffer, InFormat, static_cast<UINT>(InOffset));
+        ID3D11Buffer* RawBufferPtr = static_cast<RHI::D3D11::FD3D11IndexBuffer*>(InIndexBuffer)->GetBuffer();
+        DeviceContext->IASetIndexBuffer(RawBufferPtr, InFormat, static_cast<UINT>(InOffset));
     }
 }
 

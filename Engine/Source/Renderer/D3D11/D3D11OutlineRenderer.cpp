@@ -432,39 +432,5 @@ void FD3D11OutlineRenderer::BindPrimitiveTopology(EMeshPrimitiveTopology InTopol
 
 void FD3D11OutlineRenderer::DrawItems(const FColor& InColor, float InScale)
 {
-    if (RHI == nullptr || CurrentSceneView == nullptr)
-    {
-        return;
-    }
-
-    for (const FOutlineRenderItem& Item : RenderItems)
-    {
-        FOutlineMeshResource* MeshResource = GetBasicMeshResource(Item.MeshType);
-        if (MeshResource == nullptr || MeshResource->VertexBuffer == nullptr ||
-            MeshResource->IndexBuffer == nullptr || MeshResource->IndexCount == 0)
-        {
-            continue;
-        }
-
-        BindPrimitiveTopology(MeshResource->Topology);
-
-        const UINT    Stride = sizeof(FVertexSimple);
-        const UINT    Offset = 0;
-        ID3D11Buffer* VertexBuffer = MeshResource->VertexBuffer.Get();
-
-        RHI->SetVertexBuffer(0, VertexBuffer, Stride, Offset);
-        RHI->SetIndexBuffer(MeshResource->IndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
-
-        FMeshUnlitConstants Constants = {};
-        Constants.MVP =
-            Item.World.ApplyScale(InScale) * CurrentSceneView->GetViewProjectionMatrix();
-        Constants.BaseColor = InColor;
-
-        if (!RHI->UpdateConstantBuffer(ConstantBuffer.Get(), &Constants, sizeof(Constants)))
-        {
-            continue;
-        }
-
-        RHI->DrawIndexed(MeshResource->IndexCount, 0, 0);
-    }
+    // TODO: Delete FD3D11OutlineRenderer::DrawItems
 }
