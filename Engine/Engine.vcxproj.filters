@@ -384,13 +384,13 @@
     <ClCompile Include="Source\Engine\Scene\SceneAssetBinder.cpp">
       <Filter>Source\Engine\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\Scene\SceneAssetPath.cpp">
+      <Filter>Source\Engine\Scene</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Engine\Scene\Serialization\Common\SceneJsonConverters.cpp">
       <Filter>Source\Engine\Scene\Serialization\Common</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Scene\Serialization\Common\SceneJsonFieldReader.cpp">
-      <Filter>Source\Engine\Scene\Serialization\Common</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Scene\Serialization\Common\SceneJsonUtils.cpp">
       <Filter>Source\Engine\Scene\Serialization\Common</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Scene\Serialization\Core\SceneDeserializer.cpp">
@@ -884,13 +884,13 @@
     <ClInclude Include="Source\Engine\Scene\SceneAssetBinder.h">
       <Filter>Source\Engine\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Engine\Scene\SceneAssetPath.h">
+      <Filter>Source\Engine\Scene</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Engine\Scene\Serialization\Common\SceneJsonConverters.h">
       <Filter>Source\Engine\Scene\Serialization\Common</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Scene\Serialization\Common\SceneJsonFieldReader.h">
-      <Filter>Source\Engine\Scene\Serialization\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Scene\Serialization\Common\SceneJsonUtils.h">
       <Filter>Source\Engine\Scene\Serialization\Common</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Scene\Serialization\Core\SceneDeserializer.h">

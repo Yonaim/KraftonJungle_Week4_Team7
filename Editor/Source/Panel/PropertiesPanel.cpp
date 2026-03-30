@@ -10,8 +10,8 @@
 #include "Engine/Component/Core/UnknownComponent.h"
 #include "Engine/Game/Actor.h"
 #include "Engine/Game/UnknownActor.h"
-#include "Engine/Scene/Serialization/Common/SceneJsonUtils.h"
 #include "Engine/Scene/SceneAssetBinder.h"
+#include "Engine/Scene/SceneAssetPath.h"
 #include "imgui.h"
 
 #include <algorithm>
@@ -305,7 +305,7 @@ namespace
         {
             memcpy(Buffer.data(), InputValue.data(), CopyLength);
         }
-        Buffer[CopyLength] = '\\0';
+        Buffer[CopyLength] = '\0';
 
         ImGui::PushID(LabelId);
         ImGui::TextUnformatted(DisplayLabel);
@@ -345,7 +345,7 @@ namespace
         if (bHovered)
         {
             const std::filesystem::path ResolvedPath =
-                Engine::Scene::Serialization::ResolveSceneAssetPathToAbsolute(
+                Engine::Scene::ResolveSceneAssetPathToAbsolute(
                     bIsAssetPath && AssetPathEditBuffers != nullptr
                         ? (*AssetPathEditBuffers)[Descriptor.Key]
                         : Value);
@@ -800,8 +800,8 @@ void FPropertiesPanel::DrawComponentPropertyEditor(
                 GetContext() != nullptr && GetContext()->AssetCacheManager != nullptr &&
                 GetContext()->DynamicRHI != nullptr)
             {
-                FSceneAssetBinder::BindComponent(
-                    TargetComponent, GetContext()->AssetCacheManager, GetContext()->DynamicRHI);
+                FSceneAssetBinder::BindComponent(TargetComponent, GetContext()->AssetCacheManager,
+                                                 GetContext()->DynamicRHI);
             }
         }
     }

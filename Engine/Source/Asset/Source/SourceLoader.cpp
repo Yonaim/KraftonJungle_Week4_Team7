@@ -4,6 +4,30 @@
 #include <filesystem>
 #include <fstream>
 
+static std::string NarrowFromWide(const std::wstring& In)
+{
+    if (In.empty())
+    {
+        return {};
+    }
+
+    const int RequiredSize =
+        WideCharToMultiByte(CP_UTF8, 0, In.c_str(), -1, nullptr, 0, nullptr, nullptr);
+
+    if (RequiredSize <= 1)
+    {
+        return {};
+    }
+
+    std::string Result;
+    Result.resize(static_cast<size_t>(RequiredSize - 1));
+
+    WideCharToMultiByte(
+        CP_UTF8, 0, In.c_str(), -1, Result.data(), RequiredSize, nullptr, nullptr);
+
+    return Result;
+}
+
 namespace Asset
 {
 
@@ -24,9 +48,24 @@ namespace Asset
         OutFileSize = 0;
         OutWriteTimeTicks = 0;
 
+        const std::wstring NativePath = Path.native();
+        const std::string  DebugPath = NarrowFromWide(NativePath);
+
+        UE_LOG(FEditor, ELogVerbosity::Log, "QueryFileInfo native path: %s", DebugPath.c_str());
+
+        UE_LOG(FEditor, ELogVerbosity::Log, "QueryFileInfo is_absolute=%d is_relative=%d",
+               Path.is_absolute() ? 1 : 0, Path.is_relative() ? 1 : 0);
+
         std::error_code Ec;
-        if (!std::filesystem::exists(Path, Ec) || Ec)
+        const bool      bExists = std::filesystem::exists(Path, Ec);
+
+        UE_LOG(FEditor, ELogVerbosity::Log, "QueryFileInfo exists=%d ec=%d", bExists ? 1 : 0,
+               static_cast<int>(Ec.value()));
+
+        if (!bExists || Ec)
         {
+            UE_LOG(FEditor, ELogVerbosity::Error, "QueryFileInfo exists() failed: %s",
+                   DebugPath.c_str());
             return false;
         }
 

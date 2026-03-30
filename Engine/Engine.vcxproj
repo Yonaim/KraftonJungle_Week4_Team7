@@ -147,9 +147,9 @@
     <ClInclude Include="Source\Engine\Game\UnknownActor.h" />
     <ClInclude Include="Source\Engine\Scene\Scene.h" />
     <ClInclude Include="Source\Engine\Scene\SceneAssetBinder.h" />
+    <ClInclude Include="Source\Engine\Scene\SceneAssetPath.h" />
     <ClInclude Include="Source\Engine\Scene\Serialization\Common\SceneJsonConverters.h" />
     <ClInclude Include="Source\Engine\Scene\Serialization\Common\SceneJsonFieldReader.h" />
-    <ClInclude Include="Source\Engine\Scene\Serialization\Common\SceneJsonUtils.h" />
     <ClInclude Include="Source\Engine\Scene\Serialization\Core\SceneDeserializer.h" />
     <ClInclude Include="Source\Engine\Scene\Serialization\Core\SceneSerializer.h" />
     <ClInclude Include="Source\Engine\Scene\Serialization\Json\SceneJson.h" />
@@ -290,9 +290,9 @@
     <ClCompile Include="Source\Engine\Game\UnknownActor.cpp" />
     <ClCompile Include="Source\Engine\Scene\Scene.cpp" />
     <ClCompile Include="Source\Engine\Scene\SceneAssetBinder.cpp" />
+    <ClCompile Include="Source\Engine\Scene\SceneAssetPath.cpp" />
     <ClCompile Include="Source\Engine\Scene\Serialization\Common\SceneJsonConverters.cpp" />
     <ClCompile Include="Source\Engine\Scene\Serialization\Common\SceneJsonFieldReader.cpp" />
-    <ClCompile Include="Source\Engine\Scene\Serialization\Common\SceneJsonUtils.cpp" />
     <ClCompile Include="Source\Engine\Scene\Serialization\Core\SceneDeserializer.cpp" />
     <ClCompile Include="Source\Engine\Scene\Serialization\Core\SceneSerializer.cpp" />
     <ClCompile Include="Source\Engine\Scene\Serialization\Json\SceneJson.cpp" />
@@ -375,7 +375,6 @@
       <PrecompiledHeaderFile>Core/CoreMinimal.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>Core/CoreMinimal.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <PrecompiledHeaderOutputFile>$(IntDir)CoreMinimal.pch</PrecompiledHeaderOutputFile>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -398,7 +397,6 @@
       <PrecompiledHeaderFile>Core/CoreMinimal.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>Core/CoreMinimal.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <PrecompiledHeaderOutputFile>$(IntDir)CoreMinimal.pch</PrecompiledHeaderOutputFile>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

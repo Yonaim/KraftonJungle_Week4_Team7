@@ -1,9 +1,9 @@
 #include "Engine/Scene/Serialization/Runtime/ScenePropertySerialization.h"
 
 #include "Engine/Scene/Serialization/Common/SceneJsonConverters.h"
-#include "Engine/Scene/Serialization/Common/SceneJsonUtils.h"
 #include "Engine/Component/Core/ComponentProperty.h"
 #include "Engine/Component/Core/SceneComponent.h"
+#include "Engine/Scene/SceneAssetPath.h"
 
 namespace Engine::Scene::Serialization
 {

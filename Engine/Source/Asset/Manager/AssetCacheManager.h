@@ -14,81 +14,81 @@
 namespace Asset
 {
 
-class ENGINE_API FAssetCacheManager
-{
-  public:
-    FAssetCacheManager();
-
-    std::shared_ptr<FTextureCookedData> BuildTexture(const std::filesystem::path& Path,
-                                                     const FTextureBuildSettings& Settings = {});
-    std::shared_ptr<FTextureCookedData> BuildTexture(const FWString& Path,
-                                                     const FTextureBuildSettings& Settings = {})
+    class ENGINE_API FAssetCacheManager
     {
-        return BuildTexture(std::filesystem::path(Path), Settings);
-    }
+      public:
+        FAssetCacheManager();
 
-    std::shared_ptr<FMaterialCookedData> BuildMaterial(const std::filesystem::path& Path);
-    std::shared_ptr<FMaterialCookedData> BuildMaterial(const FWString& Path)
-    {
-        return BuildMaterial(std::filesystem::path(Path));
-    }
+        // -------------------------------------------------------------------------
+        // External API: virtual path (/Game/...) or content-relative path
+        // -------------------------------------------------------------------------
 
-    std::shared_ptr<FStaticMeshCookedData> BuildStaticMesh(const std::filesystem::path& Path,
-                                                           const FStaticMeshBuildSettings& Settings = {});
-    std::shared_ptr<FStaticMeshCookedData> BuildStaticMesh(const FWString& Path,
-                                                           const FStaticMeshBuildSettings& Settings = {})
-    {
-        return BuildStaticMesh(std::filesystem::path(Path), Settings);
-    }
+        std::shared_ptr<FTextureCookedData>
+        BuildTexture(const FString& Path, const FTextureBuildSettings& Settings = {});
+        std::shared_ptr<FMaterialCookedData> BuildMaterial(const FString& Path);
+        std::shared_ptr<FStaticMeshCookedData>
+        BuildStaticMesh(const FString& Path, const FStaticMeshBuildSettings& Settings = {});
+        std::shared_ptr<FSubUVAtlasCookedData>
+        BuildSubUVAtlas(const FString&               Path,
+                        const FTextureBuildSettings& AtlasTextureSettings = {});
+        std::shared_ptr<FFontAtlasCookedData>
+        BuildFontAtlas(const FString& Path, const FTextureBuildSettings& AtlasTextureSettings = {});
 
-    std::shared_ptr<FSubUVAtlasCookedData> BuildSubUVAtlas(
-        const std::filesystem::path& Path, const FTextureBuildSettings& AtlasTextureSettings = {});
-    std::shared_ptr<FSubUVAtlasCookedData> BuildSubUVAtlas(
-        const FWString& Path, const FTextureBuildSettings& AtlasTextureSettings = {})
-    {
-        return BuildSubUVAtlas(std::filesystem::path(Path), AtlasTextureSettings);
-    }
+        template <typename TTag> const FSourceRecord* GetSource(TTag Tag, const FString& Path)
+        {
+            const std::filesystem::path AbsolutePath = ResolveAssetPath(Path);
+            if (AbsolutePath.empty())
+            {
+                return nullptr;
+            }
+            return BuildCache.GetSource(Tag, AbsolutePath);
+        }
 
-    std::shared_ptr<FFontAtlasCookedData> BuildFontAtlas(
-        const std::filesystem::path& Path, const FTextureBuildSettings& AtlasTextureSettings = {});
-    std::shared_ptr<FFontAtlasCookedData> BuildFontAtlas(
-        const FWString& Path, const FTextureBuildSettings& AtlasTextureSettings = {})
-    {
-        return BuildFontAtlas(std::filesystem::path(Path), AtlasTextureSettings);
-    }
+        template <typename TTag> void InvalidateSource(TTag Tag, const FString& Path)
+        {
+            const std::filesystem::path AbsolutePath = ResolveAssetPath(Path);
+            if (AbsolutePath.empty())
+            {
+                return;
+            }
+            BuildCache.InvalidateSource(Tag, AbsolutePath);
+        }
 
-    template <typename TTag> const FSourceRecord* GetSource(TTag Tag, const std::filesystem::path& Path)
-    {
-        return BuildCache.GetSource(Tag, Path);
-    }
+        void ClearAll();
 
-    template <typename TTag> const FSourceRecord* GetSource(TTag Tag, const FWString& Path)
-    {
-        return BuildCache.GetSource(Tag, Path);
-    }
+        FAssetBuildCache&       GetBuildCache() { return BuildCache; }
+        const FAssetBuildCache& GetBuildCache() const { return BuildCache; }
 
-    template <typename TTag> void InvalidateSource(TTag Tag, const std::filesystem::path& Path)
-    {
-        BuildCache.InvalidateSource(Tag, Path);
-    }
+      private:
+        // -------------------------------------------------------------------------
+        // Internal API: absolute filesystem path only
+        // -------------------------------------------------------------------------
 
-    template <typename TTag> void InvalidateSource(TTag Tag, const FWString& Path)
-    {
-        BuildCache.InvalidateSource(Tag, Path);
-    }
+        std::shared_ptr<FTextureCookedData>
+        BuildTextureAbsolute(const std::filesystem::path& AbsolutePath,
+                             const FTextureBuildSettings& Settings = {});
+        std::shared_ptr<FMaterialCookedData>
+        BuildMaterialAbsolute(const std::filesystem::path& AbsolutePath);
+        std::shared_ptr<FStaticMeshCookedData>
+        BuildStaticMeshAbsolute(const std::filesystem::path&    AbsolutePath,
+                                const FStaticMeshBuildSettings& Settings = {});
+        std::shared_ptr<FSubUVAtlasCookedData>
+        BuildSubUVAtlasAbsolute(const std::filesystem::path& AbsolutePath,
+                                const FTextureBuildSettings& AtlasTextureSettings = {});
+        std::shared_ptr<FFontAtlasCookedData>
+        BuildFontAtlasAbsolute(const std::filesystem::path& AbsolutePath,
+                               const FTextureBuildSettings& AtlasTextureSettings = {});
 
-    void ClearAll();
+        static std::filesystem::path ResolveAssetPath(const FString& Path);
+        static FString               StringFromPath(const std::filesystem::path& Path);
 
-    FAssetBuildCache&       GetBuildCache() { return BuildCache; }
-    const FAssetBuildCache& GetBuildCache() const { return BuildCache; }
-
-  private:
-    FAssetBuildCache   BuildCache;
-    FTextureBuilder    TextureBuilder;
-    FMaterialBuilder   MaterialBuilder;
-    FStaticMeshBuilder StaticMeshBuilder;
-    FSubUVAtlasBuilder SubUVAtlasBuilder;
-    FFontAtlasBuilder  FontAtlasBuilder;
-};
+      private:
+        FAssetBuildCache   BuildCache;
+        FTextureBuilder    TextureBuilder;
+        FMaterialBuilder   MaterialBuilder;
+        FStaticMeshBuilder StaticMeshBuilder;
+        FSubUVAtlasBuilder SubUVAtlasBuilder;
+        FFontAtlasBuilder  FontAtlasBuilder;
+    };
 
 } // namespace Asset
