@@ -33,6 +33,8 @@ namespace Engine::Component
 
         void DescribeProperties(FComponentPropertyBuilder& Builder) override;
 
+        void CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const override;
+
         bool GetLocalTriangles(TArray<Geometry::FTriangle>& OutTriangles) const override;
 
       protected:
@@ -42,5 +44,8 @@ namespace Engine::Component
         UTexture* TextureAsset = nullptr;
         bool      bBillboard = false;
         FVector   BillboardOffset = FVector(0.0f, 0.0f, 0.0f);
+
+        mutable std::shared_ptr<FMeshData> MeshData;
+        mutable std::shared_ptr<FMaterial> Material;
     };
 } // namespace Engine::Component

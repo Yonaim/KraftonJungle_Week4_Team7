@@ -147,8 +147,6 @@ if exist "$(ProjectDir)..\Engine\Bin\$(Configuration)\Engine.pdb" copy /Y "$(Pro
     <ClInclude Include="Source\Editor\EditorSettings.h" />
     <ClInclude Include="Source\Editor\Logging\EditorLogBuffer.h" />
     <ClInclude Include="Source\Editor\Logging\EditorLogEntry.h" />
-    <ClInclude Include="Source\Gizmo\EditorGizmoTypes.h" />
-    <ClInclude Include="Source\Gizmo\GizmoDrawDataBuilder.h" />
     <ClInclude Include="Source\Input\ContextModeTypes.h" />
     <ClInclude Include="Source\Input\EditorGlobalContext.h" />
     <ClInclude Include="Source\Input\GizmoInputContext.h" />

@@ -4,11 +4,13 @@
 #include "Renderer/SceneRenderData.h"
 #include "Renderer/Types/SceneShowFlags.h"
 
+namespace Engine::Component { class ULineBatchComponent; }
 class AActor;
 
 class ENGINE_API FScene
 {
   public:
+    FScene();
     ~FScene();
 
     void                   AddActor(AActor* InActor) { Actors.push_back(InActor); }
@@ -22,6 +24,9 @@ class ENGINE_API FScene
 
     TArray<AActor*>* GetActors() { return &Actors; }
 
+    Engine::Component::ULineBatchComponent* GetLineBatcher() const { return LineBatcher; }
+
   private:
     TArray<AActor*> Actors;
+    Engine::Component::ULineBatchComponent* LineBatcher = nullptr;
 };

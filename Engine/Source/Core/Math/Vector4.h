@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Vector.h"
 #include "Core/EngineAPI.h"
 
 struct FMatrix;

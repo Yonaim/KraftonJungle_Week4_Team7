@@ -4,8 +4,11 @@
 #include "Core/Math/Vector4.h"
 #include "Core/Math/Color.h"
 #include "SceneComponent.h"
+#include "Renderer/Types/SceneShowFlags.h"
+#include "NewRenderer/RenderCommand.h"
 
 enum class EBasicMeshType : uint8;
+struct FSceneRenderData;
 
 namespace Engine::Component
 {
@@ -33,8 +36,10 @@ namespace Engine::Component
         bool IsShowBounds() const override { return bShowAABB; }
         void SetShowBounds(bool bNewShowBounds) override { bShowAABB = bNewShowBounds; }
 
+        virtual void CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const;
+
     protected:
-        virtual Geometry::FAABB GetLocalAABB() const = 0;
+        virtual Geometry::FAABB GetLocalAABB() const;
         virtual void            UpdateBounds();
         void                    OnTransformChanged() override;
 
@@ -43,5 +48,6 @@ namespace Engine::Component
         Geometry::FAABB WorldAABB;
         bool            bShowAABB = false;
         bool            bBoundsDirty = true;
+        FRenderCommand  RenderCommand;
     };
 } // namespace Engine::Component

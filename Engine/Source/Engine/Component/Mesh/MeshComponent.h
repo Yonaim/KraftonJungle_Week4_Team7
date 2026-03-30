@@ -11,7 +11,7 @@ namespace Engine::Component
     {
         DECLARE_RTTI(UMeshComponent, UPrimitiveComponent)
       public:
-        UMeshComponent() = default;
+        UMeshComponent();
         ~UMeshComponent() override = default;
     };
 };

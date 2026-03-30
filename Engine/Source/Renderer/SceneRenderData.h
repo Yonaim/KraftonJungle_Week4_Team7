@@ -3,8 +3,11 @@
 #include "Core/Containers/Array.h"
 #include "Renderer/Types/RenderItem.h"
 #include "Renderer/Types/ViewMode.h"
+#include "NewRenderer/RenderCommand.h"
 
 class FSceneView;
+
+namespace Engine::Component { class ULineBatchComponent; }
 
 struct FSceneRenderData
 {
@@ -12,7 +15,5 @@ struct FSceneRenderData
     EViewModeIndex    ViewMode = EViewModeIndex::VMI_Lit;
     bool              bUseInstancing = true;
 
-    TArray<FPrimitiveRenderItem> Primitives;
-    TArray<FSpriteRenderItem>    Sprites;
-    TArray<FTextRenderItem>      Texts;
+    TArray<FRenderCommand> RenderCommands;
 };

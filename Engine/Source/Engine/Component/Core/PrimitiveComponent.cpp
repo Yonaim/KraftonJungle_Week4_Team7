@@ -3,6 +3,12 @@
 
 #include "ComponentProperty.h"
 #include "Core/Geometry/Primitives/AABBUtility.h"
+#include "Core/Misc/BitMaskEnum.h"
+#include "Renderer/SceneRenderData.h"
+#include "Renderer/D3D11/GeneralRenderer.h"
+#include "Renderer/Types/RenderItem.h"
+#include "Renderer/Types/BasicMeshType.h"
+#include "Engine/Game/Actor.h"
 
 #include <cfloat>
 
@@ -31,7 +37,41 @@ namespace Engine::Component
 
     bool UPrimitiveComponent::GetLocalTriangles(TArray<Geometry::FTriangle>& OutTriangles) const
     {
-        return false;
+        OutTriangles.clear();
+
+        if (RenderCommand.MeshData == nullptr)
+        {
+            return false;
+        }
+
+        if (RenderCommand.MeshData->Topology != EMeshTopology::EMT_TriangleList)
+        {
+            return false;
+        }
+
+        const auto& Vertices = RenderCommand.MeshData->Vertices;
+        const auto& Indices = RenderCommand.MeshData->Indices;
+
+        for (uint32_t i = 0; i + 2 < Indices.size(); i += 3)
+        {
+            const uint32_t I0 = Indices[i + 0];
+            const uint32_t I1 = Indices[i + 1];
+            const uint32_t I2 = Indices[i + 2];
+
+            if (I0 >= Vertices.size() || I1 >= Vertices.size() || I2 >= Vertices.size())
+            {
+                continue;
+            }
+
+            Geometry::FTriangle Triangle;
+            Triangle.V0 = Vertices[I0].Position;
+            Triangle.V1 = Vertices[I1].Position;
+            Triangle.V2 = Vertices[I2].Position;
+
+            OutTriangles.push_back(Triangle);
+        }
+
+        return OutTriangles.size() > 0;
     }
 
     void UPrimitiveComponent::Update(float DeltaTime)
@@ -52,6 +92,54 @@ namespace Engine::Component
         Builder.AddColor(
             "color", L"Color", [this]() { return GetColor(); },
             [this](const FColor& InColor) { SetColor(InColor); });
+    }
+
+    void UPrimitiveComponent::CollectRenderData(FSceneRenderData& OutRenderData,
+                                                ESceneShowFlags   InShowFlags) const
+    {
+        if (!IsFlagSet(InShowFlags, ESceneShowFlags::SF_Primitives))
+        {
+            return;
+        }
+
+        AActor* Actor = GetOwnerActor();
+        if (Actor == nullptr)
+        {
+            return;
+        }
+
+        FRenderCommand& MutableRenderCommand = const_cast<FRenderCommand&>(RenderCommand);
+        if (MutableRenderCommand.MeshData == nullptr)
+        {
+            return;
+        }
+
+        if (MutableRenderCommand.Material == nullptr)
+        {
+            MutableRenderCommand.Material = FGeneralRenderer::GetDefaultMaterial();
+        }
+
+        MutableRenderCommand.WorldMatrix = GetRelativeMatrix();
+        MutableRenderCommand.ObjectId = Actor->GetObjectId();
+        MutableRenderCommand.bDrawAABB = Actor->IsSelected() || Actor->IsShowBounds();
+        MutableRenderCommand.WorldAABB = GetWorldAABB();
+
+        MutableRenderCommand.bIsVisible = Actor->IsVisible();
+        MutableRenderCommand.bIsPickable = Actor->IsPickable();
+        MutableRenderCommand.bIsSelected = Actor->IsSelected();
+        MutableRenderCommand.bIsHovered = Actor->IsHovered();
+
+        OutRenderData.RenderCommands.push_back(MutableRenderCommand);
+    }
+
+    Geometry::FAABB UPrimitiveComponent::GetLocalAABB() const
+    {
+        if (RenderCommand.MeshData)
+        {
+            return Geometry::FAABB(RenderCommand.MeshData->GetMinCoord(), RenderCommand.MeshData->GetMaxCoord());
+        }
+
+        return Geometry::FAABB();
     }
 
     void UPrimitiveComponent::UpdateBounds()

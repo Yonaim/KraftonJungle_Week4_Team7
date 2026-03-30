@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Vector4.h"
 #include "../EngineAPI.h"
 
 struct ENGINE_API FColor
@@ -9,6 +10,19 @@ struct ENGINE_API FColor
 
     constexpr FColor(float InR, float InG, float InB, float InA) : r(InR), g(InG), b(InB), a(InA) {}
     ~FColor() = default;
+    
+    FColor(const FVector4& Other)
+    {
+        r = Other.X;
+        g = Other.Y;
+        b = Other.Z;
+        a = Other.W;
+    }
+    
+    operator FVector4() const
+    {
+        return FVector4{ r, g, b, a };
+    }
 
   public:
     static constexpr FColor White() { return FColor(1.0f, 1.0f, 1.0f, 1.0f); }

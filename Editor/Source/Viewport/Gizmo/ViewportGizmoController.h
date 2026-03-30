@@ -2,7 +2,6 @@
 #include "Core/CoreMinimal.h"
 #include "Engine/ViewPort/ViewportController.h"
 #include "Engine/Component/Core/SceneComponent.h"
-#include "Gizmo/EditorGizmoTypes.h"
 #include "Renderer/Types/PickResult.h"
 #include <ApplicationCore/Input/InputState.h>
 

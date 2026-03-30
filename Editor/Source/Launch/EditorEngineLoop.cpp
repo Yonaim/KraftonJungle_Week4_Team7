@@ -617,7 +617,7 @@ bool FEditorEngineLoop::RunFrameOnceWithoutResize()
     Editor->SetMainLoopFPS(MainLoopFPS);
     
     Editor->Tick(DeltaTime, InputSystem);
-
+    
     Renderer->BeginFrame();
 
     TArray<FViewport*> Views = Editor->GetViewportTab().GetViewports();

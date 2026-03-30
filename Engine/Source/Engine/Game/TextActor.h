@@ -5,7 +5,7 @@
 namespace Engine::Component
 {
     class UPrimitiveComponent;
-    class UAtlasTextComponent;
+    class UTextRenderComponent;
 }
 
 class ENGINE_API ATextActor : public AActor
@@ -16,7 +16,7 @@ class ENGINE_API ATextActor : public AActor
     ATextActor();
     ~ATextActor() override = default;
 
-    Engine::Component::UAtlasTextComponent* GetTextComponent() const;
+    Engine::Component::UTextRenderComponent* GetTextComponent() const;
 
     bool           IsRenderable() const override;
     bool           IsSelected() const override;

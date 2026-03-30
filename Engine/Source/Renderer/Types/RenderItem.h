@@ -30,7 +30,7 @@ struct FRenderItemState
     uint32           ObjectId = 0;
     ERenderItemFlags Flags = ERenderItemFlags::Visible | ERenderItemFlags::Pickable;
 
-    bool bShowBounds = false;
+    bool  bShowBounds= false;
 
     bool IsVisible() const { return IsFlagSet(Flags, ERenderItemFlags::Visible); }
     bool IsPickable() const { return IsFlagSet(Flags, ERenderItemFlags::Pickable); }

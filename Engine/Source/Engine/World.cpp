@@ -104,10 +104,6 @@ void FWorld::BuildRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags In
     const EViewModeIndex ViewMode = OutRenderData.ViewMode;
     const bool bUseInstancing = OutRenderData.bUseInstancing;
 
-    OutRenderData.Primitives.clear();
-    OutRenderData.Sprites.clear();
-    OutRenderData.Texts.clear();
-
     auto AppendScene = [&](const FScene* Scene)
     {
         if (Scene == nullptr)
@@ -121,15 +117,9 @@ void FWorld::BuildRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags In
         SceneRenderData.bUseInstancing = bUseInstancing;
         Scene->BuildRenderData(SceneRenderData, InShowFlags);
 
-        OutRenderData.Primitives.insert(OutRenderData.Primitives.end(),
-                                        SceneRenderData.Primitives.begin(),
-                                        SceneRenderData.Primitives.end());
-        OutRenderData.Sprites.insert(OutRenderData.Sprites.end(),
-                                     SceneRenderData.Sprites.begin(),
-                                     SceneRenderData.Sprites.end());
-        OutRenderData.Texts.insert(OutRenderData.Texts.end(),
-                                   SceneRenderData.Texts.begin(),
-                                   SceneRenderData.Texts.end());
+        OutRenderData.RenderCommands.insert(OutRenderData.RenderCommands.end(),
+                                    SceneRenderData.RenderCommands.begin(),
+                                    SceneRenderData.RenderCommands.end());
     };
 
     AppendScene(ActiveScene);

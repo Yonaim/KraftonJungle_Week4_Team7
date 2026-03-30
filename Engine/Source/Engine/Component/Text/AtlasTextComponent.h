@@ -2,6 +2,7 @@
 
 #include "Engine/Asset/FontAtlas.h"
 #include "TextRenderComponent.h"
+#include "Engine/Component/Text/TextRenderComponent.h"
 
 class AActor;
 

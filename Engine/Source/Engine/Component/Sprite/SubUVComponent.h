@@ -26,6 +26,10 @@ namespace Engine::Component
 
         int32 GetFrameCount() const;
 
+        // USpriteComponent 오버라이드
+        void GetUVs(FVector2& OutUVMin, FVector2& OutUVMax) const;
+
+        // UAtlasComponent 오버라이드
         void DescribeProperties(FComponentPropertyBuilder& Builder) override;
 
       protected:
