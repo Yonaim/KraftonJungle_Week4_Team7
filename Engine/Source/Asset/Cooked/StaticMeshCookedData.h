@@ -16,6 +16,7 @@ struct FStaticMeshCookedData
 
     TArray<uint32>                 Indices;
     TArray<FStaticMeshSectionData> Sections;
+    TArray<FString>                MaterialSlotNames;
 
     bool bHasNormals = false;
     bool bHasColors = false;
@@ -35,6 +36,7 @@ struct FStaticMeshCookedData
         VertexCount = 0;
         Indices.clear();
         Sections.clear();
+        MaterialSlotNames.clear();
         bHasNormals = false;
         bHasColors = false;
         bHasUVs = false;

@@ -1,5 +1,7 @@
 #include "StaticMesh.h"
 
+#include "Engine/Asset/Material.h"
+
 #include <algorithm>
 #include <cassert>
 #include <cfloat>
@@ -48,6 +50,25 @@ bool UStaticMesh::LoadFromCooked(const FString&                         InAssetP
     SetAssetName(BuildAssetNameFromPath(InAssetPath));
     SetCookedData(std::move(InCookedData));
     SetRenderResource(std::move(NewRenderResource));
+
+    Sections.clear();
+    MaterialSlots.clear();
+
+    if (CookedData)
+    {
+        MaterialSlots.resize(CookedData->MaterialSlotNames.size(), nullptr);
+        Sections.reserve(CookedData->Sections.size());
+
+        for (const FStaticMeshSectionData& CookedSection : CookedData->Sections)
+        {
+            FStaticMeshSection Section;
+            Section.FirstIndex = CookedSection.StartIndex;
+            Section.IndexCount = CookedSection.IndexCount;
+            Section.MaterialIndex = CookedSection.MaterialIndex;
+            Sections.push_back(Section);
+        }
+    }
+
     Build();
     SetLoaded(true);
     return true;

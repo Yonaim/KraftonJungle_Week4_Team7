@@ -432,25 +432,23 @@ namespace Asset
         Result->VertexStride = ResolveVertexStride(Result->VertexFormat);
 
         std::unordered_map<FObjVertexKey, uint32, FObjVertexKeyHasher> VertexMap;
+        std::unordered_map<FString, uint32>                             MaterialSlotLookup;
+        TArray<TArray<uint32>>                                          MaterialBuckets;
 
-        FString                 ActiveMaterialName;
-        FStaticMeshSectionData* CurrentSection = nullptr;
-
-        auto EnsureSection = [&](const FString& MaterialName)
+        auto GetOrCreateMaterialIndex = [&](const FString& MaterialName) -> uint32
         {
-            if (CurrentSection != nullptr && ActiveMaterialName == MaterialName)
+            const FString ResolvedMaterialName = MaterialName.empty() ? "Default" : MaterialName;
+            auto          It = MaterialSlotLookup.find(ResolvedMaterialName);
+            if (It != MaterialSlotLookup.end())
             {
-                return;
+                return It->second;
             }
 
-            ActiveMaterialName = MaterialName;
-
-            FStaticMeshSectionData Section;
-            Section.MaterialSlotName = MaterialName.empty() ? "Default" : MaterialName;
-            Section.StartIndex = static_cast<uint32>(Result->Indices.size());
-            Section.IndexCount = 0;
-            Result->Sections.push_back(Section);
-            CurrentSection = &Result->Sections.back();
+            const uint32 NewMaterialIndex = static_cast<uint32>(Result->MaterialSlotNames.size());
+            MaterialSlotLookup.emplace(ResolvedMaterialName, NewMaterialIndex);
+            Result->MaterialSlotNames.push_back(ResolvedMaterialName);
+            MaterialBuckets.emplace_back();
+            return NewMaterialIndex;
         };
 
         auto BuildKey = [&](const FIntermediateMeshFaceVertex& FaceVertex) -> FObjVertexKey
@@ -581,29 +579,50 @@ namespace Asset
 
         for (const FIntermediateMeshFace& Face : Intermediate.Faces)
         {
-            EnsureSection(Face.MaterialName);
+            const uint32 MaterialIndex = GetOrCreateMaterialIndex(Face.MaterialName);
+            TArray<uint32>& Bucket = MaterialBuckets[MaterialIndex];
 
-            const uint32 BaseIndex = static_cast<uint32>(Result->Indices.size());
             for (size_t VertexIndex = 1; VertexIndex + 1 < Face.Vertices.size(); ++VertexIndex)
             {
-                Result->Indices.push_back(GetOrCreateVertexIndex(Face.Vertices[0]));
-                Result->Indices.push_back(GetOrCreateVertexIndex(Face.Vertices[VertexIndex]));
-                Result->Indices.push_back(GetOrCreateVertexIndex(Face.Vertices[VertexIndex + 1]));
+                Bucket.push_back(GetOrCreateVertexIndex(Face.Vertices[0]));
+                Bucket.push_back(GetOrCreateVertexIndex(Face.Vertices[VertexIndex]));
+                Bucket.push_back(GetOrCreateVertexIndex(Face.Vertices[VertexIndex + 1]));
+            }
+        }
+
+        Result->Indices.clear();
+        Result->Sections.clear();
+
+        uint32 StartIndex = 0;
+        for (uint32 MaterialIndex = 0; MaterialIndex < static_cast<uint32>(MaterialBuckets.size());
+             ++MaterialIndex)
+        {
+            const TArray<uint32>& Bucket = MaterialBuckets[MaterialIndex];
+            if (Bucket.empty())
+            {
+                continue;
             }
 
-            if (CurrentSection != nullptr)
-            {
-                CurrentSection->IndexCount +=
-                    static_cast<uint32>(Result->Indices.size() - BaseIndex);
-            }
+            FStaticMeshSectionData Section;
+            Section.MaterialSlotName = Result->MaterialSlotNames[MaterialIndex];
+            Section.StartIndex = StartIndex;
+            Section.IndexCount = static_cast<uint32>(Bucket.size());
+            Section.MaterialIndex = MaterialIndex;
+            Result->Sections.push_back(Section);
+
+            Result->Indices.insert(Result->Indices.end(), Bucket.begin(), Bucket.end());
+            StartIndex += Section.IndexCount;
         }
 
         if (Result->Sections.empty())
         {
+            const uint32 MaterialIndex = GetOrCreateMaterialIndex("Default");
+
             FStaticMeshSectionData Section;
-            Section.MaterialSlotName = "Default";
+            Section.MaterialSlotName = Result->MaterialSlotNames[MaterialIndex];
             Section.StartIndex = 0;
             Section.IndexCount = static_cast<uint32>(Result->Indices.size());
+            Section.MaterialIndex = MaterialIndex;
             Result->Sections.push_back(Section);
         }
 
