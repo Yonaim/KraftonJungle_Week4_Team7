@@ -115,9 +115,6 @@
     <Filter Include="Source\Renderer\RenderAsset">
       <UniqueIdentifier>{37df3f3d-06b0-91a9-da82-c1929332f7ef}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Renderer\Submitter">
-      <UniqueIdentifier>{0939a988-f0bd-8c2c-d846-bfe7b531489e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\Renderer\Types">
       <UniqueIdentifier>{2a470593-b470-7a69-2874-61b9dc3a78a3}</UniqueIdentifier>
     </Filter>
@@ -147,9 +144,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Resources\Mesh\StaticMesh.cpp">
-      <Filter>Resources\Mesh</Filter>
-    </ClCompile>
     <ClCompile Include="Source\ApplicationCore\Input\InputRouter.cpp">
       <Filter>Source\ApplicationCore\Input</Filter>
     </ClCompile>
@@ -284,6 +278,9 @@
     </ClCompile>
     <ClCompile Include="Source\Engine\Component\Core\UnknownComponent.cpp">
       <Filter>Source\Engine\Component\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Component\Mesh\LineBatchComponent.cpp">
+      <Filter>Source\Engine\Component\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Component\Mesh\MeshComponent.cpp">
       <Filter>Source\Engine\Component\Mesh</Filter>
@@ -444,9 +441,6 @@
     <ClCompile Include="Source\NewRenderer\TextMeshBuilder.cpp">
       <Filter>Source\NewRenderer</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Renderer\D3D11\D3D11MeshBatchRenderer.cpp">
-      <Filter>Source\Renderer\D3D11</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Renderer\D3D11\D3D11OutlineRenderer.cpp">
       <Filter>Source\Renderer\D3D11</Filter>
     </ClCompile>
@@ -458,12 +452,6 @@
     </ClCompile>
     <ClCompile Include="Source\Renderer\RendererModule.cpp">
       <Filter>Source\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Renderer\Submitter\OverlayMeshSubmitter.cpp">
-      <Filter>Source\Renderer\Submitter</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Renderer\Submitter\SceneMeshSubmitter.cpp">
-      <Filter>Source\Renderer\Submitter</Filter>
     </ClCompile>
     <ClCompile Include="Source\RHI\D3D11\D3D11Common.cpp">
       <Filter>Source\RHI\D3D11</Filter>
@@ -504,9 +492,6 @@
       <Filter>Resources\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Resources\Mesh\Sphere.h">
-      <Filter>Resources\Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="Resources\Mesh\StaticMesh.h">
       <Filter>Resources\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Resources\Mesh\Triangle.h">
@@ -809,6 +794,9 @@
     <ClInclude Include="Source\Engine\Component\Core\UnknownComponent.h">
       <Filter>Source\Engine\Component\Core</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Engine\Component\Mesh\LineBatchComponent.h">
+      <Filter>Source\Engine\Component\Mesh</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Engine\Component\Mesh\MeshComponent.h">
       <Filter>Source\Engine\Component\Mesh</Filter>
     </ClInclude>
@@ -989,9 +977,6 @@
     <ClInclude Include="Source\Renderer\D3D11\D3D11Common.h">
       <Filter>Source\Renderer\D3D11</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Renderer\D3D11\D3D11MeshBatchRenderer.h">
-      <Filter>Source\Renderer\D3D11</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Renderer\D3D11\D3D11OutlineRenderer.h">
       <Filter>Source\Renderer\D3D11</Filter>
     </ClInclude>
@@ -1021,12 +1006,6 @@
     </ClInclude>
     <ClInclude Include="Source\Renderer\SceneView.h">
       <Filter>Source\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Renderer\Submitter\OverlayMeshSubmitter.h">
-      <Filter>Source\Renderer\Submitter</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Renderer\Submitter\SceneMeshSubmitter.h">
-      <Filter>Source\Renderer\Submitter</Filter>
     </ClInclude>
     <ClInclude Include="Source\Renderer\Types\AxisColors.h">
       <Filter>Source\Renderer\Types</Filter>
@@ -1111,6 +1090,9 @@
     </ClInclude>
     <ClInclude Include="Source\ThirdParty\stb\stb_image.h">
       <Filter>Source\ThirdParty\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ThirdParty\stb_image.h">
+      <Filter>Source\ThirdParty</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

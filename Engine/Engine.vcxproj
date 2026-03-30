@@ -118,6 +118,7 @@
     <ClInclude Include="Source\Engine\Component\Core\PrimitiveComponent.h" />
     <ClInclude Include="Source\Engine\Component\Core\SceneComponent.h" />
     <ClInclude Include="Source\Engine\Component\Core\UnknownComponent.h" />
+    <ClInclude Include="Source\Engine\Component\Mesh\LineBatchComponent.h" />
     <ClInclude Include="Source\Engine\Component\Mesh\MeshComponent.h" />
     <ClInclude Include="Source\Engine\Component\Mesh\StaticMeshComponent.h" />
     <ClInclude Include="Source\Engine\Component\Sprite\AtlasComponent.h" />
@@ -221,7 +222,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Resources\Mesh\StaticMesh.cpp" />
     <ClCompile Include="Source\ApplicationCore\Input\InputRouter.cpp" />
     <ClCompile Include="Source\ApplicationCore\Input\InputSystem.cpp" />
     <ClCompile Include="Source\ApplicationCore\Windows\WindowsApplication.cpp" />
@@ -270,6 +270,7 @@
     <ClCompile Include="Source\Engine\Component\Core\PrimitiveComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Core\SceneComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Core\UnknownComponent.cpp" />
+    <ClCompile Include="Source\Engine\Component\Mesh\LineBatchComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Mesh\MeshComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Mesh\StaticMeshComponent.cpp" />
     <ClCompile Include="Source\Engine\Component\Sprite\AtlasComponent.cpp" />
@@ -333,9 +334,6 @@
     <ClCompile Include="Source\SceneIO\SceneSerializer.cpp" />
     <ClCompile Include="Source\SceneIO\SceneTypeRegistry.cpp" />
     <ClCompile Include="Source\ThirdParty\stb\stb_image_impl.cpp" />
-    <ClCompile Include="Source\SceneIO\SceneJson.cpp" />
-    <ClCompile Include="Source\SceneIO\SceneSerializer.cpp" />
-    <ClCompile Include="Source\SceneIO\SceneTypeRegistry.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

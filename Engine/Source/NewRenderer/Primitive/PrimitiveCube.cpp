@@ -1,5 +1,5 @@
 #include "PrimitiveCube.h"
-#include "Core/Path.h"
+#include "Core/Misc/Paths.h"
 
 const FString CPrimitiveCube::Key = "Cube";
 

@@ -1,6 +1,4 @@
 #include "TextRenderComponent.h"
-#include "Asset/AssetManager.h"
-#include "Asset/FontAsset.h"
 #include "Engine/Component/Core/ComponentProperty.h"
 #include "Engine/Game/Actor.h"
 #include "SceneIO/SceneAssetPath.h"
@@ -217,35 +215,35 @@ namespace Engine::Component
 
     void UTextRenderComponent::ResolveAssetReferences(UAssetManager* InAssetManager)
     {
-        FontResource = nullptr;
-
-        if (InAssetManager == nullptr || FontPath.empty())
-        {
-            return;
-        }
-
-        const std::filesystem::path AbsolutePath =
-            Engine::SceneIO::ResolveSceneAssetPathToAbsolute(FontPath);
-        if (AbsolutePath.empty())
-        {
-            UE_LOG(Asset, ELogVerbosity::Warning,
-                   "Failed to resolve font path for TextRenderComponent: %s", FontPath.c_str());
-            return;
-        }
-
-        FAssetLoadParams LoadParams;
-        LoadParams.ExplicitType = EAssetType::Font;
-
-        UAsset*     LoadedAsset = InAssetManager->Load(AbsolutePath.native(), LoadParams);
-        UFontAsset* FontAsset = Cast<UFontAsset>(LoadedAsset);
-        if (FontAsset == nullptr)
-        {
-            UE_LOG(Asset, ELogVerbosity::Warning,
-                   "Failed to load font asset for TextRenderComponent: %s", FontPath.c_str());
-            return;
-        }
-
-        SetFontResource(&FontAsset->GetResource());
+        // FontResource = nullptr;
+        //
+        // if (InAssetManager == nullptr || FontPath.empty())
+        // {
+        //     return;
+        // }
+        //
+        // const std::filesystem::path AbsolutePath =
+        //     Engine::SceneIO::ResolveSceneAssetPathToAbsolute(FontPath);
+        // if (AbsolutePath.empty())
+        // {
+        //     UE_LOG(Asset, ELogVerbosity::Warning,
+        //            "Failed to resolve font path for TextRenderComponent: %s", FontPath.c_str());
+        //     return;
+        // }
+        //
+        // FAssetLoadParams LoadParams;
+        // LoadParams.ExplicitType = EAssetType::Font;
+        //
+        // UAsset*     LoadedAsset = InAssetManager->Load(AbsolutePath.native(), LoadParams);
+        // UFontAsset* FontAsset = Cast<UFontAsset>(LoadedAsset);
+        // if (FontAsset == nullptr)
+        // {
+        //     UE_LOG(Asset, ELogVerbosity::Warning,
+        //            "Failed to load font asset for TextRenderComponent: %s", FontPath.c_str());
+        //     return;
+        // }
+        //
+        // SetFontResource(&FontAsset->GetResource());
     }
 
     EBasicMeshType UTextRenderComponent::GetBasicMeshType() const { return EBasicMeshType::Quad; }
@@ -439,56 +437,56 @@ namespace Engine::Component
             MeshData->Topology = EMeshTopology::EMT_TriangleList;
 
             FTextLayout Layout = BuildTextLayout();
-            if (Layout.IsValid())
-            {
-                const float InvW = FontResource->GetInvAtlasWidth();
-                const float InvH = FontResource->GetInvAtlasHeight();
-                
-                float CenterX = (Layout.MinX + Layout.MaxX) * 0.5f;
-                float CenterY = (Layout.MinY + Layout.MaxY) * 0.5f;
-
-                for (const FLaidOutGlyph& G : Layout.Glyphs)
-                {
-                    uint32 BaseIndex = static_cast<uint32>(MeshData->Vertices.size());
-                    
-                    float X0 = G.MinX - CenterX;
-                    float X1 = G.MaxX - CenterX;
-                    float Y0 = CenterY - G.MinY; 
-                    float Y1 = CenterY - G.MaxY;
-
-                    FColor GlyphColor = G.bSolidColorQuad ? G.SolidColor : Color;
-
-                    if (G.Glyph)
-                    {
-                        const float U0 = static_cast<float>(G.Glyph->X) * InvW;
-                        const float V0 = static_cast<float>(G.Glyph->Y) * InvH;
-                        const float U1 = static_cast<float>(G.Glyph->X + G.Glyph->Width) * InvW;
-                        const float V1 = static_cast<float>(G.Glyph->Y + G.Glyph->Height) * InvH;
-
-                        // PaperSpriteComponent style: Local X is Vertical (Up), Local Y is Horizontal (Right)
-                        MeshData->Vertices.push_back({ FVector(Y1, X0, 0), GlyphColor, FVector(0,0,1), FVector2(U0, V1) }); // BL
-                        MeshData->Vertices.push_back({ FVector(Y1, X1, 0), GlyphColor, FVector(0,0,1), FVector2(U1, V1) }); // BR
-                        MeshData->Vertices.push_back({ FVector(Y0, X1, 0), GlyphColor, FVector(0,0,1), FVector2(U1, V0) }); // TR
-                        MeshData->Vertices.push_back({ FVector(Y0, X0, 0), GlyphColor, FVector(0,0,1), FVector2(U0, V0) }); // TL
-                    }
-                    else
-                    {
-                        // PaperSpriteComponent style: Local X is Vertical (Up), Local Y is Horizontal (Right)
-                        MeshData->Vertices.push_back({ FVector(Y1, X0, 0), GlyphColor, FVector(0,0,1), FVector2(0, 1) }); // BL
-                        MeshData->Vertices.push_back({ FVector(Y1, X1, 0), GlyphColor, FVector(0,0,1), FVector2(1, 1) }); // BR
-                        MeshData->Vertices.push_back({ FVector(Y0, X1, 0), GlyphColor, FVector(0,0,1), FVector2(1, 0) }); // TR
-                        MeshData->Vertices.push_back({ FVector(Y0, X0, 0), GlyphColor, FVector(0,0,1), FVector2(0, 0) }); // TL
-                    }
-
-                    MeshData->Indices.push_back(BaseIndex + 0);
-                    MeshData->Indices.push_back(BaseIndex + 2);
-                    MeshData->Indices.push_back(BaseIndex + 1);
-                    MeshData->Indices.push_back(BaseIndex + 0);
-                    MeshData->Indices.push_back(BaseIndex + 3);
-                    MeshData->Indices.push_back(BaseIndex + 2);
-                }
-                MeshData->UpdateLocalBound();
-            }
+            // if (Layout.IsValid())
+            // {
+            //     const float InvW = FontResource->GetInvAtlasWidth();
+            //     const float InvH = FontResource->GetInvAtlasHeight();
+            //     
+            //     float CenterX = (Layout.MinX + Layout.MaxX) * 0.5f;
+            //     float CenterY = (Layout.MinY + Layout.MaxY) * 0.5f;
+            //
+            //     for (const FLaidOutGlyph& G : Layout.Glyphs)
+            //     {
+            //         uint32 BaseIndex = static_cast<uint32>(MeshData->Vertices.size());
+            //         
+            //         float X0 = G.MinX - CenterX;
+            //         float X1 = G.MaxX - CenterX;
+            //         float Y0 = CenterY - G.MinY; 
+            //         float Y1 = CenterY - G.MaxY;
+            //
+            //         FColor GlyphColor = G.bSolidColorQuad ? G.SolidColor : Color;
+            //
+            //         if (G.Glyph)
+            //         {
+            //             const float U0 = static_cast<float>(G.Glyph->X) * InvW;
+            //             const float V0 = static_cast<float>(G.Glyph->Y) * InvH;
+            //             const float U1 = static_cast<float>(G.Glyph->X + G.Glyph->Width) * InvW;
+            //             const float V1 = static_cast<float>(G.Glyph->Y + G.Glyph->Height) * InvH;
+            //
+            //             // PaperSpriteComponent style: Local X is Vertical (Up), Local Y is Horizontal (Right)
+            //             MeshData->Vertices.push_back({ FVector(Y1, X0, 0), GlyphColor, FVector(0,0,1), FVector2(U0, V1) }); // BL
+            //             MeshData->Vertices.push_back({ FVector(Y1, X1, 0), GlyphColor, FVector(0,0,1), FVector2(U1, V1) }); // BR
+            //             MeshData->Vertices.push_back({ FVector(Y0, X1, 0), GlyphColor, FVector(0,0,1), FVector2(U1, V0) }); // TR
+            //             MeshData->Vertices.push_back({ FVector(Y0, X0, 0), GlyphColor, FVector(0,0,1), FVector2(U0, V0) }); // TL
+            //         }
+            //         else
+            //         {
+            //             // PaperSpriteComponent style: Local X is Vertical (Up), Local Y is Horizontal (Right)
+            //             MeshData->Vertices.push_back({ FVector(Y1, X0, 0), GlyphColor, FVector(0,0,1), FVector2(0, 1) }); // BL
+            //             MeshData->Vertices.push_back({ FVector(Y1, X1, 0), GlyphColor, FVector(0,0,1), FVector2(1, 1) }); // BR
+            //             MeshData->Vertices.push_back({ FVector(Y0, X1, 0), GlyphColor, FVector(0,0,1), FVector2(1, 0) }); // TR
+            //             MeshData->Vertices.push_back({ FVector(Y0, X0, 0), GlyphColor, FVector(0,0,1), FVector2(0, 0) }); // TL
+            //         }
+            //
+            //         MeshData->Indices.push_back(BaseIndex + 0);
+            //         MeshData->Indices.push_back(BaseIndex + 2);
+            //         MeshData->Indices.push_back(BaseIndex + 1);
+            //         MeshData->Indices.push_back(BaseIndex + 0);
+            //         MeshData->Indices.push_back(BaseIndex + 3);
+            //         MeshData->Indices.push_back(BaseIndex + 2);
+            //     }
+            //     MeshData->UpdateLocalBound();
+            // }
         }
 
         if (!Material && FontResource)

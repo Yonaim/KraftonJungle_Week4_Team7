@@ -1,5 +1,5 @@
 #include "PrimitiveSphere.h"
-#include "Core/Path.h"
+#include "Core/Misc/Paths.h"
 #include "Core/Math/MathUtility.h"
 #include <cmath>
 

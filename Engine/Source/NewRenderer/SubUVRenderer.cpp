@@ -5,7 +5,7 @@
 #include "NewRenderer/Renderer.h"
 #include "NewRenderer/RenderStateManager.h"
 #include "Primitive/PrimitiveBase.h"
-#include "Core/Path.h"
+#include "Core/Misc/Paths.h"
 #include <WICTextureLoader.h>
 #include <algorithm>
 

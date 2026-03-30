@@ -1,9 +1,8 @@
 #include "MaterialManager.h"
 #include "NewRenderer/RenderStateManager.h"
 #include "Material.h"
-#include "Shader.h"
 #include "ShaderMap.h"
-#include "Core/Path.h"
+#include "Core/Misc/Paths.h"
 #include "Core/Logging/LogMacros.h"
 #include "ThirdParty/Json/json.hpp"
 #include <fstream>

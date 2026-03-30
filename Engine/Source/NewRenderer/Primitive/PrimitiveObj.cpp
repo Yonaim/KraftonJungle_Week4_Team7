@@ -1,5 +1,5 @@
 #include "PrimitiveObj.h"
-#include "Core/Path.h"
+#include "Core/Misc/Paths.h"
 #include <fstream>
 #include <sstream>
 

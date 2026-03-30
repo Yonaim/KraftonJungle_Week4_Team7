@@ -1,5 +1,5 @@
 #include "ShaderResource.h"
-#include "Core/Path.h"
+#include "Core/Misc/Paths.h"
 #include <d3dcompiler.h>
 #include <filesystem>
 #include <fstream>

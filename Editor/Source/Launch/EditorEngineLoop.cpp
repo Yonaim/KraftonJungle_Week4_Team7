@@ -8,7 +8,6 @@
 #include "imgui_internal.h"
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
-#include <cstring>
 
 #include "Core/Misc/NameSubsystem.h"
 
@@ -201,7 +200,7 @@ bool FEditorEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
                 FPickResult Result;
 
                 // EngineLoop는 Renderer와 Editor 모두에 접근 가능하므로 픽킹을 직접 수행해서 반환
-                Renderer->Pick(Editor->GetEditorRenderData()[i], 
+                Renderer->Pick(Editor->GetEditorRenderData()[i], Editor->GetSceneRenderData()[i],
                     Editor->GetViewportTab().GetViewports()[i]->GetSceneView()->GetWorldX(X), 
                     Editor->GetViewportTab().GetViewports()[i]->GetSceneView()->GetWorldY(Y), 
                     Result);

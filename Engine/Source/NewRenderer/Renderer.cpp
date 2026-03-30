@@ -4,13 +4,10 @@
 #include "ShaderMap.h"
 #include "Material.h"
 #include "MaterialManager.h"
-#include "Core/Path.h"
+#include "Core/Misc/Paths.h"
 #include "Primitive/PrimitiveBase.h"
 #include <cassert>
 #include <algorithm>
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "ThirdParty/stb_image.h"
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -469,27 +466,6 @@ void CRenderer::UpdateObjectConstantBuffer(const FMatrix& WorldMatrix)
 		memcpy(Mapped.pData, &CBData, sizeof(CBData));
 		DeviceContext->Unmap(ObjectConstantBuffer, 0);
 	}
-}
-bool CRenderer::CreateTextureFromSTB(ID3D11Device* Device, const char* FilePath, ID3D11ShaderResourceView** OutSRV)
-{
-	int W, H, C;
-	unsigned char* Data = stbi_load(FilePath, &W, &H, &C, 4);
-	if (!Data) return false;
-
-	D3D11_TEXTURE2D_DESC Desc = {};
-	Desc.Width = W; Desc.Height = H; Desc.MipLevels = 1; Desc.ArraySize = 1;
-	Desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; Desc.SampleDesc.Count = 1;
-	Desc.Usage = D3D11_USAGE_DEFAULT; Desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-
-	D3D11_SUBRESOURCE_DATA InitData = { Data, static_cast<UINT>(W * 4), 0 };
-	ID3D11Texture2D* Tex = nullptr;
-	HRESULT hr = Device->CreateTexture2D(&Desc, &InitData, &Tex);
-	stbi_image_free(Data);
-	if (FAILED(hr)) return false;
-
-	hr = Device->CreateShaderResourceView(Tex, nullptr, OutSRV);
-	Tex->Release();
-	return SUCCEEDED(hr);
 }
 
 bool CRenderer::InitOutlineResources()

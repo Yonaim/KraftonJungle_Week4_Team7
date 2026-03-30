@@ -1,7 +1,7 @@
 #include "Core/CoreMinimal.h"
 #include "GeneralRenderer.h"
 
-#include "Core/Path.h"
+#include "Core/Misc/Paths.h"
 #include "NewRenderer/Material.h"
 #include "NewRenderer/MaterialManager.h"
 #include "NewRenderer/ShaderMap.h"

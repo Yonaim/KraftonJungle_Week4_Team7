@@ -1,5 +1,5 @@
 #include "PrimitivePlane.h"
-#include "Core/Path.h"
+#include "Core/Misc/Paths.h"
 
 const FString CPrimitivePlane::Key = "Plane";
 

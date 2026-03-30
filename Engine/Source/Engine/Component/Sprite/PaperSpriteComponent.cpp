@@ -1,5 +1,7 @@
 #include "PaperSpriteComponent.h"
 
+#include <filesystem>
+
 #include "Engine/Component/Core/ComponentProperty.h"
 #include "Resources/Mesh/Quad.h"
 #include "Renderer/SceneRenderData.h"
@@ -7,6 +9,7 @@
 #include "Renderer/D3D11/GeneralRenderer.h"
 #include "NewRenderer/Material.h"
 #include "Engine/Game/Actor.h"
+#include "SceneIO/SceneAssetPath.h"
 
 namespace Engine::Component
 {
@@ -46,39 +49,6 @@ namespace Engine::Component
             [this](bool bInValue) { SetBillboard(bInValue); });
     }
 
-    void UPaperSpriteComponent::ResolveAssetReferences(UAssetManager* InAssetManager)
-    {
-        TextureResource = nullptr;
-
-        if (InAssetManager == nullptr || TexturePath.empty())
-        {
-            return;
-        }
-
-        const std::filesystem::path AbsolutePath =
-            Engine::SceneIO::ResolveSceneAssetPathToAbsolute(TexturePath);
-        if (AbsolutePath.empty())
-        {
-            UE_LOG(Asset, ELogVerbosity::Warning,
-                   "Failed to resolve texture path for SpriteComponent: %s", TexturePath.c_str());
-            return;
-        }
-
-        FAssetLoadParams LoadParams;
-        LoadParams.ExplicitType = EAssetType::Texture;
-
-        UAsset*          LoadedAsset = InAssetManager->Load(AbsolutePath.native(), LoadParams);
-        UTexture2DAsset* TextureAsset = Cast<UTexture2DAsset>(LoadedAsset);
-        if (TextureAsset == nullptr)
-        {
-            UE_LOG(Asset, ELogVerbosity::Warning,
-                   "Failed to load texture asset for SpriteComponent: %s", TexturePath.c_str());
-            return;
-        }
-
-        SetTextureResource(TextureAsset->GetResource());
-    }
-
     void UPaperSpriteComponent::CollectRenderData(FSceneRenderData& OutRenderData,
                                                   ESceneShowFlags   InShowFlags) const
     {
@@ -108,15 +78,15 @@ namespace Engine::Component
             MeshData->Indices = { 0, 2, 1, 0, 3, 2 }; 
         }
 
-        if (!Material && TextureResource)
+        if (!Material && TextureAsset)
         {
             // Create a dynamic material based on default sprite material and set texture
             Material = FGeneralRenderer::GetDefaultSpriteMaterial()->CreateDynamicMaterial();
             
-            if (TextureResource->GetSRV())
+            if (TextureAsset->GetRenderResource()->GetSRV())
             {
                 auto Tex = std::make_shared<FMaterialTexture>();
-                Tex->TextureSRV = TextureResource->GetSRV();
+                Tex->TextureSRV = TextureAsset->GetRenderResource()->GetSRV();
                 Material->SetMaterialTexture(Tex);
             }
         }

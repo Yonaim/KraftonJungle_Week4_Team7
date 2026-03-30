@@ -109,8 +109,6 @@ private:
 	void UpdateObjectConstantBuffer(const FMatrix& WorldMatrix);
 	void ClearDepthBuffer();
 
-	bool CreateTextureFromSTB(ID3D11Device* Device, const char* FilePath, ID3D11ShaderResourceView** OutSRV);
-
 private:
 	std::unique_ptr<CRenderStateManager> RenderStateManager = nullptr;
 
