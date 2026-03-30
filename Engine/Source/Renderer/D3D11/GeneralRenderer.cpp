@@ -88,7 +88,7 @@ bool FGeneralRenderer::Pick(int32 MouseX, int32 MouseY, uint32& OutPickId)
         if (!Cmd.MeshData || (Cmd.MeshData->Vertices.empty() && Cmd.MeshData->Indices.empty()))
             continue;
 
-        Cmd.MeshData->Bind(DeviceContext);
+        Cmd.MeshData->Bind(&RHI);
         
         D3D11_PRIMITIVE_TOPOLOGY Topology = (D3D11_PRIMITIVE_TOPOLOGY)Cmd.MeshData->Topology;
         DeviceContext->IASetPrimitiveTopology(Topology);
@@ -346,8 +346,8 @@ void FGeneralRenderer::SubmitCommands(const FRenderCommandQueue& Queue)
 
     for (const auto& Cmd : Queue.Commands)
     {
-        if (Cmd.MeshData)
-            Cmd.MeshData->UpdateVertexAndIndexBuffer(RHI.GetDevice());
+        // if (Cmd.MeshData)
+        //     Cmd.MeshData->UpdateVertexAndIndexBuffer(RHI.GetDevice());
         AddCommand(Cmd);
     }
 }
@@ -523,7 +523,7 @@ void FGeneralRenderer::ExecuteRenderPass(ERenderLayer InRenderLayer)
 
         if (Cmd.MeshData != CurrentMesh)
         {
-            Cmd.MeshData->Bind(DeviceContext);
+            Cmd.MeshData->Bind(&RHI);
             CurrentMesh = Cmd.MeshData;
         }
 
@@ -662,6 +662,7 @@ bool FGeneralRenderer::ReadBackMousePixel(int32 MouseX, int32 MouseY, uint32& Ou
     return true;
 }
 
+// TODO: Re-Implement InitializeAABBResources
 void FGeneralRenderer::InitializeAABBResources()
 {
     ID3D11Device* Device = RHI.GetDevice();
@@ -712,7 +713,7 @@ void FGeneralRenderer::InitializeAABBResources()
         0, 4, 1, 5, 2, 6, 3, 7
     };
 
-    AABBMeshData->CreateVertexAndIndexBuffer(Device);
+    // AABBMeshData->CreateVertexAndIndexBuffer(Device);
 }
 
 void FGeneralRenderer::DrawAllAABBLines(ERenderLayer InRenderLayer)
@@ -725,7 +726,7 @@ void FGeneralRenderer::DrawAllAABBLines(ERenderLayer InRenderLayer)
     RenderStateManager->BindState(AABBMaterial->GetRasterizerState());
     RenderStateManager->BindState(AABBMaterial->GetDepthStencilState());
 
-    AABBMeshData->Bind(DeviceContext);
+    AABBMeshData->Bind(&RHI);
     DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 
     for (const auto& Cmd : CommandList)

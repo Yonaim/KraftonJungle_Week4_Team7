@@ -67,8 +67,10 @@ namespace Engine::Component
         if (StaticMesh)
         {
             MeshData->Topology = EMeshTopology::EMT_TriangleList;
-            MeshData->VertexBuffer = std::static_pointer_cast<RHI::D3D11::FD3D11VertexBuffer>(StaticMesh->GetRenderResource()->VertexBuffer)->GetBuffer(); 
-            MeshData->IndexBuffer = std::static_pointer_cast<RHI::D3D11::FD3D11IndexBuffer>(StaticMesh->GetRenderResource()->IndexBuffer)->GetBuffer();
+            MeshData->VertexBufferCount = StaticMesh->GetVerticesCount();
+            MeshData->IndexBufferCount = StaticMesh->GetIndicesCount();
+            MeshData->VertexBuffer = StaticMesh->GetRenderResource()->VertexBuffer; 
+            MeshData->IndexBuffer = StaticMesh->GetRenderResource()->IndexBuffer;
             // DEBUG: 렌더링을 위해 Vertices와 Indices의 count 채우기
             MeshData->Vertices.insert(MeshData->Vertices.begin(), 
                                     StaticMesh->GetRenderResource()->VertexCount,

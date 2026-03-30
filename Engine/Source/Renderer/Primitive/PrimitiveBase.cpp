@@ -2,96 +2,16 @@
 #include <fstream>
 #include <cstdio>
 
+#include "Renderer/D3D11/D3D11RHI.h"
+
 // ─── FMeshData ───
 
-bool FMeshData::UpdateVertexAndIndexBuffer(ID3D11Device* Device)
-{
-    if (!bIsDirty)
-        return true;
-
-    if (CreateVertexAndIndexBuffer(Device))
-    {
-        bIsDirty = false;
-        return true;
-    }
-    return false;
-}
-
-bool FMeshData::CreateVertexAndIndexBuffer(ID3D11Device* Device)
-{
-    if (VertexBuffer)
-    {
-        VertexBuffer->Release();
-        VertexBuffer = nullptr;
-    }
-    if (IndexBuffer)
-    {
-        IndexBuffer->Release();
-        IndexBuffer = nullptr;
-    }
-
-    if (Vertices.empty() || Indices.empty())
-    {
-        return false;
-    }
-
-    // Vertex Buffer
-    D3D11_BUFFER_DESC VBDesc = {};
-    VBDesc.Usage = D3D11_USAGE_IMMUTABLE;
-    VBDesc.ByteWidth = static_cast<UINT>(sizeof(FPrimitiveVertex) * Vertices.size());
-    VBDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-
-    D3D11_SUBRESOURCE_DATA VBData = {};
-    VBData.pSysMem = Vertices.data();
-
-    HRESULT Hr = Device->CreateBuffer(&VBDesc, &VBData, &VertexBuffer);
-    if (FAILED(Hr))
-    {
-        printf("[FMeshData] Failed to create vertex buffer\n");
-        return false;
-    }
-
-    // Index Buffer
-    D3D11_BUFFER_DESC IBDesc = {};
-    IBDesc.Usage = D3D11_USAGE_IMMUTABLE;
-    IBDesc.ByteWidth = static_cast<UINT>(sizeof(uint32) * Indices.size());
-    IBDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-
-    D3D11_SUBRESOURCE_DATA IBData = {};
-    IBData.pSysMem = Indices.data();
-
-    Hr = Device->CreateBuffer(&IBDesc, &IBData, &IndexBuffer);
-    if (FAILED(Hr))
-    {
-        printf("[FMeshData] Failed to create index buffer\n");
-        VertexBuffer->Release();
-        VertexBuffer = nullptr;
-        return false;
-    }
-
-    return true;
-}
-
-void FMeshData::Bind(ID3D11DeviceContext* Context)
+void FMeshData::Bind(FD3D11RHI* Context)
 {
     UINT Stride = sizeof(FPrimitiveVertex);
     UINT Offset = 0;
-    Context->IASetVertexBuffers(0, 1, &VertexBuffer, &Stride, &Offset);
-    Context->IASetIndexBuffer(IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-}
-
-void FMeshData::Release()
-{
-    if (IndexBuffer)
-    {
-        IndexBuffer->Release();
-        IndexBuffer = nullptr;
-    }
-    if (VertexBuffer)
-    {
-        VertexBuffer->Release();
-        VertexBuffer = nullptr;
-    }
+    Context->SetVertexBuffer(0, VertexBuffer.get(), Stride, Offset);
+    Context->SetIndexBuffer(IndexBuffer.get(), DXGI_FORMAT_R32_UINT, 0);
 }
 
 void FMeshData::UpdateLocalBound()

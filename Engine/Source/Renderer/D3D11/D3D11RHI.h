@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Renderer/D3D11/D3D11Common.h"
+#include "RHI/RHIBuffer.h"
 #include "Core/HAL/PlatformTypes.h"
 #include <Windows.h>
 #include <d3dcompiler.h>
@@ -78,11 +79,11 @@ class ENGINE_API FD3D11RHI
 
     void SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY InTopology) const;
     void SetInputLayout(ID3D11InputLayout* InInputLayout) const;
-    void SetVertexBuffer(uint32 InSlot, ID3D11Buffer* InVertexBuffer, uint32 InStride,
+    void SetVertexBuffer(uint32 InSlot, RHI::FRHIVertexBuffer* InVertexBuffer, uint32 InStride,
                          uint32 InOffset) const;
     void SetVertexBuffers(uint32 InStartSlot, uint32 InBufferCount, ID3D11Buffer* const* InBuffers,
                           const uint32* InStrides, const uint32* InOffsets) const;
-    void SetIndexBuffer(ID3D11Buffer* InIndexBuffer, DXGI_FORMAT InFormat, uint32 InOffset) const;
+    void SetIndexBuffer(RHI::FRHIIndexBuffer* InIndexBuffer, DXGI_FORMAT InFormat, uint32 InOffset) const;
 
     void SetVertexShader(ID3D11VertexShader* InVertexShader) const;
     void SetPixelShader(ID3D11PixelShader* InPixelShader) const;
