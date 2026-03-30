@@ -10,7 +10,8 @@
 #include "Engine/Component/Core/UnknownComponent.h"
 #include "Engine/Game/Actor.h"
 #include "Engine/Game/UnknownActor.h"
-#include "Engine/Scene/Serialization//SceneAssetPath.h"
+#include "Engine/Scene/Serialization/Common/SceneJsonUtils.h"
+#include "Engine/Scene/SceneAssetBinder.h"
 #include "imgui.h"
 
 #include <algorithm>
@@ -304,7 +305,7 @@ namespace
         {
             memcpy(Buffer.data(), InputValue.data(), CopyLength);
         }
-        Buffer[CopyLength] = '\0';
+        Buffer[CopyLength] = '\\0';
 
         ImGui::PushID(LabelId);
         ImGui::TextUnformatted(DisplayLabel);
@@ -344,7 +345,7 @@ namespace
         if (bHovered)
         {
             const std::filesystem::path ResolvedPath =
-                Engine::SceneIO::ResolveSceneAssetPathToAbsolute(
+                Engine::Scene::Serialization::ResolveSceneAssetPathToAbsolute(
                     bIsAssetPath && AssetPathEditBuffers != nullptr
                         ? (*AssetPathEditBuffers)[Descriptor.Key]
                         : Value);
@@ -798,7 +799,7 @@ void FPropertiesPanel::DrawComponentPropertyEditor(
             if (Descriptor.Type == Engine::Component::EComponentPropertyType::AssetPath &&
                 GetContext() != nullptr && GetContext()->AssetManager != nullptr)
             {
-                TargetComponent->ResolveAssetReferences(GetContext()->AssetManager);
+                FSceneAssetBinder::BindComponent(TargetComponent, GetContext()->AssetManager);
             }
         }
     }

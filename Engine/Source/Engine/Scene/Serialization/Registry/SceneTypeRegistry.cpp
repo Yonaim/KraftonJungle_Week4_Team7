@@ -1,4 +1,4 @@
-#include "Engine/Scene/Serialization/SceneTypeRegistry.h"
+#include "Engine/Scene/Serialization/Registry/SceneTypeRegistry.h"
 
 #include "Engine/Component/Sprite/AtlasComponent.h"
 #include "Engine/Component/Sprite/PaperSpriteComponent.h"
@@ -18,6 +18,7 @@
 #include "Engine/Game/SpriteActor.h"
 #include "Engine/Game/TextActor.h"
 #include "Engine/Game/TriangleActor.h"
+#include "Engine/Game/QuadActor.h"
 #include "Engine/Game/AtlasSpriteActor.h"
 #include "Engine/Game/FlipbookActor.h"
 #include "Engine/Game/UnknownActor.h"
@@ -89,6 +90,7 @@ namespace
         RegisterActorType<ASpriteActor>("ASpriteActor");
         RegisterActorType<ATextActor>("ATextActor");
         RegisterActorType<ATriangleActor>("ATriangleActor");
+        RegisterActorType<AQuadActor>("AQuadActor");
         RegisterActorType<AFlipbookActor>("AFlipbookActor");
         RegisterActorType<AAtlasSpriteActor>("AAtlasSpriteActor");
         RegisterActorType<AUnknownActor>("AUnknownActor");
@@ -97,7 +99,7 @@ namespace
         RegisterComponentType<Engine::Component::UPaperSpriteComponent>("UPaperSpriteComponent");
         RegisterComponentType<Engine::Component::UAtlasComponent>("UAtlasComponent");
         RegisterComponentType<Engine::Component::USubUVComponent>("USubUVComponent");
-        RegisterComponentType<Engine::Component::USubUVComponent>("USubUVAnimatedComponent");
+        RegisterComponentType<Engine::Component::USubUVAnimatedComponent>("USubUVAnimatedComponent");
         RegisterComponentType<Engine::Component::UAtlasTextComponent>("UTextComponent");
         RegisterComponentType<Engine::Component::UAtlasTextComponent>("UAtlasTextComponent");
         RegisterComponentType<Engine::Component::UUnknownComponent>("UUnknownComponent");

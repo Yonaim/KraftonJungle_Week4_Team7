@@ -68,7 +68,7 @@ public:
 private:
     TComPtr<ID3D11Buffer> Buffer;
 };
-
+ 
 // ======================== D3D11 Constant Buffer ==========================
 
 class FD3D11ConstantBuffer : public FRHIConstantBuffer

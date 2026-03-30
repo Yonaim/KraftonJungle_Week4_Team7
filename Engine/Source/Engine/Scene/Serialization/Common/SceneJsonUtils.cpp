@@ -1,4 +1,4 @@
-#include "Engine/Scene/Serialization/SceneJsonUtils.h"
+#include "Engine/Scene/Serialization/Common/SceneJsonUtils.h"
 #include "Core/Misc/Paths.h"
 
 #include <algorithm>
@@ -9,13 +9,11 @@
 #include <windows.h>
 #endif
 
-
-
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #endif
 
-namespace Engine::SceneIO
+namespace Engine::Scene::Serialization
 {
     namespace Detail
     {
@@ -93,7 +91,7 @@ namespace Engine::SceneIO
         }
     } // namespace Detail
 
-    inline FString NormalizeSceneAssetPath(const FString& InPath)
+    FString NormalizeSceneAssetPath(const FString& InPath)
     {
         if (InPath.empty())
         {
@@ -158,7 +156,7 @@ namespace Engine::SceneIO
         return GamePath;
     }
 
-    inline std::filesystem::path ResolveSceneAssetPathToAbsolute(const FString& InPath)
+    std::filesystem::path ResolveSceneAssetPathToAbsolute(const FString& InPath)
     {
         const FString Normalized = NormalizeSceneAssetPath(InPath);
         if (Normalized.empty())
@@ -180,4 +178,4 @@ namespace Engine::SceneIO
         return FPaths::Combine(FPaths::AppContentDir(),
                                std::filesystem::path(Detail::Utf8ToWide(RelativePath)));
     }
-} // namespace Engine::SceneIO
+} // namespace Engine::Scene::Serialization

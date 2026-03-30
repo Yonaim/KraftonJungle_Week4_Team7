@@ -34,9 +34,6 @@
     <Filter Include="Source\RHI">
       <UniqueIdentifier>{fbfeb4f5-19dc-63dd-f075-cb5a9942f456}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\SceneIO">
-      <UniqueIdentifier>{895f5acd-6298-b3f0-10a2-42ff97fb0290}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\ThirdParty">
       <UniqueIdentifier>{b8e8bd27-1e61-2aa5-0088-7e70dd22287c}</UniqueIdentifier>
     </Filter>
@@ -97,6 +94,9 @@
     <Filter Include="Source\Engine\Game">
       <UniqueIdentifier>{b40c0879-15f3-b5bd-98bc-875a35ed9e05}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Engine\Scene">
+      <UniqueIdentifier>{f7f35786-5f6c-9599-e5cb-fe6fe9a00f3c}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source\Engine\ViewPort">
       <UniqueIdentifier>{3f58abac-aa9e-06f1-348e-4d37ab560ccd}</UniqueIdentifier>
     </Filter>
@@ -115,8 +115,8 @@
     <Filter Include="Source\RHI\D3D11">
       <UniqueIdentifier>{706c1bfa-6f3f-bf87-d5ef-4162dd6da261}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\ThirdParty\Json">
-      <UniqueIdentifier>{bd24378b-953f-fea6-80b7-004117df36b6}</UniqueIdentifier>
+    <Filter Include="Source\ThirdParty\nlohmann">
+      <UniqueIdentifier>{45b12db8-064c-b09f-585b-b2c7544a73c1}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\ThirdParty\stb">
       <UniqueIdentifier>{5d70ca77-f71d-7385-d0a3-24efc17b1df5}</UniqueIdentifier>
@@ -135,6 +135,27 @@
     </Filter>
     <Filter Include="Source\Engine\Component\Text">
       <UniqueIdentifier>{9ecbb042-c8bc-15cb-9b15-f4ac96e2e30e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Scene\Serialization">
+      <UniqueIdentifier>{7dd8fae0-706b-2a15-1b08-27353b1c1e70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Scene\Serialization\Common">
+      <UniqueIdentifier>{0abbf272-a99f-4425-31fb-0a1388f2cc2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Scene\Serialization\Core">
+      <UniqueIdentifier>{e9a84f10-5899-fb9b-d26a-acac75f884f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Scene\Serialization\Json">
+      <UniqueIdentifier>{5a9d8266-0e1f-e6e7-f9f4-8096747f5604}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Scene\Serialization\Legacy">
+      <UniqueIdentifier>{11769c74-52a2-d434-447a-29371ae1f7dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Scene\Serialization\Registry">
+      <UniqueIdentifier>{c8136551-f7ba-0b6c-c18d-7978fefec64c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Scene\Serialization\Runtime">
+      <UniqueIdentifier>{01cbea99-8420-8a12-6c8d-75303aa25f78}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -327,6 +348,9 @@
     <ClCompile Include="Source\Engine\Game\MeshActor.cpp">
       <Filter>Source\Engine\Game</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\Game\QuadActor.cpp">
+      <Filter>Source\Engine\Game</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Engine\Game\RingActor.cpp">
       <Filter>Source\Engine\Game</Filter>
     </ClCompile>
@@ -348,14 +372,47 @@
     <ClCompile Include="Source\Engine\Game\UnknownActor.cpp">
       <Filter>Source\Engine\Game</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Scene.cpp">
-      <Filter>Source\Engine</Filter>
+    <ClCompile Include="Source\Engine\Scene\Scene.cpp">
+      <Filter>Source\Engine\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Scene\SceneAssetBinder.cpp">
+      <Filter>Source\Engine\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Scene\Serialization\Common\SceneJsonConverters.cpp">
+      <Filter>Source\Engine\Scene\Serialization\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Scene\Serialization\Common\SceneJsonFieldReader.cpp">
+      <Filter>Source\Engine\Scene\Serialization\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Scene\Serialization\Common\SceneJsonUtils.cpp">
+      <Filter>Source\Engine\Scene\Serialization\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Scene\Serialization\Core\SceneDeserializer.cpp">
+      <Filter>Source\Engine\Scene\Serialization\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Scene\Serialization\Core\SceneSerializer.cpp">
+      <Filter>Source\Engine\Scene\Serialization\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Scene\Serialization\Json\SceneJson.cpp">
+      <Filter>Source\Engine\Scene\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Scene\Serialization\Legacy\SceneLegacySerialization.cpp">
+      <Filter>Source\Engine\Scene\Serialization\Legacy</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Scene\Serialization\Registry\SceneTypeRegistry.cpp">
+      <Filter>Source\Engine\Scene\Serialization\Registry</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Scene\Serialization\Runtime\SceneActorSerialization.cpp">
+      <Filter>Source\Engine\Scene\Serialization\Runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Scene\Serialization\Runtime\ScenePropertySerialization.cpp">
+      <Filter>Source\Engine\Scene\Serialization\Runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Scene\World.cpp">
+      <Filter>Source\Engine\Scene</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\ViewPort\Viewport.cpp">
       <Filter>Source\Engine\ViewPort</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\World.cpp">
-      <Filter>Source\Engine</Filter>
     </ClCompile>
     <ClCompile Include="Source\Renderer\D3D11\D3D11LineBatchRenderer.cpp">
       <Filter>Source\Renderer\D3D11</Filter>
@@ -407,15 +464,6 @@
     </ClCompile>
     <ClCompile Include="Source\RHI\D3D11\D3D11DynamicRHI.cpp">
       <Filter>Source\RHI\D3D11</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\SceneIO\SceneJson.cpp">
-      <Filter>Source\SceneIO</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\SceneIO\SceneSerializer.cpp">
-      <Filter>Source\SceneIO</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\SceneIO\SceneTypeRegistry.cpp">
-      <Filter>Source\SceneIO</Filter>
     </ClCompile>
     <ClCompile Include="Source\ThirdParty\stb\stb_image_impl.cpp">
       <Filter>Source\ThirdParty\stb</Filter>
@@ -797,6 +845,9 @@
     <ClInclude Include="Source\Engine\Game\MeshActor.h">
       <Filter>Source\Engine\Game</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Engine\Game\QuadActor.h">
+      <Filter>Source\Engine\Game</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Engine\Game\RingActor.h">
       <Filter>Source\Engine\Game</Filter>
     </ClInclude>
@@ -818,8 +869,44 @@
     <ClInclude Include="Source\Engine\Game\UnknownActor.h">
       <Filter>Source\Engine\Game</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Engine\Scene.h">
-      <Filter>Source\Engine</Filter>
+    <ClInclude Include="Source\Engine\Scene\Scene.h">
+      <Filter>Source\Engine\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Scene\SceneAssetBinder.h">
+      <Filter>Source\Engine\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Scene\Serialization\Common\SceneJsonConverters.h">
+      <Filter>Source\Engine\Scene\Serialization\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Scene\Serialization\Common\SceneJsonFieldReader.h">
+      <Filter>Source\Engine\Scene\Serialization\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Scene\Serialization\Common\SceneJsonUtils.h">
+      <Filter>Source\Engine\Scene\Serialization\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Scene\Serialization\Core\SceneDeserializer.h">
+      <Filter>Source\Engine\Scene\Serialization\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Scene\Serialization\Core\SceneSerializer.h">
+      <Filter>Source\Engine\Scene\Serialization\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Scene\Serialization\Json\SceneJson.h">
+      <Filter>Source\Engine\Scene\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Scene\Serialization\Legacy\SceneLegacySerialization.h">
+      <Filter>Source\Engine\Scene\Serialization\Legacy</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Scene\Serialization\Registry\SceneTypeRegistry.h">
+      <Filter>Source\Engine\Scene\Serialization\Registry</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Scene\Serialization\Runtime\SceneActorSerialization.h">
+      <Filter>Source\Engine\Scene\Serialization\Runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Scene\Serialization\Runtime\ScenePropertySerialization.h">
+      <Filter>Source\Engine\Scene\Serialization\Runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Scene\World.h">
+      <Filter>Source\Engine\Scene</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\ViewPort\Viewport.h">
       <Filter>Source\Engine\ViewPort</Filter>
@@ -829,9 +916,6 @@
     </ClInclude>
     <ClInclude Include="Source\Engine\ViewPort\ViewportController.h">
       <Filter>Source\Engine\ViewPort</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\World.h">
-      <Filter>Source\Engine</Filter>
     </ClInclude>
     <ClInclude Include="Source\Launch\EngineLoop.h">
       <Filter>Source\Launch</Filter>
@@ -968,20 +1052,8 @@
     <ClInclude Include="Source\RHI\RHITypes.h">
       <Filter>Source\RHI</Filter>
     </ClInclude>
-    <ClInclude Include="Source\SceneIO\SceneAssetPath.h">
-      <Filter>Source\SceneIO</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\SceneIO\SceneJson.h">
-      <Filter>Source\SceneIO</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\SceneIO\SceneSerializer.h">
-      <Filter>Source\SceneIO</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\SceneIO\SceneTypeRegistry.h">
-      <Filter>Source\SceneIO</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\ThirdParty\Json\json.hpp">
-      <Filter>Source\ThirdParty\Json</Filter>
+    <ClInclude Include="Source\ThirdParty\nlohmann\json.hpp">
+      <Filter>Source\ThirdParty\nlohmann</Filter>
     </ClInclude>
     <ClInclude Include="Source\ThirdParty\stb\stb_image.h">
       <Filter>Source\ThirdParty\stb</Filter>
