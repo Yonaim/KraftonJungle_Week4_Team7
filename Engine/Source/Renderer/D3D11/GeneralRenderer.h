@@ -1,4 +1,5 @@
 #pragma once
+#include "D3D11RHI.h"
 #include "NewRenderer/Renderer.h"
 
 // === Forward Declaraction
@@ -11,23 +12,17 @@ public:
     FGeneralRenderer(HWND InHwnd, int32 InWidth, int32 InHeight);
     ~FGeneralRenderer();
     
-    void DEBUG_ForceInitialize(
-        ID3D11Device* InDevice, ID3D11DeviceContext* InDeviceContext, 
-        ID3D11RenderTargetView* InRTV, ID3D11DepthStencilView* InDSV, 
-        D3D11_VIEWPORT InVP, IDXGISwapChain* InSwapChain);
+    bool Initialize(HWND InHwnd, int32 Width, int32 Height);
     void BeginFrame();
     void EndFrame();        // 스왑체인, 콜백 등 담당
     void Release();
     bool IsOccluded();
     void OnResize(int32 NewWidth, int32 NewHeight);
     
-    /** TODO: RHI 제거 후, GeneralRenderer가 직접 자원을 관리할 때 삭제 */
-    void DEBUG_UpdateViewResources(ID3D11RenderTargetView* InRTV, ID3D11DepthStencilView* InDSV, const D3D11_VIEWPORT& InVP);
-
     void SetSceneRenderTarget(ID3D11RenderTargetView* InRenderTargetView, ID3D11DepthStencilView* InDepthStencilView, const D3D11_VIEWPORT& InViewport);
     void ClearSceneRenderTarget();
-    void SetVSync(bool bEnable) { bVSyncEnabled = bEnable; }
-    bool IsVSyncEnabled() const { return bVSyncEnabled; }
+    void SetVSync(bool bEnable) { RHI.SetVSyncEnabled(bEnable); }
+    bool IsVSyncEnabled() const { return RHI.IsVSyncEnabled(); }
     
     void SubmitCommands(const FRenderCommandQueue& Queue);
     void AddCommand(const FRenderCommand& Command);
@@ -41,27 +36,24 @@ public:
     void SetGUICallbacks(FGUICallback InInit, FGUICallback InShutdown, FGUICallback InNewFrame, FGUICallback InRender, FGUICallback InPostPresent = nullptr);
     void ClearViewportCallbacks();
     void SetGUIUpdateCallback(FGUICallback InUpdate);
-    // void SetPostRenderCallback(FPostRenderCallback InCallback) { PostRenderCallback = std::move(InCallback); }
     
     static FMaterial* GetDefaultMaterial() { return DefaultMaterial.get(); }
     static FMaterial* GetDefaultSpriteMaterial() { return DefaultSpriteMaterial.get(); }
     FMaterial* GetLineMaterial() const { return AABBMaterial.get(); }
     std::unique_ptr<CRenderStateManager>& GetRenderStateManager() { return RenderStateManager; }
-    ID3D11Device* GetDevice() const { return Device; }
-    ID3D11DeviceContext* GetDeviceContext() const { return DeviceContext; }
-    ID3D11RenderTargetView* GetRenderTargetView() const { return RenderTargetView; }
-    IDXGISwapChain* GetSwapChain() const { return SwapChain; };
+    ID3D11Device* GetDevice() const { return RHI.GetDevice(); }
+    ID3D11DeviceContext* GetDeviceContext() const { return RHI.GetDeviceContext(); }
+    ID3D11RenderTargetView* GetRenderTargetView() const { return RHI.GetBackBufferRTV(); }
+    IDXGISwapChain* GetSwapChain() const { return RHI.GetSwapChain(); };
     HWND GetHwnd() const { return Hwnd; }
 
     FVector GetCameraPosition() const;
+    FD3D11RHI& GetRHI() { return RHI; }
     
 private:
-    bool Initialize(HWND InHwnd, int32 Width, int32 Height);
     bool InitializeDefaultMaterial();
     
     void SetConstantBuffers();
-    bool CreateDeviceAndSwapChain(HWND InHwnd, int32 Width, int32 Height);
-    bool CreateRenderTargetAndDepthStencil(int32 Width, int32 Height);
     bool CreateConstantBuffers();
     void UpdateFrameConstantBuffer();
     void UpdateObjectConstantBuffer(const FMatrix& WorldMatrix, uint32 ObjectId = 0);
@@ -79,13 +71,10 @@ private:
     bool ReadBackMousePixel(int32 MouseX, int32 MouseY, uint32& OutObjectId);
     
 private:
+    FD3D11RHI RHI;
+
     std::unique_ptr<CRenderStateManager> RenderStateManager = nullptr;
     HWND Hwnd = nullptr;
-    ID3D11Device* Device = nullptr;
-    ID3D11DeviceContext* DeviceContext = nullptr;
-    IDXGISwapChain* SwapChain = nullptr;
-    ID3D11RenderTargetView* RenderTargetView = nullptr;
-    ID3D11DepthStencilView* DepthStencilView = nullptr;
     
     ID3D11Buffer* FrameConstantBuffer = nullptr;
     ID3D11Buffer* ObjectConstantBuffer = nullptr;
@@ -104,14 +93,12 @@ private:
     
     FMatrix ViewMatrix;
     FMatrix ProjectionMatrix;
-    D3D11_VIEWPORT Viewport = {};
     
     ID3D11RenderTargetView* SceneRenderTargetView = nullptr;
     ID3D11DepthStencilView* SceneDepthStencilView = nullptr;
     D3D11_VIEWPORT SceneViewport = {};
     
     bool bUseSceneRenderTargetOverride = false;
-    bool bVSyncEnabled = false;
     bool bSwapChainOccluded = false;
     
     TArray<FRenderCommand> CommandList;

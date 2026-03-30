@@ -33,16 +33,13 @@ class ENGINE_API FRendererModule
               int32 MouseX, int32 MouseY,
               FPickResult& OutResult);
 
-    FD3D11RHI& GetRHI() { return RHI; }
+    FD3D11RHI& GetRHI() { return GeneralRenderer->GetRHI(); }
 
     void SetVSyncEnabled(bool bEnabled);
     bool IsVSyncEnabled() const;
 
   private:
-    FD3D11RHI RHI;
-
     FGeneralRenderer*        GeneralRenderer   = nullptr;
-    FD3D11OutlineRenderer    OutlineRenderer;
     
     TComPtr<ID3D11Debug> DebugDevice;
 

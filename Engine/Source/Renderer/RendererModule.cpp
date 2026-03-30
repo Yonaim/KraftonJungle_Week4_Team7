@@ -11,44 +11,6 @@ namespace
     {
         return InSceneRenderData.SceneView != nullptr && !InSceneRenderData.Primitives.empty();
     }
-
-    bool ShouldRenderSelectionOutline(const FEditorRenderData& InEditorRenderData,
-                                      const FSceneRenderData&  InSceneRenderData)
-    {
-        return HasScenePrimitives(InSceneRenderData) && InEditorRenderData.bShowSelectionOutline &&
-               InSceneRenderData.ViewMode != EViewModeIndex::VMI_Wireframe;
-    }
-
-    bool ShouldTintSelectedWireframe(const FEditorRenderData& InEditorRenderData,
-                                     const FSceneRenderData&  InSceneRenderData)
-    {
-        return HasScenePrimitives(InSceneRenderData) && InEditorRenderData.bShowSelectionOutline &&
-               InSceneRenderData.ViewMode == EViewModeIndex::VMI_Wireframe;
-    }
-
-    TArray<FPrimitiveRenderItem>
-    BuildWireframePrimitiveSubmission(const FSceneRenderData& InSceneRenderData)
-    {
-        TArray<FPrimitiveRenderItem> SubmissionItems;
-        SubmissionItems.reserve(InSceneRenderData.Primitives.size());
-
-        for (const FPrimitiveRenderItem& Item : InSceneRenderData.Primitives)
-        {
-            SubmissionItems.push_back(Item);
-        }
-
-        const FColor SelectionColor = FD3D11OutlineRenderer::GetVisibleOutlineColor();
-
-        for (FPrimitiveRenderItem& Item : SubmissionItems)
-        {
-            if (Item.State.IsSelected())
-            {
-                Item.Color = SelectionColor;
-            }
-        }
-
-        return SubmissionItems;
-    }
 } // namespace
 
 FRendererModule::FRendererModule()
@@ -66,13 +28,6 @@ bool FRendererModule::StartupModule(HWND hWnd)
         return false;
     }
     
-    if (!RHI.Initialize(hWnd))
-    {
-        ShutdownModule();
-        return false;
-    }
-    
-    // === GeneralRenderer 초기화
     RECT ClientRect = {};
     if (!GetClientRect(hWnd, &ClientRect))
     {
@@ -80,30 +35,16 @@ bool FRendererModule::StartupModule(HWND hWnd)
     }
     int ViewportWidth = static_cast<int32>(ClientRect.right - ClientRect.left);
     int ViewportHeight = static_cast<int32>(ClientRect.bottom - ClientRect.top);
+    
     GeneralRenderer = new FGeneralRenderer(hWnd, ViewportWidth, ViewportHeight);
-    GeneralRenderer->DEBUG_ForceInitialize(
-        RHI.GetDevice(),
-        RHI.GetDeviceContext(),
-        RHI.GetBackBufferRTV(),
-        RHI.GetDepthStencilView(), 
-        RHI.GetViewport(),
-        RHI.GetSwapChain()
-    );
-    // === GeneralRenderer 초기화
-
-    if (!OutlineRenderer.Initialize(&RHI))
+    
+    if (GeneralRenderer->GetDevice() != nullptr)
     {
-        ShutdownModule();
-        return false;
-    }
-
 #if defined(_DEBUG)
-    if (RHI.GetDevice() != nullptr)
-    {
-        RHI.GetDevice()->QueryInterface(__uuidof(ID3D11Debug),
+        GeneralRenderer->GetDevice()->QueryInterface(__uuidof(ID3D11Debug),
                                         reinterpret_cast<void**>(DebugDevice.GetAddressOf()));
-    }
 #endif
+    }
 
     return true;
 }
@@ -120,53 +61,36 @@ void FRendererModule::ShutdownModule()
     }
 #endif
 
-    RHI.Shutdown();
+    if (GeneralRenderer)
+    {
+        delete GeneralRenderer;
+        GeneralRenderer = nullptr;
+    }
 }
 
 void FRendererModule::BeginFrame()
 {
-    RHI.BeginFrame();
-
-    static const FLOAT ClearColor[4] = {0.17f, 0.17f, 0.17f, 1.0f};
-
-    RHI.SetDefaultRenderTargets();
-    RHI.Clear(ClearColor, 1.0f, 0);
-    
-    // === GeneralRenderer 사용한 렌더 루트
-    GeneralRenderer->SetSceneRenderTarget(RHI.GetBackBufferRTV(), nullptr, RHI.GetViewport());
     GeneralRenderer->BeginFrame();
 }
 
-// 테스트용 임시 플래그
-bool hasRenderCommand = false;
-
 void FRendererModule::EndFrame()
 {
-    RHI.EndFrame();
-    // if (hasRenderCommand)
-    //     GeneralRenderer->EndFrame();
+    GeneralRenderer->EndFrame();
 }
 
-void FRendererModule::SetViewport(const D3D11_VIEWPORT& InViewport) { RHI.SetViewport(InViewport); }
+void FRendererModule::SetViewport(const D3D11_VIEWPORT& InViewport) 
+{ 
+    GeneralRenderer->GetRHI().SetViewport(InViewport); 
+}
 
 void FRendererModule::OnWindowResized(int32 InWidth, int32 InHeight)
 {
-    if (InWidth <= 0 || InHeight <= 0)
+    if (GeneralRenderer)
     {
-        return;
+        GeneralRenderer->OnResize(InWidth, InHeight);
     }
-
-    // 1. RHI의 리소스를 먼저 갱신 (자원 관리 주체)
-    RHI.Resize(InWidth, InHeight);
-
-    // 2. 갱신된 리소스를 GeneralRenderer에 전달 (참조만 수행)
-    GeneralRenderer->OnResize(InWidth, InHeight);
-    GeneralRenderer->DEBUG_UpdateViewResources(RHI.GetBackBufferRTV(), RHI.GetDepthStencilView(), RHI.GetViewport());
 }
 
-/**
- * @brief Render Order: World Pass -> Overlay Pass
- */
 void FRendererModule::Render(const FEditorRenderData& InEditorRenderData,
                              const FSceneRenderData&  InSceneRenderData)
 {
@@ -174,11 +98,9 @@ void FRendererModule::Render(const FEditorRenderData& InEditorRenderData,
     RenderOverlayPass(InEditorRenderData, InSceneRenderData);
 }
 
-// TODO: RenderWorldPass 제거하고 GeneralRenderer->ExecuteCommands 사용하도록 대체
 void FRendererModule::RenderWorldPass(const FEditorRenderData& InEditorRenderData,
                                       const FSceneRenderData&  InSceneRenderData)
 {
-    // === GeneralRenderer 사용한 렌더 루트
     if (!InSceneRenderData.RenderCommands.empty())
     {
         FRenderCommandQueue CommandQueue;
@@ -186,52 +108,22 @@ void FRendererModule::RenderWorldPass(const FEditorRenderData& InEditorRenderDat
         {
             CommandQueue.AddCommand(el);
         }
-        // ==== 테스트 코드. 추후 삭제할 것
+        
+        if (InEditorRenderData.SceneView)
         {
             CommandQueue.ViewMatrix = InEditorRenderData.SceneView->GetViewMatrix();
             CommandQueue.ProjectionMatrix = InEditorRenderData.SceneView->GetProjectionMatrix();
         }
-        // ==== 테스트 코드. 추후 삭제할 것
         
         GeneralRenderer->SubmitCommands(CommandQueue);
         GeneralRenderer->ExecuteCommands();
     }
-    // === GeneralRenderer 사용한 렌더 루트
 }
 
-/**
- * Overlay: Gizmo -> Text
- */
 void FRendererModule::RenderOverlayPass(const FEditorRenderData& InEditorRenderData,
                                         const FSceneRenderData&  InSceneRenderData)
 {
-    const bool bHasEditorGizmo =
-        InEditorRenderData.SceneView != nullptr && InEditorRenderData.bShowGizmo &&
-        InEditorRenderData.Gizmo.GizmoType != EGizmoType::None;
-
-    if (bHasEditorGizmo)
-    {
-        RHI.ClearDepthStencil(RHI.GetDepthStencilView(), 1.0f, 0);
-
-        // ================= Gizmo =================
-        // FMeshBatchPassParams GizmoPassParams = {};
-        // GizmoPassParams.SceneView = InEditorRenderData.SceneView;
-        // GizmoPassParams.ViewMode = EViewModeIndex::VMI_Unlit;
-        // GizmoPassParams.bUseInstancing = true;
-        // GizmoPassParams.bDisableDepth = false;
-        //
-        // MeshBatchRenderer.BeginFrame(GizmoPassParams);
-        // OverlayMeshSubmitter.Submit(MeshBatchRenderer, InEditorRenderData);
-        // MeshBatchRenderer.EndFrame();
-
-        // ================= Gizmo Center =================
-        // FMeshBatchPassParams GizmoCenterPassParams = GizmoPassParams;
-        // GizmoCenterPassParams.bDisableDepth = true;
-        //
-        // MeshBatchRenderer.BeginFrame(GizmoCenterPassParams);
-        // OverlayMeshSubmitter.SubmitCenterHandle(MeshBatchRenderer, InEditorRenderData);
-        // MeshBatchRenderer.EndFrame();
-    }
+    // Gizmo etc. would be rendered here using GeneralRenderer commands if needed.
 }
 
 bool FRendererModule::Pick(const FEditorRenderData& InEditorRenderData,
@@ -239,10 +131,23 @@ bool FRendererModule::Pick(const FEditorRenderData& InEditorRenderData,
                            int32 MouseX, int32 MouseY,
                            FPickResult& OutResult)
 {
-    // TODO: implement pick
+    if (!GeneralRenderer) return false;
+    
+    uint32 PickId = 0;
+    if (GeneralRenderer->Pick(MouseX, MouseY, PickId))
+    {
+        OutResult.ObjectId = PickId;
+        return PickId != 0;
+    }
     return false;
 }
 
-void FRendererModule::SetVSyncEnabled(bool bEnabled) { RHI.SetVSyncEnabled(bEnabled); }
+void FRendererModule::SetVSyncEnabled(bool bEnabled) 
+{ 
+    if (GeneralRenderer) GeneralRenderer->SetVSync(bEnabled); 
+}
 
-bool FRendererModule::IsVSyncEnabled() const { return RHI.IsVSyncEnabled(); }
+bool FRendererModule::IsVSyncEnabled() const 
+{ 
+    return GeneralRenderer ? GeneralRenderer->IsVSyncEnabled() : false; 
+}
