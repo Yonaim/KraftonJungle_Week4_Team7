@@ -26,5 +26,4 @@ template <typename TKey, typename TData> class TAssetCache
 template <typename TKey, typename TIntermediate>
 using TIntermediateCache = TAssetCache<TKey, TIntermediate>;
 
-template <typename TKey, typename TCooked>
-using TCookedCache = TAssetCache<TKey, TCooked>;
+template <typename TKey, typename TCooked> using TCookedCache = TAssetCache<TKey, TCooked>;

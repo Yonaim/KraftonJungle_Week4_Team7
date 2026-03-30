@@ -8,6 +8,11 @@
 class AActor;
 class UAssetManager;
 
+namespace Asset
+{
+    class FAssetCacheManager;
+}
+
 namespace Engine::Component
 {
     class FComponentPropertyBuilder;
@@ -43,7 +48,6 @@ namespace Engine::Component
 
         virtual void Update(float DeltaTime);
         virtual void DescribeProperties(FComponentPropertyBuilder& Builder);
-        virtual void ResolveAssetReferences(UAssetManager* InAssetManager);
         virtual bool ShouldSerializeInScene() const { return true; }
         virtual bool ShouldShowInDetailsTree() const { return true; }
 
@@ -59,10 +63,8 @@ namespace Engine::Component
             // Do nothing
         };
 
-    protected:
-        virtual void OnTransformChanged()
-        {
-        }
+      protected:
+        virtual void OnTransformChanged() {}
 
       protected:
         bool bIsSelected = false;
