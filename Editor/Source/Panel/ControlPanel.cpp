@@ -7,17 +7,49 @@
 #include "Engine/EngineStatics.h"
 #include "Viewport/EditorViewportClient.h"
 #include "imgui.h"
+#include "IconsFontAwesome4.h"
 
 namespace
 {
     constexpr const char* ProjectionTypeLabels[] = {"Perspective", "Orthographic"};
     constexpr const char* ViewModeLabels[] = {"Lit", "Unlit", "Wireframe"};
-    constexpr const char* ViewLayoutLabels[] = 
+
+    struct FLayoutPreview
     {
-        "Single", 
-        "_1l1", "_1_1",
-        "_1l2", "_2l1", "_1_2", "_2_1",
-        "_2X2", "_1l3", "_3l1", "_1_3", "_3_1"
+        EViewportLayoutType Type;
+        struct PanelRect
+        {
+            float x, y, w, h;
+        };
+        std::vector<PanelRect> Panels;
+    };
+
+    static const FLayoutPreview LayoutPreviews[] = 
+    {
+        {EViewportLayoutType::Single, {{0, 0, 1, 1}}},
+
+        {EViewportLayoutType::_1l1, {{0, 0, .5f, 1}, {.5f, 0, .5f, 1}}},
+        {EViewportLayoutType::_1_1, {{0, 0, 1, .5f}, {0, .5f, 1, .5f}}},
+
+        {EViewportLayoutType::_1l2,
+         {{0, 0, .5f, 1}, {.5f, 0, .5f, .5f}, {.5f, .5f, .5f, .5f}}},
+        {EViewportLayoutType::_2l1,
+         {{0, 0, .5f, .5f}, {0, .5f, .5f, .5f}, {.5f, 0, .5f, 1}}},
+        {EViewportLayoutType::_1_2,
+         {{0, 0, 1, .5f}, {0, .5f, .5f, .5f}, {.5f, .5f, .5f, .5f}}},
+        {EViewportLayoutType::_2_1,
+         {{0, 0, .5f, .5f}, {.5f, 0, .5f, .5f}, {0, .5f, 1, .5f}}},
+
+        {EViewportLayoutType::_2X2,
+         {{0, 0, .5f, .5f}, {.5f, 0, .5f, .5f}, {0, .5f, .5f, .5f}, {.5f, .5f, .5f, .5f}}},
+        {EViewportLayoutType::_1l3,
+         {{0, 0, .5f, 1}, {.5f, 0, .5f, .333f}, {.5f, .333f, .5f, .334f}, {.5f, .667f, .5f, .333f}}},
+        {EViewportLayoutType::_3l1,
+         {{0, 0, .5f, .333f}, {0, .333f, .5f, .334f}, {0, .667f, .5f, .333f}, {.5f, 0, .5f, 1}}},
+        {EViewportLayoutType::_1_3,
+         {{0, 0, 1, .5f}, {0, .5f, .333f, .5f}, {.333f, .5f, .334f, .5f}, {.667f, .5f, .333f, .5f}}},
+        {EViewportLayoutType::_3_1,
+         {{0, 0, .333f, .5f}, {.333f, 0, .334f, .5f}, {.667f, 0, .333f, .5f}, {0, .5f, 1, .5f}}},
     };
 
     void DrawVectorRow(const char* Label, FVector& Value, float Speed = 0.1f)
@@ -86,17 +118,19 @@ void FControlPanel::Draw()
         return;
     }
 
-    DrawSectionButton("Transform", "TransformPopup", [&]() { if (Camera) DrawTransformSection(*Camera);});
+    DrawSectionButton(ICON_FA_ARROWS, "TransformPopup", [&]() { if (Camera) DrawTransformSection(*Camera);});
     ImGui::SameLine();
-    DrawSectionButton("Projection", "ProjectionPopup", [&]() { if (Camera) DrawProjectionSection(*Camera); });
+    DrawSectionButton(ICON_FA_VIDEO_CAMERA, "ProjectionPopup", [&]() { if (Camera) DrawProjectionSection(*Camera); });
     ImGui::SameLine();
-    DrawSectionButton("View Mode", "ViewModePopup", [&]() { DrawViewModeSection(); });
+    DrawSectionButton(ICON_FA_CUBE, "ViewModePopup", [&]() { DrawViewModeSection(); });
     ImGui::SameLine();
-    DrawSectionButton("Show Flags", "ShowFlagsPopup", [&]() { DrawShowFlagsSection(); });
+    DrawSectionButton(ICON_FA_EYE, "ShowFlagsPopup", [&]() { DrawShowFlagsSection(); });
     ImGui::SameLine();
-    DrawSectionButton("Navigation", "NavigationPopup", [&]() { DrawNavigationSection(); });
+    DrawSectionButton(ICON_FA_COG, "NavigationPopup", [&]() { DrawNavigationSection(); });
     ImGui::SameLine();
-    DrawSectionButton("World", "WorldPopup", [&]() { DrawWorldSection(); });
+    DrawSectionButton(ICON_FA_GLOBE, "WorldPopup", [&]() { DrawWorldSection(); });
+    ImGui::SameLine();
+    DrawSectionButton(ICON_FA_TH_LARGE, "LayoutPopup", [&]() { DrawLayoutSection(); });
     ImGui::SameLine();
 
     ImGui::End();
@@ -197,12 +231,94 @@ void FControlPanel::DrawViewModeSection() const
     {
         RenderSetting.SetViewMode(static_cast<EViewModeIndex>(CurrentViewMode));
     }
+}
+
+void FControlPanel::DrawLayoutSection() const 
+{
+    if (GetContext() == nullptr || GetContext()->Editor == nullptr)
+    {
+        return;
+    }
 
     SEditorViewportTab& ViewportTab = GetContext()->Editor->GetViewportTab();
-    int CurrentViewLayout = static_cast<int>(ViewportTab.GetCurrentLayoutType());
-    if (ImGui::Combo("Layout", &CurrentViewLayout, ViewLayoutLabels, IM_ARRAYSIZE(ViewLayoutLabels)))
+    EViewportLayoutType CurrentLayout = ViewportTab.GetCurrentLayoutType();
+
+    ImGui::TextUnformatted("Layout");
+
+    ImGui::Spacing();
+    ImGui::SeparatorText("Single Pane");
+    ImGui::Spacing();
+
+    constexpr float ButtonSize = 32.0f;
+    constexpr float ButtonGap = 5.0f;
+
+    for (int i = 0; i < IM_ARRAYSIZE(LayoutPreviews); ++i)
     {
-        ViewportTab.SetLayout(static_cast<EViewportLayoutType>(CurrentViewLayout));
+        const FLayoutPreview& Preview = LayoutPreviews[i];
+        bool                  bSelected = (CurrentLayout == Preview.Type);
+
+        ImVec2 CursorPos = ImGui::GetCursorScreenPos();
+
+        constexpr float Pad = 3.0f, Gap = 1.5f, Rounding = 1.0f;
+
+        // 색
+        ImVec4 ColBg =
+            bSelected ? ImVec4(0.10f, 0.18f, 0.30f, 1.0f) : ImVec4(0.20f, 0.20f, 0.20f, 1.0f);
+        ImVec4 ColPanel =
+            bSelected ? ImVec4(0.16f, 0.30f, 0.50f, 1.0f) : ImVec4(0.45f, 0.45f, 0.45f, 1.0f);
+        ImVec4 ColBorder =
+            bSelected ? ImVec4(0.25f, 0.45f, 0.75f, 1.0f) : ImVec4(0.60f, 0.60f, 0.60f, 1.0f);
+
+        ImGui::PushID(i);
+        ImGui::InvisibleButton("##L", ImVec2(ButtonSize, ButtonSize));
+        bool bClicked = ImGui::IsItemClicked();
+        bool bHovered = ImGui::IsItemHovered();
+        ImGui::PopID();
+
+        if (bHovered && !bSelected)
+            ColBg = ImVec4(ColBg.x + 0.08f, ColBg.y + 0.08f, ColBg.z + 0.08f, 1.f);
+
+        ImDrawList* DL = ImGui::GetWindowDrawList();
+        DL->AddRectFilled(CursorPos, {CursorPos.x + ButtonSize, CursorPos.y + ButtonSize},
+                          ImGui::ColorConvertFloat4ToU32(ColBg), 3.f);
+        DL->AddRect(CursorPos, {CursorPos.x + ButtonSize, CursorPos.y + ButtonSize},
+                    ImGui::ColorConvertFloat4ToU32(ColBorder), 3.f, 0, 1.2f);
+
+        float IW = ButtonSize - Pad * 2, IH = ButtonSize - Pad * 2;
+        for (const auto& P : Preview.Panels)
+        {
+            float px = CursorPos.x + Pad + P.x * IW + Gap;
+            float py = CursorPos.y + Pad + P.y * IH + Gap;
+            DL->AddRectFilled({px, py}, {px + P.w * IW - Gap * 2, py + P.h * IH - Gap * 2},
+                              ImGui::ColorConvertFloat4ToU32(ColPanel), Rounding);
+        }
+
+        if (bClicked)
+        {
+            ViewportTab.SetLayout(Preview.Type);
+            ImGui::CloseCurrentPopup();
+        }
+
+        // 줄바꿈 처리
+        if (i == 0)
+        {
+            ImGui::SeparatorText("Two Panes");
+            ImGui::Dummy({0, ButtonGap});
+        }
+        else if (i == 2)
+        {
+            ImGui::SeparatorText("Three Panes");
+            ImGui::Dummy({0, ButtonGap});
+        }
+        else if (i == 6)
+        {
+            ImGui::SeparatorText("Four Panes");
+            ImGui::Dummy({0, ButtonGap});
+        }
+        else
+        {
+            ImGui::SameLine(0, ButtonGap);
+        }
     }
 }
 

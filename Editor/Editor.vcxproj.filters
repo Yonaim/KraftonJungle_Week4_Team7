@@ -331,6 +331,7 @@
     <ClInclude Include="Source\Viewport\Viewport.h" />
     <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutThreePanes.h" />
     <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutTwoPanes.h" />
+    <ClInclude Include="Source\ThirdParty\ImGui\IconsFontAwesome4.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\ThirdParty\ImGui\imgui.natstepfilter">
@@ -341,5 +342,8 @@
     <Natvis Include="Source\ThirdParty\ImGui\imgui.natvis">
       <Filter>Source\ThirdParty\ImGui</Filter>
     </Natvis>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="Source\ThirdParty\ImGui\fontawesome-webfont.ttf" />
   </ItemGroup>
 </Project>
