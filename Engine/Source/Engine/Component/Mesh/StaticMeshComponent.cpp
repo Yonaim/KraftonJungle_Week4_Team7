@@ -37,10 +37,6 @@ namespace Engine::Component
 
     FString UStaticMeshComponent::GetStaticMeshPath() const
     {
-        if (StaticMesh)
-        {
-            return StaticMesh->GetMeshName();
-        }
         return MeshPath;
     }
 
