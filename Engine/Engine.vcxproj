@@ -42,8 +42,8 @@
     <ClInclude Include="Source\Asset\Cache\AssetTags.h" />
     <ClInclude Include="Source\Asset\Cache\BuildSettings.h" />
     <ClInclude Include="Source\Asset\Cooked\FontAtlasCookedData.h" />
-    <ClInclude Include="Source\Asset\Cooked\MaterialCookedData.h" />
-    <ClInclude Include="Source\Asset\Cooked\StaticMeshCookedData.h" />
+    <ClInclude Include="Source\Asset\Cooked\MtlCookedData.h" />
+    <ClInclude Include="Source\Asset\Cooked\ObjCookedData.h" />
     <ClInclude Include="Source\Asset\Cooked\SubUVAtlasCookedData.h" />
     <ClInclude Include="Source\Asset\Cooked\TextureCookedData.h" />
     <ClInclude Include="Source\Asset\Core\AssetCommonTypes.h" />
@@ -53,8 +53,8 @@
     <ClInclude Include="Source\Asset\Core\SubUVAtlasTypes.h" />
     <ClInclude Include="Source\Asset\Core\TextureTypes.h" />
     <ClInclude Include="Source\Asset\Intermediate\IntermediateFontAtlasData.h" />
-    <ClInclude Include="Source\Asset\Intermediate\IntermediateMaterialData.h" />
-    <ClInclude Include="Source\Asset\Intermediate\IntermediateStaticMeshData.h" />
+    <ClInclude Include="Source\Asset\Intermediate\IntermediateMtlData.h" />
+    <ClInclude Include="Source\Asset\Intermediate\IntermediateObjData.h" />
     <ClInclude Include="Source\Asset\Intermediate\IntermediateSubUVAtlasData.h" />
     <ClInclude Include="Source\Asset\Intermediate\IntermediateTextureData.h" />
     <ClInclude Include="Source\Asset\Manager\AssetCacheManager.h" />

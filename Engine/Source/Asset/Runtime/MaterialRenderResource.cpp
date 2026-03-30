@@ -5,7 +5,7 @@
 namespace Asset
 {
     std::shared_ptr<FMaterialRenderResource>
-    FMaterialRenderResource::Create(const FMaterialCookedData& CookedData, RHI::FDynamicRHI& RHI)
+    FMaterialRenderResource::Create(const FMtlCookedData& CookedData, RHI::FDynamicRHI& RHI)
     {
         if (!CookedData.IsValid())
         {
@@ -46,10 +46,10 @@ namespace Asset
     }
 
     std::shared_ptr<RHI::FRHITexture>
-    FMaterialRenderResource::CreateTextureForSlot(const FMaterialCookedData& CookedData,
+    FMaterialRenderResource::CreateTextureForSlot(const FMtlCookedData& CookedData,
                                                   EMaterialTextureSlot Slot, RHI::FDynamicRHI& RHI)
     {
-        for (const FMaterialTextureBinding& Binding : CookedData.TextureBindings)
+        for (const FMtlTextureBinding& Binding : CookedData.TextureBindings)
         {
             if (Binding.Slot != Slot || Binding.Texture == nullptr || !Binding.Texture->IsValid())
             {
@@ -68,7 +68,7 @@ namespace Asset
     }
 
     std::shared_ptr<RHI::FRHIConstantBuffer>
-    FMaterialRenderResource::CreateParameterBuffer(const FMaterialCookedData& CookedData,
+    FMaterialRenderResource::CreateParameterBuffer(const FMtlCookedData& CookedData,
                                                    RHI::FDynamicRHI&          RHI)
     {
         FMaterialParameters Parameters;

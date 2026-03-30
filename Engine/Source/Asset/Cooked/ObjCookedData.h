@@ -5,7 +5,7 @@
 namespace Asset
 {
 
-struct FStaticMeshCookedData
+struct FObjCookedData
 {
     FString                 SourcePath;
     EStaticMeshVertexFormat VertexFormat = EStaticMeshVertexFormat::P;

@@ -134,8 +134,8 @@ namespace Asset
         }
 
         static bool ParseFaceVertexToken(const FString&                     Token,
-                                         FIntermediateMeshFaceVertex&       OutVertex,
-                                         const FIntermediateStaticMeshData& MeshData)
+                                         FIntermediateObjFaceVertex&       OutVertex,
+                                         const FIntermediateObjData& MeshData)
         {
             std::stringstream Ss(Token);
             FString           Segment;
@@ -216,7 +216,7 @@ namespace Asset
         }
     } // namespace
 
-    // std::shared_ptr<FStaticMeshCookedData>
+    // std::shared_ptr<FObjCookedData>
     // FStaticMeshBuilder::Build(const std::filesystem::path& Path,
     //                          const FStaticMeshBuildSettings& Settings)
     // {
@@ -227,7 +227,7 @@ namespace Asset
     //     }
 
     //     auto& IntermediateCache = Cache.GetIntermediateCache(FStaticMeshAssetTag{});
-    //     std::shared_ptr<FIntermediateStaticMeshData> Intermediate = ParseObj(*Source);
+    //     std::shared_ptr<FIntermediateObjData> Intermediate = ParseObj(*Source);
     //     if (!Intermediate)
     //     {
     //         return nullptr;
@@ -235,7 +235,7 @@ namespace Asset
 
     //     const FStaticMeshIntermediateKey IntermediateKey =
     //     KeyUtils::MakeIntermediateKey(*Intermediate);
-    //     std::shared_ptr<FIntermediateStaticMeshData> CachedIntermediate =
+    //     std::shared_ptr<FIntermediateObjData> CachedIntermediate =
     //         IntermediateCache.Find(IntermediateKey);
     //     if (CachedIntermediate)
     //     {
@@ -250,7 +250,7 @@ namespace Asset
     //     Settings);
 
     //     auto& CookedCache = Cache.GetCookedCache(FStaticMeshAssetTag{});
-    //     std::shared_ptr<FStaticMeshCookedData> Cooked = CookedCache.Find(CookedKey);
+    //     std::shared_ptr<FObjCookedData> Cooked = CookedCache.Find(CookedKey);
     //     if (!Cooked)
     //     {
     //         Cooked = CookMesh(*Source, *Intermediate, Settings);
@@ -264,7 +264,7 @@ namespace Asset
     //     return Cooked;
     // }
 
-    std::shared_ptr<FStaticMeshCookedData>
+    std::shared_ptr<FObjCookedData>
     FStaticMeshBuilder::Build(const std::filesystem::path&    Path,
                               const FStaticMeshBuildSettings& Settings)
     {
@@ -275,7 +275,7 @@ namespace Asset
         }
 
         auto& IntermediateCache = Cache.GetIntermediateCache(FStaticMeshAssetTag{});
-        std::shared_ptr<FIntermediateStaticMeshData> Intermediate = ParseObj(*Source);
+        std::shared_ptr<FIntermediateObjData> Intermediate = ParseObj(*Source);
         if (!Intermediate)
         {
             return nullptr;
@@ -283,7 +283,7 @@ namespace Asset
 
         const FStaticMeshIntermediateKey IntermediateKey =
             KeyUtils::MakeIntermediateKey(*Intermediate);
-        std::shared_ptr<FIntermediateStaticMeshData> CachedIntermediate =
+        std::shared_ptr<FIntermediateObjData> CachedIntermediate =
             IntermediateCache.Find(IntermediateKey);
         if (CachedIntermediate)
         {
@@ -297,7 +297,7 @@ namespace Asset
         const FStaticMeshCookedKey CookedKey = KeyUtils::MakeCookedKey(IntermediateKey, Settings);
 
         auto& CookedCache = Cache.GetCookedCache(FStaticMeshAssetTag{});
-        std::shared_ptr<FStaticMeshCookedData> Cooked = CookedCache.Find(CookedKey);
+        std::shared_ptr<FObjCookedData> Cooked = CookedCache.Find(CookedKey);
         if (!Cooked)
         {
             Cooked = CookMesh(*Source, *Intermediate, Settings);
@@ -311,7 +311,7 @@ namespace Asset
         return Cooked;
     }
 
-    std::shared_ptr<FIntermediateStaticMeshData>
+    std::shared_ptr<FIntermediateObjData>
     FStaticMeshBuilder::ParseObj(const FSourceRecord& Source)
     {
         std::ifstream File(std::filesystem::path(Source.NormalizedPath));
@@ -320,7 +320,7 @@ namespace Asset
             return nullptr;
         }
 
-        auto Result = std::make_shared<FIntermediateStaticMeshData>();
+        auto Result = std::make_shared<FIntermediateObjData>();
 
         FString CurrentMaterialName;
         FString Line;
@@ -375,13 +375,13 @@ namespace Asset
             }
             else if (Tag == "f")
             {
-                FIntermediateMeshFace Face;
+                FIntermediateObjFace Face;
                 Face.MaterialName = CurrentMaterialName;
 
                 FString VertexToken;
                 while (Iss >> VertexToken)
                 {
-                    FIntermediateMeshFaceVertex FaceVertex;
+                    FIntermediateObjFaceVertex FaceVertex;
                     if (ParseFaceVertexToken(VertexToken, FaceVertex, *Result))
                     {
                         Face.Vertices.push_back(FaceVertex);
@@ -403,21 +403,21 @@ namespace Asset
         return Result;
     }
 
-    std::shared_ptr<FStaticMeshCookedData>
+    std::shared_ptr<FObjCookedData>
     FStaticMeshBuilder::CookMesh(const FSourceRecord&               Source,
-                                 const FIntermediateStaticMeshData& Intermediate,
+                                 const FIntermediateObjData& Intermediate,
                                  const FStaticMeshBuildSettings&    Settings)
     {
-        auto Result = std::make_shared<FStaticMeshCookedData>();
+        auto Result = std::make_shared<FObjCookedData>();
 
         bool bHasColors = !Intermediate.Colors.empty() &&
                           Intermediate.Colors.size() == Intermediate.Positions.size();
         bool bHasNormals = !Intermediate.Normals.empty();
         bool bHasUVs = !Intermediate.UVs.empty();
 
-        for (const FIntermediateMeshFace& Face : Intermediate.Faces)
+        for (const FIntermediateObjFace& Face : Intermediate.Faces)
         {
-            for (const FIntermediateMeshFaceVertex& FaceVertex : Face.Vertices)
+            for (const FIntermediateObjFaceVertex& FaceVertex : Face.Vertices)
             {
                 if (FaceVertex.NormalIndex < 0)
                 {
@@ -486,7 +486,7 @@ namespace Asset
             return NewMaterialIndex;
         };
 
-        auto BuildKey = [&](const FIntermediateMeshFaceVertex& FaceVertex) -> FObjVertexKey
+        auto BuildKey = [&](const FIntermediateObjFaceVertex& FaceVertex) -> FObjVertexKey
         {
             FObjVertexKey Key;
             Key.PositionIndex = FaceVertex.PositionIndex;
@@ -596,7 +596,7 @@ namespace Asset
             AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
         };
 
-        auto GetOrCreateVertexIndex = [&](const FIntermediateMeshFaceVertex& FaceVertex) -> uint32
+        auto GetOrCreateVertexIndex = [&](const FIntermediateObjFaceVertex& FaceVertex) -> uint32
         {
             const FObjVertexKey Key = BuildKey(FaceVertex);
             auto                It = VertexMap.find(Key);
@@ -612,7 +612,7 @@ namespace Asset
             return NewIndex;
         };
 
-        for (const FIntermediateMeshFace& Face : Intermediate.Faces)
+        for (const FIntermediateObjFace& Face : Intermediate.Faces)
         {
             const uint32 MaterialIndex = GetOrCreateMaterialIndex(Face.MaterialName);
             TArray<uint32>& Bucket = MaterialBuckets[MaterialIndex];

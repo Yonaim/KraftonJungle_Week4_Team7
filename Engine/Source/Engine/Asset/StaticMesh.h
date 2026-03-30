@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "Engine/Asset/Asset.h"
-#include "Asset/Cooked/StaticMeshCookedData.h"
+#include "Asset/Cooked/ObjCookedData.h"
 #include "Asset/Runtime/StaticMeshRenderResource.h"
 #include "Core/Geometry/Primitives/AABB.h"
 #include "RHI/DynamicRHI.h"
@@ -28,9 +28,9 @@ class UStaticMesh : public UAsset
     DECLARE_RTTI(UStaticMesh, UAsset)
 
   public:
-    const std::shared_ptr<FStaticMeshCookedData>& GetCookedData() const { return CookedData; }
+    const std::shared_ptr<FObjCookedData>& GetCookedData() const { return CookedData; }
 
-    void SetCookedData(std::shared_ptr<FStaticMeshCookedData> InCookedData)
+    void SetCookedData(std::shared_ptr<FObjCookedData> InCookedData)
     {
         CookedData = std::move(InCookedData);
     }
@@ -55,7 +55,7 @@ class UStaticMesh : public UAsset
     }
 
     bool LoadFromCooked(const FString&                         InAssetPath,
-                        std::shared_ptr<FStaticMeshCookedData> InCookedData,
+                        std::shared_ptr<FObjCookedData> InCookedData,
                         RHI::FDynamicRHI&                      InDynamicRHI);
 
     FString GetMeshName() const;
@@ -80,7 +80,7 @@ class UStaticMesh : public UAsset
     void                   CalculateAABB();
 
   private:
-    std::shared_ptr<FStaticMeshCookedData>     CookedData;
+    std::shared_ptr<FObjCookedData>     CookedData;
     std::shared_ptr<FStaticMeshRenderResource> RenderResource;
     Geometry::FAABB                            CachedAABB;
 

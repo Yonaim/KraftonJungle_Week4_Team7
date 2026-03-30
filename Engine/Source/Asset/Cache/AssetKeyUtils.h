@@ -5,8 +5,8 @@
 #include "Asset/Cache/AssetKey.h"
 #include "Asset/Cache/BuildSettings.h"
 #include "Asset/Intermediate/IntermediateFontAtlasData.h"
-#include "Asset/Intermediate/IntermediateMaterialData.h"
-#include "Asset/Intermediate/IntermediateStaticMeshData.h"
+#include "Asset/Intermediate/IntermediateMtlData.h"
+#include "Asset/Intermediate/IntermediateObjData.h"
 #include "Asset/Intermediate/IntermediateSubUVAtlasData.h"
 #include "Asset/Intermediate/IntermediateTextureData.h"
 
@@ -42,7 +42,7 @@ namespace KeyUtils
         return {FinalizeHash(Seed)};
     }
 
-    inline void HashMaterialData(size_t& Seed, const FIntermediateMaterialData& Data)
+    inline void HashMaterialData(size_t& Seed, const FIntermediateMtlData& Data)
     {
         KeyHash::CombineString(Seed, Data.Name);
         HashVector(Seed, Data.DiffuseColor);
@@ -57,14 +57,14 @@ namespace KeyUtils
         }
     }
 
-    inline FMaterialIntermediateKey MakeIntermediateKey(const FIntermediateMaterialData& Data)
+    inline FMaterialIntermediateKey MakeIntermediateKey(const FIntermediateMtlData& Data)
     {
         size_t Seed = 0;
         HashMaterialData(Seed, Data);
         return {FinalizeHash(Seed)};
     }
 
-    inline FMaterialIntermediateKey MakeIntermediateKey(const FIntermediateMaterialLibraryData& Data)
+    inline FMaterialIntermediateKey MakeIntermediateKey(const FIntermediateMtlLibraryData& Data)
     {
         size_t Seed = 0;
         KeyHash::CombineString(Seed, Data.SourcePath);
@@ -75,7 +75,7 @@ namespace KeyUtils
         return {FinalizeHash(Seed)};
     }
 
-    inline FStaticMeshIntermediateKey MakeIntermediateKey(const FIntermediateStaticMeshData& Data)
+    inline FStaticMeshIntermediateKey MakeIntermediateKey(const FIntermediateObjData& Data)
     {
         size_t Seed = 0;
         for (const auto& V : Data.Positions) HashVector(Seed, V);

@@ -24,12 +24,12 @@ namespace Asset
             return true;
         }
 
-        static FIntermediateMaterialData* EnsureCurrentMaterial(
-            FIntermediateMaterialLibraryData& Library, const FString& FallbackName)
+        static FIntermediateMtlData* EnsureCurrentMaterial(
+            FIntermediateMtlLibraryData& Library, const FString& FallbackName)
         {
             if (Library.Materials.empty())
             {
-                FIntermediateMaterialData Material;
+                FIntermediateMtlData Material;
                 Material.Name = FallbackName;
                 const uint32 MaterialIndex = static_cast<uint32>(Library.Materials.size());
                 Library.Materials.push_back(std::move(Material));
@@ -40,7 +40,7 @@ namespace Asset
         }
     } // namespace
 
-    std::shared_ptr<FMaterialCookedLibraryData>
+    std::shared_ptr<FMtlCookedLibraryData>
     FMaterialBuilder::BuildLibrary(const std::filesystem::path& Path)
     {
         const FSourceRecord* Source = Cache.GetSource(FMaterialAssetTag{}, Path);
@@ -50,14 +50,14 @@ namespace Asset
         }
 
         auto& IntermediateCache = Cache.GetIntermediateCache(FMaterialAssetTag{});
-        std::shared_ptr<FIntermediateMaterialLibraryData> Intermediate = ParseMaterialLibrary(*Source);
+        std::shared_ptr<FIntermediateMtlLibraryData> Intermediate = ParseMaterialLibrary(*Source);
         if (!Intermediate)
         {
             return nullptr;
         }
 
         const FMaterialIntermediateKey IntermediateKey = KeyUtils::MakeIntermediateKey(*Intermediate);
-        std::shared_ptr<FIntermediateMaterialLibraryData> CachedIntermediate =
+        std::shared_ptr<FIntermediateMtlLibraryData> CachedIntermediate =
             IntermediateCache.Find(IntermediateKey);
         if (CachedIntermediate)
         {
@@ -71,7 +71,7 @@ namespace Asset
         const FMaterialCookedKey CookedKey = KeyUtils::MakeCookedKey(IntermediateKey);
 
         auto& CookedCache = Cache.GetCookedCache(FMaterialAssetTag{});
-        std::shared_ptr<FMaterialCookedLibraryData> Cooked = CookedCache.Find(CookedKey);
+        std::shared_ptr<FMtlCookedLibraryData> Cooked = CookedCache.Find(CookedKey);
         if (!Cooked)
         {
             Cooked = CookMaterialLibrary(*Source, *Intermediate);
@@ -85,10 +85,10 @@ namespace Asset
         return Cooked;
     }
 
-    std::shared_ptr<FMaterialCookedData>
+    std::shared_ptr<FMtlCookedData>
     FMaterialBuilder::BuildMaterial(const std::filesystem::path& Path, const FString& MaterialName)
     {
-        std::shared_ptr<FMaterialCookedLibraryData> Library = BuildLibrary(Path);
+        std::shared_ptr<FMtlCookedLibraryData> Library = BuildLibrary(Path);
         if (Library == nullptr || Library->Materials.empty())
         {
             return nullptr;
@@ -96,16 +96,16 @@ namespace Asset
 
         if (MaterialName.empty())
         {
-            return std::make_shared<FMaterialCookedData>(Library->Materials.front());
+            return std::make_shared<FMtlCookedData>(Library->Materials.front());
         }
 
-        const FMaterialCookedData* FoundMaterial = Library->FindMaterial(MaterialName);
+        const FMtlCookedData* FoundMaterial = Library->FindMaterial(MaterialName);
         if (FoundMaterial == nullptr)
         {
             return nullptr;
         }
 
-        return std::make_shared<FMaterialCookedData>(*FoundMaterial);
+        return std::make_shared<FMtlCookedData>(*FoundMaterial);
     }
 
     FString FMaterialBuilder::MakeMaterialAssetPath(const std::filesystem::path& LibraryPath,
@@ -136,7 +136,7 @@ namespace Asset
         return true;
     }
 
-    std::shared_ptr<FIntermediateMaterialLibraryData>
+    std::shared_ptr<FIntermediateMtlLibraryData>
     FMaterialBuilder::ParseMaterialLibrary(const FSourceRecord& Source)
     {
         FString Text;
@@ -145,7 +145,7 @@ namespace Asset
             return nullptr;
         }
 
-        auto Result = std::make_shared<FIntermediateMaterialLibraryData>();
+        auto Result = std::make_shared<FIntermediateMtlLibraryData>();
         Result->SourcePath = std::filesystem::path(Source.NormalizedPath).generic_string();
 
         const FString DefaultName = std::filesystem::path(Source.NormalizedPath).stem().string();
@@ -179,7 +179,7 @@ namespace Asset
                     continue;
                 }
 
-                FIntermediateMaterialData Material;
+                FIntermediateMtlData Material;
                 Material.Name = Name;
                 const uint32 MaterialIndex = static_cast<uint32>(Result->Materials.size());
                 Result->Materials.push_back(std::move(Material));
@@ -187,7 +187,7 @@ namespace Asset
                 continue;
             }
 
-            FIntermediateMaterialData* CurrentMaterial = EnsureCurrentMaterial(*Result, DefaultName);
+            FIntermediateMtlData* CurrentMaterial = EnsureCurrentMaterial(*Result, DefaultName);
             if (CurrentMaterial == nullptr)
             {
                 continue;
@@ -237,16 +237,16 @@ namespace Asset
         return Result->IsValid() ? Result : nullptr;
     }
 
-    std::shared_ptr<FMaterialCookedLibraryData>
+    std::shared_ptr<FMtlCookedLibraryData>
     FMaterialBuilder::CookMaterialLibrary(const FSourceRecord& Source,
-                                          const FIntermediateMaterialLibraryData& Intermediate)
+                                          const FIntermediateMtlLibraryData& Intermediate)
     {
-        auto Result = std::make_shared<FMaterialCookedLibraryData>();
+        auto Result = std::make_shared<FMtlCookedLibraryData>();
         Result->SourcePath = std::filesystem::path(Source.NormalizedPath).generic_string();
 
-        for (const FIntermediateMaterialData& MaterialIntermediate : Intermediate.Materials)
+        for (const FIntermediateMtlData& MaterialIntermediate : Intermediate.Materials)
         {
-            FMaterialCookedData Material;
+            FMtlCookedData Material;
             Material.SourcePath = Result->SourcePath;
             Material.Name = MaterialIntermediate.Name.empty()
                                 ? std::filesystem::path(Source.NormalizedPath).stem().string()
@@ -257,7 +257,7 @@ namespace Asset
             Material.Shininess = MaterialIntermediate.Shininess;
             Material.Opacity = MaterialIntermediate.Opacity;
 
-            for (const FIntermediateMaterialTextureRef& TextureRef : MaterialIntermediate.TextureRefs)
+            for (const FIntermediateMtlTextureRef& TextureRef : MaterialIntermediate.TextureRefs)
             {
                 const EMaterialTextureSlot TextureSlot = ResolveTextureSlot(TextureRef.SlotName);
                 const FWString             TexturePath = ResolveRelativePath(

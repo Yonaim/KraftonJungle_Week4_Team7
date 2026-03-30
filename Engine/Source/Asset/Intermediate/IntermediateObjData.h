@@ -5,27 +5,27 @@
 namespace Asset
 {
 
-    struct FIntermediateMeshFaceVertex
+    struct FIntermediateObjFaceVertex
     {
         int32 PositionIndex = -1;
         int32 NormalIndex = -1;
         int32 UVIndex = -1;
     };
 
-    struct FIntermediateMeshFace
+    struct FIntermediateObjFace
     {
-        TArray<FIntermediateMeshFaceVertex> Vertices;
+        TArray<FIntermediateObjFaceVertex> Vertices;
         FString                             MaterialName;
     };
 
-    struct FIntermediateStaticMeshData
+    struct FIntermediateObjData
     {
         TArray<FVector>               Positions;
         TArray<FVector>               Colors;
         TArray<FVector>               Normals;
         TArray<FVector2>              UVs;
         TArray<FString>               MaterialLibraries;
-        TArray<FIntermediateMeshFace> Faces;
+        TArray<FIntermediateObjFace> Faces;
     };
 
 } // namespace Asset

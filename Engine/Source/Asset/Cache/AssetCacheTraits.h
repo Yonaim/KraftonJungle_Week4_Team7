@@ -3,13 +3,13 @@
 #include "Asset/Cache/AssetKey.h"
 #include "Asset/Cache/AssetTags.h"
 #include "Asset/Cooked/FontAtlasCookedData.h"
-#include "Asset/Cooked/MaterialCookedData.h"
-#include "Asset/Cooked/StaticMeshCookedData.h"
+#include "Asset/Cooked/MtlCookedData.h"
+#include "Asset/Cooked/ObjCookedData.h"
 #include "Asset/Cooked/SubUVAtlasCookedData.h"
 #include "Asset/Cooked/TextureCookedData.h"
 #include "Asset/Intermediate/IntermediateFontAtlasData.h"
-#include "Asset/Intermediate/IntermediateMaterialData.h"
-#include "Asset/Intermediate/IntermediateStaticMeshData.h"
+#include "Asset/Intermediate/IntermediateMtlData.h"
+#include "Asset/Intermediate/IntermediateObjData.h"
 #include "Asset/Intermediate/IntermediateSubUVAtlasData.h"
 #include "Asset/Intermediate/IntermediateTextureData.h"
 
@@ -32,8 +32,8 @@ template <> struct TAssetCacheTraits<FMaterialAssetTag>
     using SourceKey = FMaterialSourceKey;
     using IntermediateKey = FMaterialIntermediateKey;
     using CookedKey = FMaterialCookedKey;
-    using IntermediateType = FIntermediateMaterialLibraryData;
-    using CookedType = FMaterialCookedLibraryData;
+    using IntermediateType = FIntermediateMtlLibraryData;
+    using CookedType = FMtlCookedLibraryData;
 };
 
 template <> struct TAssetCacheTraits<FStaticMeshAssetTag>
@@ -41,8 +41,8 @@ template <> struct TAssetCacheTraits<FStaticMeshAssetTag>
     using SourceKey = FStaticMeshSourceKey;
     using IntermediateKey = FStaticMeshIntermediateKey;
     using CookedKey = FStaticMeshCookedKey;
-    using IntermediateType = FIntermediateStaticMeshData;
-    using CookedType = FStaticMeshCookedData;
+    using IntermediateType = FIntermediateObjData;
+    using CookedType = FObjCookedData;
 };
 
 template <> struct TAssetCacheTraits<FSubUVAtlasAssetTag>

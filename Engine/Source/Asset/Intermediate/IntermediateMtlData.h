@@ -5,13 +5,13 @@
 namespace Asset
 {
 
-    struct FIntermediateMaterialTextureRef
+    struct FIntermediateMtlTextureRef
     {
         FString SlotName;
         FString TexturePath;
     };
 
-    struct FIntermediateMaterialData
+    struct FIntermediateMtlData
     {
         FString Name;
         FVector DiffuseColor = FVector(1.0f, 1.0f, 1.0f);
@@ -20,18 +20,18 @@ namespace Asset
         float   Shininess = 0.0f;
         float   Opacity = 1.0f;
 
-        TArray<FIntermediateMaterialTextureRef> TextureRefs;
+        TArray<FIntermediateMtlTextureRef> TextureRefs;
     };
 
-    struct FIntermediateMaterialLibraryData
+    struct FIntermediateMtlLibraryData
     {
         FString                     SourcePath;
-        TArray<FIntermediateMaterialData> Materials;
+        TArray<FIntermediateMtlData> Materials;
         TMap<FString, uint32>       NameToIndex;
 
         bool IsValid() const { return !Materials.empty(); }
 
-        const FIntermediateMaterialData* FindMaterial(const FString& InName) const
+        const FIntermediateMtlData* FindMaterial(const FString& InName) const
         {
             auto It = NameToIndex.find(InName);
             if (It == NameToIndex.end() || It->second >= Materials.size())

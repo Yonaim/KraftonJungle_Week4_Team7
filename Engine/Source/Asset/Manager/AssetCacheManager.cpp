@@ -50,7 +50,7 @@ namespace Asset
         return BuildTextureAbsolute(AbsolutePath, Settings);
     }
 
-    std::shared_ptr<FMaterialCookedData> FAssetCacheManager::BuildMaterial(const FString& Path)
+    std::shared_ptr<FMtlCookedData> FAssetCacheManager::BuildMaterial(const FString& Path)
     {
         FString LibraryPath = Path;
         FString MaterialName;
@@ -73,7 +73,7 @@ namespace Asset
         return BuildMaterialAbsolute(AbsolutePath, MaterialName);
     }
 
-    std::shared_ptr<FStaticMeshCookedData>
+    std::shared_ptr<FObjCookedData>
     FAssetCacheManager::BuildStaticMesh(const FString&                  Path,
                                         const FStaticMeshBuildSettings& Settings)
     {
@@ -147,11 +147,11 @@ namespace Asset
         return Result;
     }
 
-    std::shared_ptr<FMaterialCookedData>
+    std::shared_ptr<FMtlCookedData>
     FAssetCacheManager::BuildMaterialAbsolute(const std::filesystem::path& AbsolutePath,
                                               const FString&               MaterialName)
     {
-        std::shared_ptr<FMaterialCookedData> Result = MaterialBuilder.BuildMaterial(AbsolutePath, MaterialName);
+        std::shared_ptr<FMtlCookedData> Result = MaterialBuilder.BuildMaterial(AbsolutePath, MaterialName);
 
         const FString LogPath = MaterialName.empty()
                                     ? StringFromPath(AbsolutePath)
@@ -168,11 +168,11 @@ namespace Asset
         return Result;
     }
 
-    std::shared_ptr<FStaticMeshCookedData>
+    std::shared_ptr<FObjCookedData>
     FAssetCacheManager::BuildStaticMeshAbsolute(const std::filesystem::path&    AbsolutePath,
                                                 const FStaticMeshBuildSettings& Settings)
     {
-        std::shared_ptr<FStaticMeshCookedData> Result =
+        std::shared_ptr<FObjCookedData> Result =
             StaticMeshBuilder.Build(AbsolutePath, Settings);
 
         if (Result)

@@ -21,8 +21,8 @@ namespace Asset
 
         std::shared_ptr<FTextureCookedData>
         BuildTexture(const FString& Path, const FTextureBuildSettings& Settings = {});
-        std::shared_ptr<FMaterialCookedData> BuildMaterial(const FString& Path);
-        std::shared_ptr<FStaticMeshCookedData>
+        std::shared_ptr<FMtlCookedData> BuildMaterial(const FString& Path);
+        std::shared_ptr<FObjCookedData>
         BuildStaticMesh(const FString& Path, const FStaticMeshBuildSettings& Settings = {});
         std::shared_ptr<FSubUVAtlasCookedData>
         BuildSubUVAtlas(const FString&               Path,
@@ -59,10 +59,10 @@ namespace Asset
         std::shared_ptr<FTextureCookedData>
         BuildTextureAbsolute(const std::filesystem::path& AbsolutePath,
                              const FTextureBuildSettings& Settings = {});
-        std::shared_ptr<FMaterialCookedData>
+        std::shared_ptr<FMtlCookedData>
         BuildMaterialAbsolute(const std::filesystem::path& AbsolutePath,
                               const FString&               MaterialName = {});
-        std::shared_ptr<FStaticMeshCookedData>
+        std::shared_ptr<FObjCookedData>
         BuildStaticMeshAbsolute(const std::filesystem::path&    AbsolutePath,
                                 const FStaticMeshBuildSettings& Settings = {});
         std::shared_ptr<FSubUVAtlasCookedData>

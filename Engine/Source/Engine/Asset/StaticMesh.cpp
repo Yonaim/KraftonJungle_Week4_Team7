@@ -25,7 +25,7 @@ namespace
 } // namespace
 
 bool UStaticMesh::LoadFromCooked(const FString&                         InAssetPath,
-                                 std::shared_ptr<FStaticMeshCookedData> InCookedData,
+                                 std::shared_ptr<FObjCookedData> InCookedData,
                                  RHI::FDynamicRHI&                      InDynamicRHI)
 {
     if (InCookedData == nullptr)

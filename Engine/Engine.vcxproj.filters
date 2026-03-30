@@ -614,10 +614,10 @@
     <ClInclude Include="Source\Asset\Cooked\FontAtlasCookedData.h">
       <Filter>Source\Asset\Cooked</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Asset\Cooked\MaterialCookedData.h">
+    <ClInclude Include="Source\Asset\Cooked\MtlCookedData.h">
       <Filter>Source\Asset\Cooked</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Asset\Cooked\StaticMeshCookedData.h">
+    <ClInclude Include="Source\Asset\Cooked\ObjCookedData.h">
       <Filter>Source\Asset\Cooked</Filter>
     </ClInclude>
     <ClInclude Include="Source\Asset\Cooked\SubUVAtlasCookedData.h">
@@ -647,10 +647,10 @@
     <ClInclude Include="Source\Asset\Intermediate\IntermediateFontAtlasData.h">
       <Filter>Source\Asset\Intermediate</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Asset\Intermediate\IntermediateMaterialData.h">
+    <ClInclude Include="Source\Asset\Intermediate\IntermediateMtlData.h">
       <Filter>Source\Asset\Intermediate</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Asset\Intermediate\IntermediateStaticMeshData.h">
+    <ClInclude Include="Source\Asset\Intermediate\IntermediateObjData.h">
       <Filter>Source\Asset\Intermediate</Filter>
     </ClInclude>
     <ClInclude Include="Source\Asset\Intermediate\IntermediateSubUVAtlasData.h">

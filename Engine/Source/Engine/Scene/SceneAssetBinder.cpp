@@ -110,7 +110,7 @@ void FSceneAssetBinder::BindComponent(USceneComponent* InComponent,
             return;
         }
 
-        std::shared_ptr<Asset::FStaticMeshCookedData> CookedData =
+        std::shared_ptr<Asset::FObjCookedData> CookedData =
             InAssetCacheManager->BuildStaticMesh(MeshPath);
         if (CookedData == nullptr)
         {

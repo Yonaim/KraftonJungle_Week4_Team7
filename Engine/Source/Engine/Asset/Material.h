@@ -4,7 +4,7 @@
 #include <utility>
 
 #include "Engine/Asset/Asset.h"
-#include "Asset/Cooked/MaterialCookedData.h"
+#include "Asset/Cooked/MtlCookedData.h"
 #include "Asset/Runtime/MaterialRenderResource.h"
 
 using namespace Asset;
@@ -14,9 +14,9 @@ class UMaterial : public UAsset
     DECLARE_RTTI(UMaterial, UAsset)
 
   public:
-    const std::shared_ptr<FMaterialCookedData>& GetCookedData() const { return CookedData; }
+    const std::shared_ptr<FMtlCookedData>& GetCookedData() const { return CookedData; }
 
-    void SetCookedData(std::shared_ptr<FMaterialCookedData> InCookedData)
+    void SetCookedData(std::shared_ptr<FMtlCookedData> InCookedData)
     {
         CookedData = std::move(InCookedData);
     }
@@ -41,6 +41,6 @@ class UMaterial : public UAsset
     }
 
   private:
-    std::shared_ptr<FMaterialCookedData>     CookedData;
+    std::shared_ptr<FMtlCookedData>     CookedData;
     std::shared_ptr<FMaterialRenderResource> RenderResource;
 };

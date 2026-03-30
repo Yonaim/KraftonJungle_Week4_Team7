@@ -35,15 +35,12 @@ namespace Engine::Component
         }
     } // namespace
 
-    FString UStaticMeshComponent::GetStaticMeshPath() const
-    {
-        return MeshPath;
-    }
+    FString UStaticMeshComponent::GetStaticMeshPath() const { return MeshPath; }
 
     void UStaticMeshComponent::SetStaticMeshPath(const FString& InPath) { MeshPath = InPath; }
 
     void UStaticMeshComponent::CollectRenderData(FSceneRenderData& OutRenderData,
-        ESceneShowFlags InShowFlags) const
+                                                 ESceneShowFlags   InShowFlags) const
     {
         if (!IsFlagSet(InShowFlags, ESceneShowFlags::SF_Primitives))
         {
@@ -57,7 +54,7 @@ namespace Engine::Component
         }
 
         FRenderCommand& MutableRenderCommand = const_cast<FRenderCommand&>(RenderCommand);
-        
+
         // Generate FMeshData
         FMeshData* MeshData = new FMeshData();
         if (StaticMesh)
@@ -65,17 +62,14 @@ namespace Engine::Component
             MeshData->Topology = EMeshTopology::EMT_TriangleList;
             MeshData->VertexBufferCount = StaticMesh->GetVerticesCount();
             MeshData->IndexBufferCount = StaticMesh->GetIndicesCount();
-            MeshData->VertexBuffer = StaticMesh->GetRenderResource()->VertexBuffer; 
+            MeshData->VertexBuffer = StaticMesh->GetRenderResource()->VertexBuffer;
             MeshData->IndexBuffer = StaticMesh->GetRenderResource()->IndexBuffer;
             // DEBUG: 렌더링을 위해 Vertices와 Indices의 count 채우기
-            MeshData->Vertices.insert(MeshData->Vertices.begin(), 
-                                    StaticMesh->GetRenderResource()->VertexCount,
-                                    FPrimitiveVertex()
-                                    );
-            MeshData->Indices.insert(MeshData->Indices.begin(), 
-                                    StaticMesh->GetRenderResource()->IndexCount,
-                                    0
-                                    );
+            MeshData->Vertices.insert(MeshData->Vertices.begin(),
+                                      StaticMesh->GetRenderResource()->VertexCount,
+                                      FPrimitiveVertex());
+            MeshData->Indices.insert(MeshData->Indices.begin(),
+                                     StaticMesh->GetRenderResource()->IndexCount, 0);
             MeshData->bIsDirty = false;
         }
         MutableRenderCommand.MeshData = MeshData;
@@ -167,5 +161,46 @@ namespace Engine::Component
         }
 
         return {};
+    }
+
+    int32 UStaticMeshComponent::GetMaterialSlotCount() const
+    {
+        if (StaticMesh == nullptr)
+        {
+            return 0;
+        }
+        return static_cast<int32>(StaticMesh->GetMaterialSlots().size());
+    }
+
+    UMaterial* UStaticMeshComponent::GetMaterial(int32 SlotIndex) const
+    {
+        if (StaticMesh == nullptr || SlotIndex < 0)
+        {
+            return nullptr;
+        }
+
+        const auto& Slots = StaticMesh->GetMaterialSlots();
+        if (static_cast<size_t>(SlotIndex) >= Slots.size())
+        {
+            return nullptr;
+        }
+
+        return Slots[SlotIndex];
+    }
+
+    void UStaticMeshComponent::SetMaterial(int32 SlotIndex, UMaterial* InMaterial)
+    {
+        if (StaticMesh == nullptr || SlotIndex < 0)
+        {
+            return;
+        }
+
+        auto& Slots = StaticMesh->GetMaterialSlots();
+        if (static_cast<size_t>(SlotIndex) >= Slots.size())
+        {
+            return;
+        }
+
+        Slots[SlotIndex] = InMaterial;
     }
 } // namespace Engine::Component

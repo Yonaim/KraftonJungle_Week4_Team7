@@ -5,8 +5,8 @@
 
 #include "Asset/Cache/AssetBuildCache.h"
 #include "Asset/Builder/TextureBuilder.h"
-#include "Asset/Cooked/MaterialCookedData.h"
-#include "Asset/Intermediate/IntermediateMaterialData.h"
+#include "Asset/Cooked/MtlCookedData.h"
+#include "Asset/Intermediate/IntermediateMtlData.h"
 
 namespace Asset
 {
@@ -16,15 +16,15 @@ class FMaterialBuilder
   public:
     explicit FMaterialBuilder(FAssetBuildCache& InCache) : Cache(InCache) {}
 
-    std::shared_ptr<FMaterialCookedLibraryData> BuildLibrary(const std::filesystem::path& Path);
-    std::shared_ptr<FMaterialCookedLibraryData> BuildLibrary(const FWString& Path)
+    std::shared_ptr<FMtlCookedLibraryData> BuildLibrary(const std::filesystem::path& Path);
+    std::shared_ptr<FMtlCookedLibraryData> BuildLibrary(const FWString& Path)
     {
         return BuildLibrary(std::filesystem::path(Path));
     }
 
-    std::shared_ptr<FMaterialCookedData> BuildMaterial(const std::filesystem::path& Path,
+    std::shared_ptr<FMtlCookedData> BuildMaterial(const std::filesystem::path& Path,
                                                        const FString& MaterialName = {});
-    std::shared_ptr<FMaterialCookedData> BuildMaterial(const FWString& Path,
+    std::shared_ptr<FMtlCookedData> BuildMaterial(const FWString& Path,
                                                        const FString& MaterialName = {})
     {
         return BuildMaterial(std::filesystem::path(Path), MaterialName);
@@ -36,9 +36,9 @@ class FMaterialBuilder
                                           FString& OutMaterialName);
 
   private:
-    std::shared_ptr<FIntermediateMaterialLibraryData> ParseMaterialLibrary(const FSourceRecord& Source);
-    std::shared_ptr<FMaterialCookedLibraryData> CookMaterialLibrary(
-        const FSourceRecord& Source, const FIntermediateMaterialLibraryData& Intermediate);
+    std::shared_ptr<FIntermediateMtlLibraryData> ParseMaterialLibrary(const FSourceRecord& Source);
+    std::shared_ptr<FMtlCookedLibraryData> CookMaterialLibrary(
+        const FSourceRecord& Source, const FIntermediateMtlLibraryData& Intermediate);
 
     static bool                 ReadAllText(const std::filesystem::path& Path, FString& OutText);
     static FString              Trim(const FString& Value);

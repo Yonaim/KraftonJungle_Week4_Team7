@@ -3,7 +3,7 @@
 namespace Asset
 {
     std::shared_ptr<FStaticMeshRenderResource>
-    FStaticMeshRenderResource::Create(const FStaticMeshCookedData& CookedData,
+    FStaticMeshRenderResource::Create(const FObjCookedData& CookedData,
                                       RHI::FDynamicRHI&            RHI)
     {
         if (!CookedData.IsValid())
