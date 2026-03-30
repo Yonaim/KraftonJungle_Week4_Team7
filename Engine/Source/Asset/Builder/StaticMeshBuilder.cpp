@@ -6,7 +6,7 @@
 #include <sstream>
 #include <unordered_map>
 
-#include "Asset/Cache/DerivedKey.h"
+#include "Asset/Cache/AssetKeyUtils.h"
 
 namespace Asset
 {
@@ -202,31 +202,38 @@ namespace Asset
     } // namespace
 
     std::shared_ptr<FStaticMeshCookedData>
-    FStaticMeshBuilder::Build(const FWString& Path, const FStaticMeshBuildSettings& Settings)
+    FStaticMeshBuilder::Build(const std::filesystem::path& Path,
+                             const FStaticMeshBuildSettings& Settings)
     {
-        const FSourceRecord* Source = Cache.GetSource(Path);
+        const FSourceRecord* Source = Cache.GetSource(FStaticMeshAssetTag{}, Path);
         if (Source == nullptr)
         {
             return nullptr;
         }
 
         auto& IntermediateCache = Cache.GetIntermediateCache(FStaticMeshAssetTag{});
-        std::shared_ptr<FIntermediateStaticMeshData> Intermediate =
-            IntermediateCache.Find(MakeIntermediateKey(EAssetType::StaticMesh, Source->ContentHash));
+        std::shared_ptr<FIntermediateStaticMeshData> Intermediate = ParseObj(*Source);
         if (!Intermediate)
         {
-            Intermediate = ParseObj(*Source);
-            if (!Intermediate)
-            {
-                return nullptr;
-            }
-            IntermediateCache.Insert(MakeIntermediateKey(EAssetType::StaticMesh, Source->ContentHash), Intermediate);
+            return nullptr;
         }
 
-        const FDerivedKey DerivedKey = MakeCookedKey(EAssetType::StaticMesh, Source->ContentHash, Settings.ToKeyString());
+        const FStaticMeshIntermediateKey IntermediateKey = KeyUtils::MakeIntermediateKey(*Intermediate);
+        std::shared_ptr<FIntermediateStaticMeshData> CachedIntermediate =
+            IntermediateCache.Find(IntermediateKey);
+        if (CachedIntermediate)
+        {
+            Intermediate = CachedIntermediate;
+        }
+        else
+        {
+            IntermediateCache.Insert(IntermediateKey, Intermediate);
+        }
+
+        const FStaticMeshCookedKey CookedKey = KeyUtils::MakeCookedKey(IntermediateKey, Settings);
 
         auto& CookedCache = Cache.GetCookedCache(FStaticMeshAssetTag{});
-        std::shared_ptr<FStaticMeshCookedData> Cooked = CookedCache.Find(DerivedKey);
+        std::shared_ptr<FStaticMeshCookedData> Cooked = CookedCache.Find(CookedKey);
         if (!Cooked)
         {
             Cooked = CookMesh(*Source, *Intermediate, Settings);
@@ -234,7 +241,7 @@ namespace Asset
             {
                 return nullptr;
             }
-            CookedCache.Insert(DerivedKey, Cooked);
+            CookedCache.Insert(CookedKey, Cooked);
         }
 
         return Cooked;

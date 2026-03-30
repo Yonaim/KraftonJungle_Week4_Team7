@@ -3,14 +3,14 @@
 #include <cstring>
 #include <filesystem>
 
-#include "Asset/Cache/DerivedKey.h"
+#include "Asset/Cache/AssetKeyUtils.h"
 #include "ThirdParty/stb/stb_image.h"
 
 namespace Asset
 {
     namespace
     {
-        static std::string NarrowFromWide(const FWString& InPath)
+        static std::string NarrowFromPath(const FWString& InPath)
         {
             if (InPath.empty())
             {
@@ -20,7 +20,7 @@ namespace Asset
             return std::filesystem::path(InPath).string();
         }
 
-        static FString StringFromWide(const FWString& InPath)
+        static FString StringFromPath(const FWString& InPath)
         {
             if (InPath.empty())
             {
@@ -34,34 +34,41 @@ namespace Asset
     FTextureBuilder::FTextureBuilder(FAssetBuildCache& InCache) : Cache(InCache) {}
 
     std::shared_ptr<FTextureCookedData>
-    FTextureBuilder::Build(const FWString& Path, const FTextureBuildSettings& Settings)
+    FTextureBuilder::Build(const std::filesystem::path& Path,
+                           const FTextureBuildSettings& Settings)
     {
-        const FSourceRecord* Source = Cache.GetSource(Path);
+        const FSourceRecord* Source = Cache.GetSource(FTextureAssetTag{}, Path);
         if (Source == nullptr)
         {
             return nullptr;
         }
 
         auto& IntermediateCache = Cache.GetIntermediateCache(FTextureAssetTag{});
-        const FDerivedKey IntermediateKey =
-            MakeIntermediateKey(EAssetType::Texture, Source->ContentHash);
 
-        std::shared_ptr<FIntermediateTextureData> Intermediate =
-            IntermediateCache.Find(IntermediateKey);
+        std::shared_ptr<FIntermediateTextureData> Intermediate;
+        FTextureIntermediateKey                  IntermediateKey;
 
-        if (!Intermediate)
+        Intermediate = std::make_shared<FIntermediateTextureData>();
+        if (!DecodeTexture(*Source, *Intermediate))
         {
-            Intermediate = std::make_shared<FIntermediateTextureData>();
-            if (!DecodeTexture(*Source, *Intermediate))
-            {
-                return nullptr;
-            }
+            return nullptr;
+        }
 
+        IntermediateKey = KeyUtils::MakeIntermediateKey(*Intermediate);
+
+        std::shared_ptr<FIntermediateTextureData> CachedIntermediate =
+            IntermediateCache.Find(IntermediateKey);
+        if (CachedIntermediate)
+        {
+            Intermediate = CachedIntermediate;
+        }
+        else
+        {
             IntermediateCache.Insert(IntermediateKey, Intermediate);
         }
 
-        const FDerivedKey CookedKey =
-            MakeCookedKey(EAssetType::Texture, Source->ContentHash, Settings.ToKeyString());
+        const FTextureCookedKey CookedKey =
+            KeyUtils::MakeCookedKey(IntermediateKey, Settings);
 
         auto& CookedCache = Cache.GetCookedCache(FTextureAssetTag{});
         std::shared_ptr<FTextureCookedData> Cooked = CookedCache.Find(CookedKey);
@@ -83,7 +90,7 @@ namespace Asset
     bool FTextureBuilder::DecodeTexture(const FSourceRecord& Source,
                                         FIntermediateTextureData& OutData) const
     {
-        const std::string PathString = NarrowFromWide(Source.NormalizedPath);
+        const std::string PathString = NarrowFromPath(Source.NormalizedPath);
         if (PathString.empty())
         {
             return false;
@@ -136,7 +143,7 @@ namespace Asset
         }
 
         auto Result = std::make_shared<FTextureCookedData>();
-        Result->SourcePath = StringFromWide(Source.NormalizedPath);
+        Result->SourcePath = StringFromPath(Source.NormalizedPath);
         Result->Width = Intermediate.Width;
         Result->Height = Intermediate.Height;
         Result->Channels = Intermediate.Channels;
