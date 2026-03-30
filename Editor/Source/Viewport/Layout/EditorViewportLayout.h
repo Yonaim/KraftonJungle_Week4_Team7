@@ -9,8 +9,6 @@ class FEditorViewportLayout
   public:
     virtual ~FEditorViewportLayout() = default;
 
-    void SetLayoutType(EViewportLayoutType NewType) { Type = NewType; }
-    
     // 초기 트리 구성
     virtual void Initialize(FViewportRect TotalRect) = 0;
 
@@ -19,6 +17,9 @@ class FEditorViewportLayout
 
     // 리프 노드 반환 (최종 결과)
     virtual TArray<SWindow*> GetLeafWindows() const = 0;
+
+    void SetLayoutType(EViewportLayoutType NewType) { Type = NewType; }
+    SSplitter* const& GetRootSplitter() const { return RootSplitter; }
 
 protected:
     EViewportLayoutType Type = EViewportLayoutType::_1l3;
