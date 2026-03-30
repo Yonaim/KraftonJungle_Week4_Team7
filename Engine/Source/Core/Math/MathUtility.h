@@ -29,4 +29,10 @@ struct ENGINE_API FMath
     {
         return (Value < Min) ? Min : (Value > Max) ? Max : Value;
     }
+
+    static float LerpAngle(float A, float B, float Alpha)
+    {
+        float Delta = std::fmod(B - A + 540.0f, 360.0f) - 180.0f;
+        return A + Delta * Alpha;
+    }
 };
