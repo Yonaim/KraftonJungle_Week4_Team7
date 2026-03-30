@@ -18,6 +18,14 @@ Engine::Component::UStaticMeshComponent* AStaticMeshActor::GetStaticMeshComponen
     return Cast<Engine::Component::UStaticMeshComponent>(RootComponent);
 }
 
+void AStaticMeshActor::SetDefaultStaticMeshPath(const FString& InPath)
+{
+    if (auto* StaticMeshComponent = GetStaticMeshComponent())
+    {
+        StaticMeshComponent->SetStaticMeshPath(InPath);
+    }
+}
+
 bool AStaticMeshActor::IsRenderable() const { return GetPrimitiveComponent() != nullptr; }
 
 bool AStaticMeshActor::IsSelected() const

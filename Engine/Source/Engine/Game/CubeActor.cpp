@@ -3,11 +3,7 @@
 #include "Engine/Component/Mesh/StaticMeshComponent.h"
 ACubeActor::ACubeActor()
 {
-    if (auto* StaticMeshComponent = GetStaticMeshComponent())
-    {
-        // StaticMeshComponent->SetStaticMeshPath("BasicMesh/Cube.mesh");
-    }
-
+    SetDefaultStaticMeshPath("BasicMesh/Cube.obj");
     Name = "CubeActor";
 }
 

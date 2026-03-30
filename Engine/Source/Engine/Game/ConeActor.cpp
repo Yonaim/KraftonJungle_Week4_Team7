@@ -5,11 +5,7 @@
 
 AConeActor::AConeActor()
 {
-    if (auto* StaticMeshComponent = GetStaticMeshComponent())
-    {
-        //StaticMeshComponent->SetStaticMeshPath("BasicMesh/Cone.mesh");
-    }
-
+    SetDefaultStaticMeshPath("BasicMesh/Cone.obj");
     Name = "ConeActor";
 }
 

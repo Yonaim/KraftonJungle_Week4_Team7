@@ -17,6 +17,9 @@ class ENGINE_API AStaticMeshActor : public AMeshActor
 
     Engine::Component::UStaticMeshComponent* GetStaticMeshComponent() const;
 
+  protected:
+    void SetDefaultStaticMeshPath(const FString& InPath);
+
     bool           IsRenderable() const override;
     bool           IsSelected() const override;
     FColor         GetColor() const override;

@@ -1,13 +1,10 @@
 #include "Core/CoreMinimal.h"
 #include "CylinderActor.h"
+#include "Engine/Component/Mesh/StaticMeshComponent.h"
 
 ACylinderActor::ACylinderActor()
 {
-    if (auto* StaticMeshComponent = GetStaticMeshComponent())
-    {
-        // StaticMeshComponent->SetStaticMeshPath("BasicMesh/Cylinder.mesh");
-    }
-
+    SetDefaultStaticMeshPath("BasicMesh/Cylinder.obj");
     Name = "CylinderActor";
 }
 

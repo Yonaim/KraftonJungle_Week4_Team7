@@ -1,13 +1,10 @@
 #include "Core/CoreMinimal.h"
 #include "RingActor.h"
+#include "Engine/Component/Mesh/StaticMeshComponent.h"
 
 ARingActor::ARingActor()
 {
-    if (auto* StaticMeshComponent = GetStaticMeshComponent())
-    {
-        // StaticMeshComponent->SetStaticMeshPath("BasicMesh/Ring.mesh");
-    }
-
+    SetDefaultStaticMeshPath("BasicMesh/Ring.obj");
     Name = "RingActor";
 }
 

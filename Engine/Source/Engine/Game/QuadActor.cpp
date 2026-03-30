@@ -1,13 +1,11 @@
 #include "QuadActor.h"
+#include "Engine/Component/Mesh/StaticMeshComponent.h"
 
 #include "Engine/Component/Core/PrimitiveComponent.h"
 
 AQuadActor::AQuadActor()
 {
-    if (auto* StaticMeshComponent = GetStaticMeshComponent())
-    {
-        // StaticMeshComponent->SetStaticMeshPath("BasicMesh/Cube.mesh");
-    }
+    SetDefaultStaticMeshPath("BasicMesh/Quad.obj");
     Name = "QuadActor";
 }
 
