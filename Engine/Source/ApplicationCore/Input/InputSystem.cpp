@@ -205,6 +205,14 @@ namespace Engine::ApplicationCore
             break;
         }
 
+        case WM_LBUTTONDBLCLK:
+        {
+            FInputEvent Event;
+            Event.Type = EInputEventType::MouseDoubleClick;
+            Event.Key = EKey::MouseLeft;
+            EventQueue.push(Event);
+            break;
+        }
         default:
             break;
         }

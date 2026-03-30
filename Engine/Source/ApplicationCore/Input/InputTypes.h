@@ -42,6 +42,7 @@ namespace Engine::ApplicationCore
         MouseButtonUp,
         MouseMove,
         MouseWheel,
+        MouseDoubleClick,
         //CharInput,
     };
 
