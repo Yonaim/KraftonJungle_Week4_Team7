@@ -1,11 +1,10 @@
 #pragma once
 
 #include "Core/Geometry/Primitives/AABB.h"
-#include "Core/Math/Vector4.h"
 #include "Core/Math/Color.h"
 #include "SceneComponent.h"
 #include "Renderer/Types/SceneShowFlags.h"
-#include "NewRenderer/RenderCommand.h"
+#include "Renderer/RenderCommand.h"
 
 enum class EBasicMeshType : uint8;
 struct FSceneRenderData;

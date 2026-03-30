@@ -5,7 +5,7 @@
 #include "Renderer/SceneRenderData.h"
 #include "Renderer/SceneView.h"
 #include "Renderer/D3D11/GeneralRenderer.h"
-#include "NewRenderer/Material.h"
+#include "Renderer/Material/Material.h"
 #include "Renderer/Types/RenderDebugColors.h"
 
 #include <algorithm>

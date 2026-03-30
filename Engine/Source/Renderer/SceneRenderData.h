@@ -3,7 +3,7 @@
 #include "Core/Containers/Array.h"
 #include "Renderer/Types/RenderItem.h"
 #include "Renderer/Types/ViewMode.h"
-#include "NewRenderer/RenderCommand.h"
+#include "RenderCommand.h"
 
 class FSceneView;
 

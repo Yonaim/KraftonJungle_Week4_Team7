@@ -1,7 +1,7 @@
 #include "Core/CoreMinimal.h"
 #include "MeshComponent.h"
 
-#include "NewRenderer/Primitive/PrimitiveCube.h"
+#include "Renderer/Primitive/PrimitiveCube.h"
 
 Engine::Component::UMeshComponent::UMeshComponent()
 {

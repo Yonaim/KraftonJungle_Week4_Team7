@@ -1,9 +1,15 @@
 #pragma once
 #include "D3D11RHI.h"
-#include "NewRenderer/Renderer.h"
+#include "Renderer/RenderCommand.h"
+#include "Renderer/RenderState/RenderStateManager.h"
+#include "Renderer/Shader/ShaderManager.h"
+#include <d3d11.h>
+#include <functional>
+#include <memory>
 
 // === Forward Declaraction
 struct FRenderCommandQueue;
+using FGUICallback = std::function<void()>;
 // === Forward Declaraction
 
 class FGeneralRenderer

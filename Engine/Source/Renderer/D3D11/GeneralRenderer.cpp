@@ -2,10 +2,10 @@
 #include "GeneralRenderer.h"
 
 #include "Core/Misc/Paths.h"
-#include "NewRenderer/Material.h"
-#include "NewRenderer/MaterialManager.h"
-#include "NewRenderer/ShaderMap.h"
-#include "NewRenderer/ShaderType.h"
+#include "Renderer/Material/Material.h"
+#include "Renderer/Material/MaterialManager.h"
+#include "Renderer/Shader/ShaderMap.h"
+#include "Renderer/Shader/ShaderType.h"
 
 std::shared_ptr<FMaterial> FGeneralRenderer::DefaultMaterial;
 std::shared_ptr<FMaterial> FGeneralRenderer::DefaultSpriteMaterial;

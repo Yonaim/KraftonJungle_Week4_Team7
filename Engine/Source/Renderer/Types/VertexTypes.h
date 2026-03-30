@@ -4,9 +4,10 @@
 #include "Core/Math/Vector2.h"
 #include "Core/Math/Color.h"
 
-struct FMeshVertex
+struct ENGINE_API FPrimitiveVertex
 {
-    FVector   Position;
-    FVector2  UV;
-    FColor    Color;
+    FVector Position;
+    FColor Color;
+    FVector Normal;
+    FVector2 UV;
 };

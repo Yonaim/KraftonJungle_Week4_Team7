@@ -28,9 +28,6 @@
     <Filter Include="Source\Launch">
       <UniqueIdentifier>{3ff2eba7-1724-b5b0-ebd8-4a23450e4f65}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\NewRenderer">
-      <UniqueIdentifier>{b719ffce-de9e-0710-a406-6b08afc4809c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\Primitive">
       <UniqueIdentifier>{b1c8ef7e-4da0-b414-9db6-0f275d54f96c}</UniqueIdentifier>
     </Filter>
@@ -106,14 +103,23 @@
     <Filter Include="Source\Engine\ViewPort">
       <UniqueIdentifier>{3f58abac-aa9e-06f1-348e-4d37ab560ccd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\NewRenderer\Primitive">
-      <UniqueIdentifier>{8346275e-0129-b5bf-142a-739a2e63537a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\Renderer\D3D11">
       <UniqueIdentifier>{7d49e81e-9894-3ffe-a35e-b64d3056e0ba}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Renderer\Material">
+      <UniqueIdentifier>{81ad5f80-0396-17fe-42fb-60db4d73e0be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Renderer\Primitive">
+      <UniqueIdentifier>{8526cc9f-ade7-18f1-2e31-0e3d5da40749}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source\Renderer\RenderAsset">
       <UniqueIdentifier>{37df3f3d-06b0-91a9-da82-c1929332f7ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Renderer\RenderState">
+      <UniqueIdentifier>{1ee7e652-24f2-e4ea-8428-becde596be71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Renderer\Shader">
+      <UniqueIdentifier>{fb0c8d2b-830c-d893-2e28-4cf0a717a7d2}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Renderer\Types">
       <UniqueIdentifier>{2a470593-b470-7a69-2874-61b9dc3a78a3}</UniqueIdentifier>
@@ -366,81 +372,6 @@
     <ClCompile Include="Source\Engine\World.cpp">
       <Filter>Source\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Source\NewRenderer\Material.cpp">
-      <Filter>Source\NewRenderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NewRenderer\MaterialManager.cpp">
-      <Filter>Source\NewRenderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NewRenderer\Primitive\PrimitiveBase.cpp">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NewRenderer\Primitive\PrimitiveCone.cpp">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NewRenderer\Primitive\PrimitiveCube.cpp">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NewRenderer\Primitive\PrimitiveCylinder.cpp">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NewRenderer\Primitive\PrimitiveGizmo.cpp">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NewRenderer\Primitive\PrimitiveObj.cpp">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NewRenderer\Primitive\PrimitivePlane.cpp">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NewRenderer\Primitive\PrimitiveQuad.cpp">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NewRenderer\Primitive\PrimitiveRing.cpp">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NewRenderer\Primitive\PrimitiveSky.cpp">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NewRenderer\Primitive\PrimitiveSphere.cpp">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NewRenderer\Primitive\PrimitiveTriangle.cpp">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NewRenderer\Primitive\UnrealEditorStyledGizmo.cpp">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NewRenderer\RenderCommand.cpp">
-      <Filter>Source\NewRenderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NewRenderer\Renderer.cpp">
-      <Filter>Source\NewRenderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NewRenderer\RenderState.cpp">
-      <Filter>Source\NewRenderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NewRenderer\RenderStateManager.cpp">
-      <Filter>Source\NewRenderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NewRenderer\Shader.cpp">
-      <Filter>Source\NewRenderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NewRenderer\ShaderManager.cpp">
-      <Filter>Source\NewRenderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NewRenderer\ShaderMap.cpp">
-      <Filter>Source\NewRenderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NewRenderer\ShaderResource.cpp">
-      <Filter>Source\NewRenderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NewRenderer\SubUVRenderer.cpp">
-      <Filter>Source\NewRenderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NewRenderer\TextMeshBuilder.cpp">
-      <Filter>Source\NewRenderer</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Renderer\D3D11\D3D11OutlineRenderer.cpp">
       <Filter>Source\Renderer\D3D11</Filter>
     </ClCompile>
@@ -450,8 +381,74 @@
     <ClCompile Include="Source\Renderer\D3D11\GeneralRenderer.cpp">
       <Filter>Source\Renderer\D3D11</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Renderer\Material\Material.cpp">
+      <Filter>Source\Renderer\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Material\MaterialManager.cpp">
+      <Filter>Source\Renderer\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Primitive\PrimitiveBase.cpp">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Primitive\PrimitiveCone.cpp">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Primitive\PrimitiveCube.cpp">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Primitive\PrimitiveCylinder.cpp">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Primitive\PrimitiveGizmo.cpp">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Primitive\PrimitiveObj.cpp">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Primitive\PrimitivePlane.cpp">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Primitive\PrimitiveQuad.cpp">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Primitive\PrimitiveRing.cpp">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Primitive\PrimitiveSky.cpp">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Primitive\PrimitiveSphere.cpp">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Primitive\PrimitiveTriangle.cpp">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Primitive\UnrealEditorStyledGizmo.cpp">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\RenderCommand.cpp">
+      <Filter>Source\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Renderer\RendererModule.cpp">
       <Filter>Source\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\RenderState\RenderState.cpp">
+      <Filter>Source\Renderer\RenderState</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\RenderState\RenderStateManager.cpp">
+      <Filter>Source\Renderer\RenderState</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Shader\Shader.cpp">
+      <Filter>Source\Renderer\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Shader\ShaderManager.cpp">
+      <Filter>Source\Renderer\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Shader\ShaderMap.cpp">
+      <Filter>Source\Renderer\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Shader\ShaderResource.cpp">
+      <Filter>Source\Renderer\Shader</Filter>
     </ClCompile>
     <ClCompile Include="Source\RHI\D3D11\D3D11Common.cpp">
       <Filter>Source\RHI\D3D11</Filter>
@@ -890,90 +887,6 @@
     <ClInclude Include="Source\Launch\EngineLoop.h">
       <Filter>Source\Launch</Filter>
     </ClInclude>
-    <ClInclude Include="Source\NewRenderer\Material.h">
-      <Filter>Source\NewRenderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\MaterialManager.h">
-      <Filter>Source\NewRenderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\Primitive\PrimitiveBase.h">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\Primitive\PrimitiveCone.h">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\Primitive\PrimitiveCube.h">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\Primitive\PrimitiveCylinder.h">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\Primitive\PrimitiveGizmo.h">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\Primitive\PrimitiveObj.h">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\Primitive\PrimitivePlane.h">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\Primitive\PrimitiveQuad.h">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\Primitive\PrimitiveRing.h">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\Primitive\PrimitiveSky.h">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\Primitive\PrimitiveSphere.h">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\Primitive\PrimitiveTriangle.h">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\Primitive\UnrealEditorStyledGizmo.h">
-      <Filter>Source\NewRenderer\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\PrimitiveVertex.h">
-      <Filter>Source\NewRenderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\RenderCommand.h">
-      <Filter>Source\NewRenderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\Renderer.h">
-      <Filter>Source\NewRenderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\RenderState.h">
-      <Filter>Source\NewRenderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\RenderStateManager.h">
-      <Filter>Source\NewRenderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\Shader.h">
-      <Filter>Source\NewRenderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\ShaderManager.h">
-      <Filter>Source\NewRenderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\ShaderMap.h">
-      <Filter>Source\NewRenderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\ShaderResource.h">
-      <Filter>Source\NewRenderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\ShaderType.h">
-      <Filter>Source\NewRenderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\SubUVRenderer.h">
-      <Filter>Source\NewRenderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\TextMeshBuilder.h">
-      <Filter>Source\NewRenderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\NewRenderer\TextureVertex.h">
-      <Filter>Source\NewRenderer</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Renderer\D3D11\D3D11Common.h">
       <Filter>Source\Renderer\D3D11</Filter>
     </ClInclude>
@@ -989,6 +902,51 @@
     <ClInclude Include="Source\Renderer\EditorRenderData.h">
       <Filter>Source\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Renderer\Material\Material.h">
+      <Filter>Source\Renderer\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Material\MaterialManager.h">
+      <Filter>Source\Renderer\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Primitive\PrimitiveBase.h">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Primitive\PrimitiveCone.h">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Primitive\PrimitiveCube.h">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Primitive\PrimitiveCylinder.h">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Primitive\PrimitiveGizmo.h">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Primitive\PrimitiveObj.h">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Primitive\PrimitivePlane.h">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Primitive\PrimitiveQuad.h">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Primitive\PrimitiveRing.h">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Primitive\PrimitiveSky.h">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Primitive\PrimitiveSphere.h">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Primitive\PrimitiveTriangle.h">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Primitive\UnrealEditorStyledGizmo.h">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Renderer\RenderAsset\FontResource.h">
       <Filter>Source\Renderer\RenderAsset</Filter>
     </ClInclude>
@@ -998,14 +956,38 @@
     <ClInclude Include="Source\Renderer\RenderAsset\TextureResource.h">
       <Filter>Source\Renderer\RenderAsset</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Renderer\RenderCommand.h">
+      <Filter>Source\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Renderer\RendererModule.h">
       <Filter>Source\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\RenderState\RenderState.h">
+      <Filter>Source\Renderer\RenderState</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\RenderState\RenderStateManager.h">
+      <Filter>Source\Renderer\RenderState</Filter>
     </ClInclude>
     <ClInclude Include="Source\Renderer\SceneRenderData.h">
       <Filter>Source\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="Source\Renderer\SceneView.h">
       <Filter>Source\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Shader\Shader.h">
+      <Filter>Source\Renderer\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Shader\ShaderManager.h">
+      <Filter>Source\Renderer\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Shader\ShaderMap.h">
+      <Filter>Source\Renderer\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Shader\ShaderResource.h">
+      <Filter>Source\Renderer\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Shader\ShaderType.h">
+      <Filter>Source\Renderer\Shader</Filter>
     </ClInclude>
     <ClInclude Include="Source\Renderer\Types\AxisColors.h">
       <Filter>Source\Renderer\Types</Filter>
@@ -1090,9 +1072,6 @@
     </ClInclude>
     <ClInclude Include="Source\ThirdParty\stb\stb_image.h">
       <Filter>Source\ThirdParty\stb</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\ThirdParty\stb_image.h">
-      <Filter>Source\ThirdParty</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

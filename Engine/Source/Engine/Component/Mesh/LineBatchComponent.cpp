@@ -3,8 +3,8 @@
 
 #include "Core/Misc/BitMaskEnum.h"
 #include "Renderer/SceneRenderData.h"
-#include "NewRenderer/MaterialManager.h"
-#include "NewRenderer/Primitive/PrimitiveBase.h"
+#include "Renderer/Material/MaterialManager.h"
+#include "Renderer/Primitive/PrimitiveBase.h"
 
 namespace Engine::Component
 {
