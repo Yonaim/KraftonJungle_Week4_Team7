@@ -305,7 +305,7 @@ namespace
         {
             memcpy(Buffer.data(), InputValue.data(), CopyLength);
         }
-        Buffer[CopyLength] = '\\0';
+        Buffer[CopyLength] = '\0';
 
         ImGui::PushID(LabelId);
         ImGui::TextUnformatted(DisplayLabel);
