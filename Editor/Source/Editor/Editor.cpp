@@ -10,7 +10,9 @@
 #include "Engine/Scene/World.h"
 #include "Engine/Game/Actor.h"
 #include "Renderer/RenderAsset/TextureResource.h"
-#include "Engine/Scene/Serialization//SceneSerializer.h"
+#include "Engine/Scene/Serialization/SceneSerializer.h"
+#include "Engine/Scene/Serialization/SceneDeserializer.h"
+#include "Engine/Scene/SceneAssetBinder.h"
 #include "Panel/ConsolePanel.h"
 #include "Panel/ContentBrowserPanel.h"
 #include "Panel/ControlPanel.h"
@@ -678,13 +680,7 @@ void FEditor::ResolveActorAssetReferences(AActor* Actor)
         return;
     }
 
-    for (Engine::Component::USceneComponent* Component : Actor->GetOwnedComponents())
-    {
-        if (Component != nullptr)
-        {
-            Component->ResolveAssetReferences(EditorContext.AssetManager);
-        }
-    }
+    FSceneAssetBinder::BindActor(Actor, EditorContext.AssetManager);
 }
 
 void FEditor::ResolveSceneAssetReferences(FScene* Scene)
@@ -694,16 +690,7 @@ void FEditor::ResolveSceneAssetReferences(FScene* Scene)
         return;
     }
 
-    const TArray<AActor*>* SceneActors = Scene->GetActors();
-    if (SceneActors == nullptr)
-    {
-        return;
-    }
-
-    for (AActor* Actor : *SceneActors)
-    {
-        ResolveActorAssetReferences(Actor);
-    }
+    FSceneAssetBinder::BindScene(Scene, EditorContext.AssetManager);
 }
 
 void FEditor::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* InputSystem)

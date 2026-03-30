@@ -101,15 +101,12 @@ class FEditor
     const TArray<FEditorRenderData>& GetEditorRenderData() const { return EditorRenderDatas; }
     const TArray<FSceneRenderData>&  GetSceneRenderData() const { return SceneRenderDatas; }
     const SEditorViewportTab&        GetViewportTab() const { return ViewportTab; }
-    // FEditorViewportClient&       GetViewportClient() { return ViewportClient; }
-    // const FEditorViewportClient& GetViewportClient() const { return ViewportClient; }
 
     void DrawPanel();
 
   private:
     void BuildRenderData();
     void BuildSceneView();
-    // 커스텀 타이틀바 아래 전체 영역을 도킹 가능한 루트 dockspace로 사용합니다.
     void DrawRootDockSpace();
     void DrawAboutPopup();
     void EnsureAboutImageLoaded();
@@ -151,12 +148,10 @@ class FEditor
 
     TArray<FEditorRenderData> EditorRenderDatas;
     TArray<FSceneRenderData>  SceneRenderDatas;
-    // FSceneView        SceneView;
 
     FWorld*             CurWorld = nullptr;
     FSceneDocumentState SceneDocument;
 
-    /* Logging */
     FEditorLogBuffer LogBuffer;
 
     float             WindowWidth = 0.0f;
