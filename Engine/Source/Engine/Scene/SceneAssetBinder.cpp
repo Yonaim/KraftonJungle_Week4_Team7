@@ -1,26 +1,67 @@
 #include "Engine/Scene/SceneAssetBinder.h"
 
 #include "Asset/Manager/AssetCacheManager.h"
-
-#include "Engine/Game/Actor.h"
-#include "Engine/Scene/Scene.h"
-
+#include "Engine/Asset/FontAtlas.h"
+#include "Engine/Asset/StaticMesh.h"
+#include "Engine/Asset/SubUVAtlas.h"
+#include "Engine/Asset/Texture.h"
 #include "Engine/Component/Core/SceneComponent.h"
 #include "Engine/Component/Mesh/StaticMeshComponent.h"
 #include "Engine/Component/Sprite/PaperSpriteComponent.h"
 #include "Engine/Component/Sprite/SubUVComponent.h"
 #include "Engine/Component/Text/AtlasTextComponent.h"
-
-#include "Asset/StaticMesh.h"
-#include "Asset/Texture.h"
-#include "Asset/SubUVAtlas.h"
-#include "Asset/FontAtlas.h"
+#include "Engine/Game/Actor.h"
+#include "Engine/Scene/Scene.h"
+#include "RHI/DynamicRHI.h"
 
 using namespace Engine::Component;
 
-void FSceneAssetBinder::BindScene(FScene* InScene, Asset::FAssetCacheManager* InAssetCacheManager)
+namespace
 {
-    if (InScene == nullptr || InAssetCacheManager == nullptr)
+    template <typename TObjectType>
+    TObjectType* EnsureAssetObject(TObjectType* ExistingObject)
+    {
+        return ExistingObject != nullptr ? ExistingObject : new TObjectType();
+    }
+
+    FString ResolveTexturePath(const UPaperSpriteComponent* InComponent)
+    {
+        if (InComponent == nullptr)
+        {
+            return {};
+        }
+
+        const UTexture* TextureAsset = InComponent->GetTextureAsset();
+        return TextureAsset != nullptr ? TextureAsset->GetAssetPath() : FString();
+    }
+
+    FString ResolveSubUVPath(const USubUVComponent* InComponent)
+    {
+        if (InComponent == nullptr)
+        {
+            return {};
+        }
+
+        const USubUVAtlas* AtlasAsset = InComponent->GetSubUVAtlasAsset();
+        return AtlasAsset != nullptr ? AtlasAsset->GetAssetPath() : FString();
+    }
+
+    FString ResolveFontPath(const UAtlasTextComponent* InComponent)
+    {
+        if (InComponent == nullptr)
+        {
+            return {};
+        }
+
+        const UFontAtlas* FontAsset = InComponent->GetFontAsset();
+        return FontAsset != nullptr ? FontAsset->GetAssetPath() : FString();
+    }
+}
+
+void FSceneAssetBinder::BindScene(FScene* InScene, Asset::FAssetCacheManager* InAssetCacheManager,
+                                  RHI::FDynamicRHI* InDynamicRHI)
+{
+    if (InScene == nullptr || InAssetCacheManager == nullptr || InDynamicRHI == nullptr)
     {
         return;
     }
@@ -33,188 +74,139 @@ void FSceneAssetBinder::BindScene(FScene* InScene, Asset::FAssetCacheManager* In
 
     for (AActor* Actor : *Actors)
     {
-        BindActor(Actor, InAssetCacheManager);
+        BindActor(Actor, InAssetCacheManager, InDynamicRHI);
     }
 }
 
-void FSceneAssetBinder::BindActor(AActor* InActor, Asset::FAssetCacheManager* InAssetCacheManager)
+void FSceneAssetBinder::BindActor(AActor* InActor, Asset::FAssetCacheManager* InAssetCacheManager,
+                                  RHI::FDynamicRHI* InDynamicRHI)
 {
-    if (InActor == nullptr || InAssetCacheManager == nullptr)
+    if (InActor == nullptr || InAssetCacheManager == nullptr || InDynamicRHI == nullptr)
     {
         return;
     }
 
     for (USceneComponent* Component : InActor->GetOwnedComponents())
     {
-        BindComponent(Component, InAssetCacheManager);
+        BindComponent(Component, InAssetCacheManager, InDynamicRHI);
     }
 }
 
-void FSceneAssetBinder::BindComponent(USceneComponent*           InComponent,
-                                      Asset::FAssetCacheManager* InAssetCacheManager)
+void FSceneAssetBinder::BindComponent(USceneComponent* InComponent,
+                                      Asset::FAssetCacheManager* InAssetCacheManager,
+                                      RHI::FDynamicRHI* InDynamicRHI)
 {
-    if (InComponent == nullptr || InAssetCacheManager == nullptr)
+    if (InComponent == nullptr || InAssetCacheManager == nullptr || InDynamicRHI == nullptr)
     {
         return;
     }
 
-    if (UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(InComponent))
+    if (auto* StaticMeshComponent = Cast<UStaticMeshComponent>(InComponent))
     {
-        BindStaticMeshComponent(StaticMeshComponent, InAssetCacheManager);
+        const FString MeshPath = StaticMeshComponent->GetStaticMeshPath();
+        if (MeshPath.empty())
+        {
+            StaticMeshComponent->SetStaticMeshAsset(nullptr);
+            return;
+        }
+
+        std::shared_ptr<Asset::FStaticMeshCookedData> CookedData =
+            InAssetCacheManager->BuildStaticMesh(MeshPath);
+        if (CookedData == nullptr)
+        {
+            StaticMeshComponent->SetStaticMeshAsset(nullptr);
+            return;
+        }
+
+        UStaticMesh* StaticMeshAsset = EnsureAssetObject(StaticMeshComponent->GetStaticMeshAsset());
+        if (!StaticMeshAsset->LoadFromCooked(MeshPath, std::move(CookedData), *InDynamicRHI))
+        {
+            StaticMeshComponent->SetStaticMeshAsset(nullptr);
+            return;
+        }
+
+        StaticMeshComponent->SetStaticMeshAsset(StaticMeshAsset);
         return;
     }
 
-    if (USubUVComponent* SubUVComponent = Cast<USubUVComponent>(InComponent))
+    if (auto* SubUVComponent = Cast<USubUVComponent>(InComponent))
     {
-        BindSubUVComponent(SubUVComponent, InAssetCacheManager);
+        const FString AtlasPath = ResolveSubUVPath(SubUVComponent);
+        if (AtlasPath.empty())
+        {
+            return;
+        }
+
+        std::shared_ptr<Asset::FSubUVAtlasCookedData> CookedData =
+            InAssetCacheManager->BuildSubUVAtlas(AtlasPath);
+        if (CookedData == nullptr)
+        {
+            SubUVComponent->SetSubUVAtlasAsset(nullptr);
+            return;
+        }
+
+        USubUVAtlas* AtlasAsset = EnsureAssetObject(SubUVComponent->GetSubUVAtlasAsset());
+        if (!AtlasAsset->LoadFromCooked(AtlasPath, std::move(CookedData), *InDynamicRHI))
+        {
+            SubUVComponent->SetSubUVAtlasAsset(nullptr);
+            return;
+        }
+
+        SubUVComponent->SetSubUVAtlasAsset(AtlasAsset);
         return;
     }
 
-    if (UPaperSpriteComponent* PaperSpriteComponent = Cast<UPaperSpriteComponent>(InComponent))
+    if (auto* SpriteComponent = Cast<UPaperSpriteComponent>(InComponent))
     {
-        BindPaperSpriteComponent(PaperSpriteComponent, InAssetCacheManager);
+        const FString TexturePath = ResolveTexturePath(SpriteComponent);
+        if (TexturePath.empty())
+        {
+            return;
+        }
+
+        std::shared_ptr<Asset::FTextureCookedData> CookedData =
+            InAssetCacheManager->BuildTexture(TexturePath);
+        if (CookedData == nullptr)
+        {
+            SpriteComponent->SetTextureAsset(nullptr);
+            return;
+        }
+
+        UTexture* TextureAsset = EnsureAssetObject(SpriteComponent->GetTextureAsset());
+        if (!TextureAsset->LoadFromCooked(TexturePath, std::move(CookedData), *InDynamicRHI))
+        {
+            SpriteComponent->SetTextureAsset(nullptr);
+            return;
+        }
+
+        SpriteComponent->SetTextureAsset(TextureAsset);
         return;
     }
 
-    if (UAtlasTextComponent* AtlasTextComponent = Cast<UAtlasTextComponent>(InComponent))
+    if (auto* AtlasTextComponent = Cast<UAtlasTextComponent>(InComponent))
     {
-        BindAtlasTextComponent(AtlasTextComponent, InAssetCacheManager);
+        const FString FontPath = ResolveFontPath(AtlasTextComponent);
+        if (FontPath.empty())
+        {
+            return;
+        }
+
+        std::shared_ptr<Asset::FFontAtlasCookedData> CookedData =
+            InAssetCacheManager->BuildFontAtlas(FontPath);
+        if (CookedData == nullptr)
+        {
+            AtlasTextComponent->SetFontAsset(nullptr);
+            return;
+        }
+
+        UFontAtlas* FontAsset = EnsureAssetObject(AtlasTextComponent->GetFontAsset());
+        if (!FontAsset->LoadFromCooked(FontPath, std::move(CookedData), *InDynamicRHI))
+        {
+            AtlasTextComponent->SetFontAsset(nullptr);
+            return;
+        }
+
+        AtlasTextComponent->SetFontAsset(FontAsset);
         return;
     }
-}
-
-void FSceneAssetBinder::BindStaticMeshComponent(UStaticMeshComponent*      InComponent,
-                                                Asset::FAssetCacheManager* InAssetCacheManager)
-{
-    if (InComponent == nullptr || InAssetCacheManager == nullptr)
-    {
-        return;
-    }
-
-    const FString MeshPath = InComponent->GetStaticMeshPath();
-    if (MeshPath.empty())
-    {
-        InComponent->SetStaticMeshAsset(nullptr);
-        return;
-    }
-
-    Asset::FStaticMeshCookedData* CookedMesh = InAssetCacheManager->BuildStaticMesh(MeshPath);
-    if (CookedMesh == nullptr)
-    {
-        InComponent->SetStaticMeshAsset(nullptr);
-        return;
-    }
-
-    UStaticMesh* StaticMeshAsset = InComponent->GetStaticMeshAsset();
-    if (StaticMeshAsset == nullptr)
-    {
-        StaticMeshAsset = new UStaticMesh();
-    }
-
-    StaticMeshAsset->SetCookedData(CookedMesh);
-    StaticMeshAsset->SetAssetPath(MeshPath);
-
-    InComponent->SetStaticMeshAsset(StaticMeshAsset);
-}
-
-void FSceneAssetBinder::BindPaperSpriteComponent(UPaperSpriteComponent*          InComponent,
-                                            Asset::FAssetCacheManager* InAssetCacheManager)
-{
-    if (InComponent == nullptr || InAssetCacheManager == nullptr)
-    {
-        return;
-    }
-
-    const FString TexturePath = InComponent->GetTexturePath();
-    if (TexturePath.empty())
-    {
-        InComponent->SetTextureAsset(nullptr);
-        return;
-    }
-
-    Asset::FTextureCookedData* CookedTexture = InAssetCacheManager->BuildTexture(TexturePath);
-    if (CookedTexture == nullptr)
-    {
-        InComponent->SetTextureAsset(nullptr);
-        return;
-    }
-
-    UTexture* TextureAsset = InComponent->GetTextureAsset();
-    if (TextureAsset == nullptr)
-    {
-        TextureAsset = new UTexture();
-    }
-
-    TextureAsset->SetCookedData(CookedTexture);
-    TextureAsset->SetAssetPath(TexturePath);
-
-    InComponent->SetTextureAsset(TextureAsset);
-}
-
-void FSceneAssetBinder::BindSubUVComponent(USubUVComponent*           InComponent,
-                                           Asset::FAssetCacheManager* InAssetCacheManager)
-{
-    if (InComponent == nullptr || InAssetCacheManager == nullptr)
-    {
-        return;
-    }
-
-    const FString AtlasPath = InComponent->GetSubUVAtlasPath();
-    if (AtlasPath.empty())
-    {
-        InComponent->SetSubUVAtlasAsset(nullptr);
-        return;
-    }
-
-    Asset::FSubUVAtlasCookedData* CookedAtlas = InAssetCacheManager->BuildSubUVAtlas(AtlasPath);
-    if (CookedAtlas == nullptr)
-    {
-        InComponent->SetSubUVAtlasAsset(nullptr);
-        return;
-    }
-
-    USubUVAtlas* AtlasAsset = InComponent->GetSubUVAtlasAsset();
-    if (AtlasAsset == nullptr)
-    {
-        AtlasAsset = new USubUVAtlas();
-    }
-
-    AtlasAsset->SetCookedData(CookedAtlas);
-    AtlasAsset->SetAssetPath(AtlasPath);
-
-    InComponent->SetSubUVAtlasAsset(AtlasAsset);
-}
-
-void FSceneAssetBinder::BindAtlasTextComponent(UAtlasTextComponent*       InComponent,
-                                               Asset::FAssetCacheManager* InAssetCacheManager)
-{
-    if (InComponent == nullptr || InAssetCacheManager == nullptr)
-    {
-        return;
-    }
-
-    const FString FontPath = InComponent->GetFontAtlasPath();
-    if (FontPath.empty())
-    {
-        InComponent->SetFontAtlasAsset(nullptr);
-        return;
-    }
-
-    Asset::FFontAtlasCookedData* CookedFontAtlas = InAssetCacheManager->BuildFontAtlas(FontPath);
-    if (CookedFontAtlas == nullptr)
-    {
-        InComponent->SetFontAtlasAsset(nullptr);
-        return;
-    }
-
-    UFontAtlas* FontAtlasAsset = InComponent->GetFontAtlasAsset();
-    if (FontAtlasAsset == nullptr)
-    {
-        FontAtlasAsset = new UFontAtlas();
-    }
-
-    FontAtlasAsset->SetCookedData(CookedFontAtlas);
-    FontAtlasAsset->SetAssetPath(FontPath);
-
-    InComponent->SetFontAtlasAsset(FontAtlasAsset);
 }

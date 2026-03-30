@@ -8,11 +8,52 @@
 
 REGISTER_CLASS(, UStaticMesh)
 
-FString UStaticMesh::GetMeshName() const
+namespace
 {
-    // UAsset 쪽 이름 시스템이 있으면 그걸 쓰는 게 가장 안전
-    return GetAssetName();
+    static FString BuildAssetNameFromPath(const FString& InAssetPath)
+    {
+        if (InAssetPath.empty())
+        {
+            return {};
+        }
+
+        const std::filesystem::path FilePath(InAssetPath);
+        return FilePath.stem().string();
+    }
+} // namespace
+
+bool UStaticMesh::LoadFromCooked(const FString&                         InAssetPath,
+                                 std::shared_ptr<FStaticMeshCookedData> InCookedData,
+                                 RHI::FDynamicRHI&                      InDynamicRHI)
+{
+    if (InCookedData == nullptr)
+    {
+        return false;
+    }
+
+    if (CookedData == InCookedData && GetAssetPath() == InAssetPath && RenderResource != nullptr)
+    {
+        SetLoaded(true);
+        return true;
+    }
+
+    std::shared_ptr<FStaticMeshRenderResource> NewRenderResource =
+        FStaticMeshRenderResource::Create(*InCookedData, InDynamicRHI);
+    if (NewRenderResource == nullptr)
+    {
+        return false;
+    }
+
+    SetAssetPath(InAssetPath);
+    SetAssetName(BuildAssetNameFromPath(InAssetPath));
+    SetCookedData(std::move(InCookedData));
+    SetRenderResource(std::move(NewRenderResource));
+    Build();
+    SetLoaded(true);
+    return true;
 }
+
+FString UStaticMesh::GetMeshName() const { return GetAssetName(); }
 
 const TArray<uint8>& UStaticMesh::GetVerticesData() const
 {

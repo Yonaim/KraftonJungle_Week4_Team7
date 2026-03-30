@@ -415,10 +415,12 @@ void FEditor::SetChromeHost(IEditorChromeHost* InChromeHost)
     EditorChrome.SetHost(InChromeHost);
 }
 
-void FEditor::SetRuntimeServices(FD3D11RHI* InRHI, UAssetManager* InAssetManager)
+void FEditor::SetRuntimeServices(FD3D11RHI* InRHI, RHI::FDynamicRHI* InDynamicRHI,
+                                 Asset::FAssetCacheManager* InAssetCacheManager)
 {
     EditorContext.RHI = InRHI;
-    EditorContext.AssetManager = InAssetManager;
+    EditorContext.DynamicRHI = InDynamicRHI;
+    EditorContext.AssetCacheManager = InAssetCacheManager;
     AboutImageResource = nullptr;
     bAttemptedAboutImageLoad = false;
     EnsureAboutImageLoaded();
@@ -675,22 +677,26 @@ void FEditor::ReplaceCurrentScene(std::unique_ptr<FScene> NewScene)
 
 void FEditor::ResolveActorAssetReferences(AActor* Actor)
 {
-    if (Actor == nullptr || EditorContext.AssetManager == nullptr)
+    if (Actor == nullptr || EditorContext.AssetCacheManager == nullptr ||
+        EditorContext.DynamicRHI == nullptr)
     {
         return;
     }
 
-    FSceneAssetBinder::BindActor(Actor, EditorContext.AssetManager);
+    FSceneAssetBinder::BindActor(Actor, EditorContext.AssetCacheManager,
+                                 EditorContext.DynamicRHI);
 }
 
 void FEditor::ResolveSceneAssetReferences(FScene* Scene)
 {
-    if (Scene == nullptr || EditorContext.AssetManager == nullptr)
+    if (Scene == nullptr || EditorContext.AssetCacheManager == nullptr ||
+        EditorContext.DynamicRHI == nullptr)
     {
         return;
     }
 
-    FSceneAssetBinder::BindScene(Scene, EditorContext.AssetManager);
+    FSceneAssetBinder::BindScene(Scene, EditorContext.AssetCacheManager,
+                                 EditorContext.DynamicRHI);
 }
 
 void FEditor::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* InputSystem)
@@ -902,7 +908,7 @@ void FEditor::MarkSceneDirty() { SceneDocument.bDirty = true; }
 void FEditor::EnsureAboutImageLoaded()
 {
     if (AboutImageResource != nullptr || bAttemptedAboutImageLoad ||
-        EditorContext.AssetManager == nullptr)
+        EditorContext.AssetCacheManager == nullptr)
     {
         return;
     }
@@ -915,7 +921,7 @@ void FEditor::EnsureAboutImageLoaded()
     // FAssetLoadParams LoadParams;
     // LoadParams.ExplicitType = EAssetType::Texture;
 
-    // UAsset* LoadedAsset = EditorContext.AssetManager->Load(ImagePath.wstring(), LoadParams);
+    // UAsset* LoadedAsset = EditorContext.AssetCacheManager->...;
     // UTexture2DAsset* TextureAsset = Cast<UTexture2DAsset>(LoadedAsset);
     // if (TextureAsset == nullptr || TextureAsset->GetResource() == nullptr
     //     || TextureAsset->GetSRV() == nullptr)

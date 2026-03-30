@@ -16,6 +16,10 @@ namespace Engine::Component
         FString GetStaticMeshPath() const;
         void    SetStaticMeshPath(const FString& InPath);
 
+        const UStaticMesh* GetStaticMeshAsset() const { return StaticMesh; }
+        UStaticMesh*       GetStaticMeshAsset() { return StaticMesh; }
+        void SetStaticMeshAsset(UStaticMesh* InStaticMesh) { StaticMesh = InStaticMesh; }
+
         // Primitive
         EBasicMeshType GetBasicMeshType() const override { return EBasicMeshType::None; }
 
@@ -23,8 +27,9 @@ namespace Engine::Component
         bool GetLocalTriangles(TArray<Geometry::FTriangle>& OutTriangles) const override;
 
       protected:
-        Geometry::FAABB GetLocalAABB() const override;  
-    private:
+        Geometry::FAABB GetLocalAABB() const override;
+
+      private:
         FString MeshPath;
 
       protected:

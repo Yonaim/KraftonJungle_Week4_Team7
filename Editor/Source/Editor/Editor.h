@@ -29,7 +29,15 @@ struct FPanelDescriptor;
 class AActor;
 class UObject;
 class FD3D11RHI;
-class UAssetManager;
+namespace Asset
+{
+    class FAssetCacheManager;
+}
+
+namespace RHI
+{
+    class FDynamicRHI;
+}
 // struct FTextureResource;
 
 enum class EDeferredSceneActionType
@@ -70,7 +78,8 @@ class FEditor
     void Initialize();
     void Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* InputSystem);
     void SetChromeHost(IEditorChromeHost* InChromeHost);
-    void SetRuntimeServices(FD3D11RHI* InRHI, UAssetManager* InAssetManager);
+    void SetRuntimeServices(FD3D11RHI* InRHI, RHI::FDynamicRHI* InDynamicRHI,
+                            Asset::FAssetCacheManager* InAssetCacheManager);
 
     void OnWindowResized(float Width, float Height);
     void SetMainLoopFPS(float FPS)

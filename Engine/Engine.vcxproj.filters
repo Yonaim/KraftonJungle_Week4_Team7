@@ -61,6 +61,9 @@
     <Filter Include="Source\Asset\Intermediate">
       <UniqueIdentifier>{a0614a5e-93c1-3854-71d7-6cffd1168d3f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Asset\Manager">
+      <UniqueIdentifier>{7c507548-1c30-36ee-bae0-9f9fb11dde17}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source\Asset\Runtime">
       <UniqueIdentifier>{ecacfd22-251a-8185-d699-d51e4ecce9b2}</UniqueIdentifier>
     </Filter>
@@ -185,6 +188,9 @@
     </ClCompile>
     <ClCompile Include="Source\Asset\Builder\TextureBuilder.cpp">
       <Filter>Source\Asset\Builder</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Asset\Manager\AssetCacheManager.cpp">
+      <Filter>Source\Asset\Manager</Filter>
     </ClCompile>
     <ClCompile Include="Source\Asset\Runtime\FontAtlasRenderResource.cpp">
       <Filter>Source\Asset\Runtime</Filter>
@@ -607,6 +613,9 @@
     </ClInclude>
     <ClInclude Include="Source\Asset\Intermediate\IntermediateTextureData.h">
       <Filter>Source\Asset\Intermediate</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Asset\Manager\AssetCacheManager.h">
+      <Filter>Source\Asset\Manager</Filter>
     </ClInclude>
     <ClInclude Include="Source\Asset\Runtime\FontAtlasRenderResource.h">
       <Filter>Source\Asset\Runtime</Filter>

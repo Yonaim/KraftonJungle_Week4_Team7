@@ -305,7 +305,7 @@ namespace
         {
             memcpy(Buffer.data(), InputValue.data(), CopyLength);
         }
-        Buffer[CopyLength] = '\0';
+        Buffer[CopyLength] = '\\0';
 
         ImGui::PushID(LabelId);
         ImGui::TextUnformatted(DisplayLabel);
@@ -797,9 +797,11 @@ void FPropertiesPanel::DrawComponentPropertyEditor(
             bSceneModified = true;
 
             if (Descriptor.Type == Engine::Component::EComponentPropertyType::AssetPath &&
-                GetContext() != nullptr && GetContext()->AssetManager != nullptr)
+                GetContext() != nullptr && GetContext()->AssetCacheManager != nullptr &&
+                GetContext()->DynamicRHI != nullptr)
             {
-                FSceneAssetBinder::BindComponent(TargetComponent, GetContext()->AssetManager);
+                FSceneAssetBinder::BindComponent(
+                    TargetComponent, GetContext()->AssetCacheManager, GetContext()->DynamicRHI);
             }
         }
     }

@@ -57,6 +57,7 @@
     <ClInclude Include="Source\Asset\Intermediate\IntermediateStaticMeshData.h" />
     <ClInclude Include="Source\Asset\Intermediate\IntermediateSubUVAtlasData.h" />
     <ClInclude Include="Source\Asset\Intermediate\IntermediateTextureData.h" />
+    <ClInclude Include="Source\Asset\Manager\AssetCacheManager.h" />
     <ClInclude Include="Source\Asset\Runtime\FontAtlasRenderResource.h" />
     <ClInclude Include="Source\Asset\Runtime\MaterialRenderResource.h" />
     <ClInclude Include="Source\Asset\Runtime\StaticMeshRenderResource.h" />
@@ -221,6 +222,7 @@
     <ClCompile Include="Source\Asset\Builder\StaticMeshBuilder.cpp" />
     <ClCompile Include="Source\Asset\Builder\SubUVAtlasBuilder.cpp" />
     <ClCompile Include="Source\Asset\Builder\TextureBuilder.cpp" />
+    <ClCompile Include="Source\Asset\Manager\AssetCacheManager.cpp" />
     <ClCompile Include="Source\Asset\Runtime\FontAtlasRenderResource.cpp" />
     <ClCompile Include="Source\Asset\Runtime\MaterialRenderResource.cpp" />
     <ClCompile Include="Source\Asset\Runtime\StaticMeshRenderResource.cpp" />
@@ -373,6 +375,7 @@
       <PrecompiledHeaderFile>Core/CoreMinimal.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>Core/CoreMinimal.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <PrecompiledHeaderOutputFile>$(IntDir)CoreMinimal.pch</PrecompiledHeaderOutputFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -395,6 +398,7 @@
       <PrecompiledHeaderFile>Core/CoreMinimal.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>Core/CoreMinimal.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <PrecompiledHeaderOutputFile>$(IntDir)CoreMinimal.pch</PrecompiledHeaderOutputFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
