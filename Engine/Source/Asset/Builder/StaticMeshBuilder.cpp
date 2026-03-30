@@ -1,5 +1,6 @@
 #include "Asset/Builder/StaticMeshBuilder.h"
 
+#include <algorithm>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
@@ -13,55 +14,63 @@ namespace Asset
 
     namespace
     {
-        struct FVertexP
-        {
-            FVector Position;
-        };
+        // struct FVertexP
+        // {
+        //     FVector Position;
+        // };
 
-        struct FVertexPN
-        {
-            FVector Position;
-            FVector Normal;
-        };
+        // struct FVertexPN
+        // {
+        //     FVector Position;
+        //     FVector Normal;
+        // };
 
-        struct FVertexPT
-        {
-            FVector  Position;
-            FVector2 UV;
-        };
+        // struct FVertexPT
+        // {
+        //     FVector  Position;
+        //     FVector2 UV;
+        // };
 
-        struct FVertexPNT
+        // struct FVertexPNT
+        // {
+        //     FVector  Position;
+        //     FVector  Normal;
+        //     FVector2 UV;
+        // };
+
+        // struct FVertexPC
+        // {
+        //     FVector Position;
+        //     FVector Color;
+        // };
+
+        // struct FVertexPCT
+        // {
+        //     FVector  Position;
+        //     FVector  Color;
+        //     FVector2 UV;
+        // };
+
+        // struct FVertexPNC
+        // {
+        //     FVector Position;
+        //     FVector Normal;
+        //     FVector Color;
+        // };
+
+        // struct FVertexPNCT
+        // {
+        //     FVector  Position;
+        //     FVector  Normal;
+        //     FVector  Color;
+        //     FVector2 UV;
+        // };
+
+        struct FPrimitiveVertex
         {
             FVector  Position;
             FVector  Normal;
-            FVector2 UV;
-        };
-
-        struct FVertexPC
-        {
-            FVector Position;
-            FVector Color;
-        };
-
-        struct FVertexPCT
-        {
-            FVector  Position;
-            FVector  Color;
-            FVector2 UV;
-        };
-
-        struct FVertexPNC
-        {
-            FVector Position;
-            FVector Normal;
-            FVector Color;
-        };
-
-        struct FVertexPNCT
-        {
-            FVector  Position;
-            FVector  Normal;
-            FVector  Color;
+            FColor   Color;
             FVector2 UV;
         };
 
@@ -175,35 +184,88 @@ namespace Asset
             return bHasUVs ? EStaticMeshVertexFormat::PT : EStaticMeshVertexFormat::P;
         }
 
-        static uint32 ResolveVertexStride(EStaticMeshVertexFormat Format)
+        // static uint32 ResolveVertexStride(EStaticMeshVertexFormat Format)
+        // {
+        //     switch (Format)
+        //     {
+        //     case EStaticMeshVertexFormat::P:
+        //         return static_cast<uint32>(sizeof(FVertexP));
+        //     case EStaticMeshVertexFormat::PN:
+        //         return static_cast<uint32>(sizeof(FVertexPN));
+        //     case EStaticMeshVertexFormat::PT:
+        //         return static_cast<uint32>(sizeof(FVertexPT));
+        //     case EStaticMeshVertexFormat::PNT:
+        //         return static_cast<uint32>(sizeof(FVertexPNT));
+        //     case EStaticMeshVertexFormat::PC:
+        //         return static_cast<uint32>(sizeof(FVertexPC));
+        //     case EStaticMeshVertexFormat::PCT:
+        //         return static_cast<uint32>(sizeof(FVertexPCT));
+        //     case EStaticMeshVertexFormat::PNC:
+        //         return static_cast<uint32>(sizeof(FVertexPNC));
+        //     case EStaticMeshVertexFormat::PNCT:
+        //         return static_cast<uint32>(sizeof(FVertexPNCT));
+        //     default:
+        //         return 0;
+        //     }
+        // }
+
+        static uint32 ResolveVertexStride(EStaticMeshVertexFormat /*Format*/)
         {
-            switch (Format)
-            {
-            case EStaticMeshVertexFormat::P:
-                return static_cast<uint32>(sizeof(FVertexP));
-            case EStaticMeshVertexFormat::PN:
-                return static_cast<uint32>(sizeof(FVertexPN));
-            case EStaticMeshVertexFormat::PT:
-                return static_cast<uint32>(sizeof(FVertexPT));
-            case EStaticMeshVertexFormat::PNT:
-                return static_cast<uint32>(sizeof(FVertexPNT));
-            case EStaticMeshVertexFormat::PC:
-                return static_cast<uint32>(sizeof(FVertexPC));
-            case EStaticMeshVertexFormat::PCT:
-                return static_cast<uint32>(sizeof(FVertexPCT));
-            case EStaticMeshVertexFormat::PNC:
-                return static_cast<uint32>(sizeof(FVertexPNC));
-            case EStaticMeshVertexFormat::PNCT:
-                return static_cast<uint32>(sizeof(FVertexPNCT));
-            default:
-                return 0;
-            }
+            return static_cast<uint32>(sizeof(FPrimitiveVertex));
         }
     } // namespace
 
+    // std::shared_ptr<FStaticMeshCookedData>
+    // FStaticMeshBuilder::Build(const std::filesystem::path& Path,
+    //                          const FStaticMeshBuildSettings& Settings)
+    // {
+    //     const FSourceRecord* Source = Cache.GetSource(FStaticMeshAssetTag{}, Path);
+    //     if (Source == nullptr)
+    //     {
+    //         return nullptr;
+    //     }
+
+    //     auto& IntermediateCache = Cache.GetIntermediateCache(FStaticMeshAssetTag{});
+    //     std::shared_ptr<FIntermediateStaticMeshData> Intermediate = ParseObj(*Source);
+    //     if (!Intermediate)
+    //     {
+    //         return nullptr;
+    //     }
+
+    //     const FStaticMeshIntermediateKey IntermediateKey =
+    //     KeyUtils::MakeIntermediateKey(*Intermediate);
+    //     std::shared_ptr<FIntermediateStaticMeshData> CachedIntermediate =
+    //         IntermediateCache.Find(IntermediateKey);
+    //     if (CachedIntermediate)
+    //     {
+    //         Intermediate = CachedIntermediate;
+    //     }
+    //     else
+    //     {
+    //         IntermediateCache.Insert(IntermediateKey, Intermediate);
+    //     }
+
+    //     const FStaticMeshCookedKey CookedKey = KeyUtils::MakeCookedKey(IntermediateKey,
+    //     Settings);
+
+    //     auto& CookedCache = Cache.GetCookedCache(FStaticMeshAssetTag{});
+    //     std::shared_ptr<FStaticMeshCookedData> Cooked = CookedCache.Find(CookedKey);
+    //     if (!Cooked)
+    //     {
+    //         Cooked = CookMesh(*Source, *Intermediate, Settings);
+    //         if (!Cooked)
+    //         {
+    //             return nullptr;
+    //         }
+    //         CookedCache.Insert(CookedKey, Cooked);
+    //     }
+
+    //     return Cooked;
+    // }
+
     std::shared_ptr<FStaticMeshCookedData>
-    FStaticMeshBuilder::Build(const std::filesystem::path& Path,
-                             const FStaticMeshBuildSettings& Settings)
+    FStaticMeshBuilder::Build(const std::filesystem::path&    Path,
+                              const FStaticMeshBuildSettings& Settings)
     {
         const FSourceRecord* Source = Cache.GetSource(FStaticMeshAssetTag{}, Path);
         if (Source == nullptr)
@@ -218,7 +280,8 @@ namespace Asset
             return nullptr;
         }
 
-        const FStaticMeshIntermediateKey IntermediateKey = KeyUtils::MakeIntermediateKey(*Intermediate);
+        const FStaticMeshIntermediateKey IntermediateKey =
+            KeyUtils::MakeIntermediateKey(*Intermediate);
         std::shared_ptr<FIntermediateStaticMeshData> CachedIntermediate =
             IntermediateCache.Find(IntermediateKey);
         if (CachedIntermediate)
@@ -400,6 +463,78 @@ namespace Asset
             return Key;
         };
 
+        // auto EmitVertex = [&](const FObjVertexKey& Key)
+        // {
+        //     const FVector& Position = Intermediate.Positions[Key.PositionIndex];
+        //     const FVector  Normal = (bHasNormals && Key.NormalIndex >= 0)
+        //                                 ? Intermediate.Normals[Key.NormalIndex]
+        //                                 : FVector(0.0f, 0.0f, 0.0f);
+        //     FVector2       UV = (bHasUVs && Key.UVIndex >= 0) ? Intermediate.UVs[Key.UVIndex]
+        //                                                       : FVector2(0.0f, 0.0f);
+        //     const FVector  Color = (bHasColors && Key.ColorIndex >= 0)
+        //                                ? Intermediate.Colors[Key.ColorIndex]
+        //                                : FVector(0.0f, 0.0f, 0.0f);
+
+        //     if (Settings.bFlipV && bHasUVs)
+        //     {
+        //         UV.Y = 1.0f - UV.Y;
+        //     }
+
+        //     switch (Result->VertexFormat)
+        //     {
+        //     case EStaticMeshVertexFormat::P:
+        //     {
+        //         const FVertexP Vertex = {Position};
+        //         AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
+        //         break;
+        //     }
+        //     case EStaticMeshVertexFormat::PN:
+        //     {
+        //         const FVertexPN Vertex = {Position, Normal};
+        //         AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
+        //         break;
+        //     }
+        //     case EStaticMeshVertexFormat::PT:
+        //     {
+        //         const FVertexPT Vertex = {Position, UV};
+        //         AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
+        //         break;
+        //     }
+        //     case EStaticMeshVertexFormat::PNT:
+        //     {
+        //         const FVertexPNT Vertex = {Position, Normal, UV};
+        //         AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
+        //         break;
+        //     }
+        //     case EStaticMeshVertexFormat::PC:
+        //     {
+        //         const FVertexPC Vertex = {Position, Color};
+        //         AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
+        //         break;
+        //     }
+        //     case EStaticMeshVertexFormat::PCT:
+        //     {
+        //         const FVertexPCT Vertex = {Position, Color, UV};
+        //         AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
+        //         break;
+        //     }
+        //     case EStaticMeshVertexFormat::PNC:
+        //     {
+        //         const FVertexPNC Vertex = {Position, Normal, Color};
+        //         AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
+        //         break;
+        //     }
+        //     case EStaticMeshVertexFormat::PNCT:
+        //     {
+        //         const FVertexPNCT Vertex = {Position, Normal, Color, UV};
+        //         AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
+        //         break;
+        //     }
+        //     default:
+        //         break;
+        //     }
+        // };
+
         auto EmitVertex = [&](const FObjVertexKey& Key)
         {
             const FVector& Position = Intermediate.Positions[Key.PositionIndex];
@@ -408,68 +543,24 @@ namespace Asset
                                         : FVector(0.0f, 0.0f, 0.0f);
             FVector2       UV = (bHasUVs && Key.UVIndex >= 0) ? Intermediate.UVs[Key.UVIndex]
                                                               : FVector2(0.0f, 0.0f);
-            const FVector  Color = (bHasColors && Key.ColorIndex >= 0)
-                                       ? Intermediate.Colors[Key.ColorIndex]
-                                       : FVector(0.0f, 0.0f, 0.0f);
 
             if (Settings.bFlipV && bHasUVs)
             {
                 UV.Y = 1.0f - UV.Y;
             }
 
-            switch (Result->VertexFormat)
+            FColor VertexColor = FColor(255, 255, 255, 255);
+            if (bHasColors && Key.ColorIndex >= 0)
             {
-            case EStaticMeshVertexFormat::P:
-            {
-                const FVertexP Vertex = {Position};
-                AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
-                break;
+                const FVector& SourceColor = Intermediate.Colors[Key.ColorIndex];
+                VertexColor =
+                    FColor(static_cast<uint8>(std::clamp(SourceColor.X, 0.0f, 1.0f) * 255.0f),
+                           static_cast<uint8>(std::clamp(SourceColor.Y, 0.0f, 1.0f) * 255.0f),
+                           static_cast<uint8>(std::clamp(SourceColor.Z, 0.0f, 1.0f) * 255.0f), 255);
             }
-            case EStaticMeshVertexFormat::PN:
-            {
-                const FVertexPN Vertex = {Position, Normal};
-                AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
-                break;
-            }
-            case EStaticMeshVertexFormat::PT:
-            {
-                const FVertexPT Vertex = {Position, UV};
-                AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
-                break;
-            }
-            case EStaticMeshVertexFormat::PNT:
-            {
-                const FVertexPNT Vertex = {Position, Normal, UV};
-                AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
-                break;
-            }
-            case EStaticMeshVertexFormat::PC:
-            {
-                const FVertexPC Vertex = {Position, Color};
-                AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
-                break;
-            }
-            case EStaticMeshVertexFormat::PCT:
-            {
-                const FVertexPCT Vertex = {Position, Color, UV};
-                AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
-                break;
-            }
-            case EStaticMeshVertexFormat::PNC:
-            {
-                const FVertexPNC Vertex = {Position, Normal, Color};
-                AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
-                break;
-            }
-            case EStaticMeshVertexFormat::PNCT:
-            {
-                const FVertexPNCT Vertex = {Position, Normal, Color, UV};
-                AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
-                break;
-            }
-            default:
-                break;
-            }
+
+            const FPrimitiveVertex Vertex = {Position, Normal, VertexColor, UV};
+            AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
         };
 
         auto GetOrCreateVertexIndex = [&](const FIntermediateMeshFaceVertex& FaceVertex) -> uint32
