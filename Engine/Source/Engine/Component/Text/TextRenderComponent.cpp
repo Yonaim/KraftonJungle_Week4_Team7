@@ -535,6 +535,7 @@ namespace Engine::Component
             Command.WorldMatrix.M[3][2] += PlacementOffset.Z + BillboardOffset.Z;
         }
 
+        Command.ObjectId = Actor->GetObjectId();
         Command.bDrawAABB = Actor->IsSelected();
         Command.WorldAABB = GetWorldAABB();
         OutRenderData.RenderCommands.push_back(Command);

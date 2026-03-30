@@ -1,6 +1,12 @@
-cbuffer FObjectIdConstants : register(b0)
+cbuffer FrameConstants : register(b0)
 {
-    row_major float4x4 MVP;
+    row_major float4x4 ViewMatrix;
+    row_major float4x4 ProjectionMatrix;
+}
+
+cbuffer ObjectConstants : register(b1)
+{
+    row_major float4x4 WorldMatrix;
     uint ObjectId;
     uint Padding0;
     uint Padding1;
@@ -10,6 +16,9 @@ cbuffer FObjectIdConstants : register(b0)
 struct VSInput
 {
     float3 Position : POSITION;
+    float4 Color : COLOR;
+    float3 Normal : NORMAL;
+    float2 UV : TEXCOORD;
 };
 
 struct VSOutput
@@ -20,6 +29,7 @@ struct VSOutput
 VSOutput VSMain(VSInput In)
 {
     VSOutput Out;
+    float4x4 MVP = mul(mul(WorldMatrix, ViewMatrix), ProjectionMatrix);
     Out.Position = mul(float4(In.Position, 1.0f), MVP);
     return Out;
 }

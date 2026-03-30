@@ -18,6 +18,7 @@ namespace Engine::Component
         FRenderCommand& MutableRenderCommand = const_cast<FRenderCommand&>(RenderCommand);
         MutableRenderCommand.Material = FGeneralRenderer::GetDefaultMaterial();
         MutableRenderCommand.WorldMatrix = GetRelativeMatrix();
+        MutableRenderCommand.ObjectId = GetOwnerActor()->GetObjectId();
         MutableRenderCommand.bDrawAABB = GetOwnerActor()->IsSelected();
         MutableRenderCommand.WorldAABB = GetWorldAABB();
         OutRenderData.RenderCommands.push_back(MutableRenderCommand);

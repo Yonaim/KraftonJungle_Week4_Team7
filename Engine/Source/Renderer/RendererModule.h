@@ -2,17 +2,12 @@
 
 #include <Windows.h>
 
-#include "D3D11/GeneralRenderer.h"
 #include "Renderer/D3D11/D3D11Common.h"
-#include "Renderer/D3D11/D3D11MeshBatchRenderer.h"
-#include "Renderer/D3D11/D3D11ObjectIdRenderer.h"
 #include "Renderer/D3D11/D3D11OutlineRenderer.h"
 #include "Renderer/D3D11/D3D11RHI.h"
 #include "Renderer/D3D11/GeneralRenderer.h"
 #include "Renderer/EditorRenderData.h"
 #include "Renderer/SceneRenderData.h"
-#include "Renderer/Submitter/OverlayMeshSubmitter.h"
-#include "Renderer/Submitter/SceneMeshSubmitter.h"
 #include "Renderer/Types/PickResult.h"
 
 class ENGINE_API FRendererModule
@@ -33,7 +28,9 @@ class ENGINE_API FRendererModule
     void Render(const FEditorRenderData& InEditorRenderData,
                 const FSceneRenderData&  InSceneRenderData);
 
-    bool Pick(const FEditorRenderData& InEditorRenderData, int32 MouseX, int32 MouseY,
+    bool Pick(const FEditorRenderData& InEditorRenderData, 
+              const FSceneRenderData&  InSceneRenderData,
+              int32 MouseX, int32 MouseY,
               FPickResult& OutResult);
 
     FD3D11RHI& GetRHI() { return RHI; }
@@ -45,20 +42,12 @@ class ENGINE_API FRendererModule
     FD3D11RHI RHI;
 
     FGeneralRenderer*        GeneralRenderer   = nullptr;
-    FD3D11MeshBatchRenderer  MeshBatchRenderer;
     FD3D11OutlineRenderer    OutlineRenderer;
-    FD3D11ObjectIdRenderer   ObjectIdRenderer;
-
-    FSceneMeshSubmitter  SceneMeshSubmitter;
-    FOverlayMeshSubmitter OverlayMeshSubmitter;
-
+    
     TComPtr<ID3D11Debug> DebugDevice;
 
     void RenderWorldPass(const FEditorRenderData& InEditorRenderData,
                          const FSceneRenderData&  InSceneRenderData);
     void RenderOverlayPass(const FEditorRenderData& InEditorRenderData,
                            const FSceneRenderData&  InSceneRenderData);
-
-    bool PickRaw(const FEditorRenderData& InEditorRenderData, int32 MouseX, int32 MouseY,
-                 uint32& OutPickId);
 };

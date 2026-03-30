@@ -215,12 +215,6 @@
     <ClInclude Include="Source\Editor\Logging\EditorLogEntry.h">
       <Filter>Source\Editor\Logging</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Gizmo\EditorGizmoTypes.h">
-      <Filter>Source\Gizmo</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Gizmo\GizmoDrawDataBuilder.h">
-      <Filter>Source\Gizmo</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Input\ContextModeTypes.h">
       <Filter>Source\Input</Filter>
     </ClInclude>

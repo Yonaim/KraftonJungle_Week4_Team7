@@ -209,6 +209,7 @@ bool FEditorEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
 
                 // EngineLoop는 Renderer와 Editor 모두에 접근 가능하므로 픽킹을 직접 수행해서 반환
                 Renderer->Pick(Editor->GetEditorRenderData()[i], 
+                    Editor->GetSceneRenderData()[i],
                     Editor->GetViewportTab().GetViewports()[i]->GetWorldX(X), 
                     Editor->GetViewportTab().GetViewports()[i]->GetWorldY(Y), 
                     Result);

@@ -21,6 +21,7 @@ struct ENGINE_API FRenderCommand
     bool            bDrawAABB = false;
 
     ERenderLayer RenderLayer = ERenderLayer::Default;
+    uint32       ObjectId = 0;
     bool         bDisableDepthTest = false;
     bool         bDisableDepthWrite = false;
     bool         bDisableCulling = false;

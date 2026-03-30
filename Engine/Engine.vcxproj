@@ -153,8 +153,6 @@
     <ClInclude Include="Source\NewRenderer\TextMeshBuilder.h" />
     <ClInclude Include="Source\NewRenderer\TextureVertex.h" />
     <ClInclude Include="Source\Renderer\D3D11\D3D11Common.h" />
-    <ClInclude Include="Source\Renderer\D3D11\D3D11MeshBatchRenderer.h" />
-    <ClInclude Include="Source\Renderer\D3D11\D3D11ObjectIdRenderer.h" />
     <ClInclude Include="Source\Renderer\D3D11\D3D11OutlineRenderer.h" />
     <ClInclude Include="Source\Renderer\D3D11\D3D11RHI.h" />
     <ClInclude Include="Source\Renderer\D3D11\GeneralRenderer.h" />
@@ -165,8 +163,6 @@
     <ClInclude Include="Source\Renderer\RendererModule.h" />
     <ClInclude Include="Source\Renderer\SceneRenderData.h" />
     <ClInclude Include="Source\Renderer\SceneView.h" />
-    <ClInclude Include="Source\Renderer\Submitter\OverlayMeshSubmitter.h" />
-    <ClInclude Include="Source\Renderer\Submitter\SceneMeshSubmitter.h" />
     <ClInclude Include="Source\Renderer\Types\AxisColors.h" />
     <ClInclude Include="Source\Renderer\Types\BasicMeshType.h" />
     <ClInclude Include="Source\Renderer\Types\EditorShowFlags.h" />
@@ -291,14 +287,10 @@
     <ClCompile Include="Source\NewRenderer\ShaderResource.cpp" />
     <ClCompile Include="Source\NewRenderer\SubUVRenderer.cpp" />
     <ClCompile Include="Source\NewRenderer\TextMeshBuilder.cpp" />
-    <ClCompile Include="Source\Renderer\D3D11\D3D11MeshBatchRenderer.cpp" />
-    <ClCompile Include="Source\Renderer\D3D11\D3D11ObjectIdRenderer.cpp" />
     <ClCompile Include="Source\Renderer\D3D11\D3D11OutlineRenderer.cpp" />
     <ClCompile Include="Source\Renderer\D3D11\D3D11RHI.cpp" />
     <ClCompile Include="Source\Renderer\D3D11\GeneralRenderer.cpp" />
     <ClCompile Include="Source\Renderer\RendererModule.cpp" />
-    <ClCompile Include="Source\Renderer\Submitter\OverlayMeshSubmitter.cpp" />
-    <ClCompile Include="Source\Renderer\Submitter\SceneMeshSubmitter.cpp" />
     <ClCompile Include="Source\SceneIO\SceneJson.cpp" />
     <ClCompile Include="Source\SceneIO\SceneSerializer.cpp" />
     <ClCompile Include="Source\SceneIO\SceneTypeRegistry.cpp" />

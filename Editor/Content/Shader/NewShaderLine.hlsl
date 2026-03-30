@@ -7,6 +7,10 @@ cbuffer FFrameConstants : register(b0)
 cbuffer FObjectConstants : register(b1)
 {
     row_major float4x4 World;
+    uint ObjectId;
+    uint Padding0;
+    uint Padding1;
+    uint Padding2;
 };
 
 struct VSInput

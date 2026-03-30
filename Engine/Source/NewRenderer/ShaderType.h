@@ -12,4 +12,6 @@ struct FFrameConstantBuffer
 struct FObjectConstantBuffer
 {
     FMatrix World;
+    uint32 ObjectId;
+    uint32 Padding[3];
 };

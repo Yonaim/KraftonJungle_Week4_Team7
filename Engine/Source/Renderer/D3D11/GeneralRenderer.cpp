@@ -73,7 +73,84 @@ bool FGeneralRenderer::Initialize(HWND InHwnd, int32 Width, int32 Height)
     if (!InitializeDefaultMaterial()) 
         return false;
 
+    if (!CreatePickResources(Width, Height))
+        return false;
+
     return true;
+}
+
+bool FGeneralRenderer::Pick(int32 MouseX, int32 MouseY, uint32& OutPickId)
+{
+    OutPickId = 0;
+
+    if (DeviceContext == nullptr || PickRTV == nullptr || PickDSV == nullptr)
+        return false;
+
+    if (MouseX < 0 || MouseY < 0 || MouseX >= Viewport.Width || MouseY >= Viewport.Height)
+        return false;
+
+    // 1. 현재 렌더 상태 저장
+    ID3D11RenderTargetView* PrevRTV = nullptr;
+    ID3D11DepthStencilView* PrevDSV = nullptr;
+    DeviceContext->OMGetRenderTargets(1, &PrevRTV, &PrevDSV);
+    
+    UINT PrevVPCount = 1;
+    D3D11_VIEWPORT PrevVP;
+    DeviceContext->RSGetViewports(&PrevVPCount, &PrevVP);
+
+    // 2. 픽킹용 렌더 타겟 설정
+    DeviceContext->OMSetRenderTargets(1, &PickRTV, PickDSV);
+    
+    D3D11_VIEWPORT PickVP = Viewport;
+    PickVP.TopLeftX = 0;
+    PickVP.TopLeftY = 0;
+    DeviceContext->RSSetViewports(1, &PickVP);
+
+    static const float ClearColor[4] = {0, 0, 0, 0};
+    DeviceContext->ClearRenderTargetView(PickRTV, ClearColor);
+    DeviceContext->ClearDepthStencilView(PickDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+    // 3. 픽킹용 셰이더 및 파이프라인 바인딩
+    DeviceContext->VSSetShader(PickVertexShader, nullptr, 0);
+    DeviceContext->PSSetShader(PickPixelShader, nullptr, 0);
+    DeviceContext->IASetInputLayout(PickInputLayout);
+    
+    RenderStateManager->RebindState();
+
+    // 4. 모든 명령(일반 + 오버레이) 렌더링
+    // 피킹 시에는 레이어 구분 없이 불투명한 것들은 다 그려야 함 (앞에 있는 게 픽킹되도록)
+    // 단, 오버레이(기즈모)가 보통 가장 앞에 보여야 하므로 순서를 고려할 수 있음.
+    
+    // 정렬된 상태이므로 그대로 사용 가능하지만, 피킹 전용 패스에서는 
+    // 기존 ExecuteRenderPass와 유사하게 돌되 셰이더만 고정
+    for (const auto& Cmd : CommandList)
+    {
+        if (!Cmd.MeshData || (Cmd.MeshData->Vertices.empty() && Cmd.MeshData->Indices.empty()))
+            continue;
+
+        // 투명하거나 픽킹 불가능한 경우 skip 할 수 있지만 일단 다 그림
+        Cmd.MeshData->Bind(DeviceContext);
+        
+        D3D11_PRIMITIVE_TOPOLOGY Topology = (D3D11_PRIMITIVE_TOPOLOGY)Cmd.MeshData->Topology;
+        DeviceContext->IASetPrimitiveTopology(Topology);
+
+        UpdateObjectConstantBuffer(Cmd.WorldMatrix, Cmd.ObjectId);
+
+        if (!Cmd.MeshData->Indices.empty())
+            DeviceContext->DrawIndexed(static_cast<UINT>(Cmd.MeshData->Indices.size()), 0, 0);
+        else if (!Cmd.MeshData->Vertices.empty())
+            DeviceContext->Draw(static_cast<UINT>(Cmd.MeshData->Vertices.size()), 0);
+    }
+
+    // 5. 이전 렌더 상태 복구
+    DeviceContext->OMSetRenderTargets(1, &PrevRTV, PrevDSV);
+    DeviceContext->RSSetViewports(1, &PrevVP);
+    
+    if (PrevRTV) PrevRTV->Release();
+    if (PrevDSV) PrevDSV->Release();
+
+    // 6. 결과 읽어오기
+    return ReadBackMousePixel(MouseX, MouseY, OutPickId);
 }
 
 bool FGeneralRenderer::InitializeDefaultMaterial()
@@ -558,10 +635,11 @@ void FGeneralRenderer::UpdateFrameConstantBuffer()
     }
 }
 
-void FGeneralRenderer::UpdateObjectConstantBuffer(const FMatrix& WorldMatrix)
+void FGeneralRenderer::UpdateObjectConstantBuffer(const FMatrix& WorldMatrix, uint32 ObjectId)
 {
     FObjectConstantBuffer CBData;
     CBData.World = WorldMatrix;
+    CBData.ObjectId = ObjectId;
     D3D11_MAPPED_SUBRESOURCE Mapped;
     if (SUCCEEDED(DeviceContext->Map(ObjectConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped)))
     {
@@ -642,13 +720,134 @@ void FGeneralRenderer::ExecuteRenderPass(ERenderLayer InRenderLayer)
             CurrentMeshTopology = DesiredTopology;
         }
 
-        UpdateObjectConstantBuffer(Cmd.WorldMatrix);
+        UpdateObjectConstantBuffer(Cmd.WorldMatrix, Cmd.ObjectId);
 
         if (!Cmd.MeshData->Indices.empty())
             DeviceContext->DrawIndexed(static_cast<UINT>(Cmd.MeshData->Indices.size()), 0, 0);
         else if (!Cmd.MeshData->Vertices.empty())
             DeviceContext->Draw(static_cast<UINT>(Cmd.MeshData->Vertices.size()), 0);
     }
+}
+
+bool FGeneralRenderer::CreatePickResources(int32 Width, int32 Height)
+{
+    if (Device == nullptr) return false;
+
+    // 1. Picking Render Target (R32_UINT)
+    D3D11_TEXTURE2D_DESC TexDesc = {};
+    TexDesc.Width = Width;
+    TexDesc.Height = Height;
+    TexDesc.MipLevels = 1;
+    TexDesc.ArraySize = 1;
+    TexDesc.Format = DXGI_FORMAT_R32_UINT;
+    TexDesc.SampleDesc.Count = 1;
+    TexDesc.Usage = D3D11_USAGE_DEFAULT;
+    TexDesc.BindFlags = D3D11_BIND_RENDER_TARGET;
+
+    if (FAILED(Device->CreateTexture2D(&TexDesc, nullptr, &PickColorTexture)))
+        return false;
+
+    if (FAILED(Device->CreateRenderTargetView(PickColorTexture, nullptr, &PickRTV)))
+        return false;
+
+    // 2. Picking Depth Buffer
+    D3D11_TEXTURE2D_DESC DepthDesc = {};
+    DepthDesc.Width = Width;
+    DepthDesc.Height = Height;
+    DepthDesc.MipLevels = 1;
+    DepthDesc.ArraySize = 1;
+    DepthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    DepthDesc.SampleDesc.Count = 1;
+    DepthDesc.Usage = D3D11_USAGE_DEFAULT;
+    DepthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+    if (FAILED(Device->CreateTexture2D(&DepthDesc, nullptr, &PickDepthTexture)))
+        return false;
+
+    if (FAILED(Device->CreateDepthStencilView(PickDepthTexture, nullptr, &PickDSV)))
+        return false;
+
+    // 3. Readback Texture (1x1 Staging)
+    D3D11_TEXTURE2D_DESC ReadbackDesc = {};
+    ReadbackDesc.Width = 1;
+    ReadbackDesc.Height = 1;
+    ReadbackDesc.MipLevels = 1;
+    ReadbackDesc.ArraySize = 1;
+    ReadbackDesc.Format = DXGI_FORMAT_R32_UINT;
+    ReadbackDesc.SampleDesc.Count = 1;
+    ReadbackDesc.Usage = D3D11_USAGE_STAGING;
+    ReadbackDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+
+    if (FAILED(Device->CreateTexture2D(&ReadbackDesc, nullptr, &ReadbackTexture)))
+        return false;
+
+    // 4. Picking Shaders
+    std::wstring ShaderPath = FPaths::ShaderDir() / L"\\ShaderObjectId.hlsl";
+    ID3DBlob* VSCode = nullptr;
+    ID3DBlob* ErrorBlob = nullptr;
+    
+    if (FAILED(D3DCompileFromFile(ShaderPath.c_str(), nullptr, nullptr, "VSMain", "vs_5_0", 0, 0, &VSCode, &ErrorBlob)))
+    {
+        if (ErrorBlob) ErrorBlob->Release();
+        return false;
+    }
+    Device->CreateVertexShader(VSCode->GetBufferPointer(), VSCode->GetBufferSize(), nullptr, &PickVertexShader);
+
+    D3D11_INPUT_ELEMENT_DESC InputElements[] = {
+        {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+        {"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+        {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0},
+        {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 40, D3D11_INPUT_PER_VERTEX_DATA, 0},
+    };
+    Device->CreateInputLayout(InputElements, 4, VSCode->GetBufferPointer(), VSCode->GetBufferSize(), &PickInputLayout);
+    VSCode->Release();
+
+    ID3DBlob* PSCode = nullptr;
+    if (FAILED(D3DCompileFromFile(ShaderPath.c_str(), nullptr, nullptr, "PSMain", "ps_5_0", 0, 0, &PSCode, &ErrorBlob)))
+    {
+        if (ErrorBlob) ErrorBlob->Release();
+        return false;
+    }
+    Device->CreatePixelShader(PSCode->GetBufferPointer(), PSCode->GetBufferSize(), nullptr, &PickPixelShader);
+    PSCode->Release();
+
+    return true;
+}
+
+void FGeneralRenderer::ReleasePickResources()
+{
+    if (PickColorTexture) PickColorTexture->Release(); PickColorTexture = nullptr;
+    if (PickRTV) PickRTV->Release(); PickRTV = nullptr;
+    if (PickDepthTexture) PickDepthTexture->Release(); PickDepthTexture = nullptr;
+    if (PickDSV) PickDSV->Release(); PickDSV = nullptr;
+    if (ReadbackTexture) ReadbackTexture->Release(); ReadbackTexture = nullptr;
+    if (PickVertexShader) PickVertexShader->Release(); PickVertexShader = nullptr;
+    if (PickPixelShader) PickPixelShader->Release(); PickPixelShader = nullptr;
+    if (PickInputLayout) PickInputLayout->Release(); PickInputLayout = nullptr;
+}
+
+bool FGeneralRenderer::ReadBackMousePixel(int32 MouseX, int32 MouseY, uint32& OutObjectId)
+{
+    if (DeviceContext == nullptr || PickColorTexture == nullptr || ReadbackTexture == nullptr)
+        return false;
+
+    D3D11_BOX Box = {};
+    Box.left = static_cast<UINT>(MouseX);
+    Box.right = static_cast<UINT>(MouseX + 1);
+    Box.top = static_cast<UINT>(MouseY);
+    Box.bottom = static_cast<UINT>(MouseY + 1);
+    Box.front = 0;
+    Box.back = 1;
+
+    DeviceContext->CopySubresourceRegion(ReadbackTexture, 0, 0, 0, 0, PickColorTexture, 0, &Box);
+
+    D3D11_MAPPED_SUBRESOURCE Mapped = {};
+    if (FAILED(DeviceContext->Map(ReadbackTexture, 0, D3D11_MAP_READ, 0, &Mapped)))
+        return false;
+
+    OutObjectId = *reinterpret_cast<const uint32*>(Mapped.pData);
+    DeviceContext->Unmap(ReadbackTexture, 0);
+    return true;
 }
 
 void FGeneralRenderer::InitializeAABBResources()

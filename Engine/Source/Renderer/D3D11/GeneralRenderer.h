@@ -30,8 +30,12 @@ public:
     bool IsVSyncEnabled() const { return bVSyncEnabled; }
     
     void SubmitCommands(const FRenderCommandQueue& Queue);
+    void AddCommand(const FRenderCommand& Command);
+    void ClearCommandList();
     void ExecuteCommands();
     
+    bool Pick(int32 MouseX, int32 MouseY, uint32& OutPickId);
+
     // ─── GUI 및 콜백 ───
     /** ImGui 등 외부 GUI 시스템 연동용 콜백 */
     void SetGUICallbacks(FGUICallback InInit, FGUICallback InShutdown, FGUICallback InNewFrame, FGUICallback InRender, FGUICallback InPostPresent = nullptr);
@@ -56,13 +60,11 @@ private:
     bool InitializeDefaultMaterial();
     
     void SetConstantBuffers();
-    void AddCommand(const FRenderCommand& Command);
-    void ClearCommandList();
     bool CreateDeviceAndSwapChain(HWND InHwnd, int32 Width, int32 Height);
     bool CreateRenderTargetAndDepthStencil(int32 Width, int32 Height);
     bool CreateConstantBuffers();
     void UpdateFrameConstantBuffer();
-    void UpdateObjectConstantBuffer(const FMatrix& WorldMatrix);
+    void UpdateObjectConstantBuffer(const FMatrix& WorldMatrix, uint32 ObjectId = 0);
     void ClearDepthBuffer();
     
     void ExecuteRenderPass(ERenderLayer InRenderLayer);
@@ -70,6 +72,11 @@ private:
     
     /** AABB 전용 리소스 초기화 */
     void InitializeAABBResources();
+
+    /** 픽킹 리소스 */
+    bool CreatePickResources(int32 Width, int32 Height);
+    void ReleasePickResources();
+    bool ReadBackMousePixel(int32 MouseX, int32 MouseY, uint32& OutObjectId);
     
 private:
     std::unique_ptr<CRenderStateManager> RenderStateManager = nullptr;
@@ -82,6 +89,18 @@ private:
     
     ID3D11Buffer* FrameConstantBuffer = nullptr;
     ID3D11Buffer* ObjectConstantBuffer = nullptr;
+
+    // ─── 픽킹 관련 리소스 ───
+    ID3D11Texture2D*        PickColorTexture = nullptr;
+    ID3D11RenderTargetView* PickRTV = nullptr;
+    ID3D11Texture2D*        PickDepthTexture = nullptr;
+    ID3D11DepthStencilView* PickDSV = nullptr;
+    ID3D11Texture2D*        ReadbackTexture = nullptr;
+
+    ID3D11VertexShader* PickVertexShader = nullptr;
+    ID3D11PixelShader*  PickPixelShader = nullptr;
+    ID3D11InputLayout*  PickInputLayout = nullptr;
+    // ───────────────────────
     
     FMatrix ViewMatrix;
     FMatrix ProjectionMatrix;
