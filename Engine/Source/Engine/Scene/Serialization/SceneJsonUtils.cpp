@@ -1,6 +1,4 @@
-#pragma once
-
-#include "Core/CoreMinimal.h"
+#include "Engine/Scene/Serialization/SceneJsonUtils.h"
 #include "Core/Misc/Paths.h"
 
 #include <algorithm>
@@ -9,6 +7,12 @@
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#endif
+
+
+
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
 #endif
 
 namespace Engine::SceneIO

@@ -6,7 +6,7 @@
 #include "Interaction/ViewportInteractionState.h"
 #include "RenderSetting/ViewportRenderSetting.h"
 #include "Engine/ViewPort/ViewportClient.h"
-#include "Engine/World.h"
+#include "Engine/Scene/World.h"
 #include "Input/NavigationInputContext.h"
 #include "Input/SelectionInputContext.h"
 #include "Input/GizmoInputContext.h"
@@ -39,15 +39,15 @@ class FEditorViewportClient : public Engine::Viewport::IViewportClient
     void SetWorld(FWorld* InWorld);
     void SyncSelectionFromContext();
 
-    FViewportNavigationController& GetNavigationController() { return NavigationController; }
+    FViewportNavigationController&       GetNavigationController() { return NavigationController; }
     const FViewportNavigationController& GetNavigationController() const
     {
         return NavigationController;
     }
     FViewportSelectionController& GetSelectionController() { return SelectionController; }
-    FViewportGizmoController& GetGizmoController() { return GizmoController; }
-    FViewportInteractionState& GetInteractionState() { return InteractionState; }
-    FViewportRenderSetting& GetRenderSetting() { return RenderSetting; }
+    FViewportGizmoController&     GetGizmoController() { return GizmoController; }
+    FViewportInteractionState&    GetInteractionState() { return InteractionState; }
+    FViewportRenderSetting&       GetRenderSetting() { return RenderSetting; }
     const FViewportRenderSetting& GetRenderSetting() const { return RenderSetting; }
 
     void DrawViewportOverlay();
@@ -55,7 +55,7 @@ class FEditorViewportClient : public Engine::Viewport::IViewportClient
     FViewportCamera& GetCamera() { return ViewportCamera; }
     using FPickCallback = std::function<FPickResult(int32, int32)>;
     FPickCallback OnPickRequested;
-    
+
     FPickResult PickAt(int32 MouseX, int32 MouseY) const
     {
         if (OnPickRequested)
@@ -64,10 +64,9 @@ class FEditorViewportClient : public Engine::Viewport::IViewportClient
         }
         return FPickResult{};
     }
-    
-private:
-    void DrawOutline();
 
+  private:
+    void DrawOutline();
 
   private:
     FWorld* CurWorld = nullptr;
@@ -75,12 +74,12 @@ private:
     FViewportCamera ViewportCamera;
 
     FViewportNavigationController NavigationController;
-    FViewportSelectionController SelectionController;
-    FViewportGizmoController GizmoController;
-    FViewportInteractionState InteractionState;
-    FViewportRenderSetting RenderSetting;
+    FViewportSelectionController  SelectionController;
+    FViewportGizmoController      GizmoController;
+    FViewportInteractionState     InteractionState;
+    FViewportRenderSetting        RenderSetting;
 
     FNavigationInputContext ViewportInputContext{&NavigationController};
-    FSelectionInputContext SelectionInputContext{&SelectionController};
+    FSelectionInputContext  SelectionInputContext{&SelectionController};
     FGizmoInputContext      GizmoInputContext{&GizmoController};
 };

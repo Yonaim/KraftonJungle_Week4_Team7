@@ -1,4 +1,4 @@
-#include "SceneTypeRegistry.h"
+#include "Engine/Scene/Serialization/SceneTypeRegistry.h"
 
 #include "Engine/Component/Sprite/AtlasComponent.h"
 #include "Engine/Component/Sprite/PaperSpriteComponent.h"

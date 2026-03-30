@@ -1,14 +1,15 @@
-#include "SceneSerializer.h"
+#include "Engine/Scene/Serialization/SceneSerializer.h"
+#include "Engine/Scene/Serialization/SceneDeserializer.h"
 
-#include "SceneAssetPath.h"
-#include "SceneJson.h"
-#include "SceneTypeRegistry.h"
+#include "Engine/Scene/Serialization/SceneJsonUtils.h"
+#include "Engine/Scene/Serialization/SceneJson.h"
+#include "Engine/Scene/Serialization/SceneTypeRegistry.h"
 #include "Engine/Component/Core/ComponentProperty.h"
 #include "Engine/Component/Core/SceneComponent.h"
 #include "Engine/Component/Core/UnknownComponent.h"
 #include "Engine/Game/Actor.h"
 #include "Engine/Game/UnknownActor.h"
-#include "Engine/Scene.h"
+#include "Engine/Scene/Scene.h"
 #include "Core/Math/Vector4.h"
 
 #include <fstream>

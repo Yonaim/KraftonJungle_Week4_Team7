@@ -1,10 +1,10 @@
-#include "World.h"
+#include "Engine/Scene/World.h"
 
 #include <algorithm>
 
 #include "Engine/Component/Core/BatchLineComponent.h"
 #include "Engine/Game/Actor.h"
-#include "Engine/Scene.h"
+#include "Engine/Scene/Scene.h"
 
 FWorld::FWorld()
 {

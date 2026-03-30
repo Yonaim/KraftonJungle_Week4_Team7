@@ -13,8 +13,8 @@
 #include "ApplicationCore/Input/InputSystem.h"
 #include "Viewport/Global/EditorGlobalController.h"
 #include "Input/EditorGlobalContext.h"
-#include "Engine/Scene.h"
-#include "Engine/World.h"
+#include "Engine/Scene/Scene.h"
+#include "Engine/Scene/World.h"
 #include "Logging/EditorLogBuffer.h"
 #include "Viewport/EditorViewportTab.h"
 #include "Renderer/EditorRenderData.h"
@@ -30,7 +30,7 @@ class AActor;
 class UObject;
 class FD3D11RHI;
 class UAssetManager;
-//struct FTextureResource;
+// struct FTextureResource;
 
 enum class EDeferredSceneActionType
 {
@@ -79,30 +79,30 @@ class FEditor
         EditorContext.CurrentFPS = FPS;
     }
 
-    void     CreateNewScene();
-    void     ClearScene();
-    bool     RequestCloseEditor();
-    bool     SaveCurrentSceneToDisk();
-    bool     SaveSceneAsPath(const std::filesystem::path& FilePath);
-    bool     OpenSceneFromPath(const std::filesystem::path& FilePath);
-    void     RequestSaveSceneAs();
-    void     RequestOpenSceneDialog();
-    void     RequestAboutPopUp();
-    bool     CanDeleteSelectedActors() const;
-    bool     DeleteSelectedActors();
-    void     RefreshContentIndex();
-    void     SetSelectedObject(UObject* InSelectedObject);
-    void     AddActorToScene(AActor* InActor, bool bSelectActor = true);
-    void     MarkSceneDirty();
-    UObject* GetSelectedObject() const { return EditorContext.SelectedObject; }
+    void                  CreateNewScene();
+    void                  ClearScene();
+    bool                  RequestCloseEditor();
+    bool                  SaveCurrentSceneToDisk();
+    bool                  SaveSceneAsPath(const std::filesystem::path& FilePath);
+    bool                  OpenSceneFromPath(const std::filesystem::path& FilePath);
+    void                  RequestSaveSceneAs();
+    void                  RequestOpenSceneDialog();
+    void                  RequestAboutPopUp();
+    bool                  CanDeleteSelectedActors() const;
+    bool                  DeleteSelectedActors();
+    void                  RefreshContentIndex();
+    void                  SetSelectedObject(UObject* InSelectedObject);
+    void                  AddActorToScene(AActor* InActor, bool bSelectActor = true);
+    void                  MarkSceneDirty();
+    UObject*              GetSelectedObject() const { return EditorContext.SelectedObject; }
     std::filesystem::path GetCurrentScenePath() const { return SceneDocument.CurrentScenePath; }
     std::filesystem::path GetDefaultSceneDirectory() const;
 
     const TArray<FEditorRenderData>& GetEditorRenderData() const { return EditorRenderDatas; }
     const TArray<FSceneRenderData>&  GetSceneRenderData() const { return SceneRenderDatas; }
     const SEditorViewportTab&        GetViewportTab() const { return ViewportTab; }
-    //FEditorViewportClient&       GetViewportClient() { return ViewportClient; }
-    //const FEditorViewportClient& GetViewportClient() const { return ViewportClient; }
+    // FEditorViewportClient&       GetViewportClient() { return ViewportClient; }
+    // const FEditorViewportClient& GetViewportClient() const { return ViewportClient; }
 
     void DrawPanel();
 
@@ -131,28 +131,27 @@ class FEditor
     bool ConfirmProceedWithDirtyScene(const FDeferredSceneAction& Action);
     void ExecuteDeferredSceneAction(FDeferredSceneAction Action);
     std::filesystem::path GetSceneDirectory() const;
-    void ResolveActorAssetReferences(AActor* Actor);
-    void ResolveSceneAssetReferences(FScene* Scene);
-
+    void                  ResolveActorAssetReferences(AActor* Actor);
+    void                  ResolveSceneAssetReferences(FScene* Scene);
 
   private:
-    SEditorViewportTab ViewportTab; 
+    SEditorViewportTab ViewportTab;
 
     Engine::ApplicationCore::FInputRouter GlobalInputRouter;
-    FEditorGlobalController GlobalInputController;
-    FEditorGlobalContext GlobalInputContext{&GlobalInputController};
+    FEditorGlobalController               GlobalInputController;
+    FEditorGlobalContext                  GlobalInputContext{&GlobalInputController};
 
-    FEditorContext        EditorContext;
-    FEditorSettings       PersistentSettings;
-    FEditorContentIndex   ContentIndex;
-    FPanelManager*        PanelManager = nullptr;
-    FEditorChrome         EditorChrome;
-    FEditorMenuRegistry   MenuRegistry;
-    IEditorChromeHost*    ChromeHost = nullptr;
+    FEditorContext      EditorContext;
+    FEditorSettings     PersistentSettings;
+    FEditorContentIndex ContentIndex;
+    FPanelManager*      PanelManager = nullptr;
+    FEditorChrome       EditorChrome;
+    FEditorMenuRegistry MenuRegistry;
+    IEditorChromeHost*  ChromeHost = nullptr;
 
     TArray<FEditorRenderData> EditorRenderDatas;
     TArray<FSceneRenderData>  SceneRenderDatas;
-    //FSceneView        SceneView;
+    // FSceneView        SceneView;
 
     FWorld*             CurWorld = nullptr;
     FSceneDocumentState SceneDocument;
@@ -160,11 +159,11 @@ class FEditor
     /* Logging */
     FEditorLogBuffer LogBuffer;
 
-    float WindowWidth = 0.0f;
-    float WindowHeight = 0.0f;
-    float CurFPS = 0.0f;
-    bool  bRequestOpenAboutPopup = false;
-    bool  bAboutPopupOpen = false;
-    bool  bAttemptedAboutImageLoad = false;
+    float             WindowWidth = 0.0f;
+    float             WindowHeight = 0.0f;
+    float             CurFPS = 0.0f;
+    bool              bRequestOpenAboutPopup = false;
+    bool              bAboutPopupOpen = false;
+    bool              bAttemptedAboutImageLoad = false;
     FTextureResource* AboutImageResource = nullptr;
 };
