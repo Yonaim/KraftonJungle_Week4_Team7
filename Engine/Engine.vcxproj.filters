@@ -575,6 +575,9 @@
     <ClInclude Include="Source\ApplicationCore\Windows\WindowsWindow.h">
       <Filter>Source\ApplicationCore\Windows</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Asset\Builder\AssetBuildReport.h">
+      <Filter>Source\Asset\Builder</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Asset\Builder\FontAtlasBuilder.h">
       <Filter>Source\Asset\Builder</Filter>
     </ClInclude>

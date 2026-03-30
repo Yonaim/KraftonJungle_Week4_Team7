@@ -3,6 +3,8 @@
 #include <filesystem>
 #include <memory>
 
+#include "Asset/Builder/AssetBuildReport.h"
+
 #include "Asset/Cache/AssetBuildCache.h"
 #include "Asset/Cache/BuildSettings.h"
 #include "Asset/Cooked/ObjCookedData.h"
@@ -24,6 +26,8 @@ class FStaticMeshBuilder
         return Build(std::filesystem::path(Path), Settings);
     }
 
+    const FAssetBuildReport& GetLastBuildReport() const { return LastBuildReport; }
+
   private:
     std::shared_ptr<FIntermediateObjData> ParseObj(const FSourceRecord& Source);
     std::shared_ptr<FObjCookedData>       CookMesh(const FSourceRecord&               Source,
@@ -32,6 +36,7 @@ class FStaticMeshBuilder
 
   private:
     FAssetBuildCache& Cache;
+    FAssetBuildReport LastBuildReport;
 };
 
 } // namespace Asset

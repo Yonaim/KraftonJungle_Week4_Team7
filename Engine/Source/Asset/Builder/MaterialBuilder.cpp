@@ -43,6 +43,7 @@ namespace Asset
     std::shared_ptr<FMtlCookedLibraryData>
     FMaterialBuilder::BuildLibrary(const std::filesystem::path& Path)
     {
+        LastBuildReport.Reset();
         const FSourceRecord* Source = Cache.GetSource(FMaterialAssetTag{}, Path);
         if (Source == nullptr)
         {
@@ -62,6 +63,7 @@ namespace Asset
         if (CachedIntermediate)
         {
             Intermediate = CachedIntermediate;
+            LastBuildReport.bUsedCachedIntermediate = true;
         }
         else
         {
@@ -74,12 +76,30 @@ namespace Asset
         std::shared_ptr<FMtlCookedLibraryData> Cooked = CookedCache.Find(CookedKey);
         if (!Cooked)
         {
+            LastBuildReport.bBuiltNewCooked = true;
             Cooked = CookMaterialLibrary(*Source, *Intermediate);
             if (!Cooked)
             {
                 return nullptr;
             }
             CookedCache.Insert(CookedKey, Cooked);
+        }
+        else
+        {
+            LastBuildReport.bUsedCachedCooked = true;
+        }
+
+        if (LastBuildReport.bUsedCachedCooked)
+        {
+            LastBuildReport.ResultSource = EAssetBuildResultSource::CookedCache;
+        }
+        else if (LastBuildReport.bUsedCachedIntermediate)
+        {
+            LastBuildReport.ResultSource = EAssetBuildResultSource::BuiltFromCachedIntermediate;
+        }
+        else if (Cooked)
+        {
+            LastBuildReport.ResultSource = EAssetBuildResultSource::BuiltFromFreshIntermediate;
         }
 
         return Cooked;

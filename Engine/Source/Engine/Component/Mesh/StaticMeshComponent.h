@@ -19,7 +19,7 @@ namespace Engine::Component
 
         const UStaticMesh* GetStaticMeshAsset() const { return StaticMesh; }
         UStaticMesh*       GetStaticMeshAsset() { return StaticMesh; }
-        void SetStaticMeshAsset(UStaticMesh* InStaticMesh) { StaticMesh = InStaticMesh; }
+        void               SetStaticMeshAsset(UStaticMesh* InStaticMesh);
 
         // Primitive
         virtual void CollectRenderData(FSceneRenderData& OutRenderData,
@@ -31,17 +31,28 @@ namespace Engine::Component
         bool GetLocalTriangles(TArray<Geometry::FTriangle>& OutTriangles) const override;
 
         int32      GetMaterialSlotCount() const;
+        bool       IsValidMaterialSlotIndex(int32 SlotIndex) const;
+        FString    GetMaterialSlotName(int32 SlotIndex) const;
+
         UMaterial* GetMaterial(int32 SlotIndex) const;
+        UMaterial* GetOverrideMaterial(int32 SlotIndex) const;
+        bool       HasMaterialOverride(int32 SlotIndex) const;
         void       SetMaterial(int32 SlotIndex, UMaterial* InMaterial);
+        void       ClearMaterialOverride(int32 SlotIndex);
+        void       ClearAllMaterialOverrides();
 
       protected:
         Geometry::FAABB GetLocalAABB() const override;
 
       private:
+        void SyncMaterialOverridesWithStaticMesh();
+
+      private:
         FString MeshPath;
 
       protected:
-        UStaticMesh* StaticMesh = nullptr;
+        UStaticMesh*       StaticMesh = nullptr;
+        TArray<UMaterial*> OverrideMaterials;
     };
 
 } // namespace Engine::Component

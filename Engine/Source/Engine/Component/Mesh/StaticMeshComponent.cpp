@@ -39,6 +39,24 @@ namespace Engine::Component
 
     void UStaticMeshComponent::SetStaticMeshPath(const FString& InPath) { MeshPath = InPath; }
 
+    void UStaticMeshComponent::SetStaticMeshAsset(UStaticMesh* InStaticMesh)
+    {
+        StaticMesh = InStaticMesh;
+        SyncMaterialOverridesWithStaticMesh();
+    }
+
+    void UStaticMeshComponent::SyncMaterialOverridesWithStaticMesh()
+    {
+        OverrideMaterials.clear();
+
+        if (StaticMesh == nullptr)
+        {
+            return;
+        }
+
+        OverrideMaterials.resize(StaticMesh->GetMaterialSlots().size(), nullptr);
+    }
+
     void UStaticMeshComponent::CollectRenderData(FSceneRenderData& OutRenderData,
                                                  ESceneShowFlags   InShowFlags) const
     {
@@ -172,35 +190,92 @@ namespace Engine::Component
         return static_cast<int32>(StaticMesh->GetMaterialSlots().size());
     }
 
+    bool UStaticMeshComponent::IsValidMaterialSlotIndex(int32 SlotIndex) const
+    {
+        return SlotIndex >= 0 && SlotIndex < GetMaterialSlotCount();
+    }
+
+    FString UStaticMeshComponent::GetMaterialSlotName(int32 SlotIndex) const
+    {
+        if (!IsValidMaterialSlotIndex(SlotIndex))
+        {
+            return {};
+        }
+
+        return "Material Slot " + std::to_string(SlotIndex);
+    }
+
     UMaterial* UStaticMeshComponent::GetMaterial(int32 SlotIndex) const
     {
-        if (StaticMesh == nullptr || SlotIndex < 0)
+        if (!IsValidMaterialSlotIndex(SlotIndex))
         {
             return nullptr;
+        }
+
+        if (UMaterial* OverrideMaterial = GetOverrideMaterial(SlotIndex))
+        {
+            return OverrideMaterial;
         }
 
         const auto& Slots = StaticMesh->GetMaterialSlots();
-        if (static_cast<size_t>(SlotIndex) >= Slots.size())
+        return Slots[SlotIndex];
+    }
+
+    UMaterial* UStaticMeshComponent::GetOverrideMaterial(int32 SlotIndex) const
+    {
+        if (!IsValidMaterialSlotIndex(SlotIndex))
         {
             return nullptr;
         }
 
-        return Slots[SlotIndex];
+        if (static_cast<size_t>(SlotIndex) >= OverrideMaterials.size())
+        {
+            return nullptr;
+        }
+
+        return OverrideMaterials[SlotIndex];
+    }
+
+    bool UStaticMeshComponent::HasMaterialOverride(int32 SlotIndex) const
+    {
+        return GetOverrideMaterial(SlotIndex) != nullptr;
     }
 
     void UStaticMeshComponent::SetMaterial(int32 SlotIndex, UMaterial* InMaterial)
     {
-        if (StaticMesh == nullptr || SlotIndex < 0)
+        if (!IsValidMaterialSlotIndex(SlotIndex))
         {
             return;
         }
 
-        auto& Slots = StaticMesh->GetMaterialSlots();
-        if (static_cast<size_t>(SlotIndex) >= Slots.size())
+        if (OverrideMaterials.size() < StaticMesh->GetMaterialSlots().size())
+        {
+            OverrideMaterials.resize(StaticMesh->GetMaterialSlots().size(), nullptr);
+        }
+
+        OverrideMaterials[SlotIndex] = InMaterial;
+    }
+
+    void UStaticMeshComponent::ClearMaterialOverride(int32 SlotIndex)
+    {
+        if (!IsValidMaterialSlotIndex(SlotIndex))
         {
             return;
         }
 
-        Slots[SlotIndex] = InMaterial;
+        if (static_cast<size_t>(SlotIndex) >= OverrideMaterials.size())
+        {
+            return;
+        }
+
+        OverrideMaterials[SlotIndex] = nullptr;
+    }
+
+    void UStaticMeshComponent::ClearAllMaterialOverrides()
+    {
+        for (UMaterial*& OverrideMaterial : OverrideMaterials)
+        {
+            OverrideMaterial = nullptr;
+        }
     }
 } // namespace Engine::Component

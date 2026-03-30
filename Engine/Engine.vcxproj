@@ -29,6 +29,7 @@
     <ClInclude Include="Source\ApplicationCore\Input\InputTypes.h" />
     <ClInclude Include="Source\ApplicationCore\Windows\WindowsApplication.h" />
     <ClInclude Include="Source\ApplicationCore\Windows\WindowsWindow.h" />
+    <ClInclude Include="Source\Asset\Builder\AssetBuildReport.h" />
     <ClInclude Include="Source\Asset\Builder\FontAtlasBuilder.h" />
     <ClInclude Include="Source\Asset\Builder\MaterialBuilder.h" />
     <ClInclude Include="Source\Asset\Builder\StaticMeshBuilder.h" />

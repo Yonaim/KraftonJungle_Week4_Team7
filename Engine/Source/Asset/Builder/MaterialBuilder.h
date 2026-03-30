@@ -3,6 +3,8 @@
 #include <filesystem>
 #include <memory>
 
+#include "Asset/Builder/AssetBuildReport.h"
+
 #include "Asset/Cache/AssetBuildCache.h"
 #include "Asset/Builder/TextureBuilder.h"
 #include "Asset/Cooked/MtlCookedData.h"
@@ -35,6 +37,8 @@ class FMaterialBuilder
     static bool    SplitMaterialAssetPath(const FString& InAssetPath, FString& OutLibraryPath,
                                           FString& OutMaterialName);
 
+    const FAssetBuildReport& GetLastBuildReport() const { return LastBuildReport; }
+
   private:
     std::shared_ptr<FIntermediateMtlLibraryData> ParseMaterialLibrary(const FSourceRecord& Source);
     std::shared_ptr<FMtlCookedLibraryData> CookMaterialLibrary(
@@ -48,6 +52,7 @@ class FMaterialBuilder
 
   private:
     FAssetBuildCache& Cache;
+    FAssetBuildReport LastBuildReport;
 };
 
 } // namespace Asset

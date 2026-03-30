@@ -268,6 +268,7 @@ namespace Asset
     FStaticMeshBuilder::Build(const std::filesystem::path&    Path,
                               const FStaticMeshBuildSettings& Settings)
     {
+        LastBuildReport.Reset();
         const FSourceRecord* Source = Cache.GetSource(FStaticMeshAssetTag{}, Path);
         if (Source == nullptr)
         {
@@ -288,6 +289,7 @@ namespace Asset
         if (CachedIntermediate)
         {
             Intermediate = CachedIntermediate;
+            LastBuildReport.bUsedCachedIntermediate = true;
         }
         else
         {
@@ -300,12 +302,30 @@ namespace Asset
         std::shared_ptr<FObjCookedData> Cooked = CookedCache.Find(CookedKey);
         if (!Cooked)
         {
+            LastBuildReport.bBuiltNewCooked = true;
             Cooked = CookMesh(*Source, *Intermediate, Settings);
             if (!Cooked)
             {
                 return nullptr;
             }
             CookedCache.Insert(CookedKey, Cooked);
+        }
+        else
+        {
+            LastBuildReport.bUsedCachedCooked = true;
+        }
+
+        if (LastBuildReport.bUsedCachedCooked)
+        {
+            LastBuildReport.ResultSource = EAssetBuildResultSource::CookedCache;
+        }
+        else if (LastBuildReport.bUsedCachedIntermediate)
+        {
+            LastBuildReport.ResultSource = EAssetBuildResultSource::BuiltFromCachedIntermediate;
+        }
+        else if (Cooked)
+        {
+            LastBuildReport.ResultSource = EAssetBuildResultSource::BuiltFromFreshIntermediate;
         }
 
         return Cooked;

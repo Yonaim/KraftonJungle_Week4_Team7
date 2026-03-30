@@ -2,10 +2,40 @@
 
 #include <filesystem>
 
+#include "Asset/Builder/AssetBuildReport.h"
+
 #include "Engine/Scene/SceneAssetPath.h"
+
 
 namespace Asset
 {
+    namespace
+    {
+        const char* DescribeBuildResultSource(EAssetBuildResultSource Source)
+        {
+            switch (Source)
+            {
+            case EAssetBuildResultSource::CookedCache:
+                return "cached cooked data";
+            case EAssetBuildResultSource::BuiltFromCachedIntermediate:
+                return "rebuilt cooked data from cached intermediate";
+            case EAssetBuildResultSource::BuiltFromFreshIntermediate:
+                return "rebuilt cooked data from newly loaded source";
+            default:
+                return "unknown";
+            }
+        }
+
+        void LogBuildReport(const char* AssetType, const FString& Path, const FAssetBuildReport& Report)
+        {
+            UE_LOG(FEditor, ELogVerbosity::Log,
+                   "%s asset build path: %s (%s, cachedIntermediate=%d, cachedCooked=%d, builtNewCooked=%d)",
+                   AssetType, Path.c_str(), DescribeBuildResultSource(Report.ResultSource),
+                   Report.bUsedCachedIntermediate ? 1 : 0, Report.bUsedCachedCooked ? 1 : 0,
+                   Report.bBuiltNewCooked ? 1 : 0);
+        }
+    } // namespace
+
     FString FAssetCacheManager::StringFromPath(const std::filesystem::path& Path)
     {
         return Path.empty() ? FString{} : Path.generic_string();
@@ -137,6 +167,7 @@ namespace Asset
         {
             UE_LOG(FEditor, ELogVerbosity::Log, "Texture asset load succeeded: %s",
                    StringFromPath(AbsolutePath).c_str());
+            LogBuildReport("Texture", StringFromPath(AbsolutePath), TextureBuilder.GetLastBuildReport());
         }
         else
         {
@@ -159,6 +190,7 @@ namespace Asset
         if (Result)
         {
             UE_LOG(FEditor, ELogVerbosity::Log, "Material asset load succeeded: %s", LogPath.c_str());
+            LogBuildReport("Material", LogPath, MaterialBuilder.GetLastBuildReport());
         }
         else
         {
@@ -179,6 +211,8 @@ namespace Asset
         {
             UE_LOG(FEditor, ELogVerbosity::Log, "Static mesh asset load succeeded: %s",
                    StringFromPath(AbsolutePath).c_str());
+            LogBuildReport("Static mesh", StringFromPath(AbsolutePath),
+                           StaticMeshBuilder.GetLastBuildReport());
         }
         else
         {
@@ -199,6 +233,8 @@ namespace Asset
         {
             UE_LOG(FEditor, ELogVerbosity::Log, "SubUV atlas asset load succeeded: %s",
                    StringFromPath(AbsolutePath).c_str());
+            LogBuildReport("SubUV atlas", StringFromPath(AbsolutePath),
+                           SubUVAtlasBuilder.GetLastBuildReport());
         }
         else
         {
@@ -219,6 +255,8 @@ namespace Asset
         {
             UE_LOG(FEditor, ELogVerbosity::Log, "Font atlas asset load succeeded: %s",
                    StringFromPath(AbsolutePath).c_str());
+            LogBuildReport("Font atlas", StringFromPath(AbsolutePath),
+                           FontAtlasBuilder.GetLastBuildReport());
         }
         else
         {
