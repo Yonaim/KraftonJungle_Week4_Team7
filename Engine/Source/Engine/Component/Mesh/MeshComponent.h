@@ -13,8 +13,5 @@ namespace Engine::Component
       public:
         UMeshComponent();
         ~UMeshComponent() override = default;
-        
-        // Gereral Renderer 호환용으로 만든 임시 override
-        void CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const override;
     };
 };

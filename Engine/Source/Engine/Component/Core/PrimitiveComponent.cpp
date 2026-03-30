@@ -5,6 +5,7 @@
 #include "Core/Geometry/Primitives/AABBUtility.h"
 #include "Core/Misc/BitMaskEnum.h"
 #include "Renderer/SceneRenderData.h"
+#include "Renderer/D3D11/GeneralRenderer.h"
 #include "Renderer/Types/RenderItem.h"
 #include "Renderer/Types/BasicMeshType.h"
 #include "Engine/Game/Actor.h"
@@ -101,32 +102,34 @@ namespace Engine::Component
             return;
         }
 
-        if (GetBasicMeshType() == EBasicMeshType::None)
-        {
-            return;
-        }
-
         AActor* Actor = GetOwnerActor();
         if (Actor == nullptr)
         {
             return;
         }
 
-        FPrimitiveRenderItem PrimitiveItem = {};
-        PrimitiveItem.World = GetRelativeMatrix();
-        PrimitiveItem.Color = Actor->GetColor();
-        PrimitiveItem.MeshType = GetBasicMeshType();
-        PrimitiveItem.WorldAABB = GetWorldAABB();
-        PrimitiveItem.bHasWorldAABB = true;
+        FRenderCommand& MutableRenderCommand = const_cast<FRenderCommand&>(RenderCommand);
+        if (MutableRenderCommand.MeshData == nullptr)
+        {
+            return;
+        }
 
-        PrimitiveItem.State.ObjectId = Actor->GetObjectId();
-        PrimitiveItem.State.bShowBounds = Actor->IsShowBounds();
-        PrimitiveItem.State.SetVisible(Actor->IsVisible());
-        PrimitiveItem.State.SetPickable(Actor->IsPickable());
-        PrimitiveItem.State.SetSelected(Actor->IsSelected());
-        PrimitiveItem.State.SetHovered(Actor->IsHovered());
+        if (MutableRenderCommand.Material == nullptr)
+        {
+            MutableRenderCommand.Material = FGeneralRenderer::GetDefaultMaterial();
+        }
 
-        OutRenderData.Primitives.push_back(PrimitiveItem);
+        MutableRenderCommand.WorldMatrix = GetRelativeMatrix();
+        MutableRenderCommand.ObjectId = Actor->GetObjectId();
+        MutableRenderCommand.bDrawAABB = Actor->IsSelected() || Actor->IsShowBounds();
+        MutableRenderCommand.WorldAABB = GetWorldAABB();
+
+        MutableRenderCommand.bIsVisible = Actor->IsVisible();
+        MutableRenderCommand.bIsPickable = Actor->IsPickable();
+        MutableRenderCommand.bIsSelected = Actor->IsSelected();
+        MutableRenderCommand.bIsHovered = Actor->IsHovered();
+
+        OutRenderData.RenderCommands.push_back(MutableRenderCommand);
     }
 
     Geometry::FAABB UPrimitiveComponent::GetLocalAABB() const

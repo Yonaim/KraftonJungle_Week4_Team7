@@ -13,7 +13,5 @@ namespace Engine::Component
         ~UCylinderComponent() override = default;
 
         EBasicMeshType GetBasicMeshType() const override { return EBasicMeshType::Cylinder; }
-
-        void CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const override;
     };
 } // namespace Engine::Component

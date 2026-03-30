@@ -13,8 +13,5 @@ namespace Engine::Component
         ~UCubeComponent() override = default;
 
         EBasicMeshType GetBasicMeshType() const override { return EBasicMeshType::Cube; }
-        
-        // 테스트용 오버라이딩
-        void CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const override;
     };
 } // namespace Engine::Component

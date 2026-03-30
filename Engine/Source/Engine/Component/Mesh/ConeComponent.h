@@ -13,7 +13,5 @@ namespace Engine::Component
         ~UConeComponent() override = default;
 
         EBasicMeshType GetBasicMeshType() const override { return EBasicMeshType::Cone; }
-
-        void CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const override;
     };
 } // namespace Engine::Component

@@ -15,7 +15,5 @@ namespace Engine::Component
         virtual ~UTriangleComponent() override = default;
 
         EBasicMeshType GetBasicMeshType() const override { return EBasicMeshType::Triangle; }
-
-        void CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const override;
     };
 } // namespace Engine::Component

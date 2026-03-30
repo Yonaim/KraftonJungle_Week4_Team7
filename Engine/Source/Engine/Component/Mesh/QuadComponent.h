@@ -13,7 +13,5 @@ namespace Engine::Component
         ~UQuadComponent() override = default;
 
         EBasicMeshType GetBasicMeshType() const override { return EBasicMeshType::Quad; }
-
-        void CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const override;
     };
 } // namespace Engine::Component

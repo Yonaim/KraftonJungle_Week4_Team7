@@ -538,6 +538,12 @@ namespace Engine::Component
         Command.ObjectId = Actor->GetObjectId();
         Command.bDrawAABB = Actor->IsSelected();
         Command.WorldAABB = GetWorldAABB();
+
+        Command.bIsVisible = Actor->IsVisible();
+        Command.bIsPickable = Actor->IsPickable();
+        Command.bIsSelected = Actor->IsSelected();
+        Command.bIsHovered = Actor->IsHovered();
+
         OutRenderData.RenderCommands.push_back(Command);
     }
 
