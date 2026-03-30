@@ -77,11 +77,6 @@ void FScene::Tick(float DeltaTime)
 void FScene::BuildRenderData(FSceneRenderData& OutRenderData,
                              ESceneShowFlags   InShowFlags) const
 {
-    OutRenderData.Primitives.clear();
-    OutRenderData.Sprites.clear();
-    OutRenderData.Texts.clear();
-    OutRenderData.LineBatchers.clear();
-
     if (LineBatcher)
     {
         LineBatcher->CollectRenderData(OutRenderData, InShowFlags);

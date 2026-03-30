@@ -16,13 +16,4 @@ struct FSceneRenderData
     bool              bUseInstancing = true;
 
     TArray<FRenderCommand> RenderCommands;
-    
-    // Deprecated
-    TArray<FPrimitiveRenderItem> Primitives;
-    // Deprecated
-    TArray<FSpriteRenderItem>    Sprites;
-    // Deprecated
-    TArray<FTextRenderItem>      Texts;
-    // Deprecated
-    TArray<Engine::Component::ULineBatchComponent*> LineBatchers;
 };

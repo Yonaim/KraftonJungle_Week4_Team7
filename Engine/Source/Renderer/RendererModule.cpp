@@ -5,14 +5,6 @@
 #include "Renderer/Types/PickId.h"
 #include "Renderer/Types/PickResult.h"
 
-namespace
-{
-    bool HasScenePrimitives(const FSceneRenderData& InSceneRenderData)
-    {
-        return InSceneRenderData.SceneView != nullptr && !InSceneRenderData.Primitives.empty();
-    }
-} // namespace
-
 FRendererModule::FRendererModule()
 {
 }
