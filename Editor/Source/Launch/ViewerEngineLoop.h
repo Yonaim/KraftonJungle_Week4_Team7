@@ -20,6 +20,7 @@ class FViewerEngineLoop : public IEngineLoop
     void  ShutDown() override;
 
   private:
+    void ProcessSystemMessages();
     void Tick() override;
     void InitializeForTime() override;
 

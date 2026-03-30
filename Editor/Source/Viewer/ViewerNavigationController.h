@@ -34,6 +34,14 @@ class FViewerNavigationController
   private:
     FViewportCamera* ViewportCamera = nullptr;
 
+    // Reset
+    float   StartYaw, StartPitch, StartRadius;
+    float   TargetYaw, TargetPitch, TargetRadius;
+    FVector StartPivot, TargetPivot;
+    float   OrbitLerpAlpha = 0.0f;
+    bool    bOrbitLerping = false;
+    float   ResetLerpSpeed = 3.0f;
+
     // Orbit
     FVector OrbitPivot = FVector::Zero();
     float   CurrentYaw = 0.0f;
@@ -51,5 +59,6 @@ class FViewerNavigationController
     float    PanSensitivity = 0.01f;
 
     // Zoom
-    float ZoomStep = 1.0f;
+    float MinZoomRadius = 1.0f;
+    float ZoomStep = 0.3f;
 };

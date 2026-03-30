@@ -133,9 +133,18 @@ void FViewerEngineLoop::ShutDown()
     InputSystem = nullptr;
 }
 
+void FViewerEngineLoop::ProcessSystemMessages()
+{
+    if (InputSystem != nullptr)
+    {
+        InputSystem->BeginFrame();
+    }
+    Application->PumpMessages();
+}
+
 void FViewerEngineLoop::Tick()
 {
-    Application->PumpMessages();
+    ProcessSystemMessages();
     if (Application->IsExitRequested())
     {
         bIsExit = true;
@@ -204,7 +213,6 @@ bool FViewerEngineLoop::RunFrameOnceWithoutResize()
 
     bIsRenderingDuringSizeMove = true;
 
-    InputSystem->BeginFrame();
     UpdateFrameTiming();
 
     Viewer->Tick(DeltaTime, InputSystem);

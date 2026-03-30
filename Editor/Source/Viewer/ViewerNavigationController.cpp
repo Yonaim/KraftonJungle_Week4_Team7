@@ -1,19 +1,53 @@
 #include "ViewerNavigationController.h"
 
-void FViewerNavigationController::Tick(float /*DeltaTime*/)
+void FViewerNavigationController::Tick(float DeltaTime)
 {
-    // 필요시 카메라 위치 보간 등 구현
+    if (!ViewportCamera)
+        return;
+
+    if (bOrbitLerping)
+    {
+        OrbitLerpAlpha += DeltaTime * ResetLerpSpeed;
+        float Alpha = FMath::Clamp(OrbitLerpAlpha, 0.0f, 1.0f);
+
+        // 오빗 파라미터 보간
+        CurrentYaw = FMath::LerpAngle(StartYaw, TargetYaw, Alpha);
+        CurrentPitch = std::lerp(StartPitch, TargetPitch, Alpha);
+        OrbitRadius = std::lerp(StartRadius, TargetRadius, Alpha);
+        OrbitPivot = FVector::Lerp(StartPivot, TargetPivot, Alpha);
+
+        ApplyOrbitTransform();
+
+        if (Alpha >= 1.0f)
+        {
+            bOrbitLerping = false;
+        }
+    }
 }
 
 void FViewerNavigationController::ResetView(const FVector& InLocation, const FVector& InPivot)
 {
-    OrbitPivot = InPivot;
-    FVector Forward = (OrbitPivot - InLocation).GetSafeNormal();
+    if (!ViewportCamera)
+        return;
 
-    // 초기 각도 추출 (이건 딱 한 번만 수행)
-    CurrentPitch = FMath::RadiansToDegrees(std::asin(FMath::Clamp(Forward.Z, -1.0f, 1.0f)));
-    CurrentYaw = FMath::RadiansToDegrees(std::atan2(Forward.Y, Forward.X));
-    OrbitRadius = (InLocation - OrbitPivot).Size();
+    StartYaw = CurrentYaw;
+    StartPitch = CurrentPitch;
+    StartRadius = OrbitRadius;
+    StartPivot = OrbitPivot;
+
+    // 목표 오빗 파라미터 계산
+    TargetPivot = InPivot;
+    FVector Offset = InLocation - InPivot;
+    TargetRadius = Offset.Size();
+    TargetYaw = std::atan2(Offset.Y, Offset.X) * 180.0f / FMath::PI;
+    TargetPitch = std::asin(Offset.Z / TargetRadius) * 180.0f / FMath::PI;
+
+    OrbitLerpAlpha = 0.0f;
+    bOrbitLerping = true;
+
+    bPanning = false;
+    PanStartMouse = FVector2::Zero();
+    PanStartLocation = InLocation;
 }
 
 void FViewerNavigationController::BeginOrbit(const FVector2& MousePos)
@@ -75,10 +109,18 @@ void FViewerNavigationController::EndPan() { bPanning = false; }
 void FViewerNavigationController::Zoom(float Delta)
 {
     if (!ViewportCamera)
+    {
         return;
-    FVector Forward = ViewportCamera->GetForwardVector();
-    FVector NewLocation = ViewportCamera->GetLocation() + Forward * Delta * ZoomStep;
-    ViewportCamera->SetLocation(NewLocation);
+    }
+
+    float ZoomFactor = Delta >= 0.0f ? ZoomStep : -ZoomStep;
+
+    OrbitRadius -= OrbitRadius * ZoomFactor;
+
+    OrbitRadius = std::max(OrbitRadius, MinZoomRadius);
+
+    ApplyOrbitTransform();
+
 }
 
 void FViewerNavigationController::ApplyOrbitTransform() 

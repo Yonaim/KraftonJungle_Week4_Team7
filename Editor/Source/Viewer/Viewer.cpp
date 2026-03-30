@@ -42,6 +42,17 @@ void FViewer::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
     const FVector2 MousePosition = {static_cast<float>(InputState.MouseX),
                                     static_cast<float>(InputState.MouseY)};
 
+    Engine::ApplicationCore::FInputEvent InputEvent;
+    while (InputSystem->PollEvent(InputEvent))
+    {
+        // 더블 클릭 이벤트 처리
+        if (InputEvent.Type == Engine::ApplicationCore::EInputEventType::MouseDoubleClick &&
+            InputEvent.Key == Engine::ApplicationCore::EKey::MouseLeft)
+        {
+            NavigationController.ResetView(FVector(-3,0,0), FVector::Zero());
+        }
+    }
+
     // Orbit (좌클릭)
     if (InputState.IsKeyDown(Engine::ApplicationCore::EKey::MouseLeft))
     {
@@ -72,6 +83,7 @@ void FViewer::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
 
     // Zoom (휠)
     float WheelDelta = InputState.WheelDelta;
+
     if (WheelDelta != 0.0f)
     {
         NavigationController.Zoom(WheelDelta);
