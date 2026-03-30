@@ -12,7 +12,13 @@ namespace
 {
     constexpr const char* ProjectionTypeLabels[] = {"Perspective", "Orthographic"};
     constexpr const char* ViewModeLabels[] = {"Lit", "Unlit", "Wireframe"};
-    constexpr const char* ViewLayoutLabels[] = {"Single", "_2X2", "_1l3"};
+    constexpr const char* ViewLayoutLabels[] = 
+    {
+        "Single", 
+        "_1l1", "_1_1",
+        "_1l2", "_2l1", "_1_2", "_2_1",
+        "_2X2", "_1l3", "_3l1", "_1_3", "_3_1"
+    };
 
     void DrawVectorRow(const char* Label, FVector& Value, float Speed = 0.1f)
     {

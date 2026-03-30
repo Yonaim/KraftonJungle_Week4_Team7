@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source">
@@ -168,15 +168,6 @@
     <ClCompile Include="Source\Viewport\Interaction\ViewportInteractionState.cpp">
       <Filter>Source\Viewport\Interaction</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutFactory.cpp">
-      <Filter>Source\Viewport\Layout</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutFourPanes.cpp">
-      <Filter>Source\Viewport\Layout</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutSinglePane.cpp">
-      <Filter>Source\Viewport\Layout</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Viewport\Layout\Window.cpp">
       <Filter>Source\Viewport\Layout</Filter>
     </ClCompile>
@@ -189,6 +180,13 @@
     <ClCompile Include="Source\Viewport\Selection\ViewportSelectionController.cpp">
       <Filter>Source\Viewport\Selection</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Viewport\EditorViewportTab.cpp" />
+    <ClCompile Include="Source\Viewport\Layout\Window.cpp" />
+    <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutFactory.cpp" />
+    <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutFourPanes.cpp" />
+    <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutSinglePane.cpp" />
+    <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutThreePanes.cpp" />
+    <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutTwoPanes.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Camera\ViewportCamera.h">
@@ -311,18 +309,6 @@
     <ClInclude Include="Source\Viewport\Layout\EditorViewportLayout.h">
       <Filter>Source\Viewport\Layout</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutFactory.h">
-      <Filter>Source\Viewport\Layout</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutFourPanes.h">
-      <Filter>Source\Viewport\Layout</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutSinglePane.h">
-      <Filter>Source\Viewport\Layout</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutType.h">
-      <Filter>Source\Viewport\Layout</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Viewport\Layout\Window.h">
       <Filter>Source\Viewport\Layout</Filter>
     </ClInclude>
@@ -335,9 +321,16 @@
     <ClInclude Include="Source\Viewport\Selection\ViewportSelectionController.h">
       <Filter>Source\Viewport\Selection</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Viewport\Viewport.h">
-      <Filter>Source\Viewport</Filter>
-    </ClInclude>
+    <ClInclude Include="Source\Viewport\EditorViewportTab.h" />
+    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayout.h" />
+    <ClInclude Include="Source\Viewport\Layout\Window.h" />
+    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutFactory.h" />
+    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutFourPanes.h" />
+    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutType.h" />
+    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutSinglePane.h" />
+    <ClInclude Include="Source\Viewport\Viewport.h" />
+    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutThreePanes.h" />
+    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutTwoPanes.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\ThirdParty\ImGui\imgui.natstepfilter">
