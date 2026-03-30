@@ -73,6 +73,7 @@ class FEditor
     void SetRuntimeServices(FD3D11RHI* InRHI, UAssetManager* InAssetManager);
 
     void OnWindowResized(float Width, float Height);
+    void OnViewportResized();
     void SetMainLoopFPS(float FPS)
     {
         CurFPS = FPS;
@@ -100,9 +101,7 @@ class FEditor
 
     const TArray<FEditorRenderData>& GetEditorRenderData() const { return EditorRenderDatas; }
     const TArray<FSceneRenderData>&  GetSceneRenderData() const { return SceneRenderDatas; }
-    const SEditorViewportTab&        GetViewportTab() const { return ViewportTab; }
-    //FEditorViewportClient&       GetViewportClient() { return ViewportClient; }
-    //const FEditorViewportClient& GetViewportClient() const { return ViewportClient; }
+    SEditorViewportTab&              GetViewportTab() { return ViewportTab; }
 
     void DrawPanel();
 
@@ -136,6 +135,7 @@ class FEditor
 
 
   private:
+    uint32_t           RootDockSpaceId = 0;
     SEditorViewportTab ViewportTab; 
 
     Engine::ApplicationCore::FInputRouter GlobalInputRouter;
@@ -152,7 +152,6 @@ class FEditor
 
     TArray<FEditorRenderData> EditorRenderDatas;
     TArray<FSceneRenderData>  SceneRenderDatas;
-    //FSceneView        SceneView;
 
     FWorld*             CurWorld = nullptr;
     FSceneDocumentState SceneDocument;

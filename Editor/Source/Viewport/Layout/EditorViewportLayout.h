@@ -2,11 +2,14 @@
 
 #include "Core/CoreMinimal.h"
 #include "Window.h"
+#include "EditorViewportLayoutType.h"
 
 class FEditorViewportLayout
 {
   public:
     virtual ~FEditorViewportLayout() = default;
+
+    void SetLayoutType(EViewportLayoutType NewType) { Type = NewType; }
     
     // 초기 트리 구성
     virtual void Initialize(FViewportRect TotalRect) = 0;
@@ -18,5 +21,6 @@ class FEditorViewportLayout
     virtual TArray<SWindow*> GetLeafWindows() const = 0;
 
 protected:
+    EViewportLayoutType Type = EViewportLayoutType::_1l3;
     SSplitter* RootSplitter = nullptr;
 };

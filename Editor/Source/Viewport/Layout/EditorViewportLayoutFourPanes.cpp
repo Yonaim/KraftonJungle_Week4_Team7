@@ -1,4 +1,5 @@
-#include "FEditorViewportLayoutFourPanes.h"
+#include "EditorViewportLayoutFourPanes.h"
+#include "EditorViewportLayoutSinglePane.h"
 
 FEditorViewportLayoutFourPanes::~FEditorViewportLayoutFourPanes()
 {
@@ -24,23 +25,23 @@ void FEditorViewportLayoutFourPanes::Initialize(FViewportRect TotalRect)
     RootSplitter = RootSH;
 
     // Build Tree
-    if (Type == EFourPanesType::_2X2)
+    if (Type == EViewportLayoutType::_2X2)
     {
         Build_2X2Tree();
     }
-    else if (Type == EFourPanesType::_1l3)
+    else if (Type == EViewportLayoutType::_1l3)
     {
         Build_1l3Tree();
     }
-    else if (Type == EFourPanesType::_3l1)
+    else if (Type == EViewportLayoutType::_3l1)
     {
         Build_3l1Tree();
     }
-    else if (Type == EFourPanesType::_1_3)
+    else if (Type == EViewportLayoutType::_1_3)
     {
         Build_1_3Tree();
     }
-    else if (Type == EFourPanesType::_3_1)
+    else if (Type == EViewportLayoutType::_3_1)
     {
         Build_3_1Tree();
     }
@@ -60,7 +61,7 @@ TArray<SWindow*> FEditorViewportLayoutFourPanes::GetLeafWindows() const
     return {WindowA, WindowB, WindowC, WindowD};
 }
 
-void FEditorViewportLayoutFourPanes::Build_2X2Tree() 
+void FEditorViewportLayoutFourPanes::Build_2X2Tree()
 {
     //  SSplitterH (root)
     //  ├─ SideLT: SSplitterV
