@@ -21,6 +21,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#include "Core/Logging/LogMacros.h"
+
 namespace
 {
     constexpr ImVec4 UnknownItemColor = ImVec4(0.95f, 0.35f, 0.35f, 1.0f);
@@ -817,6 +819,7 @@ void FPropertiesPanel::DrawComponentPropertyEditor(
         {
             FSceneAssetBinder::BindActor(SelectedActor, GetContext()->AssetCacheManager,
                                          GetContext()->DynamicRHI);
+            UE_LOG(FEditor, ELogLevel::Debug, "????");
         }
     }
 

@@ -31,8 +31,8 @@ namespace Engine::Component
             }
 
             const TArray<uint8>& VertexData = InMeshAsset->GetVerticesData();
-            const uint32 VertexStride = InMeshAsset->GetVertexStride();
-            const uint32 VertexCount = InMeshAsset->GetVerticesCount();
+            const uint32         VertexStride = InMeshAsset->GetVertexStride();
+            const uint32         VertexCount = InMeshAsset->GetVerticesCount();
             if (VertexStride < sizeof(FVector) || VertexIndex >= VertexCount)
             {
                 return false;
@@ -146,7 +146,8 @@ namespace Engine::Component
     FVector2 UPaperSpriteComponent::GetSpriteAspectScale() const
     {
         const FTextureRenderResource* TextureResource = GetTextureRenderResource();
-        if (TextureResource == nullptr || TextureResource->Width <= 0 || TextureResource->Height <= 0)
+        if (TextureResource == nullptr || TextureResource->Width <= 0 ||
+            TextureResource->Height <= 0)
         {
             return FVector2(1.0f, 1.0f);
         }
@@ -190,7 +191,8 @@ namespace Engine::Component
 
     void UPaperSpriteComponent::EnsureStaticMeshRenderData() const
     {
-        if (MeshAsset == nullptr || !MeshAsset->IsValidLowLevel() || MeshAsset->GetRenderResource() == nullptr)
+        if (MeshAsset == nullptr || !MeshAsset->IsValidLowLevel() ||
+            MeshAsset->GetRenderResource() == nullptr)
         {
             EnsureDynamicQuadMeshData();
             return;
@@ -212,7 +214,7 @@ namespace Engine::Component
     }
 
     void UPaperSpriteComponent::CollectRenderData(FSceneRenderData& OutRenderData,
-                                                  ESceneShowFlags InShowFlags) const
+                                                  ESceneShowFlags   InShowFlags) const
     {
         if (!IsFlagSet(InShowFlags, ESceneShowFlags::SF_Sprites))
         {
@@ -227,25 +229,44 @@ namespace Engine::Component
 
         EnsureStaticMeshRenderData();
 
-        if (!Material && TextureAsset)
+        if (TextureAsset)
         {
-            Material = std::make_shared<UMaterial>();
-            Material->SetAssetName("M_Sprite_" + TextureAsset->GetAssetName());
-            auto CookedData = std::make_shared<FMtlCookedData>();
-            CookedData->Name = "M_Sprite_" + TextureAsset->GetAssetName();
-            Material->SetCookedData(CookedData);
+            if (!Material)
+            {
+                Material = std::make_shared<UMaterial>();
+                Material->SetAssetName("M_Sprite_" + TextureAsset->GetAssetName());
 
-            auto RenderResource = std::make_shared<FMaterialRenderResource>();
+                auto CookedData = std::make_shared<FMtlCookedData>();
+                CookedData->Name = "M_Sprite_" + TextureAsset->GetAssetName();
+                Material->SetCookedData(CookedData);
+            }
+
+            std::shared_ptr<FMaterialRenderResource> RenderResource = Material->GetRenderResource();
+            if (!RenderResource)
+            {
+                RenderResource = std::make_shared<FMaterialRenderResource>();
+                Material->SetRenderResource(RenderResource);
+            }
+
+            RenderResource->BaseColorTexture.reset();
+            RenderResource->NormalTexture.reset();
+            RenderResource->ORMTexture.reset();
+
             if (TextureAsset->GetRenderResource() && TextureAsset->GetRenderResource()->GetSRV())
             {
                 RHI::FTextureDesc Desc;
-                Desc.Width = TextureAsset->GetCookedData() ? TextureAsset->GetCookedData()->Width : 0;
-                Desc.Height = TextureAsset->GetCookedData() ? TextureAsset->GetCookedData()->Height : 0;
+                Desc.Width =
+                    TextureAsset->GetCookedData() ? TextureAsset->GetCookedData()->Width : 0;
+                Desc.Height =
+                    TextureAsset->GetCookedData() ? TextureAsset->GetCookedData()->Height : 0;
                 Desc.Format = RHI::EPixelFormat::RGBA32F;
                 RenderResource->BaseColorTexture = std::make_shared<RHI::D3D11::FD3D11Texture2D>(
                     Desc, nullptr, TextureAsset->GetRenderResource()->GetSRV());
             }
-            Material->SetRenderResource(RenderResource);
+        }
+        else
+        {
+            Material = nullptr;
         }
 
         FRenderCommand Command;
@@ -253,8 +274,8 @@ namespace Engine::Component
         Command.Material = Material ? Material.get() : FGeneralRenderer::GetDefaultSpriteMaterial();
 
         const FVector2 SpriteAspectScale = GetSpriteAspectScale();
-        const FMatrix ActorWorld = Actor->GetWorldMatrix();
-        const FVector SpriteOrigin = ActorWorld.GetOrigin() + BillboardOffset;
+        const FMatrix  ActorWorld = Actor->GetWorldMatrix();
+        const FVector  SpriteOrigin = ActorWorld.GetOrigin() + BillboardOffset;
 
         if (bBillboard && OutRenderData.SceneView)
         {
@@ -303,6 +324,7 @@ namespace Engine::Component
         Command.bDrawAABB = Actor->IsSelected();
         Command.WorldAABB = GetWorldAABB();
         Command.SetDefaultStates();
+        Command.RasterizerOption.CullMode = D3D11_CULL_NONE;
         Command.BlendOption.BlendEnable = true;
         Command.BlendOption.SrcBlend = D3D11_BLEND_SRC_ALPHA;
         Command.BlendOption.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
@@ -373,14 +395,11 @@ namespace Engine::Component
 
             Geometry::FTriangle Triangle;
             Triangle.V0 = FVector{quad_vertices[I0].x * SpriteAspectScale.X,
-                                  quad_vertices[I0].y * SpriteAspectScale.Y,
-                                  quad_vertices[I0].z};
+                                  quad_vertices[I0].y * SpriteAspectScale.Y, quad_vertices[I0].z};
             Triangle.V1 = FVector{quad_vertices[I1].x * SpriteAspectScale.X,
-                                  quad_vertices[I1].y * SpriteAspectScale.Y,
-                                  quad_vertices[I1].z};
+                                  quad_vertices[I1].y * SpriteAspectScale.Y, quad_vertices[I1].z};
             Triangle.V2 = FVector{quad_vertices[I2].x * SpriteAspectScale.X,
-                                  quad_vertices[I2].y * SpriteAspectScale.Y,
-                                  quad_vertices[I2].z};
+                                  quad_vertices[I2].y * SpriteAspectScale.Y, quad_vertices[I2].z};
 
             OutTriangles.push_back(Triangle);
         }
@@ -408,8 +427,7 @@ namespace Engine::Component
         for (uint32_t i = 0; i < quad_vertex_count; ++i)
         {
             const FVector P(quad_vertices[i].x * SpriteAspectScale.X,
-                            quad_vertices[i].y * SpriteAspectScale.Y,
-                            quad_vertices[i].z);
+                            quad_vertices[i].y * SpriteAspectScale.Y, quad_vertices[i].z);
 
             Min.X = std::min(Min.X, P.X);
             Min.Y = std::min(Min.Y, P.Y);
