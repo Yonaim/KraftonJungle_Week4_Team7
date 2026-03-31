@@ -42,7 +42,7 @@ class FViewer
 
     FViewerNavigationController NavigationController;
 
-    AStaticMeshActor* TestMeshActor = nullptr;
+    AStaticMeshActor* StaticMeshActor = nullptr;
 
     FD3D11RHI*                 RHI = nullptr;
     RHI::FDynamicRHI*          DynamicRHI = nullptr;

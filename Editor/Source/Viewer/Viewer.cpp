@@ -25,15 +25,15 @@ void FViewer::Create()
 
     NavigationController.SetCamera(&ViewportCamera);
 
-    TestMeshActor = new AStaticMeshActor();
+    StaticMeshActor = new AStaticMeshActor();
 
-    TestMeshActor->SetLocation(FVector(0, 0, 0));
+    StaticMeshActor->SetLocation(FVector(0, 0, 0));
 }
 
 void FViewer::Release()
 {
-    delete TestMeshActor;
-    TestMeshActor = nullptr;
+    delete StaticMeshActor;
+    StaticMeshActor = nullptr;
 
     RHI = nullptr;
     DynamicRHI = nullptr;
@@ -131,7 +131,7 @@ void FViewer::BuildRenderData()
     SceneView->SetProjectionMatrix(ViewportCamera.GetProjectionMatrix());
 
     SceneRenderData.SceneView = SceneView;
-    TestMeshActor->GetStaticMeshComponent()->CollectRenderData(SceneRenderData,
+    StaticMeshActor->GetStaticMeshComponent()->CollectRenderData(SceneRenderData,
                                                                ESceneShowFlags::SF_Primitives);
 }
 
@@ -162,7 +162,7 @@ void FViewer::DrawPanel(HWND hWnd)
                     FWString SelectedPath = FileBuffer.data();
                     if (TryLoadObjFile(SelectedPath))
                     {
-                        FSceneAssetBinder::BindActor(TestMeshActor, AssetCacheManager, DynamicRHI);
+                        FSceneAssetBinder::BindActor(StaticMeshActor, AssetCacheManager, DynamicRHI);
                         NavigationController.ResetView(FVector(-3, 0, 0), FVector::Zero());
                     }
                 }
@@ -202,12 +202,12 @@ FString WideToUtf8(const FWString& InText)
 
 bool FViewer::TryLoadObjFile(const FWString& FilePath)
 {
-    if (TestMeshActor == nullptr)
+    if (StaticMeshActor == nullptr)
     {
         return false;
     }
     Engine::Component::UStaticMeshComponent* StaticMeshComponent =
-        TestMeshActor->GetStaticMeshComponent();
+        StaticMeshActor->GetStaticMeshComponent();
 
     if (StaticMeshComponent == nullptr)
     {
