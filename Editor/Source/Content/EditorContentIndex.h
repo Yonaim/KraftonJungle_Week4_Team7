@@ -10,34 +10,34 @@ enum class EContentBrowserItemType : uint8
     Scene,
     Texture,
     Font,
-    SpriteAtlas,
+    TextureAtlas,
     UnknownFile
 };
 
 struct FContentBrowserItem
 {
-    std::filesystem::path AbsolutePath;
-    FString VirtualPath;
-    FString DisplayName;
-    FString Extension;
+    std::filesystem::path   AbsolutePath;
+    FString                 VirtualPath;
+    FString                 DisplayName;
+    FString                 Extension;
     EContentBrowserItemType ItemType = EContentBrowserItemType::UnknownFile;
 };
 
 struct FContentBrowserFolderNode
 {
-    std::filesystem::path AbsolutePath;
-    FString VirtualPath;
-    FString DisplayName;
+    std::filesystem::path             AbsolutePath;
+    FString                           VirtualPath;
+    FString                           DisplayName;
     TArray<FContentBrowserFolderNode> ChildFolders;
-    TArray<FContentBrowserItem> Files;
+    TArray<FContentBrowserItem>       Files;
 };
 
 struct FContentIndexSnapshot
 {
-    std::filesystem::path ContentRootPath;
-    bool bHasContentRoot = false;
-    int32 FolderCount = 0;
-    int32 FileCount = 0;
+    std::filesystem::path     ContentRootPath;
+    bool                      bHasContentRoot = false;
+    int32                     FolderCount = 0;
+    int32                     FileCount = 0;
     FContentBrowserFolderNode RootFolder;
 };
 
@@ -46,12 +46,12 @@ class FEditorContentIndex
   public:
     void Refresh();
 
-    const FContentIndexSnapshot& GetSnapshot() const { return Snapshot; }
+    const FContentIndexSnapshot&     GetSnapshot() const { return Snapshot; }
     const FContentBrowserFolderNode* FindFolderByVirtualPath(const FString& VirtualPath) const;
 
   private:
-    const FContentBrowserFolderNode* FindFolderRecursive(
-        const FContentBrowserFolderNode& Folder, const FString& VirtualPath) const;
+    const FContentBrowserFolderNode* FindFolderRecursive(const FContentBrowserFolderNode& Folder,
+                                                         const FString& VirtualPath) const;
 
   private:
     FContentIndexSnapshot Snapshot;

@@ -56,7 +56,7 @@ namespace
 
         if (Extension == L".json")
         {
-            return EContentBrowserItemType::SpriteAtlas;
+            return EContentBrowserItemType::TextureAtlas;
         }
 
         return EContentBrowserItemType::UnknownFile;
@@ -79,8 +79,7 @@ namespace
     {
         FContentBrowserFolderNode FolderNode;
         FolderNode.AbsolutePath = FolderPath;
-        FolderNode.VirtualPath =
-            Engine::Scene::BuildSceneAssetVirtualPath(FolderPath);
+        FolderNode.VirtualPath = Engine::Scene::BuildSceneAssetVirtualPath(FolderPath);
         FolderNode.DisplayName = GetFolderDisplayName(ContentRoot, FolderPath);
         ++InOutFolderCount;
 
@@ -114,8 +113,7 @@ namespace
 
             FContentBrowserItem Item;
             Item.AbsolutePath = Entry.path();
-            Item.VirtualPath =
-                Engine::Scene::BuildSceneAssetVirtualPath(Entry.path());
+            Item.VirtualPath = Engine::Scene::BuildSceneAssetVirtualPath(Entry.path());
             Item.DisplayName = PathToUtf8String(Entry.path().filename());
             Item.Extension = PathToUtf8String(Entry.path().extension());
             Item.ItemType = ClassifyFileType(Entry.path());

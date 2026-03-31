@@ -11,7 +11,7 @@ namespace Engine::Component
         Any,
         FontFile,
         TextureImage,
-        SpriteAtlasFile,
+        TextureAtlasFile,
         SceneFile
     };
 
@@ -28,38 +28,38 @@ namespace Engine::Component
 
     struct FComponentPropertyOptions
     {
-        bool bExposeInDetails = true;
-        bool bSerializeInScene = true;
-        float DragSpeed = 0.1f;
+        bool                    bExposeInDetails = true;
+        bool                    bSerializeInScene = true;
+        float                   DragSpeed = 0.1f;
         EComponentAssetPathKind ExpectedAssetPathKind = EComponentAssetPathKind::Any;
     };
 
     struct FComponentPropertyDescriptor
     {
-        FString Key;
-        FWString DisplayLabel;
-        EComponentPropertyType Type = EComponentPropertyType::String;
-        bool bExposeInDetails = true;
-        bool bSerializeInScene = true;
-        float DragSpeed = 0.1f;
+        FString                 Key;
+        FWString                DisplayLabel;
+        EComponentPropertyType  Type = EComponentPropertyType::String;
+        bool                    bExposeInDetails = true;
+        bool                    bSerializeInScene = true;
+        float                   DragSpeed = 0.1f;
         EComponentAssetPathKind ExpectedAssetPathKind = EComponentAssetPathKind::Any;
 
-        std::function<bool()> BoolGetter;
+        std::function<bool()>     BoolGetter;
         std::function<void(bool)> BoolSetter;
 
-        std::function<int32()> IntGetter;
+        std::function<int32()>     IntGetter;
         std::function<void(int32)> IntSetter;
 
-        std::function<float()> FloatGetter;
+        std::function<float()>     FloatGetter;
         std::function<void(float)> FloatSetter;
 
-        std::function<FString()> StringGetter;
+        std::function<FString()>            StringGetter;
         std::function<void(const FString&)> StringSetter;
 
-        std::function<FVector()> VectorGetter;
+        std::function<FVector()>            VectorGetter;
         std::function<void(const FVector&)> VectorSetter;
 
-        std::function<FColor()> ColorGetter;
+        std::function<FColor()>            ColorGetter;
         std::function<void(const FColor&)> ColorSetter;
     };
 
@@ -69,10 +69,10 @@ namespace Engine::Component
     {
       public:
         const TArray<FComponentPropertyDescriptor>& GetProperties() const { return Properties; }
-        void Clear() { Properties.clear(); }
+        void                                        Clear() { Properties.clear(); }
 
-        void AddBool(const FString& Key, const FWString& DisplayLabel,
-                     std::function<bool()> Getter, std::function<void(bool)> Setter,
+        void AddBool(const FString& Key, const FWString& DisplayLabel, std::function<bool()> Getter,
+                     std::function<void(bool)>        Setter,
                      const FComponentPropertyOptions& Options = {})
         {
             FComponentPropertyDescriptor Descriptor;
@@ -87,8 +87,8 @@ namespace Engine::Component
             Properties.push_back(std::move(Descriptor));
         }
 
-        void AddInt(const FString& Key, const FWString& DisplayLabel,
-                    std::function<int32()> Getter, std::function<void(int32)> Setter,
+        void AddInt(const FString& Key, const FWString& DisplayLabel, std::function<int32()> Getter,
+                    std::function<void(int32)>       Setter,
                     const FComponentPropertyOptions& Options = {})
         {
             FComponentPropertyDescriptor Descriptor;
@@ -120,8 +120,7 @@ namespace Engine::Component
         }
 
         void AddString(const FString& Key, const FWString& DisplayLabel,
-                       std::function<FString()> Getter,
-                       std::function<void(const FString&)> Setter,
+                       std::function<FString()> Getter, std::function<void(const FString&)> Setter,
                        const FComponentPropertyOptions& Options = {})
         {
             FComponentPropertyDescriptor Descriptor;
@@ -137,8 +136,7 @@ namespace Engine::Component
         }
 
         void AddVector3(const FString& Key, const FWString& DisplayLabel,
-                        std::function<FVector()> Getter,
-                        std::function<void(const FVector&)> Setter,
+                        std::function<FVector()> Getter, std::function<void(const FVector&)> Setter,
                         const FComponentPropertyOptions& Options = {})
         {
             FComponentPropertyDescriptor Descriptor;
@@ -154,8 +152,7 @@ namespace Engine::Component
         }
 
         void AddColor(const FString& Key, const FWString& DisplayLabel,
-                      std::function<FColor()> Getter,
-                      std::function<void(const FColor&)> Setter,
+                      std::function<FColor()> Getter, std::function<void(const FColor&)> Setter,
                       const FComponentPropertyOptions& Options = {})
         {
             FComponentPropertyDescriptor Descriptor;
@@ -171,9 +168,9 @@ namespace Engine::Component
         }
 
         void AddAssetPath(const FString& Key, const FWString& DisplayLabel,
-                          std::function<FString()> Getter,
+                          std::function<FString()>            Getter,
                           std::function<void(const FString&)> Setter,
-                          const FComponentPropertyOptions& Options = {})
+                          const FComponentPropertyOptions&    Options = {})
         {
             FComponentPropertyDescriptor Descriptor;
             Descriptor.Key = Key;
