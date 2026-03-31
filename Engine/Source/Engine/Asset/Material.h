@@ -2,10 +2,12 @@
 
 #include <memory>
 #include <utility>
+#include <filesystem>
 
 #include "Engine/Asset/Asset.h"
 #include "Asset/Cooked/MtlCookedData.h"
 #include "Asset/Runtime/MaterialRenderResource.h"
+#include "RHI/DynamicRHI.h"
 
 using namespace Asset;
 
@@ -14,6 +16,9 @@ class UMaterial : public UAsset
     DECLARE_RTTI(UMaterial, UAsset)
 
   public:
+    bool LoadFromCooked(const FString& InAssetPath, std::shared_ptr<FMtlCookedData> InCookedData,
+                        RHI::FDynamicRHI& InDynamicRHI);
+
     const std::shared_ptr<FMtlCookedData>& GetCookedData() const { return CookedData; }
 
     void SetCookedData(std::shared_ptr<FMtlCookedData> InCookedData)
@@ -41,6 +46,6 @@ class UMaterial : public UAsset
     }
 
   private:
-    std::shared_ptr<FMtlCookedData>     CookedData;
+    std::shared_ptr<FMtlCookedData>          CookedData;
     std::shared_ptr<FMaterialRenderResource> RenderResource;
 };

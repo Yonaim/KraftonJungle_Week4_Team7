@@ -5,6 +5,8 @@
 #include "Engine/Asset/StaticMesh.h"
 #include "Engine/Asset/SubUVAtlas.h"
 #include "Engine/Asset/Texture.h"
+#include "Engine/Asset/Material.h"
+#include "Asset/Builder/MaterialBuilder.h"
 #include "Engine/Component/Core/SceneComponent.h"
 #include "Engine/Component/Mesh/StaticMeshComponent.h"
 #include "Engine/Component/Sprite/PaperSpriteComponent.h"
@@ -18,8 +20,7 @@ using namespace Engine::Component;
 
 namespace
 {
-    template <typename TObjectType>
-    TObjectType* EnsureAssetObject(TObjectType* ExistingObject)
+    template <typename TObjectType> TObjectType* EnsureAssetObject(TObjectType* ExistingObject)
     {
         return ExistingObject != nullptr ? ExistingObject : new TObjectType();
     }
@@ -56,7 +57,64 @@ namespace
         const UFontAtlas* FontAsset = InComponent->GetFontAsset();
         return FontAsset != nullptr ? FontAsset->GetAssetPath() : FString();
     }
-}
+
+    static void BindStaticMeshMaterials(UStaticMesh* StaticMeshAsset, const FString& MeshPath,
+                                        Asset::FAssetCacheManager* InAssetCacheManager,
+                                        RHI::FDynamicRHI*          InDynamicRHI)
+    {
+        if (StaticMeshAsset == nullptr || InAssetCacheManager == nullptr || InDynamicRHI == nullptr)
+        {
+            return;
+        }
+
+        const std::shared_ptr<Asset::FObjCookedData>& MeshCookedData =
+            StaticMeshAsset->GetCookedData();
+        if (MeshCookedData == nullptr)
+        {
+            return;
+        }
+
+        TArray<UMaterial*>& MaterialSlots = StaticMeshAsset->GetMaterialSlots();
+        const size_t        SlotCount = MeshCookedData->MaterialSlotNames.size();
+
+        if (MaterialSlots.size() < SlotCount)
+        {
+            MaterialSlots.resize(SlotCount, nullptr);
+        }
+
+        for (size_t SlotIndex = 0; SlotIndex < SlotCount; ++SlotIndex)
+        {
+            const FString& SlotName = MeshCookedData->MaterialSlotNames[SlotIndex];
+            if (SlotName.empty())
+            {
+                MaterialSlots[SlotIndex] = nullptr;
+                continue;
+            }
+
+            const FString MaterialAssetPath =
+                Asset::FMaterialBuilder::MakeMaterialAssetPath(MeshPath, SlotName);
+
+            std::shared_ptr<Asset::FMtlCookedData> MaterialCookedData =
+                InAssetCacheManager->BuildMaterial(MaterialAssetPath);
+
+            if (MaterialCookedData == nullptr)
+            {
+                MaterialSlots[SlotIndex] = nullptr;
+                continue;
+            }
+
+            UMaterial* MaterialAsset = EnsureAssetObject(MaterialSlots[SlotIndex]);
+            if (!MaterialAsset->LoadFromCooked(MaterialAssetPath, std::move(MaterialCookedData),
+                                               *InDynamicRHI))
+            {
+                MaterialSlots[SlotIndex] = nullptr;
+                continue;
+            }
+
+            MaterialSlots[SlotIndex] = MaterialAsset;
+        }
+    }
+} // namespace
 
 void FSceneAssetBinder::BindScene(FScene* InScene, Asset::FAssetCacheManager* InAssetCacheManager,
                                   RHI::FDynamicRHI* InDynamicRHI)
@@ -92,9 +150,9 @@ void FSceneAssetBinder::BindActor(AActor* InActor, Asset::FAssetCacheManager* In
     }
 }
 
-void FSceneAssetBinder::BindComponent(USceneComponent* InComponent,
+void FSceneAssetBinder::BindComponent(USceneComponent*           InComponent,
                                       Asset::FAssetCacheManager* InAssetCacheManager,
-                                      RHI::FDynamicRHI* InDynamicRHI)
+                                      RHI::FDynamicRHI*          InDynamicRHI)
 {
     if (InComponent == nullptr || InAssetCacheManager == nullptr || InDynamicRHI == nullptr)
     {
@@ -124,6 +182,8 @@ void FSceneAssetBinder::BindComponent(USceneComponent* InComponent,
             StaticMeshComponent->SetStaticMeshAsset(nullptr);
             return;
         }
+
+        BindStaticMeshMaterials(StaticMeshAsset, MeshPath, InAssetCacheManager, InDynamicRHI);
 
         StaticMeshComponent->SetStaticMeshAsset(StaticMeshAsset);
         return;

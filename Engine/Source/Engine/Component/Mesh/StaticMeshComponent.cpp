@@ -90,7 +90,8 @@ namespace Engine::Component
             // DEBUG: 렌더링을 위해 Vertices와 Indices의 count 채우기
             if (MeshData->Vertices.size() != StaticMesh->GetRenderResource()->VertexCount)
             {
-                MeshData->Vertices.assign(StaticMesh->GetRenderResource()->VertexCount, FPrimitiveVertex());
+                MeshData->Vertices.assign(StaticMesh->GetRenderResource()->VertexCount,
+                                          FPrimitiveVertex());
             }
             if (MeshData->Indices.size() != StaticMesh->GetRenderResource()->IndexCount)
             {
@@ -98,7 +99,7 @@ namespace Engine::Component
             }
             MeshData->bIsDirty = false;
         }
-        
+
         MutableRenderCommand.MeshData = MeshData.get();
         if (MutableRenderCommand.MeshData == nullptr)
         {
@@ -119,7 +120,8 @@ namespace Engine::Component
         MutableRenderCommand.bDrawAABB = Actor->IsSelected() || Actor->IsShowBounds();
         MutableRenderCommand.WorldAABB = GetWorldAABB();
         MutableRenderCommand.SetDefaultStates();
-        MutableRenderCommand.SetStates(MutableRenderCommand.Material, MutableRenderCommand.MeshData->Topology);
+        MutableRenderCommand.SetStates(MutableRenderCommand.Material,
+                                       MutableRenderCommand.MeshData->Topology);
 
         MutableRenderCommand.bIsVisible = Actor->IsVisible();
         MutableRenderCommand.bIsPickable = Actor->IsPickable();
@@ -212,9 +214,16 @@ namespace Engine::Component
 
     FString UStaticMeshComponent::GetMaterialSlotName(int32 SlotIndex) const
     {
-        if (!IsValidMaterialSlotIndex(SlotIndex))
+        if (!IsValidMaterialSlotIndex(SlotIndex) || StaticMesh == nullptr)
         {
             return {};
+        }
+
+        const auto& CookedData = StaticMesh->GetCookedData();
+        if (CookedData != nullptr &&
+            static_cast<size_t>(SlotIndex) < CookedData->MaterialSlotNames.size())
+        {
+            return CookedData->MaterialSlotNames[SlotIndex];
         }
 
         return "Material Slot " + std::to_string(SlotIndex);
