@@ -494,6 +494,11 @@ void FGeneralRenderer::ExecuteRenderPass(ERenderLayer InRenderLayer)
                         ID3D11ShaderResourceView* SRV = static_cast<RHI::D3D11::FD3D11Texture2D*>(Resource->BaseColorTexture.get())->GetSRV();
                         DeviceContext->PSSetShaderResources(0, 1, &SRV);
                     }
+                    else
+                    {
+                        ID3D11ShaderResourceView* NullSRV = nullptr;
+                        DeviceContext->PSSetShaderResources(0, 1, &NullSRV);
+                    }
                     if (Resource->NormalTexture)
                     {
                         ID3D11ShaderResourceView* SRV = static_cast<RHI::D3D11::FD3D11Texture2D*>(Resource->NormalTexture.get())->GetSRV();
@@ -607,8 +612,8 @@ bool FGeneralRenderer::CreatePickResources(int32 Width, int32 Height)
 
     D3D11_INPUT_ELEMENT_DESC InputElements[] = {
         {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-        {"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
-        {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0},
+        {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+        {"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0},
         {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 40, D3D11_INPUT_PER_VERTEX_DATA, 0},
     };
     Device->CreateInputLayout(InputElements, 4, VSCode->GetBufferPointer(), VSCode->GetBufferSize(), &PickInputLayout);

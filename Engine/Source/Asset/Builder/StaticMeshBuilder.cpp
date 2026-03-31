@@ -585,14 +585,14 @@ namespace Asset
                 UV.Y = 1.0f - UV.Y;
             }
 
-            FColor VertexColor = FColor(255, 255, 255, 255);
+            FColor VertexColor = FColor::White();
             if (bHasColors && Key.ColorIndex >= 0)
             {
                 const FVector& SourceColor = Intermediate.Colors[Key.ColorIndex];
                 VertexColor =
-                    FColor(static_cast<uint8>(std::clamp(SourceColor.X, 0.0f, 1.0f) * 255.0f),
-                           static_cast<uint8>(std::clamp(SourceColor.Y, 0.0f, 1.0f) * 255.0f),
-                           static_cast<uint8>(std::clamp(SourceColor.Z, 0.0f, 1.0f) * 255.0f), 255);
+                    FColor(std::clamp(SourceColor.X, 0.0f, 1.0f),
+                           std::clamp(SourceColor.Y, 0.0f, 1.0f),
+                           std::clamp(SourceColor.Z, 0.0f, 1.0f), 1.0f);
             }
 
             const FPrimitiveVertex Vertex = {Position, Normal, VertexColor, UV};
