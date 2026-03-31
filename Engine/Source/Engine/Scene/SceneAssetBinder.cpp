@@ -32,8 +32,7 @@ namespace
             return {};
         }
 
-        const UTexture* TextureAsset = InComponent->GetTextureAsset();
-        return TextureAsset != nullptr ? TextureAsset->GetAssetPath() : FString();
+        return InComponent->GetTexturePath();
     }
 
     FString ResolveSubUVPath(const USubUVComponent* InComponent)
@@ -263,10 +262,44 @@ void FSceneAssetBinder::BindComponent(USceneComponent*           InComponent,
 
     if (auto* SpriteComponent = Cast<UPaperSpriteComponent>(InComponent))
     {
+        const FString MeshPath = SpriteComponent->GetMeshAssetPath();
+        if (MeshPath.empty())
+        {
+            UE_LOG(FEditor, ELogLevel::Warning, "PaperSpriteComponent has empty mesh path");
+            SpriteComponent->SetMeshAsset(nullptr);
+        }
+        else
+        {
+            std::shared_ptr<Asset::FObjCookedData> MeshCookedData =
+                InAssetCacheManager->BuildStaticMesh(MeshPath);
+            if (MeshCookedData == nullptr)
+            {
+                UE_LOG(FEditor, ELogLevel::Error, "Failed to build sprite mesh asset: %s",
+                       MeshPath.c_str());
+                SpriteComponent->SetMeshAsset(nullptr);
+            }
+            else
+            {
+                UStaticMesh* MeshAsset = EnsureAssetObject(SpriteComponent->GetMeshAsset());
+                if (!MeshAsset->LoadFromCooked(MeshPath, std::move(MeshCookedData), *InDynamicRHI))
+                {
+                    UE_LOG(FEditor, ELogLevel::Error, "Failed to load sprite mesh asset: %s",
+                           MeshPath.c_str());
+                    SpriteComponent->SetMeshAsset(nullptr);
+                }
+                else
+                {
+                    SpriteComponent->SetMeshAsset(MeshAsset);
+                    UE_LOG(FEditor, ELogLevel::Debug, "Bound sprite mesh asset: %s", MeshPath.c_str());
+                }
+            }
+        }
+
         const FString TexturePath = ResolveTexturePath(SpriteComponent);
         if (TexturePath.empty())
         {
             UE_LOG(FEditor, ELogLevel::Warning, "PaperSpriteComponent has empty texture path");
+            SpriteComponent->SetTextureAsset(nullptr);
             return;
         }
 
@@ -290,7 +323,8 @@ void FSceneAssetBinder::BindComponent(USceneComponent*           InComponent,
         }
 
         SpriteComponent->SetTextureAsset(TextureAsset);
-        UE_LOG(FEditor, ELogLevel::Info, "Bound texture asset: %s", TexturePath.c_str());
+        UE_LOG(FEditor, ELogLevel::Info, "Bound sprite assets: mesh=%s texture=%s",
+               MeshPath.c_str(), TexturePath.c_str());
         return;
     }
 

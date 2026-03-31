@@ -781,6 +781,7 @@ void FPropertiesPanel::DrawComponentPropertyEditor(
 
     bool bHasVisibleProperty = false;
     bool bSceneModified = false;
+    bool bRequiresActorRebind = false;
 
     ImGui::TextUnformatted("Properties");
     for (const Engine::Component::FComponentPropertyDescriptor& Descriptor :
@@ -796,12 +797,9 @@ void FPropertiesPanel::DrawComponentPropertyEditor(
         {
             bSceneModified = true;
 
-            if (Descriptor.Type == Engine::Component::EComponentPropertyType::AssetPath &&
-                GetContext() != nullptr && GetContext()->AssetCacheManager != nullptr &&
-                GetContext()->DynamicRHI != nullptr)
+            if (Descriptor.Type == Engine::Component::EComponentPropertyType::AssetPath)
             {
-                FSceneAssetBinder::BindComponent(TargetComponent, GetContext()->AssetCacheManager,
-                                                 GetContext()->DynamicRHI);
+                bRequiresActorRebind = true;
             }
         }
     }
@@ -809,6 +807,17 @@ void FPropertiesPanel::DrawComponentPropertyEditor(
     if (!bHasVisibleProperty)
     {
         ImGui::TextDisabled("No component-specific properties.");
+    }
+
+    if (bRequiresActorRebind && GetContext() != nullptr &&
+        GetContext()->AssetCacheManager != nullptr && GetContext()->DynamicRHI != nullptr)
+    {
+        AActor* SelectedActor = ResolveSelectedActor();
+        if (SelectedActor != nullptr)
+        {
+            FSceneAssetBinder::BindActor(SelectedActor, GetContext()->AssetCacheManager,
+                                         GetContext()->DynamicRHI);
+        }
     }
 
     if (bSceneModified && GetContext() != nullptr && GetContext()->Editor != nullptr)

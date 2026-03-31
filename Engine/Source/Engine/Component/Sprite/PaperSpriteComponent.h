@@ -4,6 +4,10 @@
 #include "Engine/Component/Mesh/MeshComponent.h"
 #include "Renderer/Types/BasicMeshType.h"
 
+class UStaticMesh;
+struct FMeshData;
+class UMaterial;
+
 namespace Engine::Component
 {
     class ENGINE_API UPaperSpriteComponent : public UMeshComponent
@@ -14,11 +18,23 @@ namespace Engine::Component
         UPaperSpriteComponent() = default;
         ~UPaperSpriteComponent() override = default;
 
+        static const FString& GetDefaultQuadMeshPath();
+
         EBasicMeshType GetBasicMeshType() const override { return EBasicMeshType::Quad; }
+
+        const FString& GetMeshAssetPath() const { return MeshPath; }
+        void           SetMeshAssetPath(const FString& InPath);
+
+        const UStaticMesh* GetMeshAsset() const { return MeshAsset; }
+        UStaticMesh*       GetMeshAsset() { return MeshAsset; }
+        void               SetMeshAsset(UStaticMesh* InMeshAsset);
 
         const UTexture* GetTextureAsset() const { return TextureAsset; }
         UTexture*       GetTextureAsset() { return TextureAsset; }
         void            SetTextureAsset(UTexture* InTextureAsset);
+
+        const FString& GetTexturePath() const { return TexturePath; }
+        void           SetTexturePath(const FString& InPath);
 
         const FTextureRenderResource* GetTextureRenderResource() const;
         FTextureRenderResource*       GetTextureRenderResource();
@@ -40,12 +56,21 @@ namespace Engine::Component
       protected:
         Geometry::FAABB GetLocalAABB() const override;
 
+      private:
+        FVector2 GetSpriteAspectScale() const;
+        void     EnsureDynamicQuadMeshData() const;
+        void     EnsureStaticMeshRenderData() const;
+
       protected:
+        FString      MeshPath = GetDefaultQuadMeshPath();
+        UStaticMesh* MeshAsset = nullptr;
+
+        FString   TexturePath;
         UTexture* TextureAsset = nullptr;
         bool      bBillboard = false;
         FVector   BillboardOffset = FVector(0.0f, 0.0f, 0.0f);
 
-        mutable std::shared_ptr<FMeshData>       MeshData;
+        mutable std::shared_ptr<FMeshData> MeshData;
         mutable std::shared_ptr<UMaterial> Material;
     };
 } // namespace Engine::Component
