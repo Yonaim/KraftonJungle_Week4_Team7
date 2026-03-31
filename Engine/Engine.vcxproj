@@ -176,7 +176,6 @@
     <ClInclude Include="Source\Renderer\D3D11\GeneralRenderer.h" />
     <ClInclude Include="Source\Renderer\EditorRenderData.h" />
     <ClInclude Include="Source\Renderer\Primitive\FMeshData.h" />
-    <ClInclude Include="Source\Renderer\Primitive\UnrealEditorStyledGizmo.h" />
     <ClInclude Include="Source\Renderer\RenderAsset\FontResource.h" />
     <ClInclude Include="Source\Renderer\RenderAsset\SubUVAtlasResource.h" />
     <ClInclude Include="Source\Renderer\RenderAsset\TextureResource.h" />
@@ -319,7 +318,6 @@
     <ClCompile Include="Source\Renderer\D3D11\D3D11RHI.cpp" />
     <ClCompile Include="Source\Renderer\D3D11\GeneralRenderer.cpp" />
     <ClCompile Include="Source\Renderer\Primitive\FMeshData.cpp" />
-    <ClCompile Include="Source\Renderer\Primitive\UnrealEditorStyledGizmo.cpp" />
     <ClCompile Include="Source\Renderer\RenderCommand.cpp" />
     <ClCompile Include="Source\Renderer\RendererModule.cpp" />
     <ClCompile Include="Source\Renderer\RenderState\RenderState.cpp" />

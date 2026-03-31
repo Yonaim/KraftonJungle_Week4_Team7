@@ -89,17 +89,6 @@ namespace Engine::Component
         MeshData->IndexBufferCount = StaticMesh->GetIndicesCount();
         MeshData->VertexBuffer = StaticMesh->GetRenderResource()->VertexBuffer;
         MeshData->IndexBuffer = StaticMesh->GetRenderResource()->IndexBuffer;
-        // DEBUG: 렌더링을 위해 Vertices와 Indices의 count 채우기
-        if (MeshData->Vertices.size() != StaticMesh->GetRenderResource()->VertexCount)
-        {
-            MeshData->Vertices.assign(StaticMesh->GetRenderResource()->VertexCount,
-                                      FPrimitiveVertex());
-        }
-        if (MeshData->Indices.size() != StaticMesh->GetRenderResource()->IndexCount)
-        {
-            MeshData->Indices.assign(StaticMesh->GetRenderResource()->IndexCount, 0);
-        }
-        MeshData->bIsDirty = false;
 
         const TArray<FStaticMeshSection>& Sections = StaticMesh->GetSections();
 

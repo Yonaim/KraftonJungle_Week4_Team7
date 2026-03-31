@@ -87,7 +87,9 @@ bool FGeneralRenderer::Pick(int32 MouseX, int32 MouseY, uint32& OutPickId)
 
     for (const auto& Cmd : CommandList)
     {
-        if (!Cmd.MeshData || (Cmd.MeshData->Vertices.empty() && Cmd.MeshData->Indices.empty()))
+        bool bHasData = !Cmd.MeshData->Vertices.empty() || !Cmd.MeshData->Indices.empty() || 
+                        Cmd.MeshData->VertexBufferCount > 0 || Cmd.MeshData->IndexBufferCount > 0;
+        if (!Cmd.MeshData || !bHasData)
             continue;
 
         Cmd.MeshData->Bind(&RHI);
@@ -98,11 +100,11 @@ bool FGeneralRenderer::Pick(int32 MouseX, int32 MouseY, uint32& OutPickId)
         UpdateObjectConstantBuffer(Cmd.WorldMatrix, Cmd.ObjectId);
 
         if (Cmd.IndexCount > 0) 
-            DeviceContext->DrawIndexed(Cmd.IndexCount, Cmd.FirstIndex, 0); // 메시 파츠별 렌더링
-        else if (!Cmd.MeshData->Indices.empty())
-            DeviceContext->DrawIndexed(static_cast<UINT>(Cmd.MeshData->Indices.size()), 0, 0);
-        else if (!Cmd.MeshData->Vertices.empty())
-            DeviceContext->Draw(static_cast<UINT>(Cmd.MeshData->Vertices.size()), 0);
+            DeviceContext->DrawIndexed(Cmd.IndexCount, Cmd.FirstIndex, 0);
+        else if (Cmd.MeshData->IndexBufferCount > 0)
+            DeviceContext->DrawIndexed(Cmd.MeshData->IndexBufferCount, 0, 0);
+        else if (Cmd.MeshData->VertexBufferCount > 0)
+            DeviceContext->Draw(Cmd.MeshData->VertexBufferCount, 0);
     }
 
     // 5. 이전 렌더 상태 복구
@@ -454,6 +456,47 @@ void FGeneralRenderer::ClearDepthBuffer()
     RHI.GetDeviceContext()->ClearDepthStencilView(SceneDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
+void FGeneralRenderer::BindMaterial(ID3D11DeviceContext* DeviceContext, FRenderCommand Cmd)
+{
+    auto Resource = Cmd.Material->GetRenderResource();
+    if (Resource)
+    {
+        if (Resource->BaseColorTexture)
+        {
+            ID3D11ShaderResourceView* SRV = static_cast<RHI::D3D11::FD3D11Texture2D*>(Resource->BaseColorTexture.get())->GetSRV();
+            DeviceContext->PSSetShaderResources(0, 1, &SRV);
+        }
+        else
+        {
+            ID3D11ShaderResourceView* NullSRV = nullptr;
+            DeviceContext->PSSetShaderResources(0, 1, &NullSRV);
+        }
+        if (Resource->NormalTexture)
+        {
+            ID3D11ShaderResourceView* SRV = static_cast<RHI::D3D11::FD3D11Texture2D*>(Resource->NormalTexture.get())->GetSRV();
+            DeviceContext->PSSetShaderResources(1, 1, &SRV);
+        }
+        if (Resource->ORMTexture)
+        {
+            ID3D11ShaderResourceView* SRV = static_cast<RHI::D3D11::FD3D11Texture2D*>(Resource->ORMTexture.get())->GetSRV();
+            DeviceContext->PSSetShaderResources(2, 1, &SRV);
+        }
+        if (Resource->ParameterBuffer)
+        {
+            ID3D11Buffer* CB = static_cast<RHI::D3D11::FD3D11ConstantBuffer*>(Resource->ParameterBuffer.get())->GetBuffer();
+            DeviceContext->VSSetConstantBuffers(2, 1, &CB);
+            DeviceContext->PSSetConstantBuffers(2, 1, &CB);
+        }
+    }
+}
+
+void FGeneralRenderer::BindRenderState(FRenderCommand Cmd)
+{
+    RenderStateManager->BindState(RenderStateManager->GetOrCreateRasterizerState(Cmd.RasterizerOption));
+    RenderStateManager->BindState(RenderStateManager->GetOrCreateDepthStencilState(Cmd.DepthStencilOption));
+    RenderStateManager->BindState(RenderStateManager->GetOrCreateBlendState(Cmd.BlendOption));
+}
+
 void FGeneralRenderer::ExecuteRenderPass(ERenderLayer InRenderLayer)
 {
     UMaterial*        CurrentMaterial = nullptr;
@@ -462,68 +505,36 @@ void FGeneralRenderer::ExecuteRenderPass(ERenderLayer InRenderLayer)
     
     FRenderCommand toFind;
     toFind.RenderLayer = InRenderLayer;
-    auto it = std::lower_bound(CommandList.begin(), CommandList.end(), toFind,
-                               [](const FRenderCommand& A, const FRenderCommand& B)
-                               {
-                                   return A.RenderLayer < B.RenderLayer;
-                               });
-
-    ID3D11DeviceContext* DeviceContext = RHI.GetDeviceContext();
     RenderStateManager->RebindState();
 
+    ID3D11DeviceContext* DeviceContext = RHI.GetDeviceContext();
     if (DefaultMeshVS) DefaultMeshVS->Bind(DeviceContext);
     if (DefaultMeshPS) DefaultMeshPS->Bind(DeviceContext);
+    
+    auto it = std::lower_bound(CommandList.begin(), CommandList.end(), toFind,
+            [](const FRenderCommand& A, const FRenderCommand& B){ return A.RenderLayer < B.RenderLayer; });
 
     for (; it != CommandList.end(); it++)
     {
         auto Cmd = *it;
         if (Cmd.RenderLayer != InRenderLayer)
             return;
-        if (!Cmd.MeshData || (Cmd.MeshData->Vertices.empty() && Cmd.MeshData->Indices.empty()))
+        bool bHasData = !Cmd.MeshData->Vertices.empty() || !Cmd.MeshData->Indices.empty() || 
+                        Cmd.MeshData->VertexBufferCount > 0 || Cmd.MeshData->IndexBufferCount > 0;
+        if (!Cmd.MeshData || !bHasData)
             continue;
 
         if (Cmd.Material != CurrentMaterial)
         {
             if (Cmd.Material)
             {
-                auto Resource = Cmd.Material->GetRenderResource();
-                if (Resource)
-                {
-                    if (Resource->BaseColorTexture)
-                    {
-                        ID3D11ShaderResourceView* SRV = static_cast<RHI::D3D11::FD3D11Texture2D*>(Resource->BaseColorTexture.get())->GetSRV();
-                        DeviceContext->PSSetShaderResources(0, 1, &SRV);
-                    }
-                    else
-                    {
-                        ID3D11ShaderResourceView* NullSRV = nullptr;
-                        DeviceContext->PSSetShaderResources(0, 1, &NullSRV);
-                    }
-                    if (Resource->NormalTexture)
-                    {
-                        ID3D11ShaderResourceView* SRV = static_cast<RHI::D3D11::FD3D11Texture2D*>(Resource->NormalTexture.get())->GetSRV();
-                        DeviceContext->PSSetShaderResources(1, 1, &SRV);
-                    }
-                    if (Resource->ORMTexture)
-                    {
-                        ID3D11ShaderResourceView* SRV = static_cast<RHI::D3D11::FD3D11Texture2D*>(Resource->ORMTexture.get())->GetSRV();
-                        DeviceContext->PSSetShaderResources(2, 1, &SRV);
-                    }
-                    if (Resource->ParameterBuffer)
-                    {
-                        ID3D11Buffer* CB = static_cast<RHI::D3D11::FD3D11ConstantBuffer*>(Resource->ParameterBuffer.get())->GetBuffer();
-                        DeviceContext->VSSetConstantBuffers(2, 1, &CB);
-                        DeviceContext->PSSetConstantBuffers(2, 1, &CB);
-                    }
-                }
+                BindMaterial(DeviceContext, Cmd);
             }
             CurrentMaterial = Cmd.Material;
             DeviceContext->PSSetSamplers(0, 1, &NormalSampler);
         }
 
-        RenderStateManager->BindState(RenderStateManager->GetOrCreateRasterizerState(Cmd.RasterizerOption));
-        RenderStateManager->BindState(RenderStateManager->GetOrCreateDepthStencilState(Cmd.DepthStencilOption));
-        RenderStateManager->BindState(RenderStateManager->GetOrCreateBlendState(Cmd.BlendOption));
+        BindRenderState(Cmd);
 
         if (Cmd.MeshData != CurrentMesh)
         {
@@ -540,12 +551,13 @@ void FGeneralRenderer::ExecuteRenderPass(ERenderLayer InRenderLayer)
 
         UpdateObjectConstantBuffer(Cmd.WorldMatrix, Cmd.ObjectId);
 
-        if (Cmd.IndexCount > 0)
+        if (Cmd.IndexCount > 0) 
             DeviceContext->DrawIndexed(Cmd.IndexCount, Cmd.FirstIndex, 0);
-        else if (!Cmd.MeshData->Indices.empty())
-            DeviceContext->DrawIndexed(static_cast<UINT>(Cmd.MeshData->Indices.size()), 0, 0);
-        else if (!Cmd.MeshData->Vertices.empty())
-            DeviceContext->Draw(static_cast<UINT>(Cmd.MeshData->Vertices.size()), 0);
+        else if (Cmd.MeshData->IndexBufferCount > 0)
+            DeviceContext->DrawIndexed(Cmd.MeshData->IndexBufferCount, 0, 0);
+        else if (Cmd.MeshData->VertexBufferCount > 0)
+            DeviceContext->Draw(Cmd.MeshData->VertexBufferCount, 0);
+
     }
 }
 
@@ -687,6 +699,7 @@ void FGeneralRenderer::InitializeAABBResources()
     AABBMaterial->SetRenderResource(std::make_shared<FMaterialRenderResource>());
 
     AABBMeshData = std::make_unique<FMeshData>();
+    AABBMeshData->bIsDynamicMesh = true;
     AABBMeshData->Topology = EMeshTopology::EMT_LineList;
 
     FVector4 Yellow(1.0f, 1.0f, 0.0f, 1.0f);
@@ -751,6 +764,6 @@ void FGeneralRenderer::DrawAllAABBLines(ERenderLayer InRenderLayer)
         FMatrix AABBMatrix = FMatrix::MakeScale(Size) * FMatrix::MakeTranslation(Min);
 
         UpdateObjectConstantBuffer(AABBMatrix);
-        DeviceContext->DrawIndexed(static_cast<UINT>(AABBMeshData->Indices.size()), 0, 0);
+        DeviceContext->DrawIndexed(AABBMeshData->IndexBufferCount, 0, 0);
     }
 }
