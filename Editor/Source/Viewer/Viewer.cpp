@@ -66,7 +66,7 @@ void FViewer::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
         if (InputEvent.Type == Engine::ApplicationCore::EInputEventType::MouseDoubleClick &&
             InputEvent.Key == Engine::ApplicationCore::EKey::MouseLeft)
         {
-            NavigationController.ResetView(FVector(-3, 0, 0), FVector::Zero());
+            NavigationController.ResetView();
         }
     }
 
@@ -132,7 +132,7 @@ void FViewer::BuildRenderData()
 
     SceneRenderData.SceneView = SceneView;
     StaticMeshActor->GetStaticMeshComponent()->CollectRenderData(SceneRenderData,
-                                                               ESceneShowFlags::SF_Primitives);
+                                                                 ESceneShowFlags::SF_Primitives);
 }
 
 void FViewer::DrawPanel(HWND hWnd)
@@ -162,8 +162,7 @@ void FViewer::DrawPanel(HWND hWnd)
                     FWString SelectedPath = FileBuffer.data();
                     if (TryLoadObjFile(SelectedPath))
                     {
-                        FSceneAssetBinder::BindActor(StaticMeshActor, AssetCacheManager, DynamicRHI);
-                        NavigationController.ResetView(FVector(-3, 0, 0), FVector::Zero());
+                        SetUpView();
                     }
                 }
             }
@@ -178,6 +177,54 @@ void FViewer::DrawPanel(HWND hWnd)
     }
     ImGui::Render();
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+}
+
+void FViewer::SetUpView()
+{
+    FSceneAssetBinder::BindActor(StaticMeshActor, AssetCacheManager, DynamicRHI);
+    SetBestView();
+}
+
+void FViewer::SetBestView()
+{
+
+    const Geometry::FAABB& AABB = StaticMeshActor->GetStaticMeshComponent()->GetWorldAABB();
+
+    FVector Center = (AABB.Max + AABB.Min) * 0.5f;
+
+    float BoxDiagonal = std::abs(FVector::Dist(AABB.Min, AABB.Max));
+    float Radius = BoxDiagonal * 0.5f;
+
+    float HalfFOV = ViewportCamera.GetFOV();
+    float Distance = (Radius / sinf(HalfFOV)) * 1.5f;
+
+    float Pitch = -25.0f;
+    float Yaw = 45.0f;
+    float Roll = 0.0f;
+
+    FRotator Rotation = FRotator(Pitch, Yaw, Roll);
+
+    FVector Forward;
+    float   PitchRad = FMath::DegreesToRadians(Pitch);
+    float   YawRad = FMath::DegreesToRadians(Yaw);
+
+    Forward.X = std::cos(PitchRad) * std::cos(YawRad);
+    Forward.Y = std::sin(PitchRad);
+    Forward.Z = std::cos(PitchRad) * std::sin(YawRad);
+    Forward.Normalize();
+
+    FVector BestLocation = Center - (Forward * Distance);
+
+    float NearClip = Radius * 0.01f;             
+    float FarClip = Distance + (Radius * 10.0f); 
+
+    ViewportCamera.SetLocation(BestLocation);
+    ViewportCamera.SetRotation(Rotation);
+    ViewportCamera.SetFarPlane(FarClip);
+    ViewportCamera.SetNearPlane(NearClip);
+
+    NavigationController.InitializeView(BestLocation, Center);
+    NavigationController.ResetView();
 }
 
 FString WideToUtf8(const FWString& InText)

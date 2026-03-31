@@ -30,6 +30,8 @@ class FViewer
 
     void BuildRenderData();
     void DrawPanel(HWND hWnd);
+    void SetUpView();
+    void SetBestView();
     bool TryLoadObjFile(const FWString& FilePath);
 
   public:

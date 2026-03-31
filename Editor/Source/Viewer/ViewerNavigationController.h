@@ -11,8 +11,10 @@ class FViewerNavigationController
 
     void Tick(float DeltaTime);
 
+    void InitializeView(const FVector& InLocation, const FVector& InPivot);
+
     // Orbit
-    void ResetView(const FVector& InLocation, const FVector& InPivot);
+    void ResetView();
     void BeginOrbit(const FVector2& MousePos);
     void UpdateOrbit(const FVector2& MousePos);
     void EndOrbit();
@@ -33,6 +35,9 @@ class FViewerNavigationController
 
   private:
     FViewportCamera* ViewportCamera = nullptr;
+
+    FVector BestViewLocation = FVector::Zero();
+    FVector BestViewPivot = FVector::Zero();
 
     // Reset
     float   StartYaw, StartPitch, StartRadius;
@@ -59,6 +64,6 @@ class FViewerNavigationController
     float    PanSensitivity = 0.01f;
 
     // Zoom
-    float MinZoomRadius = 1.0f;
+    float MinZoomRadius = 0.1f;
     float ZoomStep = 0.3f;
 };

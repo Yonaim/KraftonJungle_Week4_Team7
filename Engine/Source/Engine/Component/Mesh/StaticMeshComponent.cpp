@@ -42,6 +42,7 @@ namespace Engine::Component
 
     void UStaticMeshComponent::SetStaticMeshAsset(UStaticMesh* InStaticMesh)
     {
+        bBoundsDirty = true;
         StaticMesh = InStaticMesh;
         SyncMaterialOverridesWithStaticMesh();
     }

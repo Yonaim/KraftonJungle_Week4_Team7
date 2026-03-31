@@ -25,7 +25,31 @@ void FViewerNavigationController::Tick(float DeltaTime)
     }
 }
 
-void FViewerNavigationController::ResetView(const FVector& InLocation, const FVector& InPivot)
+void FViewerNavigationController::InitializeView(const FVector& InLocation, const FVector& InPivot)
+{
+    if (!ViewportCamera)
+        return;
+
+// 베스트 뷰 저장
+    BestViewLocation = InLocation;
+    BestViewPivot = InPivot;
+
+    // 현재 뷰 상태 초기화
+    bPanning = false;
+    PanStartMouse = FVector2::Zero();
+    PanStartLocation = InLocation;
+
+    // 오빗 파라미터도 베스트 뷰 기준으로 초기화
+    OrbitPivot = InPivot;
+    FVector Offset = InLocation - InPivot;
+    OrbitRadius = Offset.Size();
+    CurrentYaw = std::atan2(Offset.Y, Offset.X) * 180.0f / FMath::PI;
+    CurrentPitch = std::asin(Offset.Z / OrbitRadius) * 180.0f / FMath::PI;
+
+    ApplyOrbitTransform();
+}
+
+void FViewerNavigationController::ResetView()
 {
     if (!ViewportCamera)
         return;
@@ -35,9 +59,8 @@ void FViewerNavigationController::ResetView(const FVector& InLocation, const FVe
     StartRadius = OrbitRadius;
     StartPivot = OrbitPivot;
 
-    // 목표 오빗 파라미터 계산
-    TargetPivot = InPivot;
-    FVector Offset = InLocation - InPivot;
+    TargetPivot = BestViewPivot;
+    FVector Offset = BestViewLocation - BestViewPivot;
     TargetRadius = Offset.Size();
     TargetYaw = std::atan2(Offset.Y, Offset.X) * 180.0f / FMath::PI;
     TargetPitch = std::asin(Offset.Z / TargetRadius) * 180.0f / FMath::PI;
@@ -47,7 +70,7 @@ void FViewerNavigationController::ResetView(const FVector& InLocation, const FVe
 
     bPanning = false;
     PanStartMouse = FVector2::Zero();
-    PanStartLocation = InLocation;
+    PanStartLocation = BestViewLocation;
 }
 
 void FViewerNavigationController::BeginOrbit(const FVector2& MousePos)
