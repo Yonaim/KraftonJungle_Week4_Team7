@@ -13,7 +13,6 @@
 #include "ApplicationCore/Windows/WindowsApplication.h"
 #endif
 
-class FPanelManager;
 namespace Asset
 {
     class FAssetCacheManager;
@@ -23,8 +22,6 @@ namespace RHI
 {
     class FDynamicRHI;
 }
-
-class IAssetLoader;
 
 class FEditorEngineLoop : public IEngineLoop, public IEditorChromeHost
 {
@@ -62,12 +59,8 @@ class FEditorEngineLoop : public IEngineLoop, public IEditorChromeHost
 
     FEditor* Editor = nullptr;
     FRendererModule* Renderer = nullptr;
-    FPanelManager* PanelManager = nullptr;
     Asset::FAssetCacheManager* AssetCacheManager = nullptr;
     RHI::FDynamicRHI* AssetDynamicRHI = nullptr;
-    IAssetLoader* TextureAssetLoader = nullptr;
-    IAssetLoader* FontAssetLoader = nullptr;
-    IAssetLoader* SubUVAtlasAssetLoader = nullptr;
 
     float DeltaTime = 0.0f;
     float MainLoopFPS = 0.0f;

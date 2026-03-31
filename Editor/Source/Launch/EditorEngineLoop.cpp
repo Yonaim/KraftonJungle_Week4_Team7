@@ -14,9 +14,8 @@
 
 #include "Core/Misc/NameSubsystem.h"
 
-
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND HWnd, UINT Message,
-                                                             WPARAM WParam, LPARAM LParam);
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND HWnd, UINT Message, WPARAM WParam,
+                                                             LPARAM LParam);
 
 namespace
 {
@@ -89,8 +88,7 @@ namespace
         Colors[ImGuiCol_Tab] = LerpColor(RaisedBg, BrandBlueDark, 0.30f);
         Colors[ImGuiCol_TabSelected] = LerpColor(RaisedBg, BrandBlue, 0.20f);
         Colors[ImGuiCol_TabSelectedOverline] = BrandBlue;
-        Colors[ImGuiCol_TabDimmedSelected] =
-            LerpColor(PanelBg, BrandBlueDark, 0.22f);
+        Colors[ImGuiCol_TabDimmedSelected] = LerpColor(PanelBg, BrandBlueDark, 0.22f);
         Colors[ImGuiCol_TabDimmedSelectedOverline] = WithAlpha(BrandBlue, 0.55f);
 
         Colors[ImGuiCol_DockingPreview] = WithAlpha(BrandBlue, 0.65f);
@@ -167,21 +165,20 @@ bool FEditorEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
     // 도킹 지원 ImGui를 교체한 뒤에는 여기서 기능 플래그를 켜야 DockSpace API가 실제로 동작합니다.
     IO.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 #endif
-    if (ImFont* KoreanFont = IO.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\malgun.ttf",
-                                                          18.0f, nullptr,
-                                                          IO.Fonts->GetGlyphRangesKorean()))
+    if (ImFont* KoreanFont = IO.Fonts->AddFontFromFileTTF(
+            "C:\\Windows\\Fonts\\malgun.ttf", 18.0f, nullptr, IO.Fonts->GetGlyphRangesKorean()))
     {
         IO.FontDefault = KoreanFont;
     }
 
     static const ImWchar IconRanges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
     ImFontConfig         IconConfig;
-    IconConfig.MergeMode = true; 
+    IconConfig.MergeMode = true;
     IconConfig.PixelSnapH = true;
-    IconConfig.GlyphMinAdvanceX = 18.0f; 
+    IconConfig.GlyphMinAdvanceX = 18.0f;
 
-    IO.Fonts->AddFontFromFileTTF("Source\\ThirdParty\\ImGui\\fontawesome-webfont.ttf",
-                                 18.0f, &IconConfig, IconRanges);
+    IO.Fonts->AddFontFromFileTTF("Source\\ThirdParty\\ImGui\\fontawesome-webfont.ttf", 18.0f,
+                                 &IconConfig, IconRanges);
 
     ImGui_ImplWin32_Init((void*)WindowHandle);
     ImGui_ImplDX11_Init(Renderer->GetRHI().GetDevice(), Renderer->GetRHI().GetDeviceContext());
@@ -203,15 +200,16 @@ bool FEditorEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
     {
         if (Views[i]->IsValid())
         {
-            Views[i]->GetViewportClient()->OnPickRequested =
-            [this, i](int32 X, int32 Y) -> FPickResult
+            Views[i]->GetViewportClient()->OnPickRequested = [this, i](int32 X,
+                                                                       int32 Y) -> FPickResult
             {
                 FPickResult Result;
 
                 // EngineLoop는 Renderer와 Editor 모두에 접근 가능하므로 픽킹을 직접 수행해서 반환
-                Renderer->Pick(Editor->GetEditorRenderData()[i], Editor->GetSceneRenderData()[i],
-                    Editor->GetViewportTab().GetViewports()[i]->GetSceneView()->GetWorldX(X), 
-                    Editor->GetViewportTab().GetViewports()[i]->GetSceneView()->GetWorldY(Y), 
+                Renderer->Pick(
+                    Editor->GetEditorRenderData()[i], Editor->GetSceneRenderData()[i],
+                    Editor->GetViewportTab().GetViewports()[i]->GetSceneView()->GetWorldX(X),
+                    Editor->GetViewportTab().GetViewports()[i]->GetSceneView()->GetWorldY(Y),
                     Result);
 
                 return Result;
@@ -227,11 +225,6 @@ int32 FEditorEngineLoop::Run()
 {
     while (!bIsExit)
     {
-        if (bIsExit)
-        {
-            break;
-        }
-
         Tick();
     }
 
@@ -253,15 +246,6 @@ void FEditorEngineLoop::ShutDown()
     {
         Editor->SetRuntimeServices(nullptr, nullptr, nullptr);
     }
-
-    delete FontAssetLoader;
-    FontAssetLoader = nullptr;
-
-    delete SubUVAtlasAssetLoader;
-    SubUVAtlasAssetLoader = nullptr;
-
-    delete TextureAssetLoader;
-    TextureAssetLoader = nullptr;
 
     delete AssetDynamicRHI;
     AssetDynamicRHI = nullptr;
@@ -311,8 +295,8 @@ void FEditorEngineLoop::InitializeForTime()
     DeltaTime = 0.0f;
 }
 
-void FEditorEngineLoop::SetTitleBarMetrics(
-    int32 Height, const TArray<FEditorChromeRect>& InteractiveRects)
+void FEditorEngineLoop::SetTitleBarMetrics(int32                            Height,
+                                           const TArray<FEditorChromeRect>& InteractiveRects)
 {
     Engine::ApplicationCore::FWindowsApplication* WindowsApplication = GetWindowsApplication();
     if (WindowsApplication == nullptr)
@@ -396,8 +380,7 @@ bool FEditorEngineLoop::HandleEditorMessage(HWND HWnd, UINT Message, WPARAM WPar
         return false;
     }
 
-    return EditorEngineLoop->HandleEditorMessageInternal(HWnd, Message, WParam, LParam,
-                                                         OutResult);
+    return EditorEngineLoop->HandleEditorMessageInternal(HWnd, Message, WParam, LParam, OutResult);
 }
 
 bool FEditorEngineLoop::HandleEditorMessageInternal(HWND HWnd, UINT Message, WPARAM WParam,
@@ -421,7 +404,7 @@ bool FEditorEngineLoop::HandleEditorMessageInternal(HWND HWnd, UINT Message, WPA
     case WM_NCHITTEST:
         if (ImGui::GetCurrentContext() != nullptr)
         {
-            POINT ScreenPosition = { GET_X_LPARAM(LParam), GET_Y_LPARAM(LParam) };
+            POINT ScreenPosition = {GET_X_LPARAM(LParam), GET_Y_LPARAM(LParam)};
             POINT ClientPosition = ScreenPosition;
             ScreenToClient(HWnd, &ClientPosition);
 
@@ -463,7 +446,8 @@ bool FEditorEngineLoop::HandleEditorMessageInternal(HWND HWnd, UINT Message, WPA
     case WM_EXITSIZEMOVE:
         if (bIsInSizeMoveLoop)
         {
-            // sizing loop 종료 직전에 최종 크기와 마지막 프레임을 한 번 더 맞춘 뒤 VSync를 복구합니다.
+            // sizing loop 종료 직전에 최종 크기와 마지막 프레임을 한 번 더 맞춘 뒤 VSync를
+            // 복구합니다.
             HandleWindowResize();
             RunFrameOnceWithoutResize();
             if (Renderer != nullptr)
@@ -491,7 +475,8 @@ bool FEditorEngineLoop::HandleEditorMessageInternal(HWND HWnd, UINT Message, WPA
             BeginPaint(HWnd, &PaintStruct);
             EndPaint(HWnd, &PaintStruct);
 
-            // modal loop 안에서 발생하는 paint도 직접 소비해서 화면이 멈춘 것처럼 보이지 않게 합니다.
+            // modal loop 안에서 발생하는 paint도 직접 소비해서 화면이 멈춘 것처럼 보이지 않게
+            // 합니다.
             RunFrameOnceWithoutResize();
 
             OutResult = 0;
@@ -608,7 +593,8 @@ bool FEditorEngineLoop::RunFrameOnceWithoutResize()
         return false;
     }
 
-    if (Application == nullptr || Editor == nullptr || Renderer == nullptr || InputSystem == nullptr)
+    if (Application == nullptr || Editor == nullptr || Renderer == nullptr ||
+        InputSystem == nullptr)
     {
         return false;
     }
@@ -625,16 +611,16 @@ bool FEditorEngineLoop::RunFrameOnceWithoutResize()
     UpdateFrameTiming();
 
     Editor->SetMainLoopFPS(MainLoopFPS);
-    
+
     Editor->Tick(DeltaTime, InputSystem);
-    
+
     Renderer->BeginFrame();
 
     TArray<FViewport*> Views = Editor->GetViewportTab().GetViewports();
     for (int i = 0; i < Views.size(); i++)
     {
         if (Views[i]->IsValid())
-        { 
+        {
             Renderer->SetViewport(Views[i]->GetSceneView()->GetViewport());
             Renderer->Render(Editor->GetEditorRenderData()[i], Editor->GetSceneRenderData()[i]);
         }
@@ -642,7 +628,7 @@ bool FEditorEngineLoop::RunFrameOnceWithoutResize()
 
     Editor->DrawPanel();
     Renderer->EndFrame();
-   
+
     bIsRenderingDuringSizeMove = false;
     return true;
 }
@@ -650,7 +636,7 @@ bool FEditorEngineLoop::RunFrameOnceWithoutResize()
 void FEditorEngineLoop::UpdateFrameTiming()
 {
     const double CurrentTime = FPlatformTime::Seconds();
-    double RawDeltaTime = CurrentTime - PrevTime;
+    double       RawDeltaTime = CurrentTime - PrevTime;
     PrevTime = CurrentTime;
 
     if (RawDeltaTime < (1.0 / 1000.0))
