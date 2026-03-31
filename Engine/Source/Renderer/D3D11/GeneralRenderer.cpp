@@ -97,7 +97,9 @@ bool FGeneralRenderer::Pick(int32 MouseX, int32 MouseY, uint32& OutPickId)
 
         UpdateObjectConstantBuffer(Cmd.WorldMatrix, Cmd.ObjectId);
 
-        if (!Cmd.MeshData->Indices.empty())
+        if (Cmd.IndexCount > 0) 
+            DeviceContext->DrawIndexed(Cmd.IndexCount, Cmd.FirstIndex, 0); // 메시 파츠별 렌더링
+        else if (!Cmd.MeshData->Indices.empty())
             DeviceContext->DrawIndexed(static_cast<UINT>(Cmd.MeshData->Indices.size()), 0, 0);
         else if (!Cmd.MeshData->Vertices.empty())
             DeviceContext->Draw(static_cast<UINT>(Cmd.MeshData->Vertices.size()), 0);
@@ -533,7 +535,9 @@ void FGeneralRenderer::ExecuteRenderPass(ERenderLayer InRenderLayer)
 
         UpdateObjectConstantBuffer(Cmd.WorldMatrix, Cmd.ObjectId);
 
-        if (!Cmd.MeshData->Indices.empty())
+        if (Cmd.IndexCount > 0)
+            DeviceContext->DrawIndexed(Cmd.IndexCount, Cmd.FirstIndex, 0);
+        else if (!Cmd.MeshData->Indices.empty())
             DeviceContext->DrawIndexed(static_cast<UINT>(Cmd.MeshData->Indices.size()), 0, 0);
         else if (!Cmd.MeshData->Vertices.empty())
             DeviceContext->Draw(static_cast<UINT>(Cmd.MeshData->Vertices.size()), 0);

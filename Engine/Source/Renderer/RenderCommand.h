@@ -31,6 +31,9 @@ struct ENGINE_API FRenderCommand
     FBlendStateOption        BlendOption;
     EMeshTopology            Topology = EMeshTopology::EMT_TriangleList;
 
+    uint32 FirstIndex = 0;
+    uint32 IndexCount = 0;
+
     bool bIsVisible = true;
     bool bIsPickable = true;
     bool bIsSelected = false;

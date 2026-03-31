@@ -72,63 +72,90 @@ namespace Engine::Component
             return;
         }
 
-        FRenderCommand& MutableRenderCommand = const_cast<FRenderCommand&>(RenderCommand);
-
-        // Update FMeshData
-        if (StaticMesh)
-        {
-            if (!MeshData)
-            {
-                MeshData = std::make_shared<FMeshData>();
-            }
-
-            MeshData->Topology = EMeshTopology::EMT_TriangleList;
-            MeshData->VertexBufferCount = StaticMesh->GetVerticesCount();
-            MeshData->IndexBufferCount = StaticMesh->GetIndicesCount();
-            MeshData->VertexBuffer = StaticMesh->GetRenderResource()->VertexBuffer;
-            MeshData->IndexBuffer = StaticMesh->GetRenderResource()->IndexBuffer;
-            // DEBUG: 렌더링을 위해 Vertices와 Indices의 count 채우기
-            if (MeshData->Vertices.size() != StaticMesh->GetRenderResource()->VertexCount)
-            {
-                MeshData->Vertices.assign(StaticMesh->GetRenderResource()->VertexCount,
-                                          FPrimitiveVertex());
-            }
-            if (MeshData->Indices.size() != StaticMesh->GetRenderResource()->IndexCount)
-            {
-                MeshData->Indices.assign(StaticMesh->GetRenderResource()->IndexCount, 0);
-            }
-            MeshData->bIsDirty = false;
-        }
-
-        MutableRenderCommand.MeshData = MeshData.get();
-        if (MutableRenderCommand.MeshData == nullptr)
+        if (StaticMesh == nullptr)
         {
             return;
         }
 
-        if (MutableRenderCommand.Material == nullptr)
+        // Update FMeshData
+        if (!MeshData)
         {
-            MutableRenderCommand.Material = GetMaterial(0);
-            if (MutableRenderCommand.Material == nullptr)
-            {
-                MutableRenderCommand.Material = FGeneralRenderer::GetDefaultMaterial();
-            }
+            MeshData = std::make_shared<FMeshData>();
         }
 
-        MutableRenderCommand.WorldMatrix = GetRelativeMatrix();
-        MutableRenderCommand.ObjectId = Actor->GetObjectId();
-        MutableRenderCommand.bDrawAABB = Actor->IsSelected() || Actor->IsShowBounds();
-        MutableRenderCommand.WorldAABB = GetWorldAABB();
-        MutableRenderCommand.SetDefaultStates();
-        MutableRenderCommand.SetStates(MutableRenderCommand.Material,
-                                       MutableRenderCommand.MeshData->Topology);
+        MeshData->Topology = EMeshTopology::EMT_TriangleList;
+        MeshData->VertexBufferCount = StaticMesh->GetVerticesCount();
+        MeshData->IndexBufferCount = StaticMesh->GetIndicesCount();
+        MeshData->VertexBuffer = StaticMesh->GetRenderResource()->VertexBuffer;
+        MeshData->IndexBuffer = StaticMesh->GetRenderResource()->IndexBuffer;
+        // DEBUG: 렌더링을 위해 Vertices와 Indices의 count 채우기
+        if (MeshData->Vertices.size() != StaticMesh->GetRenderResource()->VertexCount)
+        {
+            MeshData->Vertices.assign(StaticMesh->GetRenderResource()->VertexCount,
+                                      FPrimitiveVertex());
+        }
+        if (MeshData->Indices.size() != StaticMesh->GetRenderResource()->IndexCount)
+        {
+            MeshData->Indices.assign(StaticMesh->GetRenderResource()->IndexCount, 0);
+        }
+        MeshData->bIsDirty = false;
 
-        MutableRenderCommand.bIsVisible = Actor->IsVisible();
-        MutableRenderCommand.bIsPickable = Actor->IsPickable();
-        MutableRenderCommand.bIsSelected = Actor->IsSelected();
-        MutableRenderCommand.bIsHovered = Actor->IsHovered();
+        const TArray<FStaticMeshSection>& Sections = StaticMesh->GetSections();
 
-        OutRenderData.RenderCommands.push_back(MutableRenderCommand);
+        if (Sections.empty())
+        {
+            FRenderCommand Cmd;
+            Cmd.MeshData = MeshData.get();
+            Cmd.WorldMatrix = GetRelativeMatrix();
+            Cmd.ObjectId = Actor->GetObjectId();
+            Cmd.bDrawAABB = Actor->IsSelected() || Actor->IsShowBounds();
+            Cmd.WorldAABB = GetWorldAABB();
+            Cmd.SetDefaultStates();
+
+            Cmd.Material = GetMaterial(0);
+            if (Cmd.Material == nullptr)
+            {
+                Cmd.Material = FGeneralRenderer::GetDefaultMaterial();
+            }
+            Cmd.SetStates(Cmd.Material, MeshData->Topology);
+
+            Cmd.bIsVisible = Actor->IsVisible();
+            Cmd.bIsPickable = Actor->IsPickable();
+            Cmd.bIsSelected = Actor->IsSelected();
+            Cmd.bIsHovered = Actor->IsHovered();
+
+            OutRenderData.RenderCommands.push_back(Cmd);
+        }
+        else
+        {
+            for (const auto& Section : Sections)
+            {
+                FRenderCommand Cmd;
+                Cmd.MeshData = MeshData.get();
+                Cmd.WorldMatrix = GetRelativeMatrix();
+                Cmd.ObjectId = Actor->GetObjectId();
+                Cmd.bDrawAABB = Actor->IsSelected() || Actor->IsShowBounds();
+                Cmd.WorldAABB = GetWorldAABB();
+                Cmd.SetDefaultStates();
+
+                Cmd.FirstIndex = Section.FirstIndex;
+                Cmd.IndexCount = Section.IndexCount;
+
+                Cmd.Material = GetMaterial(Section.MaterialIndex);
+                if (Cmd.Material == nullptr)
+                {
+                    Cmd.Material = FGeneralRenderer::GetDefaultMaterial();
+                }
+                Cmd.SetStates(Cmd.Material, MeshData->Topology);
+
+                Cmd.bIsVisible = Actor->IsVisible();
+                Cmd.bIsPickable = Actor->IsPickable();
+                Cmd.bIsSelected = Actor->IsSelected();
+                Cmd.bIsHovered = Actor->IsHovered();
+
+                OutRenderData.RenderCommands.push_back(Cmd);
+            }
+        }
     }
 
     void UStaticMeshComponent::DescribeProperties(FComponentPropertyBuilder& Builder)
