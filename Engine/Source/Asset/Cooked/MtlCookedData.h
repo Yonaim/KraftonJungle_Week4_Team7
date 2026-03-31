@@ -45,6 +45,13 @@ namespace Asset
 
         bool IsValid() const { return !Materials.empty(); }
 
+        void Reset()
+        {
+            SourcePath.clear();
+            Materials.clear();
+            NameToIndex.clear();
+        }
+
         const FMtlCookedData* FindMaterial(const FString& InName) const
         {
             auto It = NameToIndex.find(InName);

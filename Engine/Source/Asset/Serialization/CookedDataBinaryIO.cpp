@@ -68,19 +68,27 @@ namespace Asset::Binary
             Writer << Copy;
             return Writer.IsOk();
         }
-
+        
         template <typename T>
         bool LoadImpl(const FString& Path, T& OutData, ECookedBinaryAssetType AssetType)
         {
-            FWindowsBinReader Reader(std::filesystem::path(Path));
+            FWindowsBinReader Reader{std::filesystem::path(Path)};
             if (!Reader.IsOk() || !ReadHeader(Reader, AssetType))
             {
                 return false;
             }
 
-            OutData.Reset();
-            Reader << OutData;
-            return Reader.IsOk() && OutData.IsValid();
+            T Temp;
+            Temp.Reset();
+
+            Reader << Temp;
+            if (!Reader.IsOk() || !Temp.IsValid())
+            {
+                return false;
+            }
+
+            OutData = std::move(Temp);
+            return true;
         }
     } // namespace
 
