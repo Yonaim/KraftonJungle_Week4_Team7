@@ -83,6 +83,7 @@ class FViewportCamera
   private:
     FVector Location = FVector::Zero();
     FQuat   Rotation = FQuat::Identity;
+    FPerspectiveInfo CachedPerspectiveInfo;
 
     EViewportProjectionType ProjectionType = EViewportProjectionType::Perspective;
     EViewportOrthographicType OrthographicType = EViewportOrthographicType::Top;
@@ -100,7 +101,6 @@ class FViewportCamera
     mutable FVector OrthoForward = FVector::Zero();
     mutable FVector OrthoUp = FVector::Zero();
 
-    mutable FPerspectiveInfo CachedPerspectiveInfo;
     mutable FMatrix CachedViewMatrix;
     mutable FMatrix CachedProjectionMatrix;
     mutable bool    bIsViewDirty = true;

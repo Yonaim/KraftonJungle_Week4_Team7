@@ -240,6 +240,15 @@ void FControlPanel::DrawProjectionSection(FViewportCamera& Camera) const
             Camera.SetProjectionType(ProjectionTypeButtons[i].ProjectionType);
             if (ProjectionTypeButtons[i].bIsOrtho)
                 Camera.SetOrthographicType(ProjectionTypeButtons[i].OrthoType);
+            else
+            {
+                GetContext()
+                    ->Editor->GetViewportTab()
+                    .GetViewport(ViewportIndex)
+                    ->GetViewportClient()
+                    ->GetNavigationController()
+                    .SetTargetLocation(Camera.GetPerspectiveInfo().Location);
+            }
         }
         if (bActive)
             ImGui::PopStyleColor();

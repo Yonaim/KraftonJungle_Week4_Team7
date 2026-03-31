@@ -60,14 +60,12 @@ FMatrix FViewportCamera::GetViewMatrix() const
                 break;
             }
 
-            CachedViewMatrix =
-                FMatrix::MakeViewLookAtLH(Location, Location + OrthoForward, OrthoUp);
+            CachedViewMatrix = FMatrix::MakeViewLookAtLH(Location - OrthoForward * 100.0f, Location - OrthoForward * 100.0f + OrthoForward, OrthoUp);
         }
         else
         {
             const FVector Forward = GetForwardVector();
             CachedViewMatrix = FMatrix::MakeViewLookAtLH(Location, Location + Forward);
-            CachedPerspectiveInfo = {Location, Rotation, FOV, NearPlane, FarPlane};
         }
         bIsViewDirty = false;
     }
@@ -111,13 +109,23 @@ FMatrix FViewportCamera::GetViewProjectionMatrix() const
 
 void FViewportCamera::SetProjectionType(EViewportProjectionType InType)
 {
-    if (ProjectionType == EViewportProjectionType::Perspective && InType == EViewportProjectionType::Orthographic)
+    if (ProjectionType == EViewportProjectionType::Perspective && 
+        InType == EViewportProjectionType::Orthographic)
     {
+        CachedPerspectiveInfo = {Location, Rotation, FOV, NearPlane, FarPlane};
+        Rotation = FQuat::Identity;
+    }
+
+    if (ProjectionType == EViewportProjectionType::Orthographic &&
+        InType == EViewportProjectionType::Perspective)
+    {
+        // 복원
         Location = CachedPerspectiveInfo.Location;
         Rotation = CachedPerspectiveInfo.Rotation;
         FOV = CachedPerspectiveInfo.FOV;
         NearPlane = CachedPerspectiveInfo.NearPlane;
         FarPlane = CachedPerspectiveInfo.FarPlane;
+        MarkViewDirty();
     }
 
     ProjectionType = InType;
