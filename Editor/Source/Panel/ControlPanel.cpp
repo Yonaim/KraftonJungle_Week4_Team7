@@ -207,6 +207,12 @@ void FControlPanel::DrawTransformSection(FViewportCamera& Camera) const
     if (Camera.GetLocation() != Location)
     {
         Camera.SetLocation(Location);
+        GetContext()
+            ->Editor->GetViewportTab()
+            .GetViewport(ViewportIndex)
+            ->GetViewportClient()
+            ->GetNavigationController()
+            .SetTargetLocation(Location);
     }
 
     if (!Camera.GetRotation().Rotator().Equals(Rotation))
