@@ -361,7 +361,7 @@ void FEditor::Create()
 
     //  TODO : Gizmo
 
-    UE_LOG(FEditor, ELogVerbosity::Log, "Hello Editor");
+    UE_LOG(FEditor, ELogVerbosity::Debug, "Hello Editor");
 }
 
 void FEditor::Release()
@@ -630,7 +630,7 @@ bool FEditor::SaveSceneToPath(const std::filesystem::path& FilePath, bool bUpdat
     }
     MarkSceneClean();
 
-    UE_LOG(FEditor, ELogVerbosity::Log, "Saved scene: %s", PathToUtf8String(FilePath).c_str());
+    UE_LOG(FEditor, ELogVerbosity::Debug, "Saved scene: %s", PathToUtf8String(FilePath).c_str());
     return true;
 }
 
@@ -648,7 +648,7 @@ bool FEditor::LoadSceneFromPath(const std::filesystem::path& FilePath)
     SceneDocument.CurrentScenePath = FilePath;
     MarkSceneClean();
 
-    UE_LOG(FEditor, ELogVerbosity::Log, "Loaded scene: %s", PathToUtf8String(FilePath).c_str());
+    UE_LOG(FEditor, ELogVerbosity::Debug, "Loaded scene: %s", PathToUtf8String(FilePath).c_str());
     return true;
 }
 
@@ -673,7 +673,7 @@ void FEditor::ReplaceCurrentScene(std::unique_ptr<FScene> NewScene)
         Camera.SetFarPlane(CameraInfo.FarClip);
 
         FViewportNavigationController& NavController =
-        ViewportTab.GetViewport(0)->GetViewportClient()->GetNavigationController();
+            ViewportTab.GetViewport(0)->GetViewportClient()->GetNavigationController();
         NavController.SetYaw(CameraInfo.Rotation.Yaw);
         NavController.SetPitch(CameraInfo.Rotation.Pitch);
         NavController.SetTargetLocation(CameraInfo.Location);

@@ -28,7 +28,7 @@ namespace Asset
         void LogBuildReport(const char* AssetType, const FString& Path,
                             const FAssetBuildReport& Report)
         {
-            UE_LOG(FEditor, ELogVerbosity::Log,
+            UE_LOG(FEditor, ELogVerbosity::Debug,
                    "%s asset build path: %s (%s, cachedIntermediate=%d, cachedCooked=%d, "
                    "builtNewCooked=%d)",
                    AssetType, Path.c_str(), DescribeBuildResultSource(Report.ResultSource),
@@ -75,7 +75,7 @@ namespace Asset
             return nullptr;
         }
 
-        UE_LOG(FEditor, ELogVerbosity::Log, "Texture asset path resolved: %s -> %s", Path.c_str(),
+        UE_LOG(FEditor, ELogVerbosity::Debug, "Texture asset path resolved: %s -> %s", Path.c_str(),
                StringFromPath(AbsolutePath).c_str());
 
         return BuildTextureAbsolute(AbsolutePath, Settings);
@@ -99,8 +99,8 @@ namespace Asset
             MaterialName.empty()
                 ? StringFromPath(AbsolutePath)
                 : FMaterialBuilder::MakeMaterialAssetPath(AbsolutePath, MaterialName);
-        UE_LOG(FEditor, ELogVerbosity::Log, "Material asset path resolved: %s -> %s", Path.c_str(),
-               ResolvedPath.c_str());
+        UE_LOG(FEditor, ELogVerbosity::Debug, "Material asset path resolved: %s -> %s",
+               Path.c_str(), ResolvedPath.c_str());
 
         return BuildMaterialAbsolute(AbsolutePath, MaterialName);
     }
@@ -117,7 +117,7 @@ namespace Asset
             return nullptr;
         }
 
-        UE_LOG(FEditor, ELogVerbosity::Log, "Static mesh asset path resolved: %s -> %s",
+        UE_LOG(FEditor, ELogVerbosity::Debug, "Static mesh asset path resolved: %s -> %s",
                Path.c_str(), StringFromPath(AbsolutePath).c_str());
 
         return BuildStaticMeshAbsolute(AbsolutePath, Settings);
@@ -135,7 +135,7 @@ namespace Asset
             return nullptr;
         }
 
-        UE_LOG(FEditor, ELogVerbosity::Log, "SubUV atlas asset path resolved: %s -> %s",
+        UE_LOG(FEditor, ELogVerbosity::Debug, "SubUV atlas asset path resolved: %s -> %s",
                Path.c_str(), StringFromPath(AbsolutePath).c_str());
 
         return BuildSubUVAtlasAbsolute(AbsolutePath, AtlasTextureSettings);
@@ -153,7 +153,7 @@ namespace Asset
             return nullptr;
         }
 
-        UE_LOG(FEditor, ELogVerbosity::Log, "Font atlas asset path resolved: %s -> %s",
+        UE_LOG(FEditor, ELogVerbosity::Debug, "Font atlas asset path resolved: %s -> %s",
                Path.c_str(), StringFromPath(AbsolutePath).c_str());
 
         return BuildFontAtlasAbsolute(AbsolutePath, AtlasTextureSettings);
@@ -167,7 +167,7 @@ namespace Asset
 
         if (Result)
         {
-            UE_LOG(FEditor, ELogVerbosity::Log, "Texture asset load succeeded: %s",
+            UE_LOG(FEditor, ELogVerbosity::Debug, "Texture asset load succeeded: %s",
                    StringFromPath(AbsolutePath).c_str());
             LogBuildReport("Texture", StringFromPath(AbsolutePath),
                            TextureBuilder.GetLastBuildReport());
@@ -194,7 +194,7 @@ namespace Asset
                 : FMaterialBuilder::MakeMaterialAssetPath(AbsolutePath, MaterialName);
         if (Result)
         {
-            UE_LOG(FEditor, ELogVerbosity::Log, "Material asset load succeeded: %s",
+            UE_LOG(FEditor, ELogVerbosity::Debug, "Material asset load succeeded: %s",
                    LogPath.c_str());
             LogBuildReport("Material", LogPath, MaterialBuilder.GetLastBuildReport());
         }
@@ -215,7 +215,7 @@ namespace Asset
 
         if (Result)
         {
-            UE_LOG(FEditor, ELogVerbosity::Log, "Static mesh asset load succeeded: %s",
+            UE_LOG(FEditor, ELogVerbosity::Debug, "Static mesh asset load succeeded: %s",
                    StringFromPath(AbsolutePath).c_str());
             LogBuildReport("Static mesh", StringFromPath(AbsolutePath),
                            StaticMeshBuilder.GetLastBuildReport());
@@ -238,7 +238,7 @@ namespace Asset
 
         if (Result)
         {
-            UE_LOG(FEditor, ELogVerbosity::Log, "SubUV atlas asset load succeeded: %s",
+            UE_LOG(FEditor, ELogVerbosity::Debug, "SubUV atlas asset load succeeded: %s",
                    StringFromPath(AbsolutePath).c_str());
             LogBuildReport("SubUV atlas", StringFromPath(AbsolutePath),
                            SubUVAtlasBuilder.GetLastBuildReport());
@@ -261,7 +261,7 @@ namespace Asset
 
         if (Result)
         {
-            UE_LOG(FEditor, ELogVerbosity::Log, "Font atlas asset load succeeded: %s",
+            UE_LOG(FEditor, ELogVerbosity::Debug, "Font atlas asset load succeeded: %s",
                    StringFromPath(AbsolutePath).c_str());
             LogBuildReport("Font atlas", StringFromPath(AbsolutePath),
                            FontAtlasBuilder.GetLastBuildReport());

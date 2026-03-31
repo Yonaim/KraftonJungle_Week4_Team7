@@ -1,7 +1,7 @@
 #include "Core/CoreMinimal.h"
 #include "FlipbookActor.h"
 #include "Engine/Component/Sprite/SubUVAnimatedComponent.h"
-#include "Engine/Component/Core/PrimitiveComponent.h" 
+#include "Engine/Component/Core/PrimitiveComponent.h"
 
 namespace
 {
@@ -19,7 +19,7 @@ AFlipbookActor::AFlipbookActor()
 
     Name = "FlipbookActor";
 
-    UE_LOG(FEditor, ELogVerbosity::Log, "FlipbookActor Component RTTI: %s",
+    UE_LOG(FEditor, ELogVerbosity::Debug, "FlipbookActor Component RTTI: %s",
            AnimatedComponent->GetTypeName());
 }
 

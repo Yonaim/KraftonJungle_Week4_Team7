@@ -19,7 +19,7 @@ namespace
             return "UObject";
         }
 
-        auto& TypeNames = GetAllocatedObjectTypeNames();
+        auto&      TypeNames = GetAllocatedObjectTypeNames();
         const auto It = TypeNames.find(Object);
         if (It != TypeNames.end() && It->second != nullptr)
         {
@@ -42,47 +42,41 @@ namespace
 
 UObject::UObject()
 {
-	UUID = UEngineStatics::GenUUID();
-	InternalIndex = static_cast<uint32>(GUObjectArray.size());
-	GUObjectArray.push_back(this);
+    UUID = UEngineStatics::GenUUID();
+    InternalIndex = static_cast<uint32>(GUObjectArray.size());
+    GUObjectArray.push_back(this);
 
     const FString ObjectName = ResolveObjectName(this);
-    UE_LOG(UObject, ELogVerbosity::Log, "Created %s (UUID=%u, Name=%s, Address=%p)",
+    UE_LOG(UObject, ELogVerbosity::Debug, "Created %s (UUID=%u, Name=%s, Address=%p)",
            ResolveAllocatedObjectTypeName(this), UUID, ObjectName.c_str(), this);
 }
 
 UObject::~UObject()
 {
     const FString ObjectName = ResolveObjectName(this);
-    UE_LOG(UObject, ELogVerbosity::Log, "Destroyed %s (UUID=%u, Name=%s, Address=%p)",
+    UE_LOG(UObject, ELogVerbosity::Debug, "Destroyed %s (UUID=%u, Name=%s, Address=%p)",
            ResolveAllocatedObjectTypeName(this), UUID, ObjectName.c_str(), this);
 
-	if (InternalIndex < GUObjectArray.size() && GUObjectArray[InternalIndex] == this)
-	{
-		GUObjectArray[InternalIndex] = nullptr;
-	}
+    if (InternalIndex < GUObjectArray.size() && GUObjectArray[InternalIndex] == this)
+    {
+        GUObjectArray[InternalIndex] = nullptr;
+    }
 
     GetAllocatedObjectTypeNames().erase(this);
 }
 
-void* UObject::operator new(size_t Size)
-{
-    return AllocateObject(Size, "UObject");
-}
+void* UObject::operator new(size_t Size) { return AllocateObject(Size, "UObject"); }
 
-void UObject::operator delete(void* Pointer, size_t Size)
-{
-    FreeObject(Pointer, Size);
-}
+void UObject::operator delete(void* Pointer, size_t Size) { FreeObject(Pointer, Size); }
 
 void* UObject::AllocateObject(size_t Size, const char* InTypeName)
 {
-	UEngineStatics::TotalAllocatedBytes += static_cast<uint32>(Size);
-	UEngineStatics::TotalAllocationCount++;
+    UEngineStatics::TotalAllocatedBytes += static_cast<uint32>(Size);
+    UEngineStatics::TotalAllocationCount++;
 
-	void* Pointer = ::operator new(Size);
+    void* Pointer = ::operator new(Size);
     GetAllocatedObjectTypeNames()[Pointer] = InTypeName != nullptr ? InTypeName : "UObject";
-	return Pointer;
+    return Pointer;
 }
 
 void UObject::FreeObject(void* Pointer, size_t Size)
@@ -92,10 +86,10 @@ void UObject::FreeObject(void* Pointer, size_t Size)
         return;
     }
 
-	UEngineStatics::TotalAllocatedBytes -= static_cast<uint32>(Size);
-	UEngineStatics::TotalAllocationCount--;
+    UEngineStatics::TotalAllocatedBytes -= static_cast<uint32>(Size);
+    UEngineStatics::TotalAllocationCount--;
 
-	::operator delete(Pointer, Size);
+    ::operator delete(Pointer, Size);
 }
 
 REGISTER_CLASS(, UObject)

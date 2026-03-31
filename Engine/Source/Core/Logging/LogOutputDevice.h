@@ -5,10 +5,11 @@
 
 enum class ELogVerbosity
 {
-    Log,
+    Debug,
+    Info,
     Warning,
     Error,
-    Stat
+    Fatal
 };
 
 class ENGINE_API ILogOutputDevice

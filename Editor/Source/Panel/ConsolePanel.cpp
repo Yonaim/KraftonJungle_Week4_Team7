@@ -247,17 +247,33 @@ namespace
         }
     }
 
-    ImVec4 GetLogColor(ELogVerbosity Verbosity)
+    ImVec4 GetLogTextColor(ELogVerbosity Verbosity)
     {
         switch (Verbosity)
         {
+        case ELogVerbosity::Debug:
+            return ImVec4(0.60f, 0.60f, 0.60f, 1.0f); // Gray
+        case ELogVerbosity::Info:
+            return ImVec4(1.00f, 1.00f, 1.00f, 1.0f); // White
         case ELogVerbosity::Warning:
-            return ImVec4(0.95f, 0.78f, 0.31f, 1.0f);
+            return ImVec4(1.00f, 1.00f, 0.00f, 1.0f); // Yellow
         case ELogVerbosity::Error:
-            return ImVec4(0.95f, 0.38f, 0.35f, 1.0f);
-        case ELogVerbosity::Log:
+            return ImVec4(1.00f, 0.20f, 0.20f, 1.0f); // Red
+        case ELogVerbosity::Fatal:
+            return ImVec4(1.00f, 1.00f, 1.00f, 1.0f); // White
         default:
-            return ImVec4(0.83f, 0.85f, 0.88f, 1.0f);
+            return ImVec4(1.00f, 1.00f, 1.00f, 1.0f);
+        }
+    }
+
+    ImU32 GetLogBackgroundColorU32(ELogVerbosity Verbosity)
+    {
+        switch (Verbosity)
+        {
+        case ELogVerbosity::Fatal:
+            return IM_COL32(180, 32, 32, 255); // White on red
+        default:
+            return IM_COL32(0, 0, 0, 0);
         }
     }
 
@@ -321,9 +337,9 @@ namespace
             return;
         }
 
-        UE_LOG(Console, ELogVerbosity::Log, "[Actor] name=%s type=%s uuid=%u",
+        UE_LOG(Console, ELogVerbosity::Info, "[Actor] name=%s type=%s uuid=%u",
                GetObjectName(Actor).c_str(), Actor->GetTypeName(), Actor->UUID);
-        UE_LOG(Console, ELogVerbosity::Log,
+        UE_LOG(Console, ELogVerbosity::Info,
                "        location=(%.2f, %.2f, %.2f) rotation=(%.2f, %.2f, %.2f) scale=(%.2f, %.2f, "
                "%.2f)",
                Actor->GetLocation().X, Actor->GetLocation().Y, Actor->GetLocation().Z,
@@ -340,10 +356,10 @@ namespace
             return;
         }
 
-        UE_LOG(Console, ELogVerbosity::Log, "[Component] name=%s type=%s uuid=%u owner=%s",
+        UE_LOG(Console, ELogVerbosity::Info, "[Component] name=%s type=%s uuid=%u owner=%s",
                GetObjectName(Component).c_str(), Component->GetTypeName(), Component->UUID,
                OwnerActor != nullptr ? GetObjectName(OwnerActor).c_str() : "<none>");
-        UE_LOG(Console, ELogVerbosity::Log,
+        UE_LOG(Console, ELogVerbosity::Info,
                "            location=(%.2f, %.2f, %.2f) rotation=(%.2f, %.2f, %.2f) scale=(%.2f, "
                "%.2f, %.2f)",
                Component->GetRelativeLocation().X, Component->GetRelativeLocation().Y,
@@ -446,9 +462,44 @@ void FConsolePanel::DrawLogOutput()
     const TArray<FEditorLogEntry>& Entries = LogBuffer->GetLogBuffer();
     for (const FEditorLogEntry& Entry : Entries)
     {
-        ImGui::PushStyleColor(ImGuiCol_Text, GetLogColor(Entry.Verbosity));
-        ImGui::TextWrapped("%s", Entry.Message.c_str());
-        ImGui::PopStyleColor();
+        if (Entry.Verbosity == ELogVerbosity::Fatal)
+        {
+            const float  AvailableWidth = ImGui::GetContentRegionAvail().x;
+            const ImVec2 StartPos = ImGui::GetCursorScreenPos();
+            const float  PaddingX = 6.0f;
+            const float  PaddingY = 3.0f;
+
+            ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + AvailableWidth - PaddingX * 2.0f);
+            const ImVec2 TextSize = ImGui::CalcTextSize(Entry.Message.c_str(), nullptr, false,
+                                                        AvailableWidth - PaddingX * 2.0f);
+            ImGui::PopTextWrapPos();
+
+            ImGui::GetWindowDrawList()->AddRectFilled(
+                StartPos,
+                ImVec2(StartPos.x + AvailableWidth, StartPos.y + TextSize.y + PaddingY * 2.0f),
+                GetLogBackgroundColorU32(Entry.Verbosity));
+
+            ImGui::Dummy(ImVec2(0.0f, PaddingY));
+            ImGui::SetCursorScreenPos(ImVec2(StartPos.x + PaddingX, StartPos.y + PaddingY));
+            ImGui::PushStyleColor(ImGuiCol_Text, GetLogTextColor(Entry.Verbosity));
+            ImGui::PushTextWrapPos(StartPos.x + AvailableWidth - PaddingX);
+            ImGui::TextWrapped("%s", Entry.Message.c_str());
+            ImGui::PopTextWrapPos();
+            ImGui::PopStyleColor();
+
+            const float ConsumedHeight = TextSize.y + PaddingY * 2.0f;
+            const float CursorOffsetY = ConsumedHeight - (PaddingY + TextSize.y);
+            if (CursorOffsetY > 0.0f)
+            {
+                ImGui::Dummy(ImVec2(0.0f, CursorOffsetY));
+            }
+        }
+        else
+        {
+            ImGui::PushStyleColor(ImGuiCol_Text, GetLogTextColor(Entry.Verbosity));
+            ImGui::TextWrapped("%s", Entry.Message.c_str());
+            ImGui::PopStyleColor();
+        }
     }
 
     if (Entries.size() != LastVisibleLogCount)
@@ -523,30 +574,45 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
             LogBuffer->Clear();
         }
 
-        UE_LOG(Console, ELogVerbosity::Log, "Console cleared.");
+        UE_LOG(Console, ELogVerbosity::Info, "Console cleared.");
         bScrollToBottom = true;
         return;
     }
 
     if (TrimmedCommand == "help")
     {
-        UE_LOG(Console, ELogVerbosity::Log, "Commands:");
-        UE_LOG(Console, ELogVerbosity::Log, "  help, clear, log <text>, warn <text>, error <text>");
-        UE_LOG(Console, ELogVerbosity::Log,
+        UE_LOG(Console, ELogVerbosity::Info, "Commands:");
+        UE_LOG(Console, ELogVerbosity::Info,
+               "  help, clear, debug <text>, info <text>, warn <text>, error <text>, fatal <text>");
+        UE_LOG(Console, ELogVerbosity::Info,
                "  scene.new, scene.open <path>, scene.save, scene.saveas <path>, scene.clear, "
                "scene.list, scene.summary");
-        UE_LOG(Console, ELogVerbosity::Log,
+        UE_LOG(Console, ELogVerbosity::Info,
                "  actor.spawn <cube|sphere> [count], actor.delete_selected, actor.list_selected, "
                "actor.inspect <name|uuid>");
-        UE_LOG(Console, ELogVerbosity::Log,
+        UE_LOG(Console, ELogVerbosity::Info,
                "  component.inspect <name|uuid>, select.clear, select.focus, selection.dump");
-        UE_LOG(Console, ELogVerbosity::Log,
+        UE_LOG(Console, ELogVerbosity::Info,
                "  camera.reset, camera.speed [value], camera.rot_speed [value], grid.spacing "
                "[value], viewmode <lit|unlit|wireframe>");
-        UE_LOG(Console, ELogVerbosity::Log,
+        UE_LOG(Console, ELogVerbosity::Info,
                "  show.bounds <on|off>, show.grid <on|off>, show.outline <on|off>");
-        UE_LOG(Console, ELogVerbosity::Log,
+        UE_LOG(Console, ELogVerbosity::Info,
                "  stats.fps, stats.memory, stats.gpu, content.refresh, content.find <keyword>");
+        bScrollToBottom = true;
+        return;
+    }
+
+    if (StartsWith(TrimmedCommand, "debug "))
+    {
+        UE_LOG(Console, ELogVerbosity::Debug, "%s", TrimmedCommand.substr(6).c_str());
+        bScrollToBottom = true;
+        return;
+    }
+
+    if (StartsWith(TrimmedCommand, "info "))
+    {
+        UE_LOG(Console, ELogVerbosity::Info, "%s", TrimmedCommand.substr(5).c_str());
         bScrollToBottom = true;
         return;
     }
@@ -565,26 +631,26 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
         return;
     }
 
-    if (StartsWith(TrimmedCommand, "log "))
+    if (StartsWith(TrimmedCommand, "fatal "))
     {
-        UE_LOG(Console, ELogVerbosity::Log, "%s", TrimmedCommand.substr(4).c_str());
+        UE_LOG(Console, ELogVerbosity::Fatal, "%s", TrimmedCommand.substr(6).c_str());
         bScrollToBottom = true;
         return;
     }
 
     if (StartsWith(TrimmedCommand, "stat "))
     {
-        UE_LOG(Console, ELogVerbosity::Stat, "%s", TrimmedCommand.substr(5).c_str());
+        UE_LOG(Console, ELogVerbosity::Info, "[STAT] %s", TrimmedCommand.substr(5).c_str());
         if (Tokens.size() >= 2)
             CommandName = "stat " + ToLowerAsciiCopy(Tokens[1]);
         bScrollToBottom = true;
     }
 
-    FEditorContext*       Context = GetContext();
-    FEditor*              Editor = Context != nullptr ? Context->Editor : nullptr;
-    FScene*               Scene = (Context != nullptr && Context->World != nullptr)
-                                      ? Context->World->GetActiveScene()
-                                      : nullptr;
+    FEditorContext* Context = GetContext();
+    FEditor*        Editor = Context != nullptr ? Context->Editor : nullptr;
+    FScene*         Scene = (Context != nullptr && Context->World != nullptr)
+                                ? Context->World->GetActiveScene()
+                                : nullptr;
 
     auto RequireEditor = [&]() -> bool
     {
@@ -613,7 +679,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
         if (RequireEditor())
         {
             Editor->CreateNewScene();
-            UE_LOG(Console, ELogVerbosity::Log, "Created a new scene.");
+            UE_LOG(Console, ELogVerbosity::Info, "Created a new scene.");
         }
         bScrollToBottom = true;
         return;
@@ -668,7 +734,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
         if (RequireEditor())
         {
             Editor->ClearScene();
-            UE_LOG(Console, ELogVerbosity::Log, "Cleared the current scene.");
+            UE_LOG(Console, ELogVerbosity::Info, "Cleared the current scene.");
         }
         bScrollToBottom = true;
         return;
@@ -681,11 +747,11 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
             const TArray<AActor*>* Actors = Scene->GetActors();
             if (Actors == nullptr || Actors->empty())
             {
-                UE_LOG(Console, ELogVerbosity::Log, "Scene is empty.");
+                UE_LOG(Console, ELogVerbosity::Info, "Scene is empty.");
             }
             else
             {
-                UE_LOG(Console, ELogVerbosity::Log, "Scene actors: %u",
+                UE_LOG(Console, ELogVerbosity::Info, "Scene actors: %u",
                        static_cast<uint32>(Actors->size()));
                 for (AActor* Actor : *Actors)
                 {
@@ -725,7 +791,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
 
             const uint32 SelectedCount =
                 Context != nullptr ? static_cast<uint32>(Context->SelectedActors.size()) : 0u;
-            UE_LOG(Console, ELogVerbosity::Log,
+            UE_LOG(Console, ELogVerbosity::Info,
                    "Scene summary: actors=%u, components=%u, renderable=%u, selected=%u",
                    ActorCount, ComponentCount, RenderableCount, SelectedCount);
         }
@@ -777,8 +843,8 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
 
                     if (CreatedCount > 0)
                     {
-                        UE_LOG(Console, ELogVerbosity::Log, "Spawned %d %s actor(s).", CreatedCount,
-                               ActorType.c_str());
+                        UE_LOG(Console, ELogVerbosity::Info, "Spawned %d %s actor(s).",
+                               CreatedCount, ActorType.c_str());
                     }
                 }
             }
@@ -801,11 +867,11 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
     {
         if (Context == nullptr || Context->SelectedActors.empty())
         {
-            UE_LOG(Console, ELogVerbosity::Log, "No selected actors.");
+            UE_LOG(Console, ELogVerbosity::Info, "No selected actors.");
         }
         else
         {
-            UE_LOG(Console, ELogVerbosity::Log, "Selected actors: %u",
+            UE_LOG(Console, ELogVerbosity::Info, "Selected actors: %u",
                    static_cast<uint32>(Context->SelectedActors.size()));
             for (AActor* Actor : Context->SelectedActors)
             {
@@ -836,7 +902,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
 
                     bFoundActor = true;
                     LogActorSummary(Actor);
-                    UE_LOG(Console, ELogVerbosity::Log, "        components=%u",
+                    UE_LOG(Console, ELogVerbosity::Info, "        components=%u",
                            static_cast<uint32>(Actor->GetOwnedComponents().size()));
                     for (Engine::Component::USceneComponent* Component :
                          Actor->GetOwnedComponents())
@@ -907,7 +973,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
                 ->GetViewportClient()
                 ->GetSelectionController()
                 .ClearSelection();
-            UE_LOG(Console, ELogVerbosity::Log, "Selection cleared.");
+            UE_LOG(Console, ELogVerbosity::Info, "Selection cleared.");
         }
         bScrollToBottom = true;
         return;
@@ -922,7 +988,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
                 ->GetViewportClient()
                 ->GetNavigationController()
                 .FocusActors();
-            UE_LOG(Console, ELogVerbosity::Log, "Focused camera on current selection.");
+            UE_LOG(Console, ELogVerbosity::Info, "Focused camera on current selection.");
         }
         bScrollToBottom = true;
         return;
@@ -937,11 +1003,11 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
         else
         {
             UObject* SelectedObject = Context->SelectedObject;
-            UE_LOG(Console, ELogVerbosity::Log, "Selection dump:");
-            UE_LOG(Console, ELogVerbosity::Log, "  selected_object=%s (%s)",
+            UE_LOG(Console, ELogVerbosity::Info, "Selection dump:");
+            UE_LOG(Console, ELogVerbosity::Info, "  selected_object=%s (%s)",
                    GetObjectName(SelectedObject).c_str(),
                    SelectedObject != nullptr ? SelectedObject->GetTypeName() : "null");
-            UE_LOG(Console, ELogVerbosity::Log, "  selected_actor_count=%u",
+            UE_LOG(Console, ELogVerbosity::Info, "  selected_actor_count=%u",
                    static_cast<uint32>(Context->SelectedActors.size()));
             for (AActor* Actor : Context->SelectedActors)
             {
@@ -964,7 +1030,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
             Camera.SetFarPlane(2000.0f);
             Camera.SetLocation(FVector(-20.0f, 1.0f, 10.0f));
             Camera.SetRotation(FRotator(0.0f, 0.0f, 0.0f));
-            UE_LOG(Console, ELogVerbosity::Log, "Camera reset to default editor transform.");
+            UE_LOG(Console, ELogVerbosity::Info, "Camera reset to default editor transform.");
         }
         bScrollToBottom = true;
         return;
@@ -981,7 +1047,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
 
             if (Tokens.size() < 2)
             {
-                UE_LOG(Console, ELogVerbosity::Log, "Camera move speed = %.2f",
+                UE_LOG(Console, ELogVerbosity::Info, "Camera move speed = %.2f",
                        NavigationController.GetMoveSpeed());
             }
             else
@@ -994,7 +1060,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
                 else
                 {
                     NavigationController.SetMoveSpeed(MoveSpeed);
-                    UE_LOG(Console, ELogVerbosity::Log, "Camera move speed = %.2f",
+                    UE_LOG(Console, ELogVerbosity::Info, "Camera move speed = %.2f",
                            NavigationController.GetMoveSpeed());
                 }
             }
@@ -1014,7 +1080,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
 
             if (Tokens.size() < 2)
             {
-                UE_LOG(Console, ELogVerbosity::Log, "Camera rotation speed = %.2f",
+                UE_LOG(Console, ELogVerbosity::Info, "Camera rotation speed = %.2f",
                        NavigationController.GetRotationSpeed());
             }
             else
@@ -1027,7 +1093,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
                 else
                 {
                     NavigationController.SetRotationSpeed(RotationSpeed);
-                    UE_LOG(Console, ELogVerbosity::Log, "Camera rotation speed = %.2f",
+                    UE_LOG(Console, ELogVerbosity::Info, "Camera rotation speed = %.2f",
                            NavigationController.GetRotationSpeed());
                 }
             }
@@ -1040,7 +1106,8 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
     {
         if (Tokens.size() < 2)
         {
-            UE_LOG(Console, ELogVerbosity::Log, "Grid spacing = %.2f", UEngineStatics::GridSpacing);
+            UE_LOG(Console, ELogVerbosity::Info, "Grid spacing = %.2f",
+                   UEngineStatics::GridSpacing);
         }
         else
         {
@@ -1052,7 +1119,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
             else
             {
                 UEngineStatics::GridSpacing = FMath::Clamp(GridSpacing, 1.0f, 1000.0f);
-                UE_LOG(Console, ELogVerbosity::Log, "Grid spacing = %.2f",
+                UE_LOG(Console, ELogVerbosity::Info, "Grid spacing = %.2f",
                        UEngineStatics::GridSpacing);
             }
         }
@@ -1068,7 +1135,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
                 Editor->GetViewportTab().GetViewport(0)->GetViewportClient()->GetRenderSetting();
             if (Tokens.size() < 2)
             {
-                UE_LOG(Console, ELogVerbosity::Log, "View mode = %s",
+                UE_LOG(Console, ELogVerbosity::Info, "View mode = %s",
                        ViewModeToString(RenderSetting.GetViewMode()));
             }
             else
@@ -1094,7 +1161,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
                     return;
                 }
 
-                UE_LOG(Console, ELogVerbosity::Log, "View mode = %s",
+                UE_LOG(Console, ELogVerbosity::Info, "View mode = %s",
                        ViewModeToString(RenderSetting.GetViewMode()));
             }
         }
@@ -1117,7 +1184,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
                     }
                 }
 
-                UE_LOG(Console, ELogVerbosity::Log, "Bounds visible on %u actor(s).",
+                UE_LOG(Console, ELogVerbosity::Info, "Bounds visible on %u actor(s).",
                        VisibleBoundsCount);
             }
             else
@@ -1141,7 +1208,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
                         ++UpdatedCount;
                     }
 
-                    UE_LOG(Console, ELogVerbosity::Log,
+                    UE_LOG(Console, ELogVerbosity::Info,
                            "Bounds visibility set to %s for %u actor(s).",
                            bShowBounds ? "on" : "off", UpdatedCount);
                 }
@@ -1159,7 +1226,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
                 Editor->GetViewportTab().GetViewport(0)->GetViewportClient()->GetRenderSetting();
             if (Tokens.size() < 2)
             {
-                UE_LOG(Console, ELogVerbosity::Log, "Grid visibility = %s",
+                UE_LOG(Console, ELogVerbosity::Info, "Grid visibility = %s",
                        RenderSetting.IsGridVisible() ? "on" : "off");
             }
             else
@@ -1172,7 +1239,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
                 else
                 {
                     RenderSetting.SetGridVisible(bShowGrid);
-                    UE_LOG(Console, ELogVerbosity::Log, "Grid visibility = %s",
+                    UE_LOG(Console, ELogVerbosity::Info, "Grid visibility = %s",
                            bShowGrid ? "on" : "off");
                 }
             }
@@ -1189,7 +1256,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
                 Editor->GetViewportTab().GetViewport(0)->GetViewportClient()->GetRenderSetting();
             if (Tokens.size() < 2)
             {
-                UE_LOG(Console, ELogVerbosity::Log, "Selection outline visibility = %s",
+                UE_LOG(Console, ELogVerbosity::Info, "Selection outline visibility = %s",
                        RenderSetting.IsSelectionOutlineVisible() ? "on" : "off");
             }
             else
@@ -1202,7 +1269,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
                 else
                 {
                     RenderSetting.SetSelectionOutlineVisible(bShowOutline);
-                    UE_LOG(Console, ELogVerbosity::Log, "Selection outline visibility = %s",
+                    UE_LOG(Console, ELogVerbosity::Info, "Selection outline visibility = %s",
                            bShowOutline ? "on" : "off");
                 }
             }
@@ -1233,7 +1300,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
         }
         else
         {
-            UE_LOG(Console, ELogVerbosity::Log, "FPS = %.1f (%.3f ms)", Context->CurrentFPS,
+            UE_LOG(Console, ELogVerbosity::Info, "FPS = %.1f (%.3f ms)", Context->CurrentFPS,
                    Context->DeltaTime * 1000.0f);
 
             ActiveStatOverlays ^= STAT_FPS;
@@ -1244,9 +1311,9 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
 
     if (CommandName == "stat memory")
     {
-        UE_LOG(Console, ELogVerbosity::Log, "TotalAllocationCount = %u",
+        UE_LOG(Console, ELogVerbosity::Info, "TotalAllocationCount = %u",
                UEngineStatics::TotalAllocationCount);
-        UE_LOG(Console, ELogVerbosity::Log, "Heap Usage = %.2f KB",
+        UE_LOG(Console, ELogVerbosity::Info, "Heap Usage = %.2f KB",
                UEngineStatics::TotalAllocatedBytes / 1024.0f);
         ActiveStatOverlays ^= STAT_MEMORY;
         bScrollToBottom = true;
@@ -1271,7 +1338,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
         {
             Editor->RefreshContentIndex();
             const FContentIndexSnapshot& Snapshot = Context->ContentIndex->GetSnapshot();
-            UE_LOG(Console, ELogVerbosity::Log, "Content refreshed: folders=%d files=%d root=%s",
+            UE_LOG(Console, ELogVerbosity::Info, "Content refreshed: folders=%d files=%d root=%s",
                    Snapshot.FolderCount, Snapshot.FileCount,
                    PathToUtf8String(Snapshot.ContentRootPath).c_str());
         }
@@ -1297,22 +1364,22 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
 
             if (Matches.empty())
             {
-                UE_LOG(Console, ELogVerbosity::Log, "No content items matched '%s'.",
+                UE_LOG(Console, ELogVerbosity::Info, "No content items matched '%s'.",
                        Tokens[1].c_str());
             }
             else
             {
                 constexpr size_t MaxResultsToPrint = 64;
-                UE_LOG(Console, ELogVerbosity::Log, "Content matches for '%s': %u",
+                UE_LOG(Console, ELogVerbosity::Info, "Content matches for '%s': %u",
                        Tokens[1].c_str(), static_cast<uint32>(Matches.size()));
                 for (size_t Index = 0; Index < Matches.size() && Index < MaxResultsToPrint; ++Index)
                 {
-                    UE_LOG(Console, ELogVerbosity::Log, "  %s", Matches[Index].c_str());
+                    UE_LOG(Console, ELogVerbosity::Info, "  %s", Matches[Index].c_str());
                 }
 
                 if (Matches.size() > MaxResultsToPrint)
                 {
-                    UE_LOG(Console, ELogVerbosity::Log, "  ... %u more result(s)",
+                    UE_LOG(Console, ELogVerbosity::Info, "  ... %u more result(s)",
                            static_cast<uint32>(Matches.size() - MaxResultsToPrint));
                 }
             }
@@ -1325,7 +1392,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
     bScrollToBottom = true;
 }
 
-void FConsolePanel::RenderCommandOverlays() 
+void FConsolePanel::RenderCommandOverlays()
 {
     if (ActiveStatOverlays == STAT_NONE)
         return;

@@ -85,7 +85,7 @@ namespace Asset
                 return nullptr;
             }
 
-            UE_LOG(FEditor, ELogVerbosity::Log, "SourceCache GetOrLoad: path = %s",
+            UE_LOG(FEditor, ELogVerbosity::Debug, "SourceCache GetOrLoad: path = %s",
                    SourceCacheDetail::StringFromPath(Key.NormalizedPath).c_str());
 
             uint64 CurrentFileSize = 0;

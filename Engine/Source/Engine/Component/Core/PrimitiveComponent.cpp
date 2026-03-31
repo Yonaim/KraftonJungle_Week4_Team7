@@ -80,7 +80,7 @@ namespace Engine::Component
 
         if (bBoundsDirty)
         {
-            //UE_LOG(UPrimitiveComponent, ELogVerbosity::Log, "Bounds Update!");
+            // UE_LOG(UPrimitiveComponent, ELogVerbosity::Debug, "Bounds Update!");
             UpdateBounds();
             bBoundsDirty = false;
         }
@@ -124,7 +124,8 @@ namespace Engine::Component
         MutableRenderCommand.bDrawAABB = Actor->IsSelected() || Actor->IsShowBounds();
         MutableRenderCommand.WorldAABB = GetWorldAABB();
         MutableRenderCommand.SetDefaultStates();
-        MutableRenderCommand.SetStates(MutableRenderCommand.Material, MutableRenderCommand.MeshData->Topology);
+        MutableRenderCommand.SetStates(MutableRenderCommand.Material,
+                                       MutableRenderCommand.MeshData->Topology);
 
         MutableRenderCommand.bIsVisible = Actor->IsVisible();
         MutableRenderCommand.bIsPickable = Actor->IsPickable();
@@ -138,7 +139,8 @@ namespace Engine::Component
     {
         if (RenderCommand.MeshData)
         {
-            return Geometry::FAABB(RenderCommand.MeshData->GetMinCoord(), RenderCommand.MeshData->GetMaxCoord());
+            return Geometry::FAABB(RenderCommand.MeshData->GetMinCoord(),
+                                   RenderCommand.MeshData->GetMaxCoord());
         }
 
         return Geometry::FAABB();
@@ -146,7 +148,7 @@ namespace Engine::Component
 
     void UPrimitiveComponent::UpdateBounds()
     {
-        const FMatrix WorldMatrix = GetRelativeMatrix();
+        const FMatrix               WorldMatrix = GetRelativeMatrix();
         TArray<Geometry::FTriangle> LocalTriangles;
 
         if (GetLocalTriangles(LocalTriangles) && !LocalTriangles.empty())
