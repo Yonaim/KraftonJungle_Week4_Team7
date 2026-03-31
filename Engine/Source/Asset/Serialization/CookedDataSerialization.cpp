@@ -2,6 +2,34 @@
 
 namespace Asset
 {
+    template <typename T>
+    static FArchive& SerializeEmbeddedSharedPtr(FArchive& Ar, std::shared_ptr<T>& Value)
+    {
+        bool bHasValue = (Value != nullptr);
+        Ar << bHasValue;
+
+        if (Ar.IsLoading())
+        {
+            if (!bHasValue)
+            {
+                Value.reset();
+                return Ar;
+            }
+
+            if (!Value)
+            {
+                Value = std::make_shared<T>();
+            }
+        }
+
+        if (bHasValue)
+        {
+            Ar << *Value;
+        }
+
+        return Ar;
+    }
+
     FArchive& operator<<(FArchive& Ar, FVector2& Value)
     {
         Ar << Value.X;
@@ -82,11 +110,16 @@ namespace Asset
     {
         Ar << Value.SourcePath;
         Ar << Value.Materials;
-        Ar << Value.NameToIndex;
-        if (Ar.IsLoading() && Value.NameToIndex.empty())
+
+        if (Ar.IsLoading())
         {
-            Value.RebuildNameToIndex();
+            Value.NameToIndex.clear();
+            for (uint32 Index = 0; Index < static_cast<uint32>(Value.Materials.size()); ++Index)
+            {
+                Value.NameToIndex.emplace(Value.Materials[Index].Name, Index);
+            }
         }
+
         return Ar;
     }
 
@@ -141,7 +174,7 @@ namespace Asset
     FArchive& operator<<(FArchive& Ar, FFontAtlasCookedData& Value)
     {
         Ar << Value.SourcePath;
-        Ar << Value.AtlasTexturePath;
+        SerializeEmbeddedSharedPtr(Ar, Value.AtlasTexture);
         Ar << Value.Info;
         Ar << Value.Common;
         Ar << Value.Glyphs;
@@ -186,7 +219,7 @@ namespace Asset
     FArchive& operator<<(FArchive& Ar, FSubUVAtlasCookedData& Value)
     {
         Ar << Value.SourcePath;
-        Ar << Value.AtlasTexturePath;
+        SerializeEmbeddedSharedPtr(Ar, Value.AtlasTexture);
         Ar << Value.Info;
         Ar << Value.Frames;
         Ar << Value.Sequences;

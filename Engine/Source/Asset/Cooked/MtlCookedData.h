@@ -1,17 +1,14 @@
 #pragma once
 
-#include <memory>
-
 #include "Asset/Core/MaterialTypes.h"
-#include "Asset/Cooked/TextureCookedData.h"
 
 namespace Asset
 {
 
     struct FMtlTextureBinding
     {
-        EMaterialTextureSlot                Slot = EMaterialTextureSlot::Diffuse;
-        std::shared_ptr<FTextureCookedData> Texture;
+        EMaterialTextureSlot Slot = EMaterialTextureSlot::Diffuse;
+        FString              TexturePath;
     };
 
     struct FMtlCookedData
