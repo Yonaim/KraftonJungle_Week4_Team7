@@ -8,6 +8,7 @@
 
 #include "imgui.h"
 #include "imgui_internal.h"
+#include "IconsFontAwesome4.h"
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
 
@@ -172,6 +173,16 @@ bool FEditorEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
     {
         IO.FontDefault = KoreanFont;
     }
+
+    static const ImWchar IconRanges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
+    ImFontConfig         IconConfig;
+    IconConfig.MergeMode = true; 
+    IconConfig.PixelSnapH = true;
+    IconConfig.GlyphMinAdvanceX = 18.0f; 
+
+    IO.Fonts->AddFontFromFileTTF("Source\\ThirdParty\\ImGui\\fontawesome-webfont.ttf",
+                                 18.0f, &IconConfig, IconRanges);
+
     ImGui_ImplWin32_Init((void*)WindowHandle);
     ImGui_ImplDX11_Init(Renderer->GetRHI().GetDevice(), Renderer->GetRHI().GetDeviceContext());
 

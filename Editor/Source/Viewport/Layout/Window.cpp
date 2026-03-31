@@ -2,8 +2,6 @@
 
 SWindow::SWindow() {}
 
-SWindow::~SWindow() {}
-
 void SSplitterH::LayoutChildren() 
 {
     int32 SplitX = ViewportRect.Width * SplitRatio;

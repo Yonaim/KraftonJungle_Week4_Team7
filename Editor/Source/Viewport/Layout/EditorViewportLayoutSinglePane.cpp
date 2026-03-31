@@ -1,18 +1,22 @@
 #include "EditorViewportLayoutSinglePane.h"
 
-FEditorViewportLayoutSinglePane::~FEditorViewportLayoutSinglePane()
-{
-    delete WindowA;
-    WindowA = nullptr;
-}
+FEditorViewportLayoutSinglePane::~FEditorViewportLayoutSinglePane() { Reset(); }
 
 void FEditorViewportLayoutSinglePane::Initialize(FViewportRect TotalRect) 
 {
+    Reset();
+
     WindowA = new SWindow();
     RootSplitter = nullptr;
 
-    Type == EViewportLayoutType::Single;
+    Type = EViewportLayoutType::Single;
     WindowA->SetViewportRect(TotalRect);
+}
+
+void FEditorViewportLayoutSinglePane::Reset() 
+{
+    delete WindowA;
+    WindowA = nullptr;
 }
 
 void FEditorViewportLayoutSinglePane::Resize(FViewportRect NewRect) 

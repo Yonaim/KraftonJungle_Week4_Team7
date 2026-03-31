@@ -5,11 +5,11 @@
 class FEditorViewportLayoutFourPanes : public FEditorViewportLayout
 {
 public:
-    FEditorViewportLayoutFourPanes() = default;
     ~FEditorViewportLayoutFourPanes() override;
 
 public:
     void             Initialize(FViewportRect TotalRect) override;
+    void             Reset() override;
     void             Resize(FViewportRect NewRect) override;
     TArray<SWindow*> GetLeafWindows() const override;
 

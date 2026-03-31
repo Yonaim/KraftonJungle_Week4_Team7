@@ -8,6 +8,17 @@ enum class EViewportProjectionType
     Orthographic
 };
 
+enum class EViewportOrthographicType
+{
+    None, // GUI용 패딩
+    Top,
+    Bottom,
+    Left,
+    Right,
+    Front,
+    Back
+};
+
 class FViewportCamera
 {
   public:
@@ -21,6 +32,9 @@ class FViewportCamera
     const FVector& GetLocation() const { return Location; }
     const FQuat&   GetRotation() const { return Rotation; }
 
+    const FVector& GetOrthoForward() const { return OrthoForward; }
+    const FVector& GetOrthoUp() const { return OrthoUp; }
+
     FVector GetForwardVector() const;
     FVector GetRightVector() const;
     FVector GetUpVector() const;
@@ -31,6 +45,9 @@ class FViewportCamera
 
     void                    SetProjectionType(EViewportProjectionType InType);
     EViewportProjectionType GetProjectionType() const { return ProjectionType; }
+
+    void                    SetOrthographicType(EViewportOrthographicType InType);
+    EViewportOrthographicType GetOrthographicType() const { return OrthographicType; }
 
     void SetFOV(float InFOV);
     void SetNearPlane(float InNear);
@@ -58,6 +75,7 @@ class FViewportCamera
     FQuat   Rotation = FQuat::Identity;
 
     EViewportProjectionType ProjectionType = EViewportProjectionType::Perspective;
+    EViewportOrthographicType OrthographicType = EViewportOrthographicType::Top;
 
     uint32 Width = 1920;
     uint32 Height = 1080;
@@ -68,6 +86,9 @@ class FViewportCamera
     float FarPlane = 2000.0f;
 
     float OrthoHeight = 100.0f;
+
+    mutable FVector OrthoForward = FVector::Zero();
+    mutable FVector OrthoUp = FVector::Zero();
 
     mutable FMatrix CachedViewMatrix;
     mutable FMatrix CachedProjectionMatrix;

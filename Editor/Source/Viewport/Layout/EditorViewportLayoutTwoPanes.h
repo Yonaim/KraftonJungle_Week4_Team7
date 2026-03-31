@@ -2,11 +2,10 @@
 
 #include "EditorViewportLayout.h"
 
-class FEditorViewportLayoutSinglePane : public FEditorViewportLayout
+class FEditorViewportLayoutTwoPanes : public FEditorViewportLayout
 {
   public:
-    FEditorViewportLayoutSinglePane() = default;
-    ~FEditorViewportLayoutSinglePane() override;
+    ~FEditorViewportLayoutTwoPanes() override;
 
   public:
     void             Initialize(FViewportRect TotalRect) override;
@@ -15,5 +14,10 @@ class FEditorViewportLayoutSinglePane : public FEditorViewportLayout
     TArray<SWindow*> GetLeafWindows() const override;
 
   private:
+    void Build_1l1Tree();
+    void Build_1_1Tree();
+
+  private:
     SWindow* WindowA = nullptr;
+    SWindow* WindowB = nullptr;
 };

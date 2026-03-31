@@ -132,6 +132,8 @@ if exist "$(ProjectDir)..\Engine\Bin\$(Configuration)\Engine.pdb" copy /Y "$(Pro
     <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutFactory.cpp" />
     <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutFourPanes.cpp" />
     <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutSinglePane.cpp" />
+    <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutThreePanes.cpp" />
+    <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutTwoPanes.cpp" />
     <ClCompile Include="Source\Viewport\Layout\Window.cpp" />
     <ClCompile Include="Source\Viewport\Navigation\ViewportNavigationController.cpp" />
     <ClCompile Include="Source\Viewport\RenderSetting\ViewportRenderSetting.cpp" />
@@ -164,6 +166,7 @@ if exist "$(ProjectDir)..\Engine\Bin\$(Configuration)\Engine.pdb" copy /Y "$(Pro
     <ClInclude Include="Source\Panel\PropertiesPanel.h" />
     <ClInclude Include="Source\Panel\ShortcutsPanel.h" />
     <ClInclude Include="Source\Panel\StatePanel.h" />
+    <ClInclude Include="Source\ThirdParty\ImGui\IconsFontAwesome4.h" />
     <ClInclude Include="Source\ThirdParty\ImGui\imconfig.h" />
     <ClInclude Include="Source\ThirdParty\ImGui\imgui.h" />
     <ClInclude Include="Source\ThirdParty\ImGui\imgui_impl_dx11.h" />
@@ -181,6 +184,8 @@ if exist "$(ProjectDir)..\Engine\Bin\$(Configuration)\Engine.pdb" copy /Y "$(Pro
     <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutFactory.h" />
     <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutFourPanes.h" />
     <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutSinglePane.h" />
+    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutThreePanes.h" />
+    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutTwoPanes.h" />
     <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutType.h" />
     <ClInclude Include="Source\Viewport\Layout\Window.h" />
     <ClInclude Include="Source\Viewport\Navigation\ViewportNavigationController.h" />
@@ -200,6 +205,9 @@ if exist "$(ProjectDir)..\Engine\Bin\$(Configuration)\Engine.pdb" copy /Y "$(Pro
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="Source\ThirdParty\ImGui\fontawesome-webfont.ttf" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
