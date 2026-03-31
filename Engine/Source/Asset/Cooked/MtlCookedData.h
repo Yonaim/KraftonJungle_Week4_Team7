@@ -1,17 +1,14 @@
 #pragma once
 
-#include <memory>
-
 #include "Asset/Core/MaterialTypes.h"
-#include "Asset/Cooked/TextureCookedData.h"
 
 namespace Asset
 {
 
     struct FMtlTextureBinding
     {
-        EMaterialTextureSlot                Slot = EMaterialTextureSlot::Diffuse;
-        std::shared_ptr<FTextureCookedData> Texture;
+        EMaterialTextureSlot Slot = EMaterialTextureSlot::Diffuse;
+        FString              TexturePath;
     };
 
     struct FMtlCookedData
@@ -47,6 +44,13 @@ namespace Asset
         TMap<FString, uint32>  NameToIndex;
 
         bool IsValid() const { return !Materials.empty(); }
+
+        void Reset()
+        {
+            SourcePath.clear();
+            Materials.clear();
+            NameToIndex.clear();
+        }
 
         const FMtlCookedData* FindMaterial(const FString& InName) const
         {

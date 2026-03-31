@@ -49,7 +49,7 @@ bool FSceneSerializer::SaveToFile(const FScene& Scene, const FCameraInfo& Camera
     std::error_code ErrorCode;
     std::filesystem::create_directories(FilePath.parent_path(), ErrorCode);
 
-    std::ofstream File(FilePath, std::ios::binary | std::ios::trunc);
+    std::ofstream File(FilePath.c_str(), std::ios::binary | std::ios::trunc);
     if (!File.is_open())
     {
         if (OutErrorMessage != nullptr)

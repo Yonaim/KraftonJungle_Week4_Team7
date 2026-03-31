@@ -119,6 +119,9 @@ namespace
 
             if (MaterialCookedData == nullptr)
             {
+                UE_LOG(FEditor, ELogLevel::Error,
+                       "Failed to build material for mesh slot %zu: %s -> %s", SlotIndex,
+                       StaticMeshAsset->GetAssetPath().c_str(), MaterialAssetPath.c_str());
                 MaterialSlots[SlotIndex] = nullptr;
                 continue;
             }
@@ -127,11 +130,16 @@ namespace
             if (!MaterialAsset->LoadFromCooked(MaterialAssetPath, std::move(MaterialCookedData),
                                                *InDynamicRHI))
             {
+                UE_LOG(FEditor, ELogLevel::Error,
+                       "Failed to load material asset for mesh slot %zu: %s -> %s", SlotIndex,
+                       StaticMeshAsset->GetAssetPath().c_str(), MaterialAssetPath.c_str());
                 MaterialSlots[SlotIndex] = nullptr;
                 continue;
             }
 
             MaterialSlots[SlotIndex] = MaterialAsset;
+            UE_LOG(FEditor, ELogLevel::Debug, "Bound material slot %zu: %s -> %s", SlotIndex,
+                   StaticMeshAsset->GetAssetPath().c_str(), MaterialAssetPath.c_str());
         }
     }
 } // namespace
@@ -150,6 +158,8 @@ void FSceneAssetBinder::BindScene(FScene* InScene, Asset::FAssetCacheManager* In
         return;
     }
 
+    UE_LOG(FEditor, ELogLevel::Info, "Binding scene assets for %zu actor(s)", Actors->size());
+
     for (AActor* Actor : *Actors)
     {
         BindActor(Actor, InAssetCacheManager, InDynamicRHI);
@@ -163,6 +173,9 @@ void FSceneAssetBinder::BindActor(AActor* InActor, Asset::FAssetCacheManager* In
     {
         return;
     }
+
+    UE_LOG(FEditor, ELogLevel::Debug, "Binding actor: %s (components=%zu)",
+           InActor->GetTypeName(), InActor->GetOwnedComponents().size());
 
     for (USceneComponent* Component : InActor->GetOwnedComponents())
     {
@@ -184,6 +197,7 @@ void FSceneAssetBinder::BindComponent(USceneComponent*           InComponent,
         const FString MeshPath = StaticMeshComponent->GetStaticMeshPath();
         if (MeshPath.empty())
         {
+            UE_LOG(FEditor, ELogLevel::Warning, "StaticMeshComponent has empty mesh path");
             StaticMeshComponent->SetStaticMeshAsset(nullptr);
             return;
         }
@@ -192,6 +206,8 @@ void FSceneAssetBinder::BindComponent(USceneComponent*           InComponent,
             InAssetCacheManager->BuildStaticMesh(MeshPath);
         if (CookedData == nullptr)
         {
+            UE_LOG(FEditor, ELogLevel::Error, "Failed to build static mesh asset: %s",
+                   MeshPath.c_str());
             StaticMeshComponent->SetStaticMeshAsset(nullptr);
             return;
         }
@@ -199,6 +215,8 @@ void FSceneAssetBinder::BindComponent(USceneComponent*           InComponent,
         UStaticMesh* StaticMeshAsset = EnsureAssetObject(StaticMeshComponent->GetStaticMeshAsset());
         if (!StaticMeshAsset->LoadFromCooked(MeshPath, std::move(CookedData), *InDynamicRHI))
         {
+            UE_LOG(FEditor, ELogLevel::Error, "Failed to load static mesh asset: %s",
+                   MeshPath.c_str());
             StaticMeshComponent->SetStaticMeshAsset(nullptr);
             return;
         }
@@ -206,6 +224,7 @@ void FSceneAssetBinder::BindComponent(USceneComponent*           InComponent,
         BindStaticMeshMaterials(StaticMeshAsset, InAssetCacheManager, InDynamicRHI);
 
         StaticMeshComponent->SetStaticMeshAsset(StaticMeshAsset);
+        UE_LOG(FEditor, ELogLevel::Info, "Bound static mesh asset: %s", MeshPath.c_str());
         return;
     }
 
@@ -214,6 +233,7 @@ void FSceneAssetBinder::BindComponent(USceneComponent*           InComponent,
         const FString AtlasPath = ResolveSubUVPath(SubUVComponent);
         if (AtlasPath.empty())
         {
+            UE_LOG(FEditor, ELogLevel::Warning, "SubUVComponent has empty atlas path");
             return;
         }
 
@@ -221,6 +241,8 @@ void FSceneAssetBinder::BindComponent(USceneComponent*           InComponent,
             InAssetCacheManager->BuildSubUVAtlas(AtlasPath);
         if (CookedData == nullptr)
         {
+            UE_LOG(FEditor, ELogLevel::Error, "Failed to build SubUV atlas asset: %s",
+                   AtlasPath.c_str());
             SubUVComponent->SetSubUVAtlasAsset(nullptr);
             return;
         }
@@ -228,11 +250,14 @@ void FSceneAssetBinder::BindComponent(USceneComponent*           InComponent,
         USubUVAtlas* AtlasAsset = EnsureAssetObject(SubUVComponent->GetSubUVAtlasAsset());
         if (!AtlasAsset->LoadFromCooked(AtlasPath, std::move(CookedData), *InDynamicRHI))
         {
+            UE_LOG(FEditor, ELogLevel::Error, "Failed to load SubUV atlas asset: %s",
+                   AtlasPath.c_str());
             SubUVComponent->SetSubUVAtlasAsset(nullptr);
             return;
         }
 
         SubUVComponent->SetSubUVAtlasAsset(AtlasAsset);
+        UE_LOG(FEditor, ELogLevel::Info, "Bound SubUV atlas asset: %s", AtlasPath.c_str());
         return;
     }
 
@@ -241,6 +266,7 @@ void FSceneAssetBinder::BindComponent(USceneComponent*           InComponent,
         const FString TexturePath = ResolveTexturePath(SpriteComponent);
         if (TexturePath.empty())
         {
+            UE_LOG(FEditor, ELogLevel::Warning, "PaperSpriteComponent has empty texture path");
             return;
         }
 
@@ -248,6 +274,8 @@ void FSceneAssetBinder::BindComponent(USceneComponent*           InComponent,
             InAssetCacheManager->BuildTexture(TexturePath);
         if (CookedData == nullptr)
         {
+            UE_LOG(FEditor, ELogLevel::Error, "Failed to build texture asset: %s",
+                   TexturePath.c_str());
             SpriteComponent->SetTextureAsset(nullptr);
             return;
         }
@@ -255,11 +283,14 @@ void FSceneAssetBinder::BindComponent(USceneComponent*           InComponent,
         UTexture* TextureAsset = EnsureAssetObject(SpriteComponent->GetTextureAsset());
         if (!TextureAsset->LoadFromCooked(TexturePath, std::move(CookedData), *InDynamicRHI))
         {
+            UE_LOG(FEditor, ELogLevel::Error, "Failed to load texture asset: %s",
+                   TexturePath.c_str());
             SpriteComponent->SetTextureAsset(nullptr);
             return;
         }
 
         SpriteComponent->SetTextureAsset(TextureAsset);
+        UE_LOG(FEditor, ELogLevel::Info, "Bound texture asset: %s", TexturePath.c_str());
         return;
     }
 
@@ -268,6 +299,7 @@ void FSceneAssetBinder::BindComponent(USceneComponent*           InComponent,
         const FString FontPath = ResolveFontPath(AtlasTextComponent);
         if (FontPath.empty())
         {
+            UE_LOG(FEditor, ELogLevel::Warning, "AtlasTextComponent has empty font path");
             return;
         }
 
@@ -275,6 +307,8 @@ void FSceneAssetBinder::BindComponent(USceneComponent*           InComponent,
             InAssetCacheManager->BuildFontAtlas(FontPath);
         if (CookedData == nullptr)
         {
+            UE_LOG(FEditor, ELogLevel::Error, "Failed to build font atlas asset: %s",
+                   FontPath.c_str());
             AtlasTextComponent->SetFontAsset(nullptr);
             return;
         }
@@ -282,11 +316,14 @@ void FSceneAssetBinder::BindComponent(USceneComponent*           InComponent,
         UFontAtlas* FontAsset = EnsureAssetObject(AtlasTextComponent->GetFontAsset());
         if (!FontAsset->LoadFromCooked(FontPath, std::move(CookedData), *InDynamicRHI))
         {
+            UE_LOG(FEditor, ELogLevel::Error, "Failed to load font atlas asset: %s",
+                   FontPath.c_str());
             AtlasTextComponent->SetFontAsset(nullptr);
             return;
         }
 
         AtlasTextComponent->SetFontAsset(FontAsset);
+        UE_LOG(FEditor, ELogLevel::Info, "Bound font atlas asset: %s", FontPath.c_str());
         return;
     }
 }

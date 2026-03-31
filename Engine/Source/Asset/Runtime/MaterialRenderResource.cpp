@@ -1,6 +1,7 @@
 #include "Asset/Runtime/MaterialRenderResource.h"
 
 #include "Asset/Runtime/TextureRenderResource.h"
+#include "Asset/Serialization/CookedDataBinaryIO.h"
 #include "Core/Logging/LogMacros.h"
 
 namespace Asset
@@ -52,13 +53,20 @@ namespace Asset
     {
         for (const FMtlTextureBinding& Binding : CookedData.TextureBindings)
         {
-            if (Binding.Slot != Slot || Binding.Texture == nullptr || !Binding.Texture->IsValid())
+            if (Binding.Slot != Slot || Binding.TexturePath.empty())
+            {
+                continue;
+            }
+
+            FTextureCookedData TextureCooked;
+            if (!Binary::LoadTexture(Binding.TexturePath, TextureCooked) ||
+                !TextureCooked.IsValid())
             {
                 continue;
             }
 
             std::shared_ptr<FTextureRenderResource> TextureResource =
-                FTextureRenderResource::Create(*Binding.Texture, RHI);
+                FTextureRenderResource::Create(TextureCooked, RHI);
             if (TextureResource == nullptr)
             {
                 return nullptr;

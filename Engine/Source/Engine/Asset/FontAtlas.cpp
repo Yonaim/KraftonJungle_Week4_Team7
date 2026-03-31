@@ -1,4 +1,5 @@
 #include "Engine/Asset/FontAtlas.h"
+#include "Core/Logging/LogMacros.h"
 
 #include <filesystem>
 
@@ -24,6 +25,7 @@ bool UFontAtlas::LoadFromCooked(const FString& InAssetPath,
 {
     if (InCookedData == nullptr)
     {
+        UE_LOG(FEditor, ELogLevel::Error, "Font atlas asset load failed: %s", InAssetPath.c_str());
         return false;
     }
 
@@ -37,6 +39,7 @@ bool UFontAtlas::LoadFromCooked(const FString& InAssetPath,
         FFontAtlasRenderResource::Create(*InCookedData, InDynamicRHI);
     if (NewRenderResource == nullptr)
     {
+        UE_LOG(FEditor, ELogLevel::Error, "Font atlas asset load failed: %s", InAssetPath.c_str());
         return false;
     }
 
@@ -45,5 +48,6 @@ bool UFontAtlas::LoadFromCooked(const FString& InAssetPath,
     SetCookedData(std::move(InCookedData));
     SetRenderResource(std::move(NewRenderResource));
     SetLoaded(true);
+    UE_LOG(FEditor, ELogLevel::Info, "Font atlas asset load succeeded: %s", InAssetPath.c_str());
     return true;
 }

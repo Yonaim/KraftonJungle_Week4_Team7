@@ -5,6 +5,9 @@
 #include <sstream>
 
 #include "Asset/Cache/AssetKeyUtils.h"
+#include "Asset/Core/AssetNaming.h"
+#include "Asset/Builder/TextureBuilder.h"
+#include "Asset/Serialization/CookedDataBinaryIO.h"
 
 namespace Asset
 {
@@ -289,6 +292,14 @@ namespace Asset
                     continue;
                 }
 
+                const FString SourceTexturePath =
+                    std::filesystem::path(TexturePath).generic_string();
+                const FString BakedTexturePath = MakeBakedAssetPath(SourceTexturePath);
+                if (BakedTexturePath.empty())
+                {
+                    continue;
+                }
+
                 const FTextureBuildSettings         TextureSettings{};
                 FTextureBuilder                     TextureBuilder(Cache);
                 std::shared_ptr<FTextureCookedData> TextureCooked =
@@ -298,7 +309,8 @@ namespace Asset
                     continue;
                 }
 
-                Material.TextureBindings.push_back({TextureSlot, TextureCooked});
+                Binary::SaveTexture(*TextureCooked, BakedTexturePath);
+                Material.TextureBindings.push_back({TextureSlot, BakedTexturePath});
             }
 
             const uint32 MaterialIndex = static_cast<uint32>(Result->Materials.size());
@@ -306,7 +318,18 @@ namespace Asset
             Result->Materials.push_back(std::move(Material));
         }
 
-        return Result->IsValid() ? Result : nullptr;
+        if (!Result->IsValid())
+        {
+            return nullptr;
+        }
+
+        const FString BakedLibraryPath = MakeBakedAssetPath(Result->SourcePath);
+        if (!BakedLibraryPath.empty())
+        {
+            Binary::SaveMaterialLibrary(*Result, BakedLibraryPath);
+        }
+
+        return Result;
     }
 
     bool FMaterialBuilder::ReadAllText(const std::filesystem::path& Path, FString& OutText)

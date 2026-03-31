@@ -103,7 +103,7 @@ void FViewportNavigationController::MoveForward(float Value, float DeltaTime)
     //  Orbiting 중에는 이동 입력을 무시합니다.
     if (bOrbiting)
     {
-        UE_LOG(FViewportNavigationController, ELogVerbosity::Warning,
+        UE_LOG(FViewportNavigationController, ELogLevel::Debug,
                "MoveForward called while orbiting. Ignoring input.");
         return;
     }
@@ -507,7 +507,7 @@ void FViewportNavigationController::TranslateWithGizmoDelta(const FVector& Delta
     {
         return;
     }
-    
+
     EnsureTargetLocationInitialized();
 
     const FVector ScaledDelta = Delta * GizmoFollowSpeedScale;
@@ -516,13 +516,12 @@ void FViewportNavigationController::TranslateWithGizmoDelta(const FVector& Delta
     ViewportCamera->SetLocation(NewLocation);
     TargetLocation = TargetLocation + ScaledDelta;
     bHasTargetLocation = true;
-    
+
     if (bOrbiting)
     {
         OrbitPivot += ScaledDelta;
     }
 }
-
 
 void FViewportNavigationController::FocusActors()
 {

@@ -1,4 +1,5 @@
 #include "Engine/Asset/SubUVAtlas.h"
+#include "Core/Logging/LogMacros.h"
 
 #include <filesystem>
 
@@ -24,6 +25,7 @@ bool USubUVAtlas::LoadFromCooked(const FString&                         InAssetP
 {
     if (InCookedData == nullptr)
     {
+        UE_LOG(FEditor, ELogLevel::Error, "SubUV atlas asset load failed: %s", InAssetPath.c_str());
         return false;
     }
 
@@ -37,6 +39,7 @@ bool USubUVAtlas::LoadFromCooked(const FString&                         InAssetP
         FSubUVAtlasRenderResource::Create(*InCookedData, InDynamicRHI);
     if (NewRenderResource == nullptr)
     {
+        UE_LOG(FEditor, ELogLevel::Error, "SubUV atlas asset load failed: %s", InAssetPath.c_str());
         return false;
     }
 
@@ -45,5 +48,6 @@ bool USubUVAtlas::LoadFromCooked(const FString&                         InAssetP
     SetCookedData(std::move(InCookedData));
     SetRenderResource(std::move(NewRenderResource));
     SetLoaded(true);
+    UE_LOG(FEditor, ELogLevel::Info, "SubUV atlas asset load succeeded: %s", InAssetPath.c_str());
     return true;
 }

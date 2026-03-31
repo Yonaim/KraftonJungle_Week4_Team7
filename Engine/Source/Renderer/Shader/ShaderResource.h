@@ -7,24 +7,21 @@
 
 class ENGINE_API FShaderResource
 {
-public:
+  public:
     ~FShaderResource();
 
     const void* GetBufferPointer() const;
     SIZE_T      GetBufferSize() const;
 
-    static std::shared_ptr<FShaderResource> GetOrCompile(
-        const FWString FilePath,
-        const FWString EntryPoint,
-        const FWString Target
-        );
+    static std::shared_ptr<FShaderResource>
+    GetOrCompile(const FWString FilePath, const FWString EntryPoint, const FWString Target);
 
     static void ClearCache();
 
     // Content/Shaders 기본 경로 설정
     static void SetContentDir(const wchar_t* Dir);
 
-private:
+  private:
     FShaderResource() = default;
 
     // .cso 파일 경로 생성 (Content/Shaders/VertexShader_main.cso)

@@ -50,20 +50,20 @@ namespace Asset
         const std::wstring NativePath = Path.native();
         const std::string  DebugPath = NarrowFromWide(NativePath);
 
-        UE_LOG(FEditor, ELogVerbosity::Log, "QueryFileInfo native path: %s", DebugPath.c_str());
+        UE_LOG(FEditor, ELogLevel::Debug, "QueryFileInfo native path: %s", DebugPath.c_str());
 
-        UE_LOG(FEditor, ELogVerbosity::Log, "QueryFileInfo is_absolute=%d is_relative=%d",
+        UE_LOG(FEditor, ELogLevel::Debug, "QueryFileInfo is_absolute=%d is_relative=%d",
                Path.is_absolute() ? 1 : 0, Path.is_relative() ? 1 : 0);
 
         std::error_code Ec;
         const bool      bExists = std::filesystem::exists(Path, Ec);
 
-        UE_LOG(FEditor, ELogVerbosity::Log, "QueryFileInfo exists=%d ec=%d", bExists ? 1 : 0,
+        UE_LOG(FEditor, ELogLevel::Debug, "QueryFileInfo exists=%d ec=%d", bExists ? 1 : 0,
                static_cast<int>(Ec.value()));
 
         if (!bExists || Ec)
         {
-            UE_LOG(FEditor, ELogVerbosity::Error, "QueryFileInfo exists() failed: %s",
+            UE_LOG(FEditor, ELogLevel::Error, "QueryFileInfo exists() failed: %s",
                    DebugPath.c_str());
             return false;
         }

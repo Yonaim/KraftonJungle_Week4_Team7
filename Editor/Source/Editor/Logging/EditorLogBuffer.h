@@ -1,22 +1,20 @@
 #pragma once
-#pragma once
 
 #include "EditorLogEntry.h"
 #include "Core/Containers/Array.h"
 #include "Core/Logging/LogOutputDevice.h"
 
-
 class FEditorLogBuffer : public ILogOutputDevice
 {
-public:
+  public:
     FEditorLogBuffer() = default;
     ~FEditorLogBuffer() override;
-    
-    void Log(ELogVerbosity Verbosity, const char * Message) override;
+
+    void Log(ELogLevel Verbosity, const char* Message) override;
 
     const TArray<FEditorLogEntry>& GetLogBuffer() const { return LogEntries; }
-    void Clear();
+    void                           Clear();
 
-private:
+  private:
     TArray<FEditorLogEntry> LogEntries;
 };

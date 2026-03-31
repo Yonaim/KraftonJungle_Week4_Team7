@@ -153,7 +153,7 @@ namespace
         std::error_code ErrorCode;
         std::filesystem::create_directories(FilePath.parent_path(), ErrorCode);
 
-        std::ofstream File(FilePath, std::ios::trunc);
+        std::ofstream File(FilePath.c_str(), std::ios::trunc);
         if (!File.is_open())
         {
             return false;

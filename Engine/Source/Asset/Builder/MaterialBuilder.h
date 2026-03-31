@@ -6,7 +6,6 @@
 #include "Asset/Builder/AssetBuildReport.h"
 
 #include "Asset/Cache/AssetBuildCache.h"
-#include "Asset/Builder/TextureBuilder.h"
 #include "Asset/Cooked/MtlCookedData.h"
 #include "Asset/Intermediate/IntermediateMtlData.h"
 

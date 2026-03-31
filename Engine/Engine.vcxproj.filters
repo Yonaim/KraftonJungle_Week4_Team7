@@ -28,9 +28,6 @@
     <Filter Include="Source\Launch">
       <UniqueIdentifier>{3ff2eba7-1724-b5b0-ebd8-4a23450e4f65}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Primitive">
-      <UniqueIdentifier>{b1c8ef7e-4da0-b414-9db6-0f275d54f96c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\Renderer">
       <UniqueIdentifier>{b4935566-c566-3c8c-ae88-5cc13eba9d31}</UniqueIdentifier>
     </Filter>
@@ -70,6 +67,9 @@
     <Filter Include="Source\Asset\Runtime">
       <UniqueIdentifier>{ecacfd22-251a-8185-d699-d51e4ecce9b2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Asset\Serialization">
+      <UniqueIdentifier>{3fe64526-54ae-ab2f-faf4-9422ac862027}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source\Asset\Source">
       <UniqueIdentifier>{06e6b146-081c-9178-96c5-7bb1ae99e752}</UniqueIdentifier>
     </Filter>
@@ -108,9 +108,6 @@
     </Filter>
     <Filter Include="Source\Renderer\D3D11">
       <UniqueIdentifier>{7d49e81e-9894-3ffe-a35e-b64d3056e0ba}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Renderer\Material">
-      <UniqueIdentifier>{81ad5f80-0396-17fe-42fb-60db4d73e0be}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Renderer\Primitive">
       <UniqueIdentifier>{8526cc9f-ade7-18f1-2e31-0e3d5da40749}</UniqueIdentifier>
@@ -201,6 +198,9 @@
     <ClCompile Include="Source\Asset\Builder\TextureBuilder.cpp">
       <Filter>Source\Asset\Builder</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Asset\Core\AssetNaming.cpp">
+      <Filter>Source\Asset\Core</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Asset\Manager\AssetCacheManager.cpp">
       <Filter>Source\Asset\Manager</Filter>
     </ClCompile>
@@ -218,6 +218,15 @@
     </ClCompile>
     <ClCompile Include="Source\Asset\Runtime\TextureRenderResource.cpp">
       <Filter>Source\Asset\Runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Asset\Serialization\CookedDataBinaryIO.cpp">
+      <Filter>Source\Asset\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Asset\Serialization\CookedDataSerialization.cpp">
+      <Filter>Source\Asset\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Asset\Serialization\WindowsBinArchive.cpp">
+      <Filter>Source\Asset\Serialization</Filter>
     </ClCompile>
     <ClCompile Include="Source\Asset\Source\SourceCache.cpp">
       <Filter>Source\Asset\Source</Filter>
@@ -393,6 +402,9 @@
     <ClCompile Include="Source\Engine\Game\UnknownActor.cpp">
       <Filter>Source\Engine\Game</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\Scene\CameraInfo.cpp">
+      <Filter>Source\Engine\Scene</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Engine\Scene\Scene.cpp">
       <Filter>Source\Engine\Scene</Filter>
     </ClCompile>
@@ -444,10 +456,7 @@
     <ClCompile Include="Source\Renderer\D3D11\GeneralRenderer.cpp">
       <Filter>Source\Renderer\D3D11</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Renderer\Primitive\PrimitiveBase.cpp">
-      <Filter>Source\Renderer\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Renderer\Primitive\PrimitiveCube.cpp">
+    <ClCompile Include="Source\Renderer\Primitive\FMeshData.cpp">
       <Filter>Source\Renderer\Primitive</Filter>
     </ClCompile>
     <ClCompile Include="Source\Renderer\Primitive\UnrealEditorStyledGizmo.cpp">
@@ -486,7 +495,6 @@
     <ClCompile Include="Source\ThirdParty\stb\stb_image_impl.cpp">
       <Filter>Source\ThirdParty\stb</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Scene\CameraInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Resources\Mesh\Cone.h">
@@ -600,6 +608,9 @@
     <ClInclude Include="Source\Asset\Core\AssetCommonTypes.h">
       <Filter>Source\Asset\Core</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Asset\Core\AssetNaming.h">
+      <Filter>Source\Asset\Core</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Asset\Core\FontAtlasTypes.h">
       <Filter>Source\Asset\Core</Filter>
     </ClInclude>
@@ -647,6 +658,18 @@
     </ClInclude>
     <ClInclude Include="Source\Asset\Runtime\TextureRenderResource.h">
       <Filter>Source\Asset\Runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Asset\Serialization\Archive.h">
+      <Filter>Source\Asset\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Asset\Serialization\CookedDataBinaryIO.h">
+      <Filter>Source\Asset\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Asset\Serialization\CookedDataSerialization.h">
+      <Filter>Source\Asset\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Asset\Serialization\WindowsBinArchive.h">
+      <Filter>Source\Asset\Serialization</Filter>
     </ClInclude>
     <ClInclude Include="Source\Asset\Source\SourceCache.h">
       <Filter>Source\Asset\Source</Filter>
@@ -897,6 +920,9 @@
     <ClInclude Include="Source\Engine\Game\UnknownActor.h">
       <Filter>Source\Engine\Game</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Engine\Scene\CameraInfo.h">
+      <Filter>Source\Engine\Scene</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Engine\Scene\Scene.h">
       <Filter>Source\Engine\Scene</Filter>
     </ClInclude>
@@ -963,10 +989,7 @@
     <ClInclude Include="Source\Renderer\EditorRenderData.h">
       <Filter>Source\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Renderer\Primitive\PrimitiveBase.h">
-      <Filter>Source\Renderer\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Renderer\Primitive\PrimitiveCube.h">
+    <ClInclude Include="Source\Renderer\Primitive\FMeshData.h">
       <Filter>Source\Renderer\Primitive</Filter>
     </ClInclude>
     <ClInclude Include="Source\Renderer\Primitive\UnrealEditorStyledGizmo.h">
@@ -1086,7 +1109,6 @@
     <ClInclude Include="Source\ThirdParty\stb\stb_image.h">
       <Filter>Source\ThirdParty\stb</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Engine\Scene\CameraInfo.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/CoreMinimal.h"
+#include "Asset/Core/AssetNaming.h"
 
 #include <functional>
 
@@ -14,6 +15,25 @@ namespace Engine::Component
         TextureAtlasFile,
         SceneFile
     };
+
+    inline bool MatchesExpectedAssetPathKind(const FString& Path, EComponentAssetPathKind Kind)
+    {
+        switch (Kind)
+        {
+        case EComponentAssetPathKind::Any:
+            return Asset::ClassifyAssetPath(Path) != Asset::EAssetFileKind::Unknown;
+        case EComponentAssetPathKind::FontFile:
+            return Asset::ClassifyAssetPath(Path) == Asset::EAssetFileKind::Font;
+        case EComponentAssetPathKind::TextureImage:
+            return Asset::ClassifyAssetPath(Path) == Asset::EAssetFileKind::Texture;
+        case EComponentAssetPathKind::TextureAtlasFile:
+            return Asset::ClassifyAssetPath(Path) == Asset::EAssetFileKind::TextureAtlas;
+        case EComponentAssetPathKind::SceneFile:
+            return Asset::ClassifyAssetPath(Path) == Asset::EAssetFileKind::Scene;
+        default:
+            return false;
+        }
+    }
 
     enum class EComponentPropertyType : uint8
     {

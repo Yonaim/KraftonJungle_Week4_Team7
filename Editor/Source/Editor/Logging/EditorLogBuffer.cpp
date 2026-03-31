@@ -1,11 +1,8 @@
 #include "EditorLogBuffer.h"
 
-FEditorLogBuffer::~FEditorLogBuffer()
-{
-    LogEntries.clear();
-}
+FEditorLogBuffer::~FEditorLogBuffer() { LogEntries.clear(); }
 
-void FEditorLogBuffer::Log(ELogVerbosity Verbosity, const char* Message)
+void FEditorLogBuffer::Log(ELogLevel Verbosity, const char* Message)
 {
     FEditorLogEntry LogEntry;
     LogEntry.Verbosity = Verbosity;
@@ -13,7 +10,4 @@ void FEditorLogBuffer::Log(ELogVerbosity Verbosity, const char* Message)
     LogEntries.push_back(LogEntry);
 }
 
-void FEditorLogBuffer::Clear()
-{
-    LogEntries.clear();
-}
+void FEditorLogBuffer::Clear() { LogEntries.clear(); }

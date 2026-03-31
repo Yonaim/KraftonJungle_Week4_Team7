@@ -31,6 +31,9 @@
     <Filter Include="Source\ThirdParty">
       <UniqueIdentifier>{5726d692-7686-5f00-2fce-2f6dc385fdc4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Viewer">
+      <UniqueIdentifier>{38749efd-91ff-3635-391f-2e83841b79eb}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source\Viewport">
       <UniqueIdentifier>{76033aac-1e00-3e72-af05-fad596f6ac30}</UniqueIdentifier>
     </Filter>
@@ -78,6 +81,9 @@
     <ClCompile Include="Source\Editor\EditorContext.cpp">
       <Filter>Source\Editor</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Editor\EditorPaths.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Editor\EditorSettings.cpp">
       <Filter>Source\Editor</Filter>
     </ClCompile>
@@ -100,6 +106,9 @@
       <Filter>Source\Launch</Filter>
     </ClCompile>
     <ClCompile Include="Source\Launch\Launch.cpp">
+      <Filter>Source\Launch</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Launch\ViewerEngineLoop.cpp">
       <Filter>Source\Launch</Filter>
     </ClCompile>
     <ClCompile Include="Source\main.cpp">
@@ -153,6 +162,12 @@
     <ClCompile Include="Source\ThirdParty\ImGui\imgui_widgets.cpp">
       <Filter>Source\ThirdParty\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Viewer\Viewer.cpp">
+      <Filter>Source\Viewer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Viewer\ViewerNavigationController.cpp">
+      <Filter>Source\Viewer</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Viewport\EditorViewportClient.cpp">
       <Filter>Source\Viewport</Filter>
     </ClCompile>
@@ -168,6 +183,21 @@
     <ClCompile Include="Source\Viewport\Interaction\ViewportInteractionState.cpp">
       <Filter>Source\Viewport\Interaction</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutFactory.cpp">
+      <Filter>Source\Viewport\Layout</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutFourPanes.cpp">
+      <Filter>Source\Viewport\Layout</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutSinglePane.cpp">
+      <Filter>Source\Viewport\Layout</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutThreePanes.cpp">
+      <Filter>Source\Viewport\Layout</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutTwoPanes.cpp">
+      <Filter>Source\Viewport\Layout</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Viewport\Layout\Window.cpp">
       <Filter>Source\Viewport\Layout</Filter>
     </ClCompile>
@@ -180,19 +210,6 @@
     <ClCompile Include="Source\Viewport\Selection\ViewportSelectionController.cpp">
       <Filter>Source\Viewport\Selection</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Launch\ViewerEngineLoop.cpp">
-      <Filter>Source\Launch</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Viewer\Viewer.cpp" />
-    <ClCompile Include="Source\Viewer\ViewerNavigationController.cpp" />
-    <ClCompile Include="Source\Viewport\EditorViewportTab.cpp" />
-    <ClCompile Include="Source\Viewport\Layout\Window.cpp" />
-    <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutFactory.cpp" />
-    <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutFourPanes.cpp" />
-    <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutSinglePane.cpp" />
-    <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutThreePanes.cpp" />
-    <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutTwoPanes.cpp" />
-    <ClCompile Include="Source\Editor\EditorPaths.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Camera\ViewportCamera.h">
@@ -211,6 +228,9 @@
       <Filter>Source\Editor</Filter>
     </ClInclude>
     <ClInclude Include="Source\Editor\EditorContext.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\EditorPaths.h">
       <Filter>Source\Editor</Filter>
     </ClInclude>
     <ClInclude Include="Source\Editor\EditorSettings.h">
@@ -243,6 +263,9 @@
     <ClInclude Include="Source\Launch\Launch.h">
       <Filter>Source\Launch</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Launch\ViewerEngineLoop.h">
+      <Filter>Source\Launch</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Menu\EditorMenuRegistry.h">
       <Filter>Source\Menu</Filter>
     </ClInclude>
@@ -273,6 +296,9 @@
     <ClInclude Include="Source\Panel\StatePanel.h">
       <Filter>Source\Panel</Filter>
     </ClInclude>
+    <ClInclude Include="Source\ThirdParty\ImGui\IconsFontAwesome4.h">
+      <Filter>Source\ThirdParty\ImGui</Filter>
+    </ClInclude>
     <ClInclude Include="Source\ThirdParty\ImGui\imconfig.h">
       <Filter>Source\ThirdParty\ImGui</Filter>
     </ClInclude>
@@ -297,6 +323,12 @@
     <ClInclude Include="Source\ThirdParty\ImGui\imstb_truetype.h">
       <Filter>Source\ThirdParty\ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Viewer\Viewer.h">
+      <Filter>Source\Viewer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Viewer\ViewerNavigationController.h">
+      <Filter>Source\Viewer</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Viewport\EditorViewportClient.h">
       <Filter>Source\Viewport</Filter>
     </ClInclude>
@@ -315,6 +347,24 @@
     <ClInclude Include="Source\Viewport\Layout\EditorViewportLayout.h">
       <Filter>Source\Viewport\Layout</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutFactory.h">
+      <Filter>Source\Viewport\Layout</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutFourPanes.h">
+      <Filter>Source\Viewport\Layout</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutSinglePane.h">
+      <Filter>Source\Viewport\Layout</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutThreePanes.h">
+      <Filter>Source\Viewport\Layout</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutTwoPanes.h">
+      <Filter>Source\Viewport\Layout</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutType.h">
+      <Filter>Source\Viewport\Layout</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Viewport\Layout\Window.h">
       <Filter>Source\Viewport\Layout</Filter>
     </ClInclude>
@@ -330,23 +380,6 @@
     <ClInclude Include="Source\Viewport\Viewport.h">
       <Filter>Source\Viewport</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Launch\ViewerEngineLoop.h">
-      <Filter>Source\Launch</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Viewer\Viewer.h" />
-    <ClInclude Include="Source\Viewer\ViewerNavigationController.h" />
-    <ClInclude Include="Source\Viewport\EditorViewportTab.h" />
-    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayout.h" />
-    <ClInclude Include="Source\Viewport\Layout\Window.h" />
-    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutFactory.h" />
-    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutFourPanes.h" />
-    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutType.h" />
-    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutSinglePane.h" />
-    <ClInclude Include="Source\Viewport\Viewport.h" />
-    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutThreePanes.h" />
-    <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutTwoPanes.h" />
-    <ClInclude Include="Source\ThirdParty\ImGui\IconsFontAwesome4.h" />
-    <ClInclude Include="Source\Editor\EditorPaths.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\ThirdParty\ImGui\imgui.natstepfilter">
@@ -357,8 +390,5 @@
     <Natvis Include="Source\ThirdParty\ImGui\imgui.natvis">
       <Filter>Source\ThirdParty\ImGui</Filter>
     </Natvis>
-  </ItemGroup>
-  <ItemGroup>
-    <Font Include="Source\ThirdParty\ImGui\fontawesome-webfont.ttf" />
   </ItemGroup>
 </Project>

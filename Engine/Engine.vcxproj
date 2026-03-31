@@ -9,10 +9,6 @@
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Viewer|x64">
-      <Configuration>Viewer</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Resources\Mesh\Cone.h" />
@@ -52,6 +48,7 @@
     <ClInclude Include="Source\Asset\Cooked\SubUVAtlasCookedData.h" />
     <ClInclude Include="Source\Asset\Cooked\TextureCookedData.h" />
     <ClInclude Include="Source\Asset\Core\AssetCommonTypes.h" />
+    <ClInclude Include="Source\Asset\Core\AssetNaming.h" />
     <ClInclude Include="Source\Asset\Core\FontAtlasTypes.h" />
     <ClInclude Include="Source\Asset\Core\MaterialTypes.h" />
     <ClInclude Include="Source\Asset\Core\StaticMeshTypes.h" />
@@ -68,6 +65,10 @@
     <ClInclude Include="Source\Asset\Runtime\StaticMeshRenderResource.h" />
     <ClInclude Include="Source\Asset\Runtime\SubUVAtlasRenderResource.h" />
     <ClInclude Include="Source\Asset\Runtime\TextureRenderResource.h" />
+    <ClInclude Include="Source\Asset\Serialization\Archive.h" />
+    <ClInclude Include="Source\Asset\Serialization\CookedDataBinaryIO.h" />
+    <ClInclude Include="Source\Asset\Serialization\CookedDataSerialization.h" />
+    <ClInclude Include="Source\Asset\Serialization\WindowsBinArchive.h" />
     <ClInclude Include="Source\Asset\Source\SourceCache.h" />
     <ClInclude Include="Source\Asset\Source\SourceHash.h" />
     <ClInclude Include="Source\Asset\Source\SourceLoader.h" />
@@ -228,12 +229,16 @@
     <ClCompile Include="Source\Asset\Builder\StaticMeshBuilder.cpp" />
     <ClCompile Include="Source\Asset\Builder\SubUVAtlasBuilder.cpp" />
     <ClCompile Include="Source\Asset\Builder\TextureBuilder.cpp" />
+    <ClCompile Include="Source\Asset\Core\AssetNaming.cpp" />
     <ClCompile Include="Source\Asset\Manager\AssetCacheManager.cpp" />
     <ClCompile Include="Source\Asset\Runtime\FontAtlasRenderResource.cpp" />
     <ClCompile Include="Source\Asset\Runtime\MaterialRenderResource.cpp" />
     <ClCompile Include="Source\Asset\Runtime\StaticMeshRenderResource.cpp" />
     <ClCompile Include="Source\Asset\Runtime\SubUVAtlasRenderResource.cpp" />
     <ClCompile Include="Source\Asset\Runtime\TextureRenderResource.cpp" />
+    <ClCompile Include="Source\Asset\Serialization\CookedDataBinaryIO.cpp" />
+    <ClCompile Include="Source\Asset\Serialization\CookedDataSerialization.cpp" />
+    <ClCompile Include="Source\Asset\Serialization\WindowsBinArchive.cpp" />
     <ClCompile Include="Source\Asset\Source\SourceCache.cpp" />
     <ClCompile Include="Source\Asset\Source\SourceHash.cpp" />
     <ClCompile Include="Source\Asset\Source\SourceLoader.cpp" />
@@ -341,12 +346,6 @@
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Viewer|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
@@ -362,9 +361,6 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Viewer|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -373,35 +369,11 @@
     <OutDir>$(ProjectDir)Bin\$(Configuration)\</OutDir>
     <IntDir>Build\$(Configuration)\</IntDir>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Viewer|x64'">
-    <OutDir>$(ProjectDir)Bin\$(Configuration)\</OutDir>
-    <IntDir>Build\$(Configuration)\</IntDir>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(ProjectDir)Bin\$(Configuration)\</OutDir>
     <IntDir>Build\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>ENGINECORE_EXPORTS;NOMINMAX;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)Source;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>Core/CoreMinimal.h</PrecompiledHeaderFile>
-      <ForcedIncludeFiles>Core/CoreMinimal.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <PrecompiledHeaderOutputFile>$(IntDir)CoreMinimal.pch</PrecompiledHeaderOutputFile>
-    </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Viewer|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
