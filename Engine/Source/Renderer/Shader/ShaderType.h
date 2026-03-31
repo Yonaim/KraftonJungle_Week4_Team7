@@ -13,5 +13,6 @@ struct FObjectConstantBuffer
 {
     FMatrix World;
     uint32 ObjectId;
-    uint32 Padding[3];
+    FVector2 UVOffset;
+    uint32 Padding;
 };

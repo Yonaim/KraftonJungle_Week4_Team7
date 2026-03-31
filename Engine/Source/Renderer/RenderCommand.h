@@ -23,6 +23,8 @@ struct ENGINE_API FRenderCommand
     Geometry::FAABB  WorldAABB;
     bool             bDrawAABB = false;
 
+    FVector2 UVOffset = {0.f, 0.f};
+
     ERenderLayer RenderLayer = ERenderLayer::Default;
     uint32       ObjectId = 0;
 

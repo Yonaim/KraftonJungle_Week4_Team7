@@ -63,7 +63,7 @@ private:
     void SetConstantBuffers();
     bool CreateConstantBuffers();
     void UpdateFrameConstantBuffer();
-    void UpdateObjectConstantBuffer(const FMatrix& WorldMatrix, uint32 ObjectId = 0);
+    void UpdateObjectConstantBuffer(const FMatrix& WorldMatrix, uint32 ObjectId = 0, FVector2 UVOffset = {0,0});
     void ClearDepthBuffer();
 
     void ExecuteRenderPass(ERenderLayer InRenderLayer);
