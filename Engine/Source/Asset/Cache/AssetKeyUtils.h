@@ -94,9 +94,11 @@ namespace Asset
             {
                 KeyHash::CombineString(Seed, LibraryPath);
             }
+
             for (const auto& Face : Data.Faces)
             {
                 KeyHash::CombineString(Seed, Face.MaterialName);
+                KeyHash::Combine(Seed, Face.MaterialLibraryIndex);
                 for (const auto& Vertex : Face.Vertices)
                 {
                     KeyHash::Combine(Seed, Vertex.PositionIndex);

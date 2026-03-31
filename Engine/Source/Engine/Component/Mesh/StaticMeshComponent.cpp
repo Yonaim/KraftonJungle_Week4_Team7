@@ -220,10 +220,13 @@ namespace Engine::Component
         }
 
         const auto& CookedData = StaticMesh->GetCookedData();
-        if (CookedData != nullptr &&
-            static_cast<size_t>(SlotIndex) < CookedData->MaterialSlotNames.size())
+        if (CookedData != nullptr && static_cast<size_t>(SlotIndex) < CookedData->Materials.size())
         {
-            return CookedData->MaterialSlotNames[SlotIndex];
+            const Asset::FObjCookedMaterialRef& MaterialRef = CookedData->Materials[SlotIndex];
+            if (!MaterialRef.Name.empty())
+            {
+                return MaterialRef.Name;
+            }
         }
 
         return "Material Slot " + std::to_string(SlotIndex);

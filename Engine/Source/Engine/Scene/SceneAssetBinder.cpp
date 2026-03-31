@@ -58,7 +58,7 @@ namespace
         return FontAsset != nullptr ? FontAsset->GetAssetPath() : FString();
     }
 
-    static void BindStaticMeshMaterials(UStaticMesh* StaticMeshAsset, const FString& MeshPath,
+    static void BindStaticMeshMaterials(UStaticMesh*               StaticMeshAsset,
                                         Asset::FAssetCacheManager* InAssetCacheManager,
                                         RHI::FDynamicRHI*          InDynamicRHI)
     {
@@ -75,7 +75,7 @@ namespace
         }
 
         TArray<UMaterial*>& MaterialSlots = StaticMeshAsset->GetMaterialSlots();
-        const size_t        SlotCount = MeshCookedData->MaterialSlotNames.size();
+        const size_t        SlotCount = MeshCookedData->Materials.size();
 
         if (MaterialSlots.size() < SlotCount)
         {
@@ -84,15 +84,35 @@ namespace
 
         for (size_t SlotIndex = 0; SlotIndex < SlotCount; ++SlotIndex)
         {
-            const FString& SlotName = MeshCookedData->MaterialSlotNames[SlotIndex];
-            if (SlotName.empty())
+            if (SlotIndex >= MeshCookedData->Materials.size())
+            {
+                MaterialSlots[SlotIndex] = nullptr;
+                continue;
+            }
+
+            const Asset::FObjCookedMaterialRef& MaterialRef = MeshCookedData->Materials[SlotIndex];
+            if (MaterialRef.Name.empty())
+            {
+                MaterialSlots[SlotIndex] = nullptr;
+                continue;
+            }
+
+            if (MaterialRef.LibraryIndex >= MeshCookedData->MaterialLibraries.size())
+            {
+                MaterialSlots[SlotIndex] = nullptr;
+                continue;
+            }
+
+            const FString& LibraryPath =
+                MeshCookedData->MaterialLibraries[MaterialRef.LibraryIndex];
+            if (LibraryPath.empty())
             {
                 MaterialSlots[SlotIndex] = nullptr;
                 continue;
             }
 
             const FString MaterialAssetPath =
-                Asset::FMaterialBuilder::MakeMaterialAssetPath(MeshPath, SlotName);
+                Asset::FMaterialBuilder::MakeMaterialAssetPath(LibraryPath, MaterialRef.Name);
 
             std::shared_ptr<Asset::FMtlCookedData> MaterialCookedData =
                 InAssetCacheManager->BuildMaterial(MaterialAssetPath);
@@ -183,7 +203,7 @@ void FSceneAssetBinder::BindComponent(USceneComponent*           InComponent,
             return;
         }
 
-        BindStaticMeshMaterials(StaticMeshAsset, MeshPath, InAssetCacheManager, InDynamicRHI);
+        BindStaticMeshMaterials(StaticMeshAsset, InAssetCacheManager, InDynamicRHI);
 
         StaticMeshComponent->SetStaticMeshAsset(StaticMeshAsset);
         return;

@@ -1,6 +1,7 @@
 #include "Asset/Runtime/MaterialRenderResource.h"
 
 #include "Asset/Runtime/TextureRenderResource.h"
+#include "Core/Logging/LogMacros.h"
 
 namespace Asset
 {
