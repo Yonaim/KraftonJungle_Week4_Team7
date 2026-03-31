@@ -1,6 +1,6 @@
 #include "RenderCommand.h"
 #include "Engine/Asset/Material.h"
-#include "Primitive/PrimitiveBase.h"
+#include "Primitive/FMeshData.h"
 
 void FRenderCommand::SetDefaultStates()
 {

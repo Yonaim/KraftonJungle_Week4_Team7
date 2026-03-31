@@ -8,7 +8,7 @@
 #include "Engine/Game/Actor.h"
 #include "Renderer/SceneRenderData.h"
 #include "Renderer/D3D11/GeneralRenderer.h"
-#include "Renderer/Primitive/PrimitiveBase.h"
+#include "Renderer/Primitive/FMeshData.h"
 #include "RHI/D3D11/D3D11Buffer.h"
 
 namespace Engine::Component

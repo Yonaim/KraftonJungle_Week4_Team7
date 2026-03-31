@@ -4,7 +4,7 @@
 #include "Core/Misc/BitMaskEnum.h"
 #include "Renderer/SceneRenderData.h"
 #include "Renderer/D3D11/GeneralRenderer.h"
-#include "Renderer/Primitive/PrimitiveBase.h"
+#include "Renderer/Primitive/FMeshData.h"
 
 namespace Engine::Component
 {

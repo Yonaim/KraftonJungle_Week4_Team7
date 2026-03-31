@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Primitive/PrimitiveBase.h"
+#include "Primitive/FMeshData.h"
 #include "Renderer/RenderState/RenderState.h"
 #include "Engine/Asset/Material.h"
 

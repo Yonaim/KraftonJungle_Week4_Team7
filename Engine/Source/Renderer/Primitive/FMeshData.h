@@ -67,29 +67,3 @@ private:
     FVector MaxCoord = FVector(-FLT_MAX, -FLT_MAX, -FLT_MAX);
     float   LocalBoundRadius = 0.f;
 };
-
-class ENGINE_API CPrimitiveBase
-{
-public:
-    CPrimitiveBase() = default;
-    virtual ~CPrimitiveBase() = default;
-
-    FMeshData* GetMeshData() const
-    {
-        if (MeshData)
-        {
-            return MeshData.get();
-        }
-
-        return nullptr;
-    }
-
-    void    SetPrimitiveFileName(const FString& InFileName) { PrimitiveFileName = InFileName; }
-    FString GetPrimitiveFileName() const { return PrimitiveFileName; }
-
-protected:
-    std::shared_ptr<FMeshData> MeshData;
-
-private:
-    FString PrimitiveFileName = "";
-};

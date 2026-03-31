@@ -1,8 +1,6 @@
-#include "PrimitiveBase.h"
+#include "FMeshData.h"
 
 #include "Renderer/D3D11/D3D11RHI.h"
-
-// ─── FMeshData ───
 
 void FMeshData::Bind(FD3D11RHI* Context)
 {
