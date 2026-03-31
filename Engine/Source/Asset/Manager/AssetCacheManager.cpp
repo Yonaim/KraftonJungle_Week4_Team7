@@ -28,8 +28,8 @@ namespace Asset
         void LogBuildReport(const char* AssetType, const FString& Path,
                             const FAssetBuildReport& Report)
         {
-            UE_LOG(FEditor, ELogVerbosity::Debug,
-                   "%s asset build path: %s (%s, cachedIntermediate=%d, cachedCooked=%d, "
+            UE_LOG(FEditor, ELogLevel::Info,
+                   "%s asset ready: %s (%s, cachedIntermediate=%d, cachedCooked=%d, "
                    "builtNewCooked=%d)",
                    AssetType, Path.c_str(), DescribeBuildResultSource(Report.ResultSource),
                    Report.bUsedCachedIntermediate ? 1 : 0, Report.bUsedCachedCooked ? 1 : 0,
@@ -70,12 +70,12 @@ namespace Asset
         const std::filesystem::path AbsolutePath = ResolveAssetPath(Path);
         if (AbsolutePath.empty())
         {
-            UE_LOG(FEditor, ELogVerbosity::Error, "Texture asset path resolve failed: %s",
+            UE_LOG(FEditor, ELogLevel::Error, "Texture asset path resolve failed: %s",
                    Path.c_str());
             return nullptr;
         }
 
-        UE_LOG(FEditor, ELogVerbosity::Debug, "Texture asset path resolved: %s -> %s", Path.c_str(),
+        UE_LOG(FEditor, ELogLevel::Debug, "Texture asset path resolved: %s -> %s", Path.c_str(),
                StringFromPath(AbsolutePath).c_str());
 
         return BuildTextureAbsolute(AbsolutePath, Settings);
@@ -90,7 +90,7 @@ namespace Asset
         const std::filesystem::path AbsolutePath = ResolveAssetPath(LibraryPath);
         if (AbsolutePath.empty())
         {
-            UE_LOG(FEditor, ELogVerbosity::Error, "Material asset path resolve failed: %s",
+            UE_LOG(FEditor, ELogLevel::Error, "Material asset path resolve failed: %s",
                    Path.c_str());
             return nullptr;
         }
@@ -99,7 +99,7 @@ namespace Asset
             MaterialName.empty()
                 ? StringFromPath(AbsolutePath)
                 : FMaterialBuilder::MakeMaterialAssetPath(AbsolutePath, MaterialName);
-        UE_LOG(FEditor, ELogVerbosity::Debug, "Material asset path resolved: %s -> %s",
+        UE_LOG(FEditor, ELogLevel::Debug, "Material asset path resolved: %s -> %s",
                Path.c_str(), ResolvedPath.c_str());
 
         return BuildMaterialAbsolute(AbsolutePath, MaterialName);
@@ -112,12 +112,12 @@ namespace Asset
         const std::filesystem::path AbsolutePath = ResolveAssetPath(Path);
         if (AbsolutePath.empty())
         {
-            UE_LOG(FEditor, ELogVerbosity::Error, "Static mesh asset path resolve failed: %s",
+            UE_LOG(FEditor, ELogLevel::Error, "Static mesh asset path resolve failed: %s",
                    Path.c_str());
             return nullptr;
         }
 
-        UE_LOG(FEditor, ELogVerbosity::Debug, "Static mesh asset path resolved: %s -> %s",
+        UE_LOG(FEditor, ELogLevel::Debug, "Static mesh asset path resolved: %s -> %s",
                Path.c_str(), StringFromPath(AbsolutePath).c_str());
 
         return BuildStaticMeshAbsolute(AbsolutePath, Settings);
@@ -130,12 +130,12 @@ namespace Asset
         const std::filesystem::path AbsolutePath = ResolveAssetPath(Path);
         if (AbsolutePath.empty())
         {
-            UE_LOG(FEditor, ELogVerbosity::Error, "SubUV atlas asset path resolve failed: %s",
+            UE_LOG(FEditor, ELogLevel::Error, "SubUV atlas asset path resolve failed: %s",
                    Path.c_str());
             return nullptr;
         }
 
-        UE_LOG(FEditor, ELogVerbosity::Debug, "SubUV atlas asset path resolved: %s -> %s",
+        UE_LOG(FEditor, ELogLevel::Debug, "SubUV atlas asset path resolved: %s -> %s",
                Path.c_str(), StringFromPath(AbsolutePath).c_str());
 
         return BuildSubUVAtlasAbsolute(AbsolutePath, AtlasTextureSettings);
@@ -148,12 +148,12 @@ namespace Asset
         const std::filesystem::path AbsolutePath = ResolveAssetPath(Path);
         if (AbsolutePath.empty())
         {
-            UE_LOG(FEditor, ELogVerbosity::Error, "Font atlas asset path resolve failed: %s",
+            UE_LOG(FEditor, ELogLevel::Error, "Font atlas asset path resolve failed: %s",
                    Path.c_str());
             return nullptr;
         }
 
-        UE_LOG(FEditor, ELogVerbosity::Debug, "Font atlas asset path resolved: %s -> %s",
+        UE_LOG(FEditor, ELogLevel::Debug, "Font atlas asset path resolved: %s -> %s",
                Path.c_str(), StringFromPath(AbsolutePath).c_str());
 
         return BuildFontAtlasAbsolute(AbsolutePath, AtlasTextureSettings);
@@ -167,14 +167,14 @@ namespace Asset
 
         if (Result)
         {
-            UE_LOG(FEditor, ELogVerbosity::Debug, "Texture asset load succeeded: %s",
+            UE_LOG(FEditor, ELogLevel::Info, "Texture asset load succeeded: %s",
                    StringFromPath(AbsolutePath).c_str());
             LogBuildReport("Texture", StringFromPath(AbsolutePath),
                            TextureBuilder.GetLastBuildReport());
         }
         else
         {
-            UE_LOG(FEditor, ELogVerbosity::Error, "Texture asset load failed: %s",
+            UE_LOG(FEditor, ELogLevel::Error, "Texture asset load failed: %s",
                    StringFromPath(AbsolutePath).c_str());
         }
 
@@ -194,13 +194,13 @@ namespace Asset
                 : FMaterialBuilder::MakeMaterialAssetPath(AbsolutePath, MaterialName);
         if (Result)
         {
-            UE_LOG(FEditor, ELogVerbosity::Debug, "Material asset load succeeded: %s",
+            UE_LOG(FEditor, ELogLevel::Info, "Material asset load succeeded: %s",
                    LogPath.c_str());
             LogBuildReport("Material", LogPath, MaterialBuilder.GetLastBuildReport());
         }
         else
         {
-            UE_LOG(FEditor, ELogVerbosity::Error, "Material asset load failed: %s",
+            UE_LOG(FEditor, ELogLevel::Error, "Material asset load failed: %s",
                    LogPath.c_str());
         }
 
@@ -215,14 +215,14 @@ namespace Asset
 
         if (Result)
         {
-            UE_LOG(FEditor, ELogVerbosity::Debug, "Static mesh asset load succeeded: %s",
+            UE_LOG(FEditor, ELogLevel::Info, "Static mesh asset load succeeded: %s",
                    StringFromPath(AbsolutePath).c_str());
             LogBuildReport("Static mesh", StringFromPath(AbsolutePath),
                            StaticMeshBuilder.GetLastBuildReport());
         }
         else
         {
-            UE_LOG(FEditor, ELogVerbosity::Error, "Static mesh asset load failed: %s",
+            UE_LOG(FEditor, ELogLevel::Error, "Static mesh asset load failed: %s",
                    StringFromPath(AbsolutePath).c_str());
         }
 
@@ -238,14 +238,14 @@ namespace Asset
 
         if (Result)
         {
-            UE_LOG(FEditor, ELogVerbosity::Debug, "SubUV atlas asset load succeeded: %s",
+            UE_LOG(FEditor, ELogLevel::Info, "SubUV atlas asset load succeeded: %s",
                    StringFromPath(AbsolutePath).c_str());
             LogBuildReport("SubUV atlas", StringFromPath(AbsolutePath),
                            SubUVAtlasBuilder.GetLastBuildReport());
         }
         else
         {
-            UE_LOG(FEditor, ELogVerbosity::Error, "SubUV atlas asset load failed: %s",
+            UE_LOG(FEditor, ELogLevel::Error, "SubUV atlas asset load failed: %s",
                    StringFromPath(AbsolutePath).c_str());
         }
 
@@ -261,14 +261,14 @@ namespace Asset
 
         if (Result)
         {
-            UE_LOG(FEditor, ELogVerbosity::Debug, "Font atlas asset load succeeded: %s",
+            UE_LOG(FEditor, ELogLevel::Info, "Font atlas asset load succeeded: %s",
                    StringFromPath(AbsolutePath).c_str());
             LogBuildReport("Font atlas", StringFromPath(AbsolutePath),
                            FontAtlasBuilder.GetLastBuildReport());
         }
         else
         {
-            UE_LOG(FEditor, ELogVerbosity::Error, "Font atlas asset load failed: %s",
+            UE_LOG(FEditor, ELogLevel::Error, "Font atlas asset load failed: %s",
                    StringFromPath(AbsolutePath).c_str());
         }
 

@@ -88,7 +88,7 @@ std::unique_ptr<FScene> FSceneDeserializer::Deserialize(const FString& JsonSourc
                 if (!Engine::Scene::Serialization::CreateActorFromLegacyComponent(
                         Pair.first, *LegacyObj, *Scene, &LocalError))
                 {
-                    UE_LOG(SceneIO, ELogVerbosity::Warning,
+                    UE_LOG(SceneIO, ELogLevel::Warning,
                            "Skipped legacy primitive '%s': %s", Pair.first.c_str(),
                            LocalError.empty() ? "unsupported primitive" : LocalError.c_str());
                     continue;

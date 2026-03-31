@@ -47,14 +47,14 @@ UObject::UObject()
     GUObjectArray.push_back(this);
 
     const FString ObjectName = ResolveObjectName(this);
-    UE_LOG(UObject, ELogVerbosity::Debug, "Created %s (UUID=%u, Name=%s, Address=%p)",
+    UE_LOG(UObject, ELogLevel::Debug, "Created %s (UUID=%u, Name=%s, Address=%p)",
            ResolveAllocatedObjectTypeName(this), UUID, ObjectName.c_str(), this);
 }
 
 UObject::~UObject()
 {
     const FString ObjectName = ResolveObjectName(this);
-    UE_LOG(UObject, ELogVerbosity::Debug, "Destroyed %s (UUID=%u, Name=%s, Address=%p)",
+    UE_LOG(UObject, ELogLevel::Debug, "Destroyed %s (UUID=%u, Name=%s, Address=%p)",
            ResolveAllocatedObjectTypeName(this), UUID, ObjectName.c_str(), this);
 
     if (InternalIndex < GUObjectArray.size() && GUObjectArray[InternalIndex] == this)

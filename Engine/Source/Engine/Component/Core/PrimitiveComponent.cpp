@@ -80,7 +80,7 @@ namespace Engine::Component
 
         if (bBoundsDirty)
         {
-            // UE_LOG(UPrimitiveComponent, ELogVerbosity::Debug, "Bounds Update!");
+            // UE_LOG(UPrimitiveComponent, ELogLevel::Debug, "Bounds Update!");
             UpdateBounds();
             bBoundsDirty = false;
         }

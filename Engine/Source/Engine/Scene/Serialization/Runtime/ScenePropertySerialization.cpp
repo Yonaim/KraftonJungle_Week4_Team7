@@ -68,7 +68,7 @@ namespace Engine::Scene::Serialization
     void LogComponentPropertyRestoreFailure(const Engine::Component::USceneComponent& Component,
                                             const FString& PropertyKey, const FString& ErrorMessage)
     {
-        UE_LOG(SceneIO, ELogVerbosity::Error,
+        UE_LOG(SceneIO, ELogLevel::Error,
                "Failed to restore property '%s' on component '%s': %s", PropertyKey.c_str(),
                Component.GetTypeName(), ErrorMessage.c_str());
     }

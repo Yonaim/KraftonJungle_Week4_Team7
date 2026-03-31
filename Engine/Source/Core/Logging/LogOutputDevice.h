@@ -1,9 +1,8 @@
 #pragma once
-#pragma once
 
 #include "Core/EngineAPI.h"
 
-enum class ELogVerbosity
+enum class ELogLevel
 {
     Debug,
     Info,
@@ -16,5 +15,5 @@ class ENGINE_API ILogOutputDevice
 {
   public:
     virtual ~ILogOutputDevice() = default;
-    virtual void Log(ELogVerbosity Verbosity, const char *Message) = 0;
+    virtual void Log(ELogLevel Level, const char *Message) = 0;
 };

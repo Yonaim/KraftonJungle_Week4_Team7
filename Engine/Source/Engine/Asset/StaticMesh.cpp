@@ -1,6 +1,7 @@
 #include "StaticMesh.h"
 
 #include "Engine/Asset/Material.h"
+#include "Core/Logging/LogMacros.h"
 
 #include <algorithm>
 #include <cassert>
@@ -30,6 +31,7 @@ bool UStaticMesh::LoadFromCooked(const FString&                  InAssetPath,
 {
     if (InCookedData == nullptr)
     {
+        UE_LOG(FEditor, ELogLevel::Error, "Static mesh asset load failed: %s", InAssetPath.c_str());
         return false;
     }
 
@@ -43,6 +45,7 @@ bool UStaticMesh::LoadFromCooked(const FString&                  InAssetPath,
         FStaticMeshRenderResource::Create(*InCookedData, InDynamicRHI);
     if (NewRenderResource == nullptr)
     {
+        UE_LOG(FEditor, ELogLevel::Error, "Static mesh asset load failed: %s", InAssetPath.c_str());
         return false;
     }
 
@@ -71,6 +74,7 @@ bool UStaticMesh::LoadFromCooked(const FString&                  InAssetPath,
 
     Build();
     SetLoaded(true);
+    UE_LOG(FEditor, ELogLevel::Info, "Static mesh asset load succeeded: %s", InAssetPath.c_str());
     return true;
 }
 
@@ -164,4 +168,9 @@ void UStaticMesh::CalculateAABB()
 
     CachedAABB.Min = Min;
     CachedAABB.Max = Max;
+
+    UE_LOG(FEditor, ELogLevel::Debug,
+           "Static mesh AABB computed: %s min=(%.3f, %.3f, %.3f) max=(%.3f, %.3f, %.3f)",
+           GetAssetPath().c_str(), CachedAABB.Min.X, CachedAABB.Min.Y, CachedAABB.Min.Z,
+           CachedAABB.Max.X, CachedAABB.Max.Y, CachedAABB.Max.Z);
 }

@@ -4,19 +4,19 @@
 #include "LogOutputDevice.h"
 #include "Core/CoreGlobals.h"
 
-inline const char* GetLogVerbosityLabel(ELogVerbosity Verbosity)
+inline const char* GetLogLevelLabel(ELogLevel Level)
 {
-    switch (Verbosity)
+    switch (Level)
     {
-    case ELogVerbosity::Debug:
+    case ELogLevel::Debug:
         return "DEBUG";
-    case ELogVerbosity::Info:
+    case ELogLevel::Info:
         return "INFO";
-    case ELogVerbosity::Warning:
+    case ELogLevel::Warning:
         return "WARNING";
-    case ELogVerbosity::Error:
+    case ELogLevel::Error:
         return "ERROR";
-    case ELogVerbosity::Fatal:
+    case ELogLevel::Fatal:
         return "FATAL";
     default:
         return "UNKNOWN";
@@ -27,10 +27,10 @@ inline const char* GetLogVerbosityLabel(ELogVerbosity Verbosity)
  * LogOutput Macro
  *
  * Category    : Category name only (e.g. Console, Renderer, Engine), no registration required
- * Verbosity   : ELogVerbosity (Debug / Info / Warning / Error / Fatal)
+ * Level       : ELogLevel (Debug / Info / Warning / Error / Fatal)
  * Format, ... : printf-style format string
  *
- * Verbosity colors in Console Panel
+ * Level colors in Console Panel
  *   Debug   : Gray
  *   Info    : White
  *   Warning : Yellow
@@ -38,17 +38,17 @@ inline const char* GetLogVerbosityLabel(ELogVerbosity Verbosity)
  *   Fatal   : White text on red background
  *
  * Example)
- *   UE_LOG(Console, ELogVerbosity::Debug, "Value: %d", 42);
- *   UE_LOG(Renderer, ELogVerbosity::Error, "CreateBuffer failed");
+ *   UE_LOG(Console, ELogLevel::Debug, "Value: %d", 42);
+ *   UE_LOG(Renderer, ELogLevel::Error, "CreateBuffer failed");
  */
-#define UE_LOG(Category, Verbosity, Format, ...)                                                   \
+#define UE_LOG(Category, Level, Format, ...)                                                   \
     do                                                                                             \
     {                                                                                              \
         if (GLog)                                                                                  \
         {                                                                                          \
             char _buf[1024];                                                                       \
-            snprintf(_buf, sizeof(_buf), "[%-7s] %-16s: " Format, GetLogVerbosityLabel(Verbosity), \
+            snprintf(_buf, sizeof(_buf), "[%-7s] %-16s: " Format, GetLogLevelLabel(Level), \
                      #Category, ##__VA_ARGS__);                                                    \
-            GLog->Log(Verbosity, _buf);                                                            \
+            GLog->Log(Level, _buf);                                                            \
         }                                                                                          \
     } while (0)

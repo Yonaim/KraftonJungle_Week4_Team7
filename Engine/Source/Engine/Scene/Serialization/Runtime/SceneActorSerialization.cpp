@@ -152,7 +152,7 @@ namespace
             else
             {
                 UE_LOG(
-                    SceneIO, ELogVerbosity::Error,
+                    SceneIO, ELogLevel::Error,
                     "Component.properties on '%s' must be an object. Property restore was skipped.",
                     Component.GetTypeName());
             }
@@ -225,7 +225,7 @@ namespace
 
         if (!bKnownActorType)
         {
-            UE_LOG(SceneIO, ELogVerbosity::Error,
+            UE_LOG(SceneIO, ELogLevel::Error,
                    "Unknown actor type '%s' restored as placeholder.", ActorTypeName.c_str());
         }
 
@@ -329,7 +329,7 @@ namespace
 
             if (!bKnownComponentType)
             {
-                UE_LOG(SceneIO, ELogVerbosity::Error,
+                UE_LOG(SceneIO, ELogLevel::Error,
                        "Unknown component type '%s' restored as placeholder.",
                        ComponentTypeName.c_str());
             }

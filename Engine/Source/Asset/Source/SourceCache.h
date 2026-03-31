@@ -48,14 +48,14 @@ namespace Asset
             const std::filesystem::path NormalizedPath = SourceCacheDetail::NormalizePath(Path);
             if (NormalizedPath.empty())
             {
-                UE_LOG(FEditor, ELogVerbosity::Error,
+                UE_LOG(FEditor, ELogLevel::Error,
                        "SourceCache GetOrLoad failed: empty input path.");
                 return nullptr;
             }
 
             if (SourceCacheDetail::IsVirtualContentPath(NormalizedPath))
             {
-                UE_LOG(FEditor, ELogVerbosity::Error,
+                UE_LOG(FEditor, ELogLevel::Error,
                        "SourceCache GetOrLoad received virtual path. Resolve to absolute path "
                        "first: %s",
                        SourceCacheDetail::StringFromPath(NormalizedPath).c_str());
@@ -71,21 +71,21 @@ namespace Asset
         {
             if (Key.NormalizedPath.empty())
             {
-                UE_LOG(FEditor, ELogVerbosity::Error,
+                UE_LOG(FEditor, ELogLevel::Error,
                        "SourceCache GetOrLoad failed: empty normalized path.");
                 return nullptr;
             }
 
             if (SourceCacheDetail::IsVirtualContentPath(Key.NormalizedPath))
             {
-                UE_LOG(FEditor, ELogVerbosity::Error,
+                UE_LOG(FEditor, ELogLevel::Error,
                        "SourceCache GetOrLoad received virtual key path. Resolve to absolute path "
                        "first: %s",
                        SourceCacheDetail::StringFromPath(Key.NormalizedPath).c_str());
                 return nullptr;
             }
 
-            UE_LOG(FEditor, ELogVerbosity::Debug, "SourceCache GetOrLoad: path = %s",
+            UE_LOG(FEditor, ELogLevel::Debug, "SourceCache GetOrLoad: path = %s",
                    SourceCacheDetail::StringFromPath(Key.NormalizedPath).c_str());
 
             uint64 CurrentFileSize = 0;
@@ -93,10 +93,10 @@ namespace Asset
             if (!FSourceLoader::QueryFileInfo(Key.NormalizedPath, CurrentFileSize,
                                               CurrentWriteTimeTicks))
             {
-                UE_LOG(FEditor, ELogVerbosity::Error, "SourceCache QueryFileInfo failed: %s",
+                UE_LOG(FEditor, ELogLevel::Error, "SourceCache QueryFileInfo failed: %s",
                        SourceCacheDetail::StringFromPath(Key.NormalizedPath).c_str());
 
-                UE_LOG(FEditor, ELogVerbosity::Error,
+                UE_LOG(FEditor, ELogLevel::Error,
                        "SourceCache hint: verify the file exists and that the path was resolved to "
                        "an absolute filesystem path before GetOrLoad.");
 
@@ -109,14 +109,19 @@ namespace Asset
             {
                 if (!HasFileChanged(ExistingIt->second, CurrentFileSize, CurrentWriteTimeTicks))
                 {
+                    UE_LOG(FEditor, ELogLevel::Debug, "SourceCache cache hit: %s",
+                           SourceCacheDetail::StringFromPath(Key.NormalizedPath).c_str());
                     return &ExistingIt->second;
                 }
+
+                UE_LOG(FEditor, ELogLevel::Info, "SourceCache source changed, reloading: %s",
+                       SourceCacheDetail::StringFromPath(Key.NormalizedPath).c_str());
             }
 
             FSourceRecord NewRecord;
             if (!ReloadRecord(Key, NewRecord))
             {
-                UE_LOG(FEditor, ELogVerbosity::Error, "SourceCache ReloadRecord failed: %s",
+                UE_LOG(FEditor, ELogLevel::Error, "SourceCache ReloadRecord failed: %s",
                        SourceCacheDetail::StringFromPath(Key.NormalizedPath).c_str());
 
                 Records.erase(Key);
@@ -124,7 +129,9 @@ namespace Asset
             }
 
             auto [It, bInserted] = Records.insert_or_assign(Key, std::move(NewRecord));
-            (void)bInserted;
+            UE_LOG(FEditor, ELogLevel::Info, bInserted ? "SourceCache cached new record: %s"
+                                                       : "SourceCache refreshed record: %s",
+                   SourceCacheDetail::StringFromPath(Key.NormalizedPath).c_str());
             return &It->second;
         }
 
@@ -133,14 +140,14 @@ namespace Asset
             const std::filesystem::path NormalizedPath = SourceCacheDetail::NormalizePath(Path);
             if (NormalizedPath.empty())
             {
-                UE_LOG(FEditor, ELogVerbosity::Error,
+                UE_LOG(FEditor, ELogLevel::Error,
                        "SourceCache EnsureContentHashLoaded failed: empty input path.");
                 return false;
             }
 
             if (SourceCacheDetail::IsVirtualContentPath(NormalizedPath))
             {
-                UE_LOG(FEditor, ELogVerbosity::Error,
+                UE_LOG(FEditor, ELogLevel::Error,
                        "SourceCache EnsureContentHashLoaded received virtual path. Resolve to "
                        "absolute path first: %s",
                        SourceCacheDetail::StringFromPath(NormalizedPath).c_str());
@@ -156,7 +163,7 @@ namespace Asset
         {
             if (Key.NormalizedPath.empty())
             {
-                UE_LOG(FEditor, ELogVerbosity::Error,
+                UE_LOG(FEditor, ELogLevel::Error,
                        "SourceCache EnsureContentHashLoaded failed: empty normalized path.");
                 return false;
             }
@@ -164,7 +171,7 @@ namespace Asset
             auto It = Records.find(Key);
             if (It == Records.end())
             {
-                UE_LOG(FEditor, ELogVerbosity::Warning,
+                UE_LOG(FEditor, ELogLevel::Warning,
                        "SourceCache EnsureContentHashLoaded cache miss: %s",
                        SourceCacheDetail::StringFromPath(Key.NormalizedPath).c_str());
                 return false;
@@ -178,7 +185,7 @@ namespace Asset
             TArray<uint8> FileBytes;
             if (!FSourceLoader::ReadAllBytes(Key.NormalizedPath, FileBytes))
             {
-                UE_LOG(FEditor, ELogVerbosity::Error,
+                UE_LOG(FEditor, ELogLevel::Error,
                        "SourceCache ReadAllBytes failed while loading content hash: %s",
                        SourceCacheDetail::StringFromPath(Key.NormalizedPath).c_str());
                 return false;
@@ -187,13 +194,15 @@ namespace Asset
             FString ContentHash;
             if (!FSourceHash::Compute(FileBytes, ContentHash))
             {
-                UE_LOG(FEditor, ELogVerbosity::Error, "SourceCache content hash compute failed: %s",
+                UE_LOG(FEditor, ELogLevel::Error, "SourceCache content hash compute failed: %s",
                        SourceCacheDetail::StringFromPath(Key.NormalizedPath).c_str());
                 return false;
             }
 
             It->second.ContentHash = std::move(ContentHash);
             It->second.bHasContentHash = true;
+            UE_LOG(FEditor, ELogLevel::Debug, "SourceCache content hash loaded: %s",
+                   SourceCacheDetail::StringFromPath(Key.NormalizedPath).c_str());
             return true;
         }
 
@@ -207,7 +216,7 @@ namespace Asset
 
             if (SourceCacheDetail::IsVirtualContentPath(NormalizedPath))
             {
-                UE_LOG(FEditor, ELogVerbosity::Warning,
+                UE_LOG(FEditor, ELogLevel::Warning,
                        "SourceCache Find received virtual path. Resolve to absolute path first: %s",
                        SourceCacheDetail::StringFromPath(NormalizedPath).c_str());
                 return nullptr;
@@ -234,7 +243,7 @@ namespace Asset
 
             if (SourceCacheDetail::IsVirtualContentPath(NormalizedPath))
             {
-                UE_LOG(FEditor, ELogVerbosity::Warning,
+                UE_LOG(FEditor, ELogLevel::Warning,
                        "SourceCache Invalidate received virtual path. Resolve to absolute path "
                        "first: %s",
                        SourceCacheDetail::StringFromPath(NormalizedPath).c_str());
