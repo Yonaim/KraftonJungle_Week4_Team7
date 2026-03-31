@@ -3,6 +3,7 @@
 #include <cstdio>
 #include "LogOutputDevice.h"
 #include "Core/CoreGlobals.h"
+#include <cstdarg>
 
 inline const char* GetLogLevelLabel(ELogLevel Level)
 {
@@ -41,14 +42,30 @@ inline const char* GetLogLevelLabel(ELogLevel Level)
  *   UE_LOG(Console, ELogLevel::Debug, "Value: %d", 42);
  *   UE_LOG(Renderer, ELogLevel::Error, "CreateBuffer failed");
  */
-#define UE_LOG(Category, Level, Format, ...)                                                   \
+inline void LogMessage(ELogLevel Level, const char* Category, const char* Format, ...)
+{
+    if (!GLog)
+    {
+        return;
+    }
+
+    char Prefix[256];
+    snprintf(Prefix, sizeof(Prefix), "[%-6s] %-17s: ", GetLogLevelLabel(Level), Category);
+
+    char    Message[1024];
+    va_list Args;
+    va_start(Args, Format);
+    vsnprintf(Message, sizeof(Message), Format, Args);
+    va_end(Args);
+
+    char FinalBuffer[1280];
+    snprintf(FinalBuffer, sizeof(FinalBuffer), "%s%s", Prefix, Message);
+
+    GLog->Log(Level, FinalBuffer);
+}
+
+#define UE_LOG(Category, Level, Format, ...)                                                       \
     do                                                                                             \
     {                                                                                              \
-        if (GLog)                                                                                  \
-        {                                                                                          \
-            char _buf[1024];                                                                       \
-            snprintf(_buf, sizeof(_buf), "[%-7s] %-16s: " Format, GetLogLevelLabel(Level), \
-                     #Category, ##__VA_ARGS__);                                                    \
-            GLog->Log(Level, _buf);                                                            \
-        }                                                                                          \
+        LogMessage(Level, #Category, Format, ##__VA_ARGS__);                                       \
     } while (0)

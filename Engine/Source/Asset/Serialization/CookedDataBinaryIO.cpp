@@ -1,5 +1,6 @@
+#include <filesystem>
+#include <fstream>
 #include "Asset/Serialization/CookedDataBinaryIO.h"
-
 #include "Asset/Core/AssetNaming.h"
 
 namespace Asset::Binary

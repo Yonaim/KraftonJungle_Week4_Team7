@@ -214,8 +214,7 @@ namespace
             const DWORD ExtendedError = CommDlgExtendedError();
             if (ExtendedError != 0)
             {
-                UE_LOG(FEditor, ELogVerbosity::Error,
-                       "Open scene dialog failed with error code %lu.",
+                UE_LOG(FEditor, ELogLevel::Error, "Open scene dialog failed with error code %lu.",
                        static_cast<unsigned long>(ExtendedError));
             }
             return false;
@@ -256,8 +255,7 @@ namespace
             const DWORD ExtendedError = CommDlgExtendedError();
             if (ExtendedError != 0)
             {
-                UE_LOG(FEditor, ELogVerbosity::Error,
-                       "Save scene dialog failed with error code %lu.",
+                UE_LOG(FEditor, ELogLevel::Error, "Save scene dialog failed with error code %lu.",
                        static_cast<unsigned long>(ExtendedError));
             }
             return false;
@@ -313,6 +311,10 @@ void FEditor::Create()
     EditorContext.Editor = this;
     EditorContext.ContentIndex = &ContentIndex;
     ContentIndex.Refresh();
+    UE_LOG(FEditor, ELogLevel::Info,
+           "Content index refreshed during editor startup: folders=%d files=%d root=%s",
+           ContentIndex.GetSnapshot().FolderCount, ContentIndex.GetSnapshot().FileCount,
+           PathToUtf8String(ContentIndex.GetSnapshot().ContentRootPath).c_str());
 
     CurWorld = new FWorld();
     EditorContext.World = CurWorld;
@@ -335,6 +337,9 @@ void FEditor::Create()
     GlobalInputRouter.AddContext(&GlobalInputContext);
 
     LoadEditorSettings();
+    UE_LOG(FEditor, ELogLevel::Info,
+           "Editor settings loaded. GridSpacing=%.2f ContentBrowserLeftPaneWidth=%.2f",
+           UEngineStatics::GridSpacing, EditorContext.ContentBrowserLeftPaneWidth);
 
     // 메뉴 시스템은 command 등록과 배치 등록을 분리해서 초기화합니다.
     MenuRegistry.Clear();
@@ -357,15 +362,17 @@ void FEditor::Create()
     // TODO: ViewportTab도 Panel로 만들기
     ViewportTab.InitializeControlPanels(&EditorContext);
 
+    UE_LOG(FEditor, ELogLevel::Info, "Editor created successfully. Viewports=%zu PanelsReady=%s",
+           ViewportTab.GetViewports().size(), PanelManager != nullptr ? "true" : "false");
+
     // PanelManager->RegisterPanelInstance<FSamplePanel>(&LogBuffer);
 
     //  TODO : Gizmo
-
-    UE_LOG(FEditor, ELogVerbosity::Debug, "Hello Editor");
 }
 
 void FEditor::Release()
 {
+    UE_LOG(FEditor, ELogLevel::Info, "Editor release started.");
     SaveEditorSettings();
     AboutImageResource = nullptr;
     bAttemptedAboutImageLoad = false;
@@ -393,10 +400,13 @@ void FEditor::Release()
     {
         GLog = nullptr;
     }
+
+    UE_LOG(FEditor, ELogLevel::Info, "Editor released successfully.");
 }
 
 void FEditor::Initialize()
 {
+    UE_LOG(FEditor, ELogLevel::Debug, "Editor initialize called.");
     if (CurWorld == nullptr)
     {
         CurWorld = new FWorld();
@@ -416,6 +426,7 @@ void FEditor::SetChromeHost(IEditorChromeHost* InChromeHost)
 {
     ChromeHost = InChromeHost;
     EditorChrome.SetHost(InChromeHost);
+    UE_LOG(FEditor, ELogLevel::Debug, "Editor chrome host set: %p", InChromeHost);
 }
 
 void FEditor::SetRuntimeServices(FD3D11RHI* InRHI, RHI::FDynamicRHI* InDynamicRHI,
@@ -428,6 +439,9 @@ void FEditor::SetRuntimeServices(FD3D11RHI* InRHI, RHI::FDynamicRHI* InDynamicRH
     bAttemptedAboutImageLoad = false;
     EnsureAboutImageLoaded();
     ResolveSceneAssetReferences(CurWorld != nullptr ? CurWorld->GetActiveScene() : nullptr);
+    UE_LOG(FEditor, ELogLevel::Info,
+           "Runtime services updated. RHI=%p DynamicRHI=%p AssetCacheManager=%p", InRHI,
+           InDynamicRHI, InAssetCacheManager);
 }
 
 void FEditor::LoadEditorSettings()
@@ -448,20 +462,20 @@ void FEditor::LoadEditorSettings()
 
     if (LoadResult == EEditorSettingsLoadResult::Missing)
     {
+        UE_LOG(FEditor, ELogLevel::Info,
+               "editor.ini was not found. Using default editor settings.");
         return;
     }
 
     if (LoadResult == EEditorSettingsLoadResult::InvalidFormat)
     {
-        UE_LOG(FEditor, ELogVerbosity::Error, "Invalid editor.ini format: %s",
-               ErrorMessage.c_str());
+        UE_LOG(FEditor, ELogLevel::Error, "Invalid editor.ini format: %s", ErrorMessage.c_str());
         return;
     }
 
     if (LoadResult == EEditorSettingsLoadResult::IOError)
     {
-        UE_LOG(FEditor, ELogVerbosity::Error, "Failed to read editor.ini: %s",
-               ErrorMessage.c_str());
+        UE_LOG(FEditor, ELogLevel::Error, "Failed to read editor.ini: %s", ErrorMessage.c_str());
         return;
     }
 
@@ -479,6 +493,12 @@ void FEditor::LoadEditorSettings()
     }
     EditorContext.ContentBrowserLeftPaneWidth =
         std::max(SettingsData.ContentBrowserLeftPaneWidth, 120.0f);
+
+    UE_LOG(FEditor, ELogLevel::Info,
+           "Loaded editor settings: GridSpacing=%.2f CameraMoveSpeed=%.2f CameraRotationSpeed=%.2f "
+           "LeftPaneWidth=%.2f",
+           UEngineStatics::GridSpacing, SettingsData.CameraMoveSpeed,
+           SettingsData.CameraRotationSpeed, EditorContext.ContentBrowserLeftPaneWidth);
 }
 
 void FEditor::SaveEditorSettings() const
@@ -493,7 +513,18 @@ void FEditor::SaveEditorSettings() const
                                            .GetRotationSpeed();
     SettingsData.ContentBrowserLeftPaneWidth =
         std::max(EditorContext.ContentBrowserLeftPaneWidth, 120.0f);
-    PersistentSettings.Save(SettingsData);
+    if (PersistentSettings.Save(SettingsData))
+    {
+        UE_LOG(FEditor, ELogLevel::Debug,
+               "Saved editor settings: GridSpacing=%.2f CameraMoveSpeed=%.2f "
+               "CameraRotationSpeed=%.2f LeftPaneWidth=%.2f",
+               SettingsData.GridSpacing, SettingsData.CameraMoveSpeed,
+               SettingsData.CameraRotationSpeed, SettingsData.ContentBrowserLeftPaneWidth);
+    }
+    else
+    {
+        UE_LOG(FEditor, ELogLevel::Warning, "Failed to save editor settings.");
+    }
 }
 
 void FEditor::MarkSceneClean() { SceneDocument.bDirty = false; }
@@ -548,8 +579,12 @@ void FEditor::RequestOpenScene()
 
     if (!ShowOpenSceneFileDialog(ChromeHost, InitialDirectory, SelectedPath))
     {
+        UE_LOG(FEditor, ELogLevel::Debug, "Open scene dialog was cancelled.");
         return;
     }
+
+    UE_LOG(FEditor, ELogLevel::Info, "Scene open requested: %s",
+           PathToUtf8String(SelectedPath).c_str());
 
     const FDeferredSceneAction Action{.Type = EDeferredSceneActionType::OpenScene,
                                       .ScenePath = SelectedPath};
@@ -563,6 +598,7 @@ void FEditor::RequestOpenScene()
 
 void FEditor::PerformNewScene()
 {
+    UE_LOG(FEditor, ELogLevel::Info, "Creating a new scene document.");
     ReplaceCurrentScene(std::make_unique<FScene>());
     SceneDocument.CurrentScenePath.clear();
     MarkSceneClean();
@@ -570,6 +606,7 @@ void FEditor::PerformNewScene()
 
 void FEditor::PerformClearScene()
 {
+    UE_LOG(FEditor, ELogLevel::Info, "Clearing the current scene.");
     FScene* ActiveScene = (CurWorld != nullptr) ? CurWorld->GetActiveScene() : nullptr;
     if (ActiveScene == nullptr)
     {
@@ -599,13 +636,13 @@ bool FEditor::SaveSceneToPath(const std::filesystem::path& FilePath, bool bUpdat
     FScene* ActiveScene = (CurWorld != nullptr) ? CurWorld->GetActiveScene() : nullptr;
     if (ActiveScene == nullptr)
     {
-        UE_LOG(FEditor, ELogVerbosity::Error, "No scene is available to save.");
+        UE_LOG(FEditor, ELogLevel::Error, "No scene is available to save.");
         return false;
     }
 
     if (ViewportTab.GetViewport(0)->IsValid() == false)
     {
-        UE_LOG(FEditor, ELogVerbosity::Error, "No viewport is available to save scene from.");
+        UE_LOG(FEditor, ELogLevel::Error, "No viewport is available to save scene from.");
         return false;
     }
 
@@ -620,7 +657,7 @@ bool FEditor::SaveSceneToPath(const std::filesystem::path& FilePath, bool bUpdat
     FString ErrorMessage;
     if (!FSceneSerializer::SaveToFile(*ActiveScene, CameraInfo, FilePath, &ErrorMessage))
     {
-        UE_LOG(FEditor, ELogVerbosity::Error, "Failed to save scene: %s", ErrorMessage.c_str());
+        UE_LOG(FEditor, ELogLevel::Error, "Failed to save scene: %s", ErrorMessage.c_str());
         return false;
     }
 
@@ -630,7 +667,7 @@ bool FEditor::SaveSceneToPath(const std::filesystem::path& FilePath, bool bUpdat
     }
     MarkSceneClean();
 
-    UE_LOG(FEditor, ELogVerbosity::Debug, "Saved scene: %s", PathToUtf8String(FilePath).c_str());
+    UE_LOG(FEditor, ELogLevel::Info, "Saved scene: %s", PathToUtf8String(FilePath).c_str());
     return true;
 }
 
@@ -640,7 +677,7 @@ bool FEditor::LoadSceneFromPath(const std::filesystem::path& FilePath)
     std::unique_ptr<FScene> LoadedScene = FSceneDeserializer::LoadFromFile(FilePath, &ErrorMessage);
     if (!LoadedScene)
     {
-        UE_LOG(FEditor, ELogVerbosity::Error, "Failed to load scene: %s", ErrorMessage.c_str());
+        UE_LOG(FEditor, ELogLevel::Error, "Failed to load scene: %s", ErrorMessage.c_str());
         return false;
     }
 
@@ -648,12 +685,13 @@ bool FEditor::LoadSceneFromPath(const std::filesystem::path& FilePath)
     SceneDocument.CurrentScenePath = FilePath;
     MarkSceneClean();
 
-    UE_LOG(FEditor, ELogVerbosity::Debug, "Loaded scene: %s", PathToUtf8String(FilePath).c_str());
+    UE_LOG(FEditor, ELogLevel::Info, "Loaded scene: %s", PathToUtf8String(FilePath).c_str());
     return true;
 }
 
 void FEditor::ReplaceCurrentScene(std::unique_ptr<FScene> NewScene)
 {
+    UE_LOG(FEditor, ELogLevel::Info, "Replacing current scene.");
     for (auto Viewport : ViewportTab.GetViewports())
     {
         if (Viewport->IsValid())
@@ -713,6 +751,8 @@ void FEditor::ResolveActorAssetReferences(AActor* Actor)
         return;
     }
 
+    UE_LOG(FEditor, ELogLevel::Debug, "Resolving asset references for actor: %s",
+           Actor->GetTypeName());
     FSceneAssetBinder::BindActor(Actor, EditorContext.AssetCacheManager, EditorContext.DynamicRHI);
 }
 
@@ -724,6 +764,9 @@ void FEditor::ResolveSceneAssetReferences(FScene* Scene)
         return;
     }
 
+    TArray<AActor*>* SceneActors = (Scene->GetActors());
+    UE_LOG(FEditor, ELogLevel::Info, "Resolving scene asset references for %zu actor(s).",
+           SceneActors != nullptr ? SceneActors->size() : size_t(0));
     FSceneAssetBinder::BindScene(Scene, EditorContext.AssetCacheManager, EditorContext.DynamicRHI);
 }
 

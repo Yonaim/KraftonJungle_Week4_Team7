@@ -110,7 +110,7 @@ class FEditor
 
     const TArray<FEditorRenderData>& GetEditorRenderData() const { return EditorRenderDatas; }
     const TArray<FSceneRenderData>&  GetSceneRenderData() const { return SceneRenderDatas; }
-    SEditorViewportTab&        GetViewportTab() { return ViewportTab; }
+    SEditorViewportTab&              GetViewportTab() { return ViewportTab; }
 
     void DrawPanel();
 
@@ -143,7 +143,7 @@ class FEditor
 
   private:
     uint32_t           RootDockSpaceId = 0;
-    SEditorViewportTab ViewportTab; 
+    SEditorViewportTab ViewportTab;
 
     Engine::ApplicationCore::FInputRouter GlobalInputRouter;
     FEditorGlobalController               GlobalInputController;

@@ -36,7 +36,6 @@ namespace
         return LowerValue;
     }
 
-
     EContentBrowserItemType AssetFileKindToContentItemType(Asset::EAssetFileKind Kind)
     {
         switch (Kind)
@@ -60,8 +59,7 @@ namespace
 
     EContentBrowserItemType ClassifyFileType(const std::filesystem::path& FilePath)
     {
-        return AssetFileKindToContentItemType(
-            Asset::ClassifyAssetPath(PathToUtf8String(FilePath)));
+        return AssetFileKindToContentItemType(Asset::ClassifyAssetPath(PathToUtf8String(FilePath)));
     }
 
     FString GetFolderDisplayName(const std::filesystem::path& ContentRoot,
@@ -91,7 +89,7 @@ namespace
         std::filesystem::directory_iterator Iterator(FolderPath, DirectoryOptions, ErrorCode);
         if (ErrorCode)
         {
-            UE_LOG(ContentBrowser, ELogVerbosity::Warning, "Failed to enumerate folder: %s",
+            UE_LOG(ContentBrowser, ELogLevel::Warning, "Failed to enumerate folder: %s",
                    PathToUtf8String(FolderPath).c_str());
             return FolderNode;
         }
@@ -148,7 +146,7 @@ void FEditorContentIndex::Refresh()
         Snapshot.RootFolder.AbsolutePath = Snapshot.ContentRootPath;
         Snapshot.RootFolder.VirtualPath = ContentVirtualRoot;
         Snapshot.RootFolder.DisplayName = "Content";
-        UE_LOG(ContentBrowser, ELogVerbosity::Warning, "Content root was not found: %s",
+        UE_LOG(ContentBrowser, ELogLevel::Warning, "Content root was not found: %s",
                PathToUtf8String(Snapshot.ContentRootPath).c_str());
         return;
     }
@@ -156,6 +154,9 @@ void FEditorContentIndex::Refresh()
     Snapshot.bHasContentRoot = true;
     Snapshot.RootFolder = BuildFolderNode(Snapshot.ContentRootPath, Snapshot.ContentRootPath,
                                           Snapshot.FolderCount, Snapshot.FileCount);
+    UE_LOG(ContentBrowser, ELogLevel::Info, "Content index refreshed: folders=%d files=%d root=%s",
+           Snapshot.FolderCount, Snapshot.FileCount,
+           PathToUtf8String(Snapshot.ContentRootPath).c_str());
 }
 
 const FContentBrowserFolderNode*

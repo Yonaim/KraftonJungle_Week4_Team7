@@ -175,7 +175,7 @@ void FSceneAssetBinder::BindActor(AActor* InActor, Asset::FAssetCacheManager* In
     }
 
     UE_LOG(FEditor, ELogLevel::Debug, "Binding actor: %s (components=%zu)",
-           InActor->GetName().c_str(), InActor->GetOwnedComponents().size());
+           InActor->GetTypeName(), InActor->GetOwnedComponents().size());
 
     for (USceneComponent* Component : InActor->GetOwnedComponents())
     {

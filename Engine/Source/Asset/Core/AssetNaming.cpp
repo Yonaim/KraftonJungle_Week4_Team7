@@ -132,7 +132,7 @@ namespace Asset
                                  LowerSuffix) == 0;
     }
 
-    EAssetFileKind ClassifyAssetPath(const FString& Path)
+    ENGINE_API EAssetFileKind ClassifyAssetPath(const FString& Path)
     {
         for (const FAssetNamingPolicy& Policy : Policies)
         {
