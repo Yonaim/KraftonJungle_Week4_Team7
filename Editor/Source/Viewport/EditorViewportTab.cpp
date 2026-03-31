@@ -1,6 +1,9 @@
 #include "EditorViewportTab.h"
 #include "Viewport/Layout/EditorViewportLayoutFourPanes.h"
 
+#include "imgui.h"
+#include "imgui_internal.h"
+
 SEditorViewportTab::SEditorViewportTab() {}
 
 SEditorViewportTab::~SEditorViewportTab() 
@@ -42,7 +45,7 @@ void SEditorViewportTab::Construct()
 
 void SEditorViewportTab::Initialize()
 { 
-    SetLayout(EViewportLayoutType::Single); 
+    //SetLayout(EViewportLayoutType::Single); 
 }
 
 void SEditorViewportTab::OnResize(FViewportRect WindowRect, bool Force)
@@ -259,3 +262,40 @@ void SEditorViewportTab::DrawSplitters(SSplitter* Splitter, SSplitter* Parent)
     if (auto* Child = dynamic_cast<SSplitter*>(Splitter->GetSideRB()))
         DrawSplitters(Child, Splitter);
 }
+
+const void SEditorViewportTab::GetSplitterRatios(float OutRatios[3]) const
+{
+    for (int i = 0; i < 3; ++i)
+        OutRatios[i] = 0.5f;
+
+    int Index = 0;
+    std::function<void(SSplitter*)> GatherRatios = [&](SSplitter* S)
+    {
+        if (!S || Index >= 3)
+            return;
+        OutRatios[Index++] = S->GetSplitRatio();
+        GatherRatios(dynamic_cast<SSplitter*>(S->GetSideLT()));
+        GatherRatios(dynamic_cast<SSplitter*>(S->GetSideRB()));
+    };
+
+    if (ViewportLayout)
+        GatherRatios(dynamic_cast<SSplitter*>(ViewportLayout->GetRootSplitter()));
+}
+
+void SEditorViewportTab::SetSplitterRatios(const float InRatios[3]) 
+{
+    int Index = 0;
+    std::function<void(SSplitter*)> ApplyRatios = [&](SSplitter* S)
+    {
+        if (!S || Index >= 3)
+            return;
+        S->SetSplitRatio(InRatios[Index++]);
+        S->LayoutChildren();
+        ApplyRatios(dynamic_cast<SSplitter*>(S->GetSideLT()));
+        ApplyRatios(dynamic_cast<SSplitter*>(S->GetSideRB()));
+    };
+
+    if (ViewportLayout)
+        ApplyRatios(dynamic_cast<SSplitter*>(ViewportLayout->GetRootSplitter()));
+}
+

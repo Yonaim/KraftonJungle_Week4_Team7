@@ -10,6 +10,11 @@ struct FEditorSettingsData
     float CameraMoveSpeed = 100.0f;
     float CameraRotationSpeed = 0.3f;
     float ContentBrowserLeftPaneWidth = 250.0f;
+
+    int32 ViewportLayoutType = 0;
+    float SplitterRatio1 = 0.5f;
+    float SplitterRatio2 = 0.5f;
+    float SplitterRatio3 = 0.5f;
 };
 
 enum class EEditorSettingsLoadResult

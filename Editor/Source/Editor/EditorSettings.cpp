@@ -321,6 +321,73 @@ EEditorSettingsLoadResult FEditorSettings::Load(FEditorSettingsData& OutData,
         OutData.ContentBrowserLeftPaneWidth = ParsedLeftPaneWidth;
     }
 
+    if (const FString* LayoutType = FindIniValue(Document, "ViewportSplitter", "LayoutType"))
+    {
+        float ParsedLayoutType = OutData.ViewportLayoutType;
+        if (!TryParseFloat(*LayoutType, ParsedLayoutType))
+        {
+            if (OutErrorMessage != nullptr)
+            {
+                *OutErrorMessage = "[ViewportSplitter] LayoutType must be a float value.";
+            }
+
+            return ELoadResult::InvalidFormat;
+        }
+
+        OutData.ViewportLayoutType = ParsedLayoutType;
+    }
+
+    if (const FString* SplitterRatio1 =
+            FindIniValue(Document, "ViewportSplitter", "SplitterRatio1"))
+    {
+        float ParsedSplitterRatio1 = OutData.SplitterRatio1;
+        if (!TryParseFloat(*SplitterRatio1, ParsedSplitterRatio1))
+        {
+            if (OutErrorMessage != nullptr)
+            {
+                *OutErrorMessage = "[ViewportSplitter] SplitterRatio1 must be a float value.";
+            }
+
+            return ELoadResult::InvalidFormat;
+        }
+
+        OutData.SplitterRatio1 = ParsedSplitterRatio1;
+    }
+
+    if (const FString* SplitterRatio2 =
+            FindIniValue(Document, "ViewportSplitter", "SplitterRatio2"))
+    {
+        float ParsedSplitterRatio2 = OutData.SplitterRatio2;
+        if (!TryParseFloat(*SplitterRatio2, ParsedSplitterRatio2))
+        {
+            if (OutErrorMessage != nullptr)
+            {
+                *OutErrorMessage = "[ViewportSplitter] SplitterRatio2 must be a float value.";
+            }
+
+            return ELoadResult::InvalidFormat;
+        }
+
+        OutData.SplitterRatio2 = ParsedSplitterRatio2;
+    }
+
+    if (const FString* SplitterRatio3 =
+            FindIniValue(Document, "ViewportSplitter", "SplitterRatio3"))
+    {
+        float ParsedSplitterRatio3 = OutData.SplitterRatio3;
+        if (!TryParseFloat(*SplitterRatio3, ParsedSplitterRatio3))
+        {
+            if (OutErrorMessage != nullptr)
+            {
+                *OutErrorMessage = "[ViewportSplitter] SplitterRatio3 must be a float value.";
+            }
+
+            return ELoadResult::InvalidFormat;
+        }
+
+        OutData.SplitterRatio3 = ParsedSplitterRatio3;
+    }
+
     return ELoadResult::Success;
 }
 
@@ -337,6 +404,16 @@ bool FEditorSettings::Save(const FEditorSettingsData& InData) const
                 FormatFloat(InData.CameraRotationSpeed));
     SetIniValue(Document, "ContentBrowser", "LeftPaneWidth",
                 FormatFloat(InData.ContentBrowserLeftPaneWidth));
+
+    SetIniValue(Document, "ViewportSplitter", "LayoutType", 
+                FormatFloat(InData.ViewportLayoutType));
+    SetIniValue(Document, "ViewportSplitter", "SplitterRatio1",
+                FormatFloat(InData.SplitterRatio1));
+    SetIniValue(Document, "ViewportSplitter", "SplitterRatio2", 
+                FormatFloat(InData.SplitterRatio2));
+    SetIniValue(Document, "ViewportSplitter", "SplitterRatio3", 
+                FormatFloat(InData.SplitterRatio3));
+
     return SaveIniDocument(FilePath, Document);
 }
 

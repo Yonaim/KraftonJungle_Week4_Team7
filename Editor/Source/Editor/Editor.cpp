@@ -551,6 +551,10 @@ void FEditor::LoadEditorSettings()
                                            ->GetNavigationController()
                                            .GetRotationSpeed();
     SettingsData.ContentBrowserLeftPaneWidth = EditorContext.ContentBrowserLeftPaneWidth;
+    SettingsData.ViewportLayoutType = (int32)ViewportTab.GetCurrentLayoutType();
+    SettingsData.SplitterRatio1 = 0.5f;
+    SettingsData.SplitterRatio2 = 0.5f;
+    SettingsData.SplitterRatio3 = 0.5f;
 
     FString                         ErrorMessage;
     const EEditorSettingsLoadResult LoadResult =
@@ -574,6 +578,15 @@ void FEditor::LoadEditorSettings()
         UE_LOG(FEditor, ELogLevel::Error, "Failed to read Editor.ini: %s", ErrorMessage.c_str());
         return;
     }
+
+    ViewportTab.SetLayout((EViewportLayoutType)SettingsData.ViewportLayoutType);
+
+    float Ratios[3] = {SettingsData.SplitterRatio1, SettingsData.SplitterRatio2,
+                       SettingsData.SplitterRatio3};
+   
+    ViewportTab.SetSplitterRatios(Ratios);
+    OnViewportResized();
+    
 
     UEngineStatics::GridSpacing = FMath::Clamp(SettingsData.GridSpacing, 1.0f, 1000.0f);
 
@@ -755,6 +768,14 @@ void FEditor::SaveEditorSettings() const
                                            .GetRotationSpeed();
     SettingsData.ContentBrowserLeftPaneWidth =
         std::max(EditorContext.ContentBrowserLeftPaneWidth, 120.0f);
+
+    SettingsData.ViewportLayoutType = (int32)ViewportTab.GetCurrentLayoutType();
+    float Ratios[3];
+    ViewportTab.GetSplitterRatios(Ratios);
+    SettingsData.SplitterRatio1 = Ratios[0];
+    SettingsData.SplitterRatio2 = Ratios[1];
+    SettingsData.SplitterRatio3 = Ratios[2];
+
     if (PersistentSettings.Save(SettingsData))
     {
         UE_LOG(FEditor, ELogLevel::Debug,

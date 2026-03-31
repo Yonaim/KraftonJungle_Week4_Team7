@@ -22,7 +22,8 @@ public:
     TArray<FViewport*> const& GetViewports() const { return Viewports; }
     FViewport* const&         GetViewport(int32 index) const { return Viewports[index]; }
 
-    EViewportLayoutType GetCurrentLayoutType() { return CurrentLayoutType; }
+    EViewportLayoutType const& GetCurrentLayoutType() const { return CurrentLayoutType; }
+    FEditorViewportLayout* const& GetLayout() const { return ViewportLayout; }
     void SetLayout(EViewportLayoutType NewType);
 
     void AdjustViewportCount(EViewportLayoutType NewType);
@@ -31,6 +32,10 @@ public:
     void InitializeControlPanels(FEditorContext* Context);
     void DrawControlPanels();
     void DrawSplitters(SSplitter* Splitter, SSplitter* Parent);
+
+    // Setting
+    const void GetSplitterRatios(float OutRatios[3]) const;
+    void SetSplitterRatios(const float InRatios[3]);
 
 private:
     FViewportRect                  CurrentRect = {0, 0, 0, 0};
