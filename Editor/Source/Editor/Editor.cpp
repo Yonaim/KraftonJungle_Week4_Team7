@@ -11,6 +11,7 @@
 #include "Renderer/RenderAsset/TextureResource.h"
 #include "Engine/Scene/Serialization/Core/SceneSerializer.h"
 #include "Engine/Scene/Serialization/Core/SceneDeserializer.h"
+#include "Engine/Scene/Serialization/CameraInfo.h"
 #include "Engine/Scene/SceneAssetBinder.h"
 #include "Panel/ConsolePanel.h"
 #include "Panel/ContentBrowserPanel.h"
@@ -602,8 +603,22 @@ bool FEditor::SaveSceneToPath(const std::filesystem::path& FilePath, bool bUpdat
         return false;
     }
 
+    if (ViewportTab.GetViewport(0)->IsValid() == false)
+    {
+        UE_LOG(FEditor, ELogVerbosity::Error, "No viewport is available to save scene from.");
+        return false;
+    }
+
+    FCameraInfo CameraInfo;
+    FViewportCamera& Camera =  ViewportTab.GetViewport(0)->GetViewportClient()->GetCamera();
+    CameraInfo.Location = Camera.GetLocation();
+    CameraInfo.Rotation = Camera.GetRotation().Rotator();
+    CameraInfo.FOV = Camera.GetFOV();
+    CameraInfo.NearClip = Camera.GetNearPlane();
+    CameraInfo.FarClip = Camera.GetFarPlane();
+
     FString ErrorMessage;
-    if (!FSceneSerializer::SaveToFile(*ActiveScene, FilePath, &ErrorMessage))
+    if (!FSceneSerializer::SaveToFile(*ActiveScene, CameraInfo, FilePath, &ErrorMessage))
     {
         UE_LOG(FEditor, ELogVerbosity::Error, "Failed to save scene: %s", ErrorMessage.c_str());
         return false;

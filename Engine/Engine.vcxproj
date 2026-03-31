@@ -151,6 +151,7 @@
     <ClInclude Include="Source\Engine\Game\TextActor.h" />
     <ClInclude Include="Source\Engine\Game\TriangleActor.h" />
     <ClInclude Include="Source\Engine\Game\UnknownActor.h" />
+    <ClInclude Include="Source\Engine\Scene\Serialization\CameraInfo.h" />
     <ClInclude Include="Source\Engine\Scene\Scene.h" />
     <ClInclude Include="Source\Engine\Scene\SceneAssetBinder.h" />
     <ClInclude Include="Source\Engine\Scene\SceneAssetPath.h" />

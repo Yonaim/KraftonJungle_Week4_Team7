@@ -1085,6 +1085,7 @@
     <ClInclude Include="Source\ThirdParty\stb\stb_image.h">
       <Filter>Source\ThirdParty\stb</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Engine\Scene\Serialization\CameraInfo.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

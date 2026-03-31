@@ -5,6 +5,7 @@
 #include "Engine/Scene/Serialization/Legacy/SceneLegacySerialization.h"
 #include "Engine/Scene/Serialization/Runtime/ScenePropertySerialization.h"
 #include "Engine/Scene/Serialization/Registry/SceneTypeRegistry.h"
+#include "Engine/Scene/Serialization/CameraInfo.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Game/Actor.h"
 #include "Engine/Scene/Serialization/Common/SceneJsonConverters.h"
@@ -36,11 +37,11 @@ bool FSceneSerializer::Serialize(const FScene& Scene, FString& OutJson, FString*
     return true;
 }
 
-bool FSceneSerializer::SaveToFile(const FScene& Scene, const std::filesystem::path& FilePath,
-                                  FString* OutErrorMessage)
+bool FSceneSerializer::SaveToFile(const FScene& Scene, const FCameraInfo& CameraInfo,
+                                  const std::filesystem::path& FilePath, FString* OutErrorMessage)
 {
     FString JsonText;
-    if (!SerializeLegacy(Scene, JsonText, OutErrorMessage))
+    if (!SerializeLegacy(Scene, CameraInfo, JsonText, OutErrorMessage))
     {
         return false;
     }
@@ -71,8 +72,8 @@ bool FSceneSerializer::SaveToFile(const FScene& Scene, const std::filesystem::pa
     return true;
 }
 
-bool FSceneSerializer::SerializeLegacy(const FScene& Scene, FString& OutJson,
-                                       FString* OutErrorMessage)
+bool FSceneSerializer::SerializeLegacy(const FScene& Scene, const FCameraInfo& CameraInfo,
+                                       FString& OutJson, FString* OutErrorMessage)
 {
     (void)OutErrorMessage;
 
@@ -131,6 +132,21 @@ bool FSceneSerializer::SerializeLegacy(const FScene& Scene, FString& OutJson,
     RootObject["NextUUID"] = static_cast<double>(MaxUUID + 1);
     RootObject["Primitives"] = std::move(PrimitivesObject);
 
+    {   //Camera Serialize
+        FSceneJsonObject CameraObject;
+        const FVector    CamLoc = CameraInfo.Location;
+        const FRotator   CamRot = CameraInfo.Rotation;
+        CameraObject["Location"] =
+            Engine::Scene::Serialization::MakeNumberArray({CamLoc.X, CamLoc.Y, CamLoc.Z});
+        CameraObject["Rotation"] =
+            Engine::Scene::Serialization::MakeNumberArray({CamRot.Pitch, CamRot.Yaw, CamRot.Roll});
+        CameraObject["FOV"] = CameraInfo.FOV;
+        CameraObject["NearClip"] = CameraInfo.NearClip;
+        CameraObject["FarClip"] = CameraInfo.FarClip;
+        RootObject["PerspectiveCamera"] = std::move(CameraObject);
+    }
+    
     OutJson = FSceneJsonWriter::Write(FSceneJsonValue(std::move(RootObject)), true);
+
     return true;
 }
