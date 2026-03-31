@@ -4,7 +4,7 @@
 
 ASphereActor::ASphereActor()
 {
-    SetDefaultStaticMeshPath("BasicMesh/Sphere.obj");
+    SetDefaultStaticMeshPath("Mesh/Primitive/Sphere.obj");
     Name = "SphereActor";
 }
 REGISTER_CLASS(, ASphereActor)
