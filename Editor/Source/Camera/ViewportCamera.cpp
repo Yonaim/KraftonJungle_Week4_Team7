@@ -67,6 +67,7 @@ FMatrix FViewportCamera::GetViewMatrix() const
         {
             const FVector Forward = GetForwardVector();
             CachedViewMatrix = FMatrix::MakeViewLookAtLH(Location, Location + Forward);
+            CachedPerspectiveInfo = {Location, Rotation, FOV, NearPlane, FarPlane};
         }
         bIsViewDirty = false;
     }
@@ -110,6 +111,15 @@ FMatrix FViewportCamera::GetViewProjectionMatrix() const
 
 void FViewportCamera::SetProjectionType(EViewportProjectionType InType)
 {
+    if (ProjectionType == EViewportProjectionType::Perspective && InType == EViewportProjectionType::Orthographic)
+    {
+        Location = CachedPerspectiveInfo.Location;
+        Rotation = CachedPerspectiveInfo.Rotation;
+        FOV = CachedPerspectiveInfo.FOV;
+        NearPlane = CachedPerspectiveInfo.NearPlane;
+        FarPlane = CachedPerspectiveInfo.FarPlane;
+    }
+
     ProjectionType = InType;
     MarkProjectionDirty();
 }

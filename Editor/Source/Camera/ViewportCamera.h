@@ -19,6 +19,15 @@ enum class EViewportOrthographicType
     Back
 };
 
+struct FPerspectiveInfo
+{
+    FVector Location;
+    FQuat   Rotation;
+    float   FOV;
+    float   NearPlane;
+    float   FarPlane;
+};
+
 class FViewportCamera
 {
   public:
@@ -65,12 +74,13 @@ class FViewportCamera
     uint32 GetHeight() const { return Height; }
     float  GetAspectRatio() const { return AspectRatio; }
 
+    const FPerspectiveInfo& GetPerspectiveInfo() const { return CachedPerspectiveInfo; }
+
   private:
     void MarkViewDirty() { bIsViewDirty = true; }
     void MarkProjectionDirty() { bIsProjectionDirty = true; }
 
   private:
- 
     FVector Location = FVector::Zero();
     FQuat   Rotation = FQuat::Identity;
 
@@ -90,6 +100,7 @@ class FViewportCamera
     mutable FVector OrthoForward = FVector::Zero();
     mutable FVector OrthoUp = FVector::Zero();
 
+    mutable FPerspectiveInfo CachedPerspectiveInfo;
     mutable FMatrix CachedViewMatrix;
     mutable FMatrix CachedProjectionMatrix;
     mutable bool    bIsViewDirty = true;
