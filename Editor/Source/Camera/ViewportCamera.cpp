@@ -34,11 +34,11 @@ FMatrix FViewportCamera::GetViewMatrix() const
             {
             case EViewportOrthographicType::Top:
                 OrthoForward = -GetUpVector();
-                OrthoUp = GetRightVector();
+                OrthoUp = GetForwardVector();
                 break;
             case EViewportOrthographicType::Bottom:
                 OrthoForward = GetUpVector();
-                OrthoUp = GetRightVector();
+                OrthoUp = -GetForwardVector();
                 break;
             case EViewportOrthographicType::Front:
                 OrthoForward = GetForwardVector();
@@ -49,11 +49,11 @@ FMatrix FViewportCamera::GetViewMatrix() const
                 OrthoUp = GetUpVector();
                 break;
             case EViewportOrthographicType::Left:
-                OrthoForward = -GetRightVector();
+                OrthoForward = GetRightVector();
                 OrthoUp = GetUpVector();
                 break;
             case EViewportOrthographicType::Right:
-                OrthoForward = GetRightVector();
+                OrthoForward = -GetRightVector();
                 OrthoUp = GetUpVector();
                 break;
             default:
