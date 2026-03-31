@@ -16,6 +16,7 @@ namespace Asset
     {
         TArray<FIntermediateObjFaceVertex> Vertices;
         FString                            MaterialName;
+        int32                              MaterialLibraryIndex = -1;
     };
 
     struct FIntermediateObjData

@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
+#include <limits>
 
 #include "Asset/Cache/AssetKeyUtils.h"
 #include "Asset/Builder/MaterialBuilder.h"
@@ -156,6 +157,27 @@ namespace Asset
             OutVertex.NormalIndex = ResolveObjIndex(Segments[2], MeshData.Normals.size());
 
             return OutVertex.PositionIndex >= 0;
+        }
+
+
+        static std::filesystem::path ResolveMaterialLibraryPathForObj(
+            const std::filesystem::path& ObjPath, const FString& LibraryReference)
+        {
+            std::filesystem::path LibraryPath(LibraryReference);
+            if (LibraryPath.is_relative())
+            {
+                LibraryPath = ObjPath.parent_path() / LibraryPath;
+            }
+
+            std::error_code ErrorCode;
+            std::filesystem::path CanonicalLibraryPath =
+                std::filesystem::weakly_canonical(LibraryPath, ErrorCode);
+            if (ErrorCode)
+            {
+                CanonicalLibraryPath = LibraryPath.lexically_normal();
+            }
+
+            return CanonicalLibraryPath;
         }
 
         static void AppendVertexBytes(TArray<uint8>& Buffer, const void* Data, size_t SizeInBytes)
@@ -342,6 +364,8 @@ namespace Asset
         auto Result = std::make_shared<FIntermediateObjData>();
 
         FString CurrentMaterialName;
+        int32   CurrentMaterialLibraryIndex = -1;
+
         FString Line;
         while (std::getline(File, Line))
         {
@@ -382,10 +406,16 @@ namespace Asset
             else if (Tag == "mtllib")
             {
                 FString LibraryPath;
-                Iss >> LibraryPath;
-                if (!LibraryPath.empty())
+                while (Iss >> LibraryPath)
                 {
+                    if (LibraryPath.empty())
+                    {
+                        continue;
+                    }
+
                     Result->MaterialLibraries.push_back(LibraryPath);
+                    CurrentMaterialLibraryIndex =
+                        static_cast<int32>(Result->MaterialLibraries.size()) - 1;
                 }
             }
             else if (Tag == "usemtl")
@@ -396,6 +426,7 @@ namespace Asset
             {
                 FIntermediateObjFace Face;
                 Face.MaterialName = CurrentMaterialName;
+                Face.MaterialLibraryIndex = CurrentMaterialLibraryIndex;
 
                 FString VertexToken;
                 while (Iss >> VertexToken)
@@ -428,6 +459,7 @@ namespace Asset
                                  const FStaticMeshBuildSettings& Settings)
     {
         auto Result = std::make_shared<FObjCookedData>();
+        Result->SourcePath = Source.NormalizedPath.generic_string();
 
         bool bHasColors = !Intermediate.Colors.empty() &&
                           Intermediate.Colors.size() == Intermediate.Positions.size();
@@ -461,47 +493,70 @@ namespace Asset
         Result->VertexStride = ResolveVertexStride(Result->VertexFormat);
 
         std::unordered_map<FObjVertexKey, uint32, FObjVertexKeyHasher> VertexMap;
-        std::unordered_map<FString, uint32>                            MaterialSlotLookup;
+        std::unordered_map<FString, uint32>                            MaterialLibraryLookup;
+        std::unordered_map<FString, uint32>                            MaterialRefLookup;
         TArray<TArray<uint32>>                                         MaterialBuckets;
 
-        auto ResolveMaterialAssetPath = [&](const FString& MaterialName) -> FString
+        auto ResolveCookedLibraryIndex = [&](int32 SourceLibraryIndex) -> uint32
         {
-            if (Intermediate.MaterialLibraries.empty())
+            if (SourceLibraryIndex < 0 ||
+                SourceLibraryIndex >= static_cast<int32>(Intermediate.MaterialLibraries.size()))
             {
-                return MaterialName.empty() ? FString("Default") : MaterialName;
+                return std::numeric_limits<uint32>::max();
             }
 
-            std::filesystem::path LibraryPath(Intermediate.MaterialLibraries.front());
-            if (LibraryPath.is_relative())
-            {
-                LibraryPath =
-                    std::filesystem::path(Source.NormalizedPath).parent_path() / LibraryPath;
-            }
+            const std::filesystem::path CanonicalLibraryPath = ResolveMaterialLibraryPathForObj(
+                std::filesystem::path(Source.NormalizedPath),
+                Intermediate.MaterialLibraries[SourceLibraryIndex]);
+            const FString LibraryPath = CanonicalLibraryPath.generic_string();
 
-            std::error_code       ErrorCode;
-            std::filesystem::path CanonicalLibraryPath =
-                std::filesystem::weakly_canonical(LibraryPath, ErrorCode);
-            if (ErrorCode)
-            {
-                CanonicalLibraryPath = LibraryPath.lexically_normal();
-            }
-
-            return FMaterialBuilder::MakeMaterialAssetPath(
-                CanonicalLibraryPath, MaterialName.empty() ? FString("Default") : MaterialName);
-        };
-
-        auto GetOrCreateMaterialIndex = [&](const FString& MaterialName) -> uint32
-        {
-            const FString ResolvedMaterialName = ResolveMaterialAssetPath(MaterialName);
-            auto          It = MaterialSlotLookup.find(ResolvedMaterialName);
-            if (It != MaterialSlotLookup.end())
+            auto It = MaterialLibraryLookup.find(LibraryPath);
+            if (It != MaterialLibraryLookup.end())
             {
                 return It->second;
             }
 
-            const uint32 NewMaterialIndex = static_cast<uint32>(Result->MaterialSlotNames.size());
-            MaterialSlotLookup.emplace(ResolvedMaterialName, NewMaterialIndex);
-            Result->MaterialSlotNames.push_back(ResolvedMaterialName);
+            const uint32 NewLibraryIndex = static_cast<uint32>(Result->MaterialLibraries.size());
+            MaterialLibraryLookup.emplace(LibraryPath, NewLibraryIndex);
+            Result->MaterialLibraries.push_back(LibraryPath);
+            return NewLibraryIndex;
+        };
+
+        auto GetOrCreateMaterialRefIndex = [&](const FIntermediateObjFace& Face) -> uint32
+        {
+            const FString MaterialName = Face.MaterialName.empty() ? FString("Default") : Face.MaterialName;
+            const uint32 RawLibraryIndex = ResolveCookedLibraryIndex(Face.MaterialLibraryIndex);
+
+            FString Key = MaterialName + "::";
+            if (RawLibraryIndex != std::numeric_limits<uint32>::max())
+            {
+                Key += std::to_string(RawLibraryIndex);
+            }
+            else
+            {
+                Key += "none";
+            }
+
+            auto It = MaterialRefLookup.find(Key);
+            if (It != MaterialRefLookup.end())
+            {
+                return It->second;
+            }
+
+            if (RawLibraryIndex == std::numeric_limits<uint32>::max() && Result->MaterialLibraries.empty())
+            {
+                Result->MaterialLibraries.push_back({});
+            }
+
+            const uint32 NewMaterialIndex = static_cast<uint32>(Result->Materials.size());
+            MaterialRefLookup.emplace(Key, NewMaterialIndex);
+
+            FObjCookedMaterialRef MaterialRef;
+            MaterialRef.Name = MaterialName;
+            MaterialRef.LibraryIndex =
+                (RawLibraryIndex != std::numeric_limits<uint32>::max()) ? RawLibraryIndex : 0;
+
+            Result->Materials.push_back(std::move(MaterialRef));
             MaterialBuckets.emplace_back();
             return NewMaterialIndex;
         };
@@ -515,78 +570,6 @@ namespace Asset
             Key.ColorIndex = bHasColors ? FaceVertex.PositionIndex : -1;
             return Key;
         };
-
-        // auto EmitVertex = [&](const FObjVertexKey& Key)
-        // {
-        //     const FVector& Position = Intermediate.Positions[Key.PositionIndex];
-        //     const FVector  Normal = (bHasNormals && Key.NormalIndex >= 0)
-        //                                 ? Intermediate.Normals[Key.NormalIndex]
-        //                                 : FVector(0.0f, 0.0f, 0.0f);
-        //     FVector2       UV = (bHasUVs && Key.UVIndex >= 0) ? Intermediate.UVs[Key.UVIndex]
-        //                                                       : FVector2(0.0f, 0.0f);
-        //     const FVector  Color = (bHasColors && Key.ColorIndex >= 0)
-        //                                ? Intermediate.Colors[Key.ColorIndex]
-        //                                : FVector(0.0f, 0.0f, 0.0f);
-
-        //     if (Settings.bFlipV && bHasUVs)
-        //     {
-        //         UV.Y = 1.0f - UV.Y;
-        //     }
-
-        //     switch (Result->VertexFormat)
-        //     {
-        //     case EStaticMeshVertexFormat::P:
-        //     {
-        //         const FVertexP Vertex = {Position};
-        //         AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
-        //         break;
-        //     }
-        //     case EStaticMeshVertexFormat::PN:
-        //     {
-        //         const FVertexPN Vertex = {Position, Normal};
-        //         AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
-        //         break;
-        //     }
-        //     case EStaticMeshVertexFormat::PT:
-        //     {
-        //         const FVertexPT Vertex = {Position, UV};
-        //         AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
-        //         break;
-        //     }
-        //     case EStaticMeshVertexFormat::PNT:
-        //     {
-        //         const FVertexPNT Vertex = {Position, Normal, UV};
-        //         AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
-        //         break;
-        //     }
-        //     case EStaticMeshVertexFormat::PC:
-        //     {
-        //         const FVertexPC Vertex = {Position, Color};
-        //         AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
-        //         break;
-        //     }
-        //     case EStaticMeshVertexFormat::PCT:
-        //     {
-        //         const FVertexPCT Vertex = {Position, Color, UV};
-        //         AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
-        //         break;
-        //     }
-        //     case EStaticMeshVertexFormat::PNC:
-        //     {
-        //         const FVertexPNC Vertex = {Position, Normal, Color};
-        //         AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
-        //         break;
-        //     }
-        //     case EStaticMeshVertexFormat::PNCT:
-        //     {
-        //         const FVertexPNCT Vertex = {Position, Normal, Color, UV};
-        //         AppendVertexBytes(Result->VertexData, &Vertex, sizeof(Vertex));
-        //         break;
-        //     }
-        //     default:
-        //         break;
-        //     }
-        // };
 
         auto EmitVertex = [&](const FObjVertexKey& Key)
         {
@@ -634,7 +617,7 @@ namespace Asset
 
         for (const FIntermediateObjFace& Face : Intermediate.Faces)
         {
-            const uint32    MaterialIndex = GetOrCreateMaterialIndex(Face.MaterialName);
+            const uint32    MaterialIndex = GetOrCreateMaterialRefIndex(Face);
             TArray<uint32>& Bucket = MaterialBuckets[MaterialIndex];
 
             for (size_t VertexIndex = 1; VertexIndex + 1 < Face.Vertices.size(); ++VertexIndex)
@@ -659,7 +642,6 @@ namespace Asset
             }
 
             FStaticMeshSectionData Section;
-            Section.MaterialSlotName = Result->MaterialSlotNames[MaterialIndex];
             Section.StartIndex = StartIndex;
             Section.IndexCount = static_cast<uint32>(Bucket.size());
             Section.MaterialIndex = MaterialIndex;
@@ -671,17 +653,23 @@ namespace Asset
 
         if (Result->Sections.empty())
         {
-            const uint32 MaterialIndex = GetOrCreateMaterialIndex("Default");
+            if (Result->MaterialLibraries.empty())
+            {
+                Result->MaterialLibraries.push_back({});
+            }
+
+            FObjCookedMaterialRef DefaultMaterial;
+            DefaultMaterial.Name = "Default";
+            DefaultMaterial.LibraryIndex = 0;
+            Result->Materials.push_back(DefaultMaterial);
 
             FStaticMeshSectionData Section;
-            Section.MaterialSlotName = Result->MaterialSlotNames[MaterialIndex];
             Section.StartIndex = 0;
             Section.IndexCount = static_cast<uint32>(Result->Indices.size());
-            Section.MaterialIndex = MaterialIndex;
+            Section.MaterialIndex = 0;
             Result->Sections.push_back(Section);
         }
 
-        (void)Source;
         return Result->IsValid() ? Result : nullptr;
     }
 

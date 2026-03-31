@@ -24,9 +24,9 @@ namespace
     }
 } // namespace
 
-bool UStaticMesh::LoadFromCooked(const FString&                         InAssetPath,
+bool UStaticMesh::LoadFromCooked(const FString&                  InAssetPath,
                                  std::shared_ptr<FObjCookedData> InCookedData,
-                                 RHI::FDynamicRHI&                      InDynamicRHI)
+                                 RHI::FDynamicRHI&               InDynamicRHI)
 {
     if (InCookedData == nullptr)
     {
@@ -56,7 +56,7 @@ bool UStaticMesh::LoadFromCooked(const FString&                         InAssetP
 
     if (CookedData)
     {
-        MaterialSlots.resize(CookedData->MaterialSlotNames.size(), nullptr);
+        MaterialSlots.resize(CookedData->Materials.size(), nullptr);
         Sections.reserve(CookedData->Sections.size());
 
         for (const FStaticMeshSectionData& CookedSection : CookedData->Sections)
