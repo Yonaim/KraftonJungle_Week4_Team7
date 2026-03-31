@@ -65,8 +65,10 @@ private:
     void UpdateFrameConstantBuffer();
     void UpdateObjectConstantBuffer(const FMatrix& WorldMatrix, uint32 ObjectId = 0);
     void ClearDepthBuffer();
-    
+
     void ExecuteRenderPass(ERenderLayer InRenderLayer);
+    void BindMaterial(ID3D11DeviceContext* DeviceContext, FRenderCommand Cmd);
+    void BindRenderState(FRenderCommand Cmd);
     void DrawAllAABBLines(ERenderLayer InRenderLayer);
     
     /** AABB 전용 리소스 초기화 */

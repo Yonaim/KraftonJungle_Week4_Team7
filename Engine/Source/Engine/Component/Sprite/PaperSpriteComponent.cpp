@@ -66,6 +66,7 @@ namespace Engine::Component
         if (!MeshData)
         {
             MeshData = std::make_shared<FMeshData>();
+            MeshData->bIsDynamicMesh = true;
             MeshData->Topology = EMeshTopology::EMT_TriangleList;
             
             // Create a quad on XY plane (Unreal style: X=Forward/Height, Y=Right/Width)

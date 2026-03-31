@@ -10,6 +10,7 @@ namespace Engine::Component
 {
     ULineBatchComponent::ULineBatchComponent()
     {
+        AddWorldGrid(1000.0f, 1.0f);
     }
 
     Geometry::FAABB ULineBatchComponent::GetLocalAABB() const
@@ -22,58 +23,52 @@ namespace Engine::Component
     void ULineBatchComponent::CollectRenderData(FSceneRenderData& OutRenderData,
                                                 ESceneShowFlags   InShowFlags) const
     {
-        if (IsFlagSet(InShowFlags, ESceneShowFlags::SF_Primitives))
+        if (!IsFlagSet(InShowFlags, ESceneShowFlags::SF_Primitives))
+            return;
+
+        if (!BatchMeshData)
         {
-            if (Lines.empty())
-            {
-                return;
-            }
-
-            if (!BatchMeshData)
-            {
-                BatchMeshData = std::make_shared<FMeshData>();
-                BatchMeshData->Topology = EMeshTopology::EMT_LineList;
-            }
-
-            BatchMeshData->Vertices.clear();
-            BatchMeshData->Indices.clear();
-
-            for (const auto& Line : Lines)
-            {
-                uint32 StartIdx = static_cast<uint32>(BatchMeshData->Vertices.size());
-
-                FPrimitiveVertex V0;
-                V0.Position = Line.Start;
-                V0.Color = Line.Color;
-                V0.Normal = FVector::ZeroVector;
-                V0.UV = FVector2::ZeroVector;
-
-                FPrimitiveVertex V1;
-                V1.Position = Line.End;
-                V1.Color = Line.Color;
-                V1.Normal = FVector::ZeroVector;
-                V1.UV = FVector2::ZeroVector;
-
-                BatchMeshData->Vertices.push_back(V0);
-                BatchMeshData->Vertices.push_back(V1);
-
-                BatchMeshData->Indices.push_back(StartIdx);
-                BatchMeshData->Indices.push_back(StartIdx + 1);
-            }
-
-            BatchMeshData->bIsDirty = true;
-
-            FRenderCommand Cmd;
-            Cmd.MeshData = BatchMeshData.get();
-            Cmd.Material = FGeneralRenderer::GetDefaultMaterial(); // Fallback to default or line material
-            Cmd.WorldMatrix = FMatrix::Identity;
-            Cmd.RenderLayer = ERenderLayer::Default;
-            Cmd.SetDefaultStates();
-            Cmd.RasterizerOption.FillMode = D3D11_FILL_WIREFRAME;
-            Cmd.SetStates(Cmd.Material, BatchMeshData->Topology);
-
-            OutRenderData.RenderCommands.push_back(Cmd);
+            BatchMeshData = std::make_shared<FMeshData>();
+            BatchMeshData->bIsDynamicMesh = true;
+            BatchMeshData->Topology = EMeshTopology::EMT_LineList;
         }
+
+        BatchMeshData->Vertices.clear();
+        BatchMeshData->Indices.clear();
+
+        for (const auto& Line : Lines)
+        {
+            uint32 StartIdx = static_cast<uint32>(BatchMeshData->Vertices.size());
+
+            FPrimitiveVertex V0;
+            V0.Position = Line.Start;
+            V0.Color = Line.Color;
+            V0.Normal = FVector::ZeroVector;
+            V0.UV = FVector2::ZeroVector;
+
+            FPrimitiveVertex V1;
+            V1.Position = Line.End;
+            V1.Color = Line.Color;
+            V1.Normal = FVector::ZeroVector;
+            V1.UV = FVector2::ZeroVector;
+
+            BatchMeshData->Vertices.push_back(V0);
+            BatchMeshData->Vertices.push_back(V1);
+
+            BatchMeshData->Indices.push_back(StartIdx);
+            BatchMeshData->Indices.push_back(StartIdx + 1);
+        }
+            
+        FRenderCommand Cmd;
+        Cmd.MeshData = BatchMeshData.get();
+        Cmd.Material = FGeneralRenderer::GetDefaultMaterial(); // Fallback to default or line material
+        Cmd.WorldMatrix = FMatrix::Identity;
+        Cmd.RenderLayer = ERenderLayer::Default;
+        Cmd.SetDefaultStates();
+        Cmd.RasterizerOption.FillMode = D3D11_FILL_WIREFRAME;
+        Cmd.SetStates(Cmd.Material, EMeshTopology::EMT_LineList);
+
+        OutRenderData.RenderCommands.push_back(Cmd);
     }
 
     void ULineBatchComponent::Update(float InDeltaTime)
@@ -87,9 +82,12 @@ namespace Engine::Component
                 Line.RemainingLifeTime -= InDeltaTime;
                 return Line.RemainingLifeTime <= 0.0f;
             }
-            // LifeTime이 0.0f인 경우 한 프레임 출력 후 제거되도록 유도함.
-            // AddLine 시점에 0.0f인 경우 바로 제거되는 것을 막기 위해 정책 결정 필요.
-            // 여기서는 Update가 호출될 때 이미 그려진 뒤라면 제거하는 것으로 구현.
+            // 음수(-1.0f 등)인 경우 영구 유지
+            if (Line.RemainingLifeTime < 0.0f)
+            {
+                return false;
+            }
+            // 0.0f인 경우 한 프레임만 출력 후 제거
             return true;
         });
 
@@ -156,6 +154,31 @@ namespace Engine::Component
             AddLine(InCenter + FVector(SinA * InRadius, 0.0f, CosA * InRadius),
                     InCenter + FVector(SinNext * InRadius, 0.0f, CosNext * InRadius), InColor, InLifeTime);
         }
+    }
+
+    void ULineBatchComponent::AddWorldGrid(float InGridSize, float InGridSpacing, const FColor& InColor)
+    {
+        if (InGridSpacing <= 0.0f) InGridSpacing = 100.0f;
+
+        const float HalfSize = InGridSize * 0.5f;
+        const float PersistentLifeTime = -1.0f; // 영구 유지
+
+        // X축에 평행한 선들
+        for (float y = -InGridSpacing; y >= -HalfSize; y -= InGridSpacing)
+            AddLine(FVector(-HalfSize, y, 0.0f), FVector(HalfSize, y, 0.0f), InColor, PersistentLifeTime);
+        for (float y = InGridSpacing; y <= HalfSize; y += InGridSpacing)
+            AddLine(FVector(-HalfSize, y, 0.0f), FVector(HalfSize, y, 0.0f), InColor, PersistentLifeTime);
+
+        // Y축에 평행한 선들
+        for (float x = -InGridSpacing; x >= -HalfSize; x -= InGridSpacing)
+            AddLine(FVector(x, -HalfSize, 0.0f), FVector(x, HalfSize, 0.0f), InColor, PersistentLifeTime);
+        for (float x = InGridSpacing; x <= HalfSize; x += InGridSpacing)
+            AddLine(FVector(x, -HalfSize, 0.0f), FVector(x, HalfSize, 0.0f), InColor, PersistentLifeTime);
+
+        // 기저 축
+        AddLine(FVector(-HalfSize, 0.0f, 0.0f), FVector(HalfSize, 0.0f, 0.01f), FColor::Red(), PersistentLifeTime);
+        AddLine(FVector(0.0f, -HalfSize, 0.0f), FVector(0.0f, HalfSize, 0.01f), FColor::Green(), PersistentLifeTime);
+        AddLine(FVector(0.0f, 0.0f, -HalfSize), FVector(0.0f, 0.0f, HalfSize), FColor::Blue(), PersistentLifeTime);
     }
 
     void ULineBatchComponent::ClearLines()
