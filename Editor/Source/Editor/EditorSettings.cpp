@@ -34,7 +34,7 @@ namespace
             return false;
         }
 
-        char* EndPtr = nullptr;
+        char*       EndPtr = nullptr;
         const float ParsedValue = std::strtof(Trimmed.c_str(), &EndPtr);
         if (EndPtr == Trimmed.c_str() || *EndPtr != '\0')
         {
@@ -67,7 +67,7 @@ namespace
 
         FString CurrentSection;
         FString Line;
-        int32 LineNumber = 0;
+        int32   LineNumber = 0;
         while (std::getline(File, Line))
         {
             ++LineNumber;
@@ -83,8 +83,8 @@ namespace
                 {
                     if (OutErrorMessage != nullptr)
                     {
-                        *OutErrorMessage =
-                            "Line " + std::to_string(LineNumber) + " has an invalid section header.";
+                        *OutErrorMessage = "Line " + std::to_string(LineNumber) +
+                                           " has an invalid section header.";
                     }
 
                     return ELoadResult::InvalidFormat;
@@ -111,8 +111,8 @@ namespace
             {
                 if (OutErrorMessage != nullptr)
                 {
-                    *OutErrorMessage = "Line " + std::to_string(LineNumber)
-                        + " is not a valid key=value entry.";
+                    *OutErrorMessage =
+                        "Line " + std::to_string(LineNumber) + " is not a valid key=value entry.";
                 }
 
                 return ELoadResult::InvalidFormat;
@@ -122,8 +122,8 @@ namespace
             {
                 if (OutErrorMessage != nullptr)
                 {
-                    *OutErrorMessage = "Line " + std::to_string(LineNumber)
-                        + " is outside of any section.";
+                    *OutErrorMessage =
+                        "Line " + std::to_string(LineNumber) + " is outside of any section.";
                 }
 
                 return ELoadResult::InvalidFormat;
@@ -135,8 +135,8 @@ namespace
             {
                 if (OutErrorMessage != nullptr)
                 {
-                    *OutErrorMessage = "Line " + std::to_string(LineNumber)
-                        + " has an empty key or value.";
+                    *OutErrorMessage =
+                        "Line " + std::to_string(LineNumber) + " has an empty key or value.";
                 }
 
                 return ELoadResult::InvalidFormat;
@@ -245,10 +245,11 @@ namespace
 } // namespace
 
 EEditorSettingsLoadResult FEditorSettings::Load(FEditorSettingsData& OutData,
-                                                FString* OutErrorMessage) const
+                                                FString*             OutErrorMessage) const
 {
-    FIniDocument Document;
-    const ELoadResult LoadResult = LoadIniDocument(GetSettingsFilePath(), Document, OutErrorMessage);
+    FIniDocument      Document;
+    const ELoadResult LoadResult =
+        LoadIniDocument(GetSettingsFilePath(), Document, OutErrorMessage);
     if (LoadResult != ELoadResult::Success)
     {
         return LoadResult;
@@ -270,8 +271,7 @@ EEditorSettingsLoadResult FEditorSettings::Load(FEditorSettingsData& OutData,
         OutData.GridSpacing = ParsedGridSpacing;
     }
 
-    if (const FString* CameraMoveSpeedValue =
-            FindIniValue(Document, "Viewport", "CameraMoveSpeed"))
+    if (const FString* CameraMoveSpeedValue = FindIniValue(Document, "Viewport", "CameraMoveSpeed"))
     {
         float ParsedMoveSpeed = OutData.CameraMoveSpeed;
         if (!TryParseFloat(*CameraMoveSpeedValue, ParsedMoveSpeed))
@@ -332,8 +332,7 @@ bool FEditorSettings::Save(const FEditorSettingsData& InData) const
     LoadIniDocument(FilePath, Document, nullptr);
 
     SetIniValue(Document, "Viewport", "GridSpacing", FormatFloat(InData.GridSpacing));
-    SetIniValue(Document, "Viewport", "CameraMoveSpeed",
-                FormatFloat(InData.CameraMoveSpeed));
+    SetIniValue(Document, "Viewport", "CameraMoveSpeed", FormatFloat(InData.CameraMoveSpeed));
     SetIniValue(Document, "Viewport", "CameraRotationSpeed",
                 FormatFloat(InData.CameraRotationSpeed));
     SetIniValue(Document, "ContentBrowser", "LeftPaneWidth",
@@ -343,5 +342,5 @@ bool FEditorSettings::Save(const FEditorSettingsData& InData) const
 
 std::filesystem::path FEditorSettings::GetSettingsFilePath() const
 {
-    return FPaths::Combine(FPaths::Combine(FPaths::SavedDir(), L"Config"), L"editor.ini");
+    return FPaths::Combine(L"Config", L"Editor.ini");
 }

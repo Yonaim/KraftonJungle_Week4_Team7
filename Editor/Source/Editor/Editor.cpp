@@ -463,19 +463,19 @@ void FEditor::LoadEditorSettings()
     if (LoadResult == EEditorSettingsLoadResult::Missing)
     {
         UE_LOG(FEditor, ELogLevel::Info,
-               "editor.ini was not found. Using default editor settings.");
+               "Editor.ini was not found. Using default editor settings.");
         return;
     }
 
     if (LoadResult == EEditorSettingsLoadResult::InvalidFormat)
     {
-        UE_LOG(FEditor, ELogLevel::Error, "Invalid editor.ini format: %s", ErrorMessage.c_str());
+        UE_LOG(FEditor, ELogLevel::Error, "Invalid Editor.ini format: %s", ErrorMessage.c_str());
         return;
     }
 
     if (LoadResult == EEditorSettingsLoadResult::IOError)
     {
-        UE_LOG(FEditor, ELogLevel::Error, "Failed to read editor.ini: %s", ErrorMessage.c_str());
+        UE_LOG(FEditor, ELogLevel::Error, "Failed to read Editor.ini: %s", ErrorMessage.c_str());
         return;
     }
 
