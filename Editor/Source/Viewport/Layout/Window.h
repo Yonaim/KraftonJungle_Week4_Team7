@@ -9,7 +9,7 @@ class SWindow
 public:
     SWindow();
     SWindow(FViewportRect Rect) : ViewportRect(Rect) {}
-    ~SWindow();
+    virtual ~SWindow() = default;
 
 public:
     FViewportRect const GetViewportRect() const { return ViewportRect; }
@@ -37,6 +37,9 @@ public:
 
     void SetSideLT(SWindow* NewWindow) { SideLT = NewWindow; }
     void SetSideRB(SWindow* NewWindow) { SideRB = NewWindow; }
+
+    float GetSplitRatio() { return SplitRatio; }
+    void  SetSplitRatio(float Ratio) { SplitRatio = Ratio; }
 
     virtual void LayoutChildren() = 0;
 

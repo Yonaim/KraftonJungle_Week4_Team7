@@ -28,8 +28,46 @@ FMatrix FViewportCamera::GetViewMatrix() const
 {
     if (bIsViewDirty)
     {
-        const FVector Forward = GetForwardVector();
-        CachedViewMatrix = FMatrix::MakeViewLookAtLH(Location, Location + Forward);
+        if (ProjectionType == EViewportProjectionType::Orthographic)
+        {
+            switch (OrthographicType)
+            {
+            case EViewportOrthographicType::Top:
+                OrthoForward = -GetUpVector();
+                OrthoUp = GetRightVector();
+                break;
+            case EViewportOrthographicType::Bottom:
+                OrthoForward = GetUpVector();
+                OrthoUp = GetRightVector();
+                break;
+            case EViewportOrthographicType::Front:
+                OrthoForward = GetForwardVector();
+                OrthoUp = GetUpVector();
+                break;
+            case EViewportOrthographicType::Back:
+                OrthoForward = -GetForwardVector();
+                OrthoUp = GetUpVector();
+                break;
+            case EViewportOrthographicType::Left:
+                OrthoForward = -GetRightVector();
+                OrthoUp = GetUpVector();
+                break;
+            case EViewportOrthographicType::Right:
+                OrthoForward = GetRightVector();
+                OrthoUp = GetUpVector();
+                break;
+            default:
+                break;
+            }
+
+            CachedViewMatrix =
+                FMatrix::MakeViewLookAtLH(Location, Location + OrthoForward, OrthoUp);
+        }
+        else
+        {
+            const FVector Forward = GetForwardVector();
+            CachedViewMatrix = FMatrix::MakeViewLookAtLH(Location, Location + Forward);
+        }
         bIsViewDirty = false;
     }
 
@@ -73,6 +111,12 @@ FMatrix FViewportCamera::GetViewProjectionMatrix() const
 void FViewportCamera::SetProjectionType(EViewportProjectionType InType)
 {
     ProjectionType = InType;
+    MarkProjectionDirty();
+}
+
+void FViewportCamera::SetOrthographicType(EViewportOrthographicType InType)
+{
+    OrthographicType = InType;
     MarkProjectionDirty();
 }
 

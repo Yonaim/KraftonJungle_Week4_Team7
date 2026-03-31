@@ -30,6 +30,7 @@ public:
     // UI
     void InitializeControlPanels(FEditorContext* Context);
     void DrawControlPanels();
+    void DrawSplitters(SSplitter* Splitter, SSplitter* Parent);
 
 private:
     FViewportRect                  CurrentRect = {0, 0, 0, 0};
@@ -40,4 +41,5 @@ private:
     EViewportLayoutType            CurrentLayoutType;
 
     TArray<FControlPanel*> ControlPanels;
+    SSplitter*             DraggingSplitter = nullptr;
 };
