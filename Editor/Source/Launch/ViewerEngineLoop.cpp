@@ -7,6 +7,9 @@
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
 
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND HWnd, UINT Message, WPARAM WParam,
+                                                             LPARAM LParam);
+
 bool FViewerEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
 {
     (void)HInstance;
@@ -39,6 +42,7 @@ bool FViewerEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
 
     Viewer = new FViewer();
     Viewer->Create();
+    Viewer->OnRequestExit = [this]() { bIsExit = true; };
 
     Renderer = new FViewerRendererModule();
     if (Renderer == nullptr)
@@ -69,7 +73,7 @@ bool FViewerEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
 
     if (Engine::ApplicationCore::FWindowsApplication* WindowsApplication = GetWindowsApplication())
     {
-        WindowsApplication->SetMessageHandler(nullptr, nullptr);
+        WindowsApplication->SetMessageHandler(&FViewerEngineLoop::HandleViewerMessage, this);
     }
 
     CachedWindowWidth = Application->GetWindowWidth();
@@ -160,6 +164,30 @@ void FViewerEngineLoop::InitializeForTime()
     DeltaTime = 0.0f;
 }
 
+bool FViewerEngineLoop::HandleViewerMessage(HWND HWnd, UINT Message, WPARAM WParam, LPARAM LParam,
+                                            LRESULT& OutResult, void* UserData)
+{
+    FViewerEngineLoop* ViewerEngineLoop = static_cast<FViewerEngineLoop*>(UserData);
+    if (ViewerEngineLoop == nullptr)
+    {
+        return false;
+    }
+
+    const LRESULT ImGuiResult = ImGui_ImplWin32_WndProcHandler(HWnd, Message, WParam, LParam);
+    if (ImGuiResult != 0)
+    {
+        OutResult = ImGuiResult;
+        return true;
+    }
+
+    if (ImGui::GetCurrentContext() == nullptr)
+    {
+        return false;
+    }
+
+    OutResult = DefWindowProc(HWnd, Message, WParam, LParam);
+}
+
 bool FViewerEngineLoop::HandleWindowResize()
 {
     const int32 CurrentWindowWidth = Application->GetWindowWidth();
@@ -223,7 +251,7 @@ bool FViewerEngineLoop::RunFrameOnceWithoutResize()
     Renderer->SetViewport(Viewer->GetSceneView()->GetViewport());
     Renderer->Render(Viewer->GetSceneRenderData());
 
-    Viewer->DrawPanel();
+    Viewer->DrawPanel(static_cast<HWND>(Application->GetNativeWindowHandle()));
     Renderer->EndFrame();
 
     bIsRenderingDuringSizeMove = false;

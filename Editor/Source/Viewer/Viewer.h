@@ -19,21 +19,21 @@ class FViewer
     void OnWindowResized(float Width, float Height);
 
     // 렌더러 연동용
-    FSceneView*              GetSceneView() const;
-    const FSceneRenderData&  GetSceneRenderData() const;
+    FSceneView*             GetSceneView() const;
+    const FSceneRenderData& GetSceneRenderData() const;
 
-    void DrawPanel();
+    void DrawPanel(HWND hWnd);
 
-    // OBJ 로드 등 추가 기능 필요시 public 함수로 제공
+  public:
+    std::function<void()> OnRequestExit;
 
   private:
     // 내부 상태
-    FSceneView*       SceneView = nullptr;
-    FSceneRenderData  SceneRenderData;
-    FViewportCamera   ViewportCamera;
+    FSceneView*      SceneView = nullptr;
+    FSceneRenderData SceneRenderData;
+    FViewportCamera  ViewportCamera;
 
     FViewerNavigationController NavigationController;
 
     FD3D11RHI* RHI = nullptr;
-
 };

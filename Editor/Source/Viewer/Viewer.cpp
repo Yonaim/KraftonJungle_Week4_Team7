@@ -49,7 +49,7 @@ void FViewer::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
         if (InputEvent.Type == Engine::ApplicationCore::EInputEventType::MouseDoubleClick &&
             InputEvent.Key == Engine::ApplicationCore::EKey::MouseLeft)
         {
-            NavigationController.ResetView(FVector(-3,0,0), FVector::Zero());
+            NavigationController.ResetView(FVector(-3, 0, 0), FVector::Zero());
         }
     }
 
@@ -101,8 +101,6 @@ void FViewer::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
     SceneView->SetProjectionMatrix(ViewportCamera.GetProjectionMatrix());
 
     SceneRenderData.SceneView = SceneView;
-    SceneRenderData.Primitives.clear();
-    SceneRenderData.Primitives.push_back(item);
 }
 
 void FViewer::OnWindowResized(float Width, float Height)
@@ -119,18 +117,30 @@ FSceneView* FViewer::GetSceneView() const { return SceneView; }
 
 const FSceneRenderData& FViewer::GetSceneRenderData() const { return SceneRenderData; }
 
-void FViewer::DrawPanel()
+void FViewer::DrawPanel(HWND hWnd)
 {
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
-    // 최소한의 UI: 파일 열기, 카메라 정보, 모델 정보 등
-    ImGui::Begin("OBJ Viewer");
-    ImGui::Text("OBJ Viewer is running.");
-    // TODO: 파일 열기 버튼, 모델 정보 표시 등
-    ImGui::End();
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui::Text("WantCaptureMouse: %s", io.WantCaptureMouse ? "true" : "false");
+    ImGui::Text("MouseDown[0]: %s", io.MouseDown[0] ? "true" : "false");
 
+    ImGui::ShowDemoWindow();
+
+    if (ImGui::BeginMainMenuBar())
+    {
+        if (ImGui::MenuItem("Open OBJ..."))
+        { /* 파일 열기 */
+        }
+        ImGui::SameLine(ImGui::GetWindowWidth() - 60);
+        if (ImGui::MenuItem("Exit"))
+        {
+            OnRequestExit();
+        }
+        ImGui::EndMainMenuBar();
+    }
     ImGui::Render();
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }

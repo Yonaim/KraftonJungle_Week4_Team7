@@ -24,10 +24,11 @@ class FViewerEngineLoop : public IEngineLoop
     void Tick() override;
     void InitializeForTime() override;
 
-    bool                                          HandleWindowResize();
-    bool                                          RunFrameOnce();
-    bool                                          RunFrameOnceWithoutResize();
-    void                                          UpdateFrameTiming();
+    static bool HandleViewerMessage(HWND HWnd, UINT Message, WPARAM WParam, LPARAM LParam, LRESULT& OutResult, void* UserData);
+    bool HandleWindowResize();
+    bool RunFrameOnce();
+    bool RunFrameOnceWithoutResize();
+    void UpdateFrameTiming();
     Engine::ApplicationCore::FWindowsApplication* GetWindowsApplication() const;
 
   private:
