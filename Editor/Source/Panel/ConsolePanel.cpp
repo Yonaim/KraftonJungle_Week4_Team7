@@ -187,7 +187,7 @@ namespace
 
     std::filesystem::path ResolveVirtualPathToAbsolute(const FString& Input)
     {
-        if (Input.rfind("/Game/", 0) != 0)
+        if (Input.rfind("/Content/", 0) != 0)
         {
             return {};
         }

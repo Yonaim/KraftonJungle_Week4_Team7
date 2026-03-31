@@ -5,7 +5,7 @@
 
 ATriangleActor::ATriangleActor()
 {
-    SetDefaultStaticMeshPath("BasicMesh/Triangle.obj");
+    SetDefaultStaticMeshPath("Mesh/Primitive/Triangle.obj");
     Name = "TriangleActor";
 }
 

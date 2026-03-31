@@ -5,7 +5,7 @@
 
 AQuadActor::AQuadActor()
 {
-    SetDefaultStaticMeshPath("BasicMesh/Quad.obj");
+    SetDefaultStaticMeshPath("Mesh/Primitive/Quad.obj");
     Name = "QuadActor";
 }
 

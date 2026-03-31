@@ -4,7 +4,7 @@
 
 ACylinderActor::ACylinderActor()
 {
-    SetDefaultStaticMeshPath("BasicMesh/Cylinder.obj");
+    SetDefaultStaticMeshPath("Mesh/Primitive/Cylinder.obj");
     Name = "CylinderActor";
 }
 

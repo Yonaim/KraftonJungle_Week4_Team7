@@ -4,7 +4,7 @@
 
 ARingActor::ARingActor()
 {
-    SetDefaultStaticMeshPath("BasicMesh/Ring.obj");
+    SetDefaultStaticMeshPath("Mesh/Primitive/Ring.obj");
     Name = "RingActor";
 }
 

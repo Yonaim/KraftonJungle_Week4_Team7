@@ -16,19 +16,50 @@ namespace
     constexpr float MinItemsPaneWidth = 220.0f;
     constexpr float SplitterWidth = 6.0f;
     constexpr float FolderTreeIndentSpacing = 4.0f;
-    constexpr const char* TypeFilterLabels[] = {
-        "All", "Scene", "Texture", "Font", "Sprite Atlas", "Unknown"
+
+    struct FItemTypeDisplayInfo
+    {
+        EContentBrowserItemType ItemType;
+        const char*             Label;
+        ImVec4                  Color;
     };
+
+    constexpr FItemTypeDisplayInfo ItemTypeDisplayInfos[] = {
+        {EContentBrowserItemType::Scene, "Scene", ImVec4(0.47f, 0.72f, 0.96f, 1.0f)},
+        {EContentBrowserItemType::Texture, "Texture", ImVec4(0.53f, 0.82f, 0.47f, 1.0f)},
+        {EContentBrowserItemType::Font, "Font", ImVec4(1.0f, 1.0f, 1.0f, 1.0f)},
+        {EContentBrowserItemType::TextureAtlas, "Texture Atlas", ImVec4(0.98f, 0.58f, 0.29f, 1.0f)},
+        {EContentBrowserItemType::UnknownFile, "Unknown", ImVec4(0.76f, 0.76f, 0.76f, 1.0f)},
+    };
+
+    constexpr const char* TypeFilterLabels[] = {
+        "All",
+        ItemTypeDisplayInfos[0].Label,
+        ItemTypeDisplayInfos[1].Label,
+        ItemTypeDisplayInfos[2].Label,
+        ItemTypeDisplayInfos[3].Label,
+        ItemTypeDisplayInfos[4].Label,
+    };
+
+    const FItemTypeDisplayInfo* FindItemTypeDisplayInfo(EContentBrowserItemType ItemType)
+    {
+        for (const FItemTypeDisplayInfo& Info : ItemTypeDisplayInfos)
+        {
+            if (Info.ItemType == ItemType)
+            {
+                return &Info;
+            }
+        }
+
+        return nullptr;
+    }
 
     FString ToLowerAsciiCopy(const FString& Value)
     {
         FString LowerValue = Value;
         std::transform(
-            LowerValue.begin(), LowerValue.end(), LowerValue.begin(),
-            [](char Character)
-            {
-                return static_cast<char>(std::tolower(static_cast<unsigned char>(Character)));
-            });
+            LowerValue.begin(), LowerValue.end(), LowerValue.begin(), [](char Character)
+            { return static_cast<char>(std::tolower(static_cast<unsigned char>(Character))); });
         return LowerValue;
     }
 
@@ -67,42 +98,32 @@ namespace
 
     const char* GetItemTypeLabel(EContentBrowserItemType ItemType)
     {
-        switch (ItemType)
+        if (ItemType == EContentBrowserItemType::Folder)
         {
-        case EContentBrowserItemType::Scene:
-            return "Scene";
-        case EContentBrowserItemType::Texture:
-            return "Texture";
-        case EContentBrowserItemType::Folder:
             return "Folder";
-        case EContentBrowserItemType::Font:
-            return "Font";
-        case EContentBrowserItemType::SpriteAtlas:
-            return "Sprite Atlas";
-        case EContentBrowserItemType::UnknownFile:
-        default:
-            return "Unknown";
         }
+
+        if (const FItemTypeDisplayInfo* Info = FindItemTypeDisplayInfo(ItemType))
+        {
+            return Info->Label;
+        }
+
+        return "Unknown";
     }
 
     ImVec4 GetItemTypeColor(EContentBrowserItemType ItemType)
     {
-        switch (ItemType)
+        if (ItemType == EContentBrowserItemType::Folder)
         {
-        case EContentBrowserItemType::Scene:
-            return ImVec4(0.47f, 0.72f, 0.96f, 1.0f);
-        case EContentBrowserItemType::Texture:
-            return ImVec4(0.53f, 0.82f, 0.47f, 1.0f);
-        case EContentBrowserItemType::Folder:
             return ImVec4(0.92f, 0.78f, 0.42f, 1.0f);
-        case EContentBrowserItemType::Font:
-            return ImVec4(1.f, 1.f, 1.f, 1.f);
-        case EContentBrowserItemType::SpriteAtlas:
-            return ImVec4(0.98f, 0.58f, 0.29f, 1.0f);
-        case EContentBrowserItemType::UnknownFile:
-        default:
-            return ImVec4(0.76f, 0.76f, 0.76f, 1.0f);
         }
+
+        if (const FItemTypeDisplayInfo* Info = FindItemTypeDisplayInfo(ItemType))
+        {
+            return Info->Color;
+        }
+
+        return ImVec4(0.76f, 0.76f, 0.76f, 1.0f);
     }
 
     template <size_t BufferSize>
@@ -117,31 +138,25 @@ namespace
         Destination[CopyLength] = '\0';
     }
 
-    Engine::Component::EComponentAssetPathKind GetAssetPathKind(
-        const FContentBrowserItem& Item)
+        Engine::Component::EComponentAssetPathKind GetAssetPathKind(const FContentBrowserItem& Item)
     {
-        const FString Extension = ToLowerAsciiCopy(Item.Extension);
-        if (Extension == ".font")
+        switch (Item.ItemType)
         {
+        case EContentBrowserItemType::Font:
             return Engine::Component::EComponentAssetPathKind::FontFile;
-        }
 
-        if (Item.ItemType == EContentBrowserItemType::SpriteAtlas)
-        {
-            return Engine::Component::EComponentAssetPathKind::SpriteAtlasFile;
-        }
+        case EContentBrowserItemType::TextureAtlas:
+            return Engine::Component::EComponentAssetPathKind::TextureAtlasFile;
 
-        if (Item.ItemType == EContentBrowserItemType::Texture)
-        {
+        case EContentBrowserItemType::Texture:
             return Engine::Component::EComponentAssetPathKind::TextureImage;
-        }
 
-        if (Item.ItemType == EContentBrowserItemType::Scene)
-        {
+        case EContentBrowserItemType::Scene:
             return Engine::Component::EComponentAssetPathKind::SceneFile;
-        }
 
-        return Engine::Component::EComponentAssetPathKind::Any;
+        default:
+            return Engine::Component::EComponentAssetPathKind::Any;
+        }
     }
 } // namespace
 
@@ -151,15 +166,9 @@ FContentBrowserPanel::FContentBrowserPanel()
     LeftPaneWidth = DefaultFolderPaneWidth;
 }
 
-const wchar_t* FContentBrowserPanel::GetPanelID() const
-{
-    return L"ContentBrowserPanel";
-}
+const wchar_t* FContentBrowserPanel::GetPanelID() const { return L"ContentBrowserPanel"; }
 
-const wchar_t* FContentBrowserPanel::GetDisplayName() const
-{
-    return L"Content Browser";
-}
+const wchar_t* FContentBrowserPanel::GetDisplayName() const { return L"Content Browser"; }
 
 void FContentBrowserPanel::OnOpen()
 {
@@ -231,7 +240,7 @@ void FContentBrowserPanel::DrawToolbar(FEditorContentIndex& ContentIndex)
     ImGui::Text("Folders: %d  Files: %d", Snapshot.FolderCount, Snapshot.FileCount);
 }
 
-void FContentBrowserPanel::DrawResizableLayout(FEditorContentIndex& ContentIndex,
+void FContentBrowserPanel::DrawResizableLayout(FEditorContentIndex&             ContentIndex,
                                                const FContentBrowserFolderNode& RootFolder)
 {
     const ImVec2 AvailableRegion = ImGui::GetContentRegionAvail();
@@ -257,8 +266,7 @@ void FContentBrowserPanel::DrawResizableLayout(FEditorContentIndex& ContentIndex
         GetContext()->ContentBrowserLeftPaneWidth = LeftPaneWidth;
     }
 
-    if (ImGui::BeginChild("##ContentFolders", ImVec2(LeftWidth, 0.0f),
-                          ImGuiChildFlags_Borders))
+    if (ImGui::BeginChild("##ContentFolders", ImVec2(LeftWidth, 0.0f), ImGuiChildFlags_Borders))
     {
         DrawFolderTree(RootFolder);
     }
@@ -294,14 +302,13 @@ void FContentBrowserPanel::DrawResizableLayout(FEditorContentIndex& ContentIndex
         }
     }
 
-    ImDrawList* DrawList = ImGui::GetWindowDrawList();
+    ImDrawList*  DrawList = ImGui::GetWindowDrawList();
     const ImVec2 SplitterEnd =
         ImVec2(SplitterStart.x + SplitterWidth, SplitterStart.y + AvailableRegion.y);
     const ImU32 SplitterColor =
-        ImGui::GetColorU32(bSplitterActive ? ImVec4(0.37f, 0.58f, 0.96f, 1.0f)
-                                           : bSplitterHovered
-                                               ? ImVec4(0.30f, 0.30f, 0.32f, 1.0f)
-                                               : ImVec4(0.22f, 0.22f, 0.24f, 1.0f));
+        ImGui::GetColorU32(bSplitterActive    ? ImVec4(0.37f, 0.58f, 0.96f, 1.0f)
+                           : bSplitterHovered ? ImVec4(0.30f, 0.30f, 0.32f, 1.0f)
+                                              : ImVec4(0.22f, 0.22f, 0.24f, 1.0f));
     DrawList->AddRectFilled(SplitterStart, SplitterEnd, SplitterColor);
 
     ImGui::SameLine(0.0f, 0.0f);
@@ -322,7 +329,7 @@ void FContentBrowserPanel::DrawFolderTree(const FContentBrowserFolderNode& RootF
 
 void FContentBrowserPanel::DrawFolderTreeNode(const FContentBrowserFolderNode& Folder, bool bIsRoot)
 {
-    const bool bIsSelected = (CurrentFolderVirtualPath == Folder.VirtualPath);
+    const bool         bIsSelected = (CurrentFolderVirtualPath == Folder.VirtualPath);
     ImGuiTreeNodeFlags TreeFlags =
         ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
 
@@ -398,11 +405,11 @@ void FContentBrowserPanel::DrawCurrentFolderView(FEditorContentIndex& ContentInd
     ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed, 110.0f);
     ImGui::TableHeadersRow();
 
-    int32 VisibleItemCount = 0;
+    int32      VisibleItemCount = 0;
     const bool bHasActiveSearch = !FString(SearchBuffer.data()).empty();
 
     TArray<const FContentBrowserFolderNode*> VisibleFolders;
-    TArray<const FContentBrowserItem*> VisibleFiles;
+    TArray<const FContentBrowserItem*>       VisibleFiles;
     if (bHasActiveSearch)
     {
         CollectVisibleFolders(*CurrentFolder, *CurrentFolder, VisibleFolders);
@@ -515,7 +522,7 @@ void FContentBrowserPanel::EnsureCurrentFolderIsValid(const FEditorContentIndex&
         return;
     }
 
-    CurrentFolderVirtualPath = "/Game";
+    CurrentFolderVirtualPath = "/Content";
     SelectedItemVirtualPath.clear();
 }
 
@@ -525,8 +532,8 @@ void FContentBrowserPanel::CollectVisibleFolders(
 {
     for (const FContentBrowserFolderNode& ChildFolder : Folder.ChildFolders)
     {
-        if (PassesSearchFilter(BuildRelativeDisplayPath(ParentFolder.VirtualPath,
-                                                        ChildFolder.VirtualPath)))
+        if (PassesSearchFilter(
+                BuildRelativeDisplayPath(ParentFolder.VirtualPath, ChildFolder.VirtualPath)))
         {
             OutFolders.push_back(&ChildFolder);
         }
@@ -535,13 +542,13 @@ void FContentBrowserPanel::CollectVisibleFolders(
     }
 }
 
-void FContentBrowserPanel::CollectVisibleFiles(
-    const FContentBrowserFolderNode& Folder, TArray<const FContentBrowserItem*>& OutFiles) const
+void FContentBrowserPanel::CollectVisibleFiles(const FContentBrowserFolderNode&    Folder,
+                                               TArray<const FContentBrowserItem*>& OutFiles) const
 {
     for (const FContentBrowserItem& FileItem : Folder.Files)
     {
-        if (PassesSearchFilter(BuildRelativeDisplayPath(CurrentFolderVirtualPath,
-                                                        FileItem.VirtualPath)))
+        if (PassesSearchFilter(
+                BuildRelativeDisplayPath(CurrentFolderVirtualPath, FileItem.VirtualPath)))
         {
             OutFiles.push_back(&FileItem);
         }
@@ -593,8 +600,8 @@ bool FContentBrowserPanel::PassesTypeFilter(EContentBrowserItemType ItemType) co
         return ItemType == EContentBrowserItemType::Texture;
     case EItemTypeFilter::Font:
         return ItemType == EContentBrowserItemType::Font;
-    case EItemTypeFilter::SpriteAtlas:
-        return ItemType == EContentBrowserItemType::SpriteAtlas;
+    case EItemTypeFilter::TextureAtlas:
+        return ItemType == EContentBrowserItemType::TextureAtlas;
     case EItemTypeFilter::UnknownFile:
         return ItemType == EContentBrowserItemType::UnknownFile;
     default:
