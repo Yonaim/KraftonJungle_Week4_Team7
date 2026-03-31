@@ -9,7 +9,7 @@
 
 namespace
 {
-    constexpr const char* GameVirtualRoot = "/Game";
+    constexpr const char* ContentVirtualRoot = "/Content";
 
     FString PathToUtf8String(const std::filesystem::path& Path)
     {
@@ -144,7 +144,7 @@ void FEditorContentIndex::Refresh()
         !std::filesystem::is_directory(Snapshot.ContentRootPath, ErrorCode))
     {
         Snapshot.RootFolder.AbsolutePath = Snapshot.ContentRootPath;
-        Snapshot.RootFolder.VirtualPath = GameVirtualRoot;
+        Snapshot.RootFolder.VirtualPath = ContentVirtualRoot;
         Snapshot.RootFolder.DisplayName = "Content";
         UE_LOG(ContentBrowser, ELogVerbosity::Warning, "Content root was not found: %s",
                PathToUtf8String(Snapshot.ContentRootPath).c_str());

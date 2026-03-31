@@ -27,10 +27,10 @@ namespace Asset
             return Path.empty() ? FString{} : Path.generic_string();
         }
 
-        inline bool IsVirtualGamePath(const std::filesystem::path& Path)
+        inline bool IsVirtualContentPath(const std::filesystem::path& Path)
         {
             const FString PathString = StringFromPath(Path);
-            return PathString.rfind("/Game", 0) == 0;
+            return PathString.rfind("/Content", 0) == 0;
         }
 
         template <typename TKey>
@@ -53,7 +53,7 @@ namespace Asset
                 return nullptr;
             }
 
-            if (SourceCacheDetail::IsVirtualGamePath(NormalizedPath))
+            if (SourceCacheDetail::IsVirtualContentPath(NormalizedPath))
             {
                 UE_LOG(FEditor, ELogVerbosity::Error,
                        "SourceCache GetOrLoad received virtual path. Resolve to absolute path "
@@ -76,7 +76,7 @@ namespace Asset
                 return nullptr;
             }
 
-            if (SourceCacheDetail::IsVirtualGamePath(Key.NormalizedPath))
+            if (SourceCacheDetail::IsVirtualContentPath(Key.NormalizedPath))
             {
                 UE_LOG(FEditor, ELogVerbosity::Error,
                        "SourceCache GetOrLoad received virtual key path. Resolve to absolute path "
@@ -138,7 +138,7 @@ namespace Asset
                 return false;
             }
 
-            if (SourceCacheDetail::IsVirtualGamePath(NormalizedPath))
+            if (SourceCacheDetail::IsVirtualContentPath(NormalizedPath))
             {
                 UE_LOG(FEditor, ELogVerbosity::Error,
                        "SourceCache EnsureContentHashLoaded received virtual path. Resolve to "
@@ -205,7 +205,7 @@ namespace Asset
                 return nullptr;
             }
 
-            if (SourceCacheDetail::IsVirtualGamePath(NormalizedPath))
+            if (SourceCacheDetail::IsVirtualContentPath(NormalizedPath))
             {
                 UE_LOG(FEditor, ELogVerbosity::Warning,
                        "SourceCache Find received virtual path. Resolve to absolute path first: %s",
@@ -232,7 +232,7 @@ namespace Asset
                 return;
             }
 
-            if (SourceCacheDetail::IsVirtualGamePath(NormalizedPath))
+            if (SourceCacheDetail::IsVirtualContentPath(NormalizedPath))
             {
                 UE_LOG(FEditor, ELogVerbosity::Warning,
                        "SourceCache Invalidate received virtual path. Resolve to absolute path "

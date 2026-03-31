@@ -53,7 +53,7 @@ class FContentBrowserPanel : public IPanel
 
   private:
     std::array<char, 256> SearchBuffer{};
-    FString               CurrentFolderVirtualPath = "/Game";
+    FString               CurrentFolderVirtualPath = "/Content";
     FString               SelectedItemVirtualPath;
     EItemTypeFilter       TypeFilter = EItemTypeFilter::All;
     float                 LeftPaneWidth = 250.0f;

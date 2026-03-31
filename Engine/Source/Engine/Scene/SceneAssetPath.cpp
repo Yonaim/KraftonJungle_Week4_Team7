@@ -10,7 +10,7 @@ namespace Engine::Scene
 {
     namespace
     {
-        constexpr const char* GameVirtualRoot = "/Game";
+        constexpr const char* ContentVirtualRoot = "/Content";
 
         FString PathToUtf8String(const std::filesystem::path& Path)
         {
@@ -82,10 +82,10 @@ namespace Engine::Scene
 
         if (RelativePath == ".")
         {
-            return GameVirtualRoot;
+            return ContentVirtualRoot;
         }
 
-        FString VirtualPath = GameVirtualRoot;
+        FString VirtualPath = ContentVirtualRoot;
         for (const std::filesystem::path& Part : RelativePath)
         {
             if (Part.empty() || Part == ".")
@@ -109,15 +109,15 @@ namespace Engine::Scene
 
         const FString SlashNormalized = NormalizeSlashCopy(InPath);
 
-        if (SlashNormalized.rfind(GameVirtualRoot, 0) == 0)
+        if (SlashNormalized.rfind(ContentVirtualRoot, 0) == 0)
         {
-            if (SlashNormalized.size() == std::strlen(GameVirtualRoot))
+            if (SlashNormalized.size() == std::strlen(ContentVirtualRoot))
             {
-                return GameVirtualRoot;
+                return ContentVirtualRoot;
             }
 
             FString Trimmed = SlashNormalized;
-            while (Trimmed.size() > std::strlen(GameVirtualRoot) && Trimmed.back() == '/')
+            while (Trimmed.size() > std::strlen(ContentVirtualRoot) && Trimmed.back() == '/')
             {
                 Trimmed.pop_back();
             }
@@ -137,9 +137,9 @@ namespace Engine::Scene
 
         const FString SlashNormalized = NormalizeSlashCopy(InPath);
 
-        if (SlashNormalized.rfind(GameVirtualRoot, 0) == 0)
+        if (SlashNormalized.rfind(ContentVirtualRoot, 0) == 0)
         {
-            FString RelativePath = SlashNormalized.substr(std::strlen(GameVirtualRoot));
+            FString RelativePath = SlashNormalized.substr(std::strlen(ContentVirtualRoot));
 
             while (!RelativePath.empty() && RelativePath.front() == '/')
             {

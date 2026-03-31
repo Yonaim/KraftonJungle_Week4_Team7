@@ -11,13 +11,48 @@
 
 namespace
 {
-    constexpr float       DefaultFolderPaneWidth = 250.0f;
-    constexpr float       MinFolderPaneWidth = 140.0f;
-    constexpr float       MinItemsPaneWidth = 220.0f;
-    constexpr float       SplitterWidth = 6.0f;
-    constexpr float       FolderTreeIndentSpacing = 4.0f;
-    constexpr const char* TypeFilterLabels[] = {"All",  "Scene",         "Texture",
-                                                "Font", "Texture Atlas", "Unknown"};
+    constexpr float DefaultFolderPaneWidth = 250.0f;
+    constexpr float MinFolderPaneWidth = 140.0f;
+    constexpr float MinItemsPaneWidth = 220.0f;
+    constexpr float SplitterWidth = 6.0f;
+    constexpr float FolderTreeIndentSpacing = 4.0f;
+
+    struct FItemTypeDisplayInfo
+    {
+        EContentBrowserItemType ItemType;
+        const char*             Label;
+        ImVec4                  Color;
+    };
+
+    constexpr FItemTypeDisplayInfo ItemTypeDisplayInfos[] = {
+        {EContentBrowserItemType::Scene, "Scene", ImVec4(0.47f, 0.72f, 0.96f, 1.0f)},
+        {EContentBrowserItemType::Texture, "Texture", ImVec4(0.53f, 0.82f, 0.47f, 1.0f)},
+        {EContentBrowserItemType::Font, "Font", ImVec4(1.0f, 1.0f, 1.0f, 1.0f)},
+        {EContentBrowserItemType::TextureAtlas, "Texture Atlas", ImVec4(0.98f, 0.58f, 0.29f, 1.0f)},
+        {EContentBrowserItemType::UnknownFile, "Unknown", ImVec4(0.76f, 0.76f, 0.76f, 1.0f)},
+    };
+
+    constexpr const char* TypeFilterLabels[] = {
+        "All",
+        ItemTypeDisplayInfos[0].Label,
+        ItemTypeDisplayInfos[1].Label,
+        ItemTypeDisplayInfos[2].Label,
+        ItemTypeDisplayInfos[3].Label,
+        ItemTypeDisplayInfos[4].Label,
+    };
+
+    const FItemTypeDisplayInfo* FindItemTypeDisplayInfo(EContentBrowserItemType ItemType)
+    {
+        for (const FItemTypeDisplayInfo& Info : ItemTypeDisplayInfos)
+        {
+            if (Info.ItemType == ItemType)
+            {
+                return &Info;
+            }
+        }
+
+        return nullptr;
+    }
 
     FString ToLowerAsciiCopy(const FString& Value)
     {
@@ -63,42 +98,32 @@ namespace
 
     const char* GetItemTypeLabel(EContentBrowserItemType ItemType)
     {
-        switch (ItemType)
+        if (ItemType == EContentBrowserItemType::Folder)
         {
-        case EContentBrowserItemType::Scene:
-            return "Scene";
-        case EContentBrowserItemType::Texture:
-            return "Texture";
-        case EContentBrowserItemType::Folder:
             return "Folder";
-        case EContentBrowserItemType::Font:
-            return "Font";
-        case EContentBrowserItemType::TextureAtlas:
-            return "Texture Atlas";
-        case EContentBrowserItemType::UnknownFile:
-        default:
-            return "Unknown";
         }
+
+        if (const FItemTypeDisplayInfo* Info = FindItemTypeDisplayInfo(ItemType))
+        {
+            return Info->Label;
+        }
+
+        return "Unknown";
     }
 
     ImVec4 GetItemTypeColor(EContentBrowserItemType ItemType)
     {
-        switch (ItemType)
+        if (ItemType == EContentBrowserItemType::Folder)
         {
-        case EContentBrowserItemType::Scene:
-            return ImVec4(0.47f, 0.72f, 0.96f, 1.0f);
-        case EContentBrowserItemType::Texture:
-            return ImVec4(0.53f, 0.82f, 0.47f, 1.0f);
-        case EContentBrowserItemType::Folder:
             return ImVec4(0.92f, 0.78f, 0.42f, 1.0f);
-        case EContentBrowserItemType::Font:
-            return ImVec4(1.f, 1.f, 1.f, 1.f);
-        case EContentBrowserItemType::TextureAtlas:
-            return ImVec4(0.98f, 0.58f, 0.29f, 1.0f);
-        case EContentBrowserItemType::UnknownFile:
-        default:
-            return ImVec4(0.76f, 0.76f, 0.76f, 1.0f);
         }
+
+        if (const FItemTypeDisplayInfo* Info = FindItemTypeDisplayInfo(ItemType))
+        {
+            return Info->Color;
+        }
+
+        return ImVec4(0.76f, 0.76f, 0.76f, 1.0f);
     }
 
     template <size_t BufferSize>
@@ -113,30 +138,25 @@ namespace
         Destination[CopyLength] = '\0';
     }
 
-    Engine::Component::EComponentAssetPathKind GetAssetPathKind(const FContentBrowserItem& Item)
+        Engine::Component::EComponentAssetPathKind GetAssetPathKind(const FContentBrowserItem& Item)
     {
-        const FString Extension = ToLowerAsciiCopy(Item.Extension);
-        if (Extension == ".font")
+        switch (Item.ItemType)
         {
+        case EContentBrowserItemType::Font:
             return Engine::Component::EComponentAssetPathKind::FontFile;
-        }
 
-        if (Item.ItemType == EContentBrowserItemType::TextureAtlas)
-        {
+        case EContentBrowserItemType::TextureAtlas:
             return Engine::Component::EComponentAssetPathKind::TextureAtlasFile;
-        }
 
-        if (Item.ItemType == EContentBrowserItemType::Texture)
-        {
+        case EContentBrowserItemType::Texture:
             return Engine::Component::EComponentAssetPathKind::TextureImage;
-        }
 
-        if (Item.ItemType == EContentBrowserItemType::Scene)
-        {
+        case EContentBrowserItemType::Scene:
             return Engine::Component::EComponentAssetPathKind::SceneFile;
-        }
 
-        return Engine::Component::EComponentAssetPathKind::Any;
+        default:
+            return Engine::Component::EComponentAssetPathKind::Any;
+        }
     }
 } // namespace
 
@@ -502,7 +522,7 @@ void FContentBrowserPanel::EnsureCurrentFolderIsValid(const FEditorContentIndex&
         return;
     }
 
-    CurrentFolderVirtualPath = "/Game";
+    CurrentFolderVirtualPath = "/Content";
     SelectedItemVirtualPath.clear();
 }
 
