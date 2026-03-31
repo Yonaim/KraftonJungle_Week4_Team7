@@ -5,7 +5,7 @@
 #include "Engine/Scene/Serialization/Legacy/SceneLegacySerialization.h"
 #include "Engine/Scene/Serialization/Runtime/ScenePropertySerialization.h"
 #include "Engine/Scene/Serialization/Registry/SceneTypeRegistry.h"
-#include "Engine/Scene/Serialization/CameraInfo.h"
+#include "Engine/Scene/CameraInfo.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Game/Actor.h"
 #include "Engine/Scene/Serialization/Common/SceneJsonConverters.h"

@@ -486,6 +486,7 @@
     <ClCompile Include="Source\ThirdParty\stb\stb_image_impl.cpp">
       <Filter>Source\ThirdParty\stb</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\Scene\CameraInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Resources\Mesh\Cone.h">
@@ -1085,7 +1086,7 @@
     <ClInclude Include="Source\ThirdParty\stb\stb_image.h">
       <Filter>Source\ThirdParty\stb</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Engine\Scene\Serialization\CameraInfo.h" />
+    <ClInclude Include="Source\Engine\Scene\CameraInfo.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

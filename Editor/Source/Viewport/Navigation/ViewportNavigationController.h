@@ -38,6 +38,16 @@ class FViewportNavigationController : public Engine::Viewport::IViewportControll
         RotationSpeed = FMath::Clamp(InRotationSpeed, 0.01f, 10.0f);
     }
 
+    void SetTargetLocation(const FVector& InTargetLocation)
+    {
+        TargetLocation = InTargetLocation;
+    }
+    void SetHasTargetLocation(bool bInHasTargetLocation)
+    {
+        bHasTargetLocation = bInHasTargetLocation;
+    }
+
+
     /* Orbiting */
     void SetSelectionController(class FViewportSelectionController* InController)
     {
@@ -48,6 +58,9 @@ class FViewportNavigationController : public Engine::Viewport::IViewportControll
     FVector ResolveOrbitPivot() const;
     void    UpdateOrbitCamera();
     void    EndOrbit();
+
+    void SetYaw(float InYaw) { Yaw = InYaw; }
+    void SetPitch(float InPitch) { Pitch = FMath::Clamp(InPitch, -89.9f, 89.9f); }
 
     /* Dolly */
     void Dolly(float Value);

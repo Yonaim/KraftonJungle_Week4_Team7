@@ -151,7 +151,7 @@
     <ClInclude Include="Source\Engine\Game\TextActor.h" />
     <ClInclude Include="Source\Engine\Game\TriangleActor.h" />
     <ClInclude Include="Source\Engine\Game\UnknownActor.h" />
-    <ClInclude Include="Source\Engine\Scene\Serialization\CameraInfo.h" />
+    <ClInclude Include="Source\Engine\Scene\CameraInfo.h" />
     <ClInclude Include="Source\Engine\Scene\Scene.h" />
     <ClInclude Include="Source\Engine\Scene\SceneAssetBinder.h" />
     <ClInclude Include="Source\Engine\Scene\SceneAssetPath.h" />
@@ -295,6 +295,7 @@
     <ClCompile Include="Source\Engine\Game\TextActor.cpp" />
     <ClCompile Include="Source\Engine\Game\TriangleActor.cpp" />
     <ClCompile Include="Source\Engine\Game\UnknownActor.cpp" />
+    <ClCompile Include="Source\Engine\Scene\CameraInfo.cpp" />
     <ClCompile Include="Source\Engine\Scene\Scene.cpp" />
     <ClCompile Include="Source\Engine\Scene\SceneAssetBinder.cpp" />
     <ClCompile Include="Source\Engine\Scene\SceneAssetPath.cpp" />

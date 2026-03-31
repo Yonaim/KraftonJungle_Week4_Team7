@@ -11,7 +11,7 @@
 #include "Renderer/RenderAsset/TextureResource.h"
 #include "Engine/Scene/Serialization/Core/SceneSerializer.h"
 #include "Engine/Scene/Serialization/Core/SceneDeserializer.h"
-#include "Engine/Scene/Serialization/CameraInfo.h"
+#include "Engine/Scene/CameraInfo.h"
 #include "Engine/Scene/SceneAssetBinder.h"
 #include "Panel/ConsolePanel.h"
 #include "Panel/ContentBrowserPanel.h"
@@ -609,8 +609,8 @@ bool FEditor::SaveSceneToPath(const std::filesystem::path& FilePath, bool bUpdat
         return false;
     }
 
-    FCameraInfo CameraInfo;
-    FViewportCamera& Camera =  ViewportTab.GetViewport(0)->GetViewportClient()->GetCamera();
+    FCameraInfo      CameraInfo;
+    FViewportCamera& Camera = ViewportTab.GetViewport(0)->GetViewportClient()->GetCamera();
     CameraInfo.Location = Camera.GetLocation();
     CameraInfo.Rotation = Camera.GetRotation().Rotator();
     CameraInfo.FOV = Camera.GetFOV();
@@ -660,6 +660,24 @@ void FEditor::ReplaceCurrentScene(std::unique_ptr<FScene> NewScene)
         {
             Viewport->GetViewportClient()->GetSelectionController().ClearSelection();
         }
+    }
+
+    if (ViewportTab.GetViewport(0)->IsValid() && NewScene != nullptr)
+    {
+        FViewportCamera&   Camera = ViewportTab.GetViewport(0)->GetViewportClient()->GetCamera();
+        const FCameraInfo& CameraInfo = NewScene->GetEditorCameraInfo();
+        Camera.SetLocation(CameraInfo.Location);
+        Camera.SetRotation(CameraInfo.Rotation);
+        Camera.SetFOV(CameraInfo.FOV);
+        Camera.SetNearPlane(CameraInfo.NearClip);
+        Camera.SetFarPlane(CameraInfo.FarClip);
+
+        FViewportNavigationController& NavController =
+        ViewportTab.GetViewport(0)->GetViewportClient()->GetNavigationController();
+        NavController.SetYaw(CameraInfo.Rotation.Yaw);
+        NavController.SetPitch(CameraInfo.Rotation.Pitch);
+        NavController.SetTargetLocation(CameraInfo.Location);
+        NavController.SetHasTargetLocation(true);
     }
 
     if (CurWorld == nullptr)

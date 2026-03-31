@@ -97,6 +97,21 @@ std::unique_ptr<FScene> FSceneDeserializer::Deserialize(const FString& JsonSourc
         }
     }
 
+    if (const FSceneJsonValue* PrimitivesValue =
+        Engine::Scene::Serialization::FindOptionalField(*RootObject, "PerspectiveCamera"))
+    {
+        const FSceneJsonObject* CameraObject = nullptr;
+        if (Engine::Scene::Serialization::TryGetObject(*PrimitivesValue, CameraObject,
+                                                   OutErrorMessage, "Scene.PerspectiveCamera"))
+        {
+            FCameraInfo CameraInfo;
+            if (DeserializeCameraInfo(*CameraObject, CameraInfo, OutErrorMessage))
+            {
+                Scene->SetEditorCameraInfo(CameraInfo);
+            }
+        }
+       }
+
     return Scene;
 }
 
