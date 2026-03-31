@@ -10,6 +10,7 @@
 #include "Engine/Asset/Material.h"
 #include "Engine/Game/Actor.h"
 #include "RHI/D3D11/D3D11Texture.h"
+#include "RHI/RHIBuffer.h"
 
 namespace Engine::Component
 {
@@ -44,6 +45,10 @@ namespace Engine::Component
     {
         UMeshComponent::DescribeProperties(Builder);
 
+        Builder.AddAssetPath(
+            "texture", L"Texture", [this]() { return GetTexturePath(); },
+            [this](const FString& InPath) { SetTexturePath(InPath); });
+
         Builder.AddBool(
             "billboard", L"Billboard", [this]() { return GetBillboard(); },
             [this](bool bInValue) { SetBillboard(bInValue); });
@@ -77,6 +82,7 @@ namespace Engine::Component
             };
             MeshData->Indices = { 0, 2, 1, 0, 3, 2 }; 
         }
+
 
         if (!Material && TextureAsset)
         {

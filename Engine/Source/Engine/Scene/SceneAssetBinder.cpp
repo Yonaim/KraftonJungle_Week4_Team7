@@ -33,7 +33,7 @@ namespace
         }
 
         const UTexture* TextureAsset = InComponent->GetTextureAsset();
-        return TextureAsset != nullptr ? TextureAsset->GetAssetPath() : FString();
+        return TextureAsset != nullptr ? TextureAsset->GetAssetPath() : InComponent->GetTexturePath();
     }
 
     FString ResolveSubUVPath(const USubUVComponent* InComponent)

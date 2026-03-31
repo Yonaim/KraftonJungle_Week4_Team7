@@ -20,6 +20,9 @@ namespace Engine::Component
         UTexture*       GetTextureAsset() { return TextureAsset; }
         void            SetTextureAsset(UTexture* InTextureAsset);
 
+        void    SetTexturePath(const FString& InPath) { TexturePath = InPath; };
+        FString GetTexturePath() const { return TexturePath; }
+
         const FTextureRenderResource* GetTextureRenderResource() const;
         FTextureRenderResource*       GetTextureRenderResource();
         const FTextureRenderResource* GetTextureResource() const { return GetTextureRenderResource(); }
@@ -41,6 +44,7 @@ namespace Engine::Component
         Geometry::FAABB GetLocalAABB() const override;
 
       protected:
+        FString   TexturePath;
         UTexture* TextureAsset = nullptr;
         bool      bBillboard = false;
         FVector   BillboardOffset = FVector(0.0f, 0.0f, 0.0f);
