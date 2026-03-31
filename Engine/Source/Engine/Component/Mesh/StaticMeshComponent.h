@@ -26,6 +26,7 @@ namespace Engine::Component
         // Primitive
         virtual void CollectRenderData(FSceneRenderData& OutRenderData,
                                        ESceneShowFlags   InShowFlags) const override;
+        void         Update(float DeltaTime) override;
 
         EBasicMeshType GetBasicMeshType() const override { return EBasicMeshType::None; }
 
@@ -57,6 +58,9 @@ namespace Engine::Component
         TArray<UMaterial*> OverrideMaterials;
 
         mutable std::shared_ptr<FMeshData> MeshData;
+
+        float ScrollSpeed = 1.0f;
+        FVector2 UVOffset = FVector2::Zero();
     };
 
 } // namespace Engine::Component

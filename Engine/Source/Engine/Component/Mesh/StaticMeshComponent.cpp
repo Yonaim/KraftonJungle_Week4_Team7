@@ -111,6 +111,7 @@ namespace Engine::Component
             Cmd.ObjectId = Actor->GetObjectId();
             Cmd.bDrawAABB = Actor->IsSelected() || Actor->IsShowBounds();
             Cmd.WorldAABB = GetWorldAABB();
+            Cmd.UVOffset = UVOffset;
             Cmd.SetDefaultStates();
 
             Cmd.Material = GetMaterial(0);
@@ -137,6 +138,7 @@ namespace Engine::Component
                 Cmd.ObjectId = Actor->GetObjectId();
                 Cmd.bDrawAABB = Actor->IsSelected() || Actor->IsShowBounds();
                 Cmd.WorldAABB = GetWorldAABB();
+                Cmd.UVOffset = UVOffset;
                 Cmd.SetDefaultStates();
 
                 Cmd.FirstIndex = Section.FirstIndex;
@@ -157,6 +159,15 @@ namespace Engine::Component
                 OutRenderData.RenderCommands.push_back(Cmd);
             }
         }
+    }
+
+    void UStaticMeshComponent::Update(float DeltaTime)
+    {
+        UVOffset.X += ScrollSpeed * DeltaTime;
+        UVOffset.Y += ScrollSpeed * DeltaTime;
+
+        UVOffset.X = std::fmod(UVOffset.X, 1.0f);
+        UVOffset.Y = std::fmod(UVOffset.Y, 1.0f);
     }
 
     void UStaticMeshComponent::DescribeProperties(FComponentPropertyBuilder& Builder)

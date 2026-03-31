@@ -434,11 +434,12 @@ void FGeneralRenderer::UpdateFrameConstantBuffer()
     }
 }
 
-void FGeneralRenderer::UpdateObjectConstantBuffer(const FMatrix& WorldMatrix, uint32 ObjectId)
+void FGeneralRenderer::UpdateObjectConstantBuffer(const FMatrix& WorldMatrix, uint32 ObjectId, FVector2 UVOffset)
 {
     FObjectConstantBuffer CBData;
     CBData.World = WorldMatrix;
     CBData.ObjectId = ObjectId;
+    CBData.UVOffset = UVOffset;
     D3D11_MAPPED_SUBRESOURCE Mapped;
     if (SUCCEEDED(RHI.GetDeviceContext()->Map(ObjectConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped)))
     {
@@ -538,7 +539,7 @@ void FGeneralRenderer::ExecuteRenderPass(ERenderLayer InRenderLayer)
             CurrentMeshTopology = DesiredTopology;
         }
 
-        UpdateObjectConstantBuffer(Cmd.WorldMatrix, Cmd.ObjectId);
+        UpdateObjectConstantBuffer(Cmd.WorldMatrix, Cmd.ObjectId, Cmd.UVOffset);
 
         if (Cmd.IndexCount > 0)
             DeviceContext->DrawIndexed(Cmd.IndexCount, Cmd.FirstIndex, 0);

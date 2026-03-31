@@ -11,8 +11,7 @@ cbuffer ObjectConstants : register(b1)
 {
     row_major float4x4 WorldMatrix;
     uint ObjectId;
-    uint Padding0;
-    uint Padding1;
+    float2 UVOffset;
     uint Padding2;
 };
 
@@ -39,7 +38,7 @@ PSInput VSMain(VSInput In)
     Out.Position = mul(float4(In.Position, 1.0f), MVP);
     Out.Normal = mul(float4(In.Normal, 0.0f), WorldMatrix);
     Out.Color = In.Color;
-    Out.UV = In.UV;
+    Out.UV = In.UV + UVOffset;
     return Out;
 }
 
