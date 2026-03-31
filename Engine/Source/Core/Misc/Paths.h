@@ -3,12 +3,14 @@
 #include "Core/EngineAPI.h"
 
 #include <filesystem>
+#include <utility>
 
 struct FPathConfig
 {
     std::filesystem::path EngineRoot;
     std::filesystem::path AppRoot;
 
+    // Optional. If empty, FPaths::Initialize() derives defaults from EngineRoot/AppRoot.
     std::filesystem::path EngineContentDir;
     std::filesystem::path AppContentDir;
     std::filesystem::path SavedDir;
@@ -19,7 +21,7 @@ struct FPathConfig
 class ENGINE_API FPaths
 {
   public:
-    static void Initialize(const FPathConfig& InConfig);
+    static bool Initialize(const FPathConfig& InConfig);
     static bool IsInitialized();
 
     static const std::filesystem::path& EngineRoot();
@@ -33,13 +35,25 @@ class ENGINE_API FPaths
     static void EnsureRuntimeDirectories();
 
     static std::filesystem::path Normalize(const std::filesystem::path& InPath);
+
     static std::filesystem::path Combine(const std::filesystem::path& Base,
                                          const std::filesystem::path& Relative);
 
+    template <typename... TPaths>
+    static std::filesystem::path Combine(const std::filesystem::path& Base,
+                                         const std::filesystem::path& Next, const TPaths&... Rest)
+    {
+        std::filesystem::path Result = Base;
+        Result /= Next;
+        ((Result /= Rest), ...);
+        return Normalize(Result);
+    }
+
   private:
     static const FPathConfig& GetConfig();
-    static void               ValidateConfig(const FPathConfig& InConfig);
+    static bool               ValidateConfig(const FPathConfig& InConfig);
 
+  private:
     static FPathConfig Config;
     static bool        bInitialized;
 };

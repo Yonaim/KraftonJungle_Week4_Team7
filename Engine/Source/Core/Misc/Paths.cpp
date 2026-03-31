@@ -1,85 +1,62 @@
-#include "Paths.h"
+#include "Core/Misc/Paths.h"
 
 #include <cassert>
+#include <system_error>
 
 namespace fs = std::filesystem;
 
-FPathConfig FPaths::Config;
-bool FPaths::bInitialized = false;
+FPathConfig FPaths::Config{};
+bool        FPaths::bInitialized = false;
 
-void FPaths::Initialize(const FPathConfig& InConfig)
+bool FPaths::Initialize(const FPathConfig& InConfig)
 {
-    ValidateConfig(InConfig);
-    if (InConfig.EngineRoot.empty() || InConfig.AppRoot.empty())
+    if (!ValidateConfig(InConfig))
     {
-        return;
+        return false;
     }
 
-    Config.EngineRoot = Normalize(InConfig.EngineRoot);
-    Config.AppRoot = Normalize(InConfig.AppRoot);
+    FPathConfig NewConfig{};
+    NewConfig.EngineRoot = Normalize(InConfig.EngineRoot);
+    NewConfig.AppRoot = Normalize(InConfig.AppRoot);
 
-    Config.EngineContentDir = InConfig.EngineContentDir.empty()
-        ? Combine(Config.EngineRoot, L"Resources")
-        : Normalize(InConfig.EngineContentDir);
+    NewConfig.EngineContentDir = InConfig.EngineContentDir.empty()
+                                     ? Combine(NewConfig.EngineRoot, L"Resources")
+                                     : Normalize(InConfig.EngineContentDir);
 
-    Config.AppContentDir = InConfig.AppContentDir.empty()
-        ? Combine(Config.AppRoot, L"Content")
-        : Normalize(InConfig.AppContentDir);
+    NewConfig.AppContentDir = InConfig.AppContentDir.empty()
+                                  ? Combine(NewConfig.AppRoot, L"Content")
+                                  : Normalize(InConfig.AppContentDir);
 
-    Config.SavedDir = InConfig.SavedDir.empty()
-        ? Combine(Config.AppRoot, L"Saved")
-        : Normalize(InConfig.SavedDir);
-    
-    Config.ShaderDir = InConfig.ShaderDir.empty()
-        ? Combine(Config.AppContentDir, L"Shader")
-        : Normalize(InConfig.ShaderDir);
+    NewConfig.SavedDir = InConfig.SavedDir.empty() ? Combine(NewConfig.AppRoot, L"Saved")
+                                                   : Normalize(InConfig.SavedDir);
 
-    Config.ShaderCacheDir = InConfig.ShaderCacheDir.empty()
-        ? Combine(Config.SavedDir, L"ShaderCache")
-        : Normalize(InConfig.ShaderCacheDir);
+    NewConfig.ShaderDir = InConfig.ShaderDir.empty() ? Combine(NewConfig.AppContentDir, L"Shader")
+                                                     : Normalize(InConfig.ShaderDir);
 
+    NewConfig.ShaderCacheDir = InConfig.ShaderCacheDir.empty()
+                                   ? Combine(NewConfig.SavedDir, L"ShaderCache")
+                                   : Normalize(InConfig.ShaderCacheDir);
+
+    Config = std::move(NewConfig);
     bInitialized = true;
+    return true;
 }
 
-bool FPaths::IsInitialized()
-{
-    return bInitialized;
-}
+bool FPaths::IsInitialized() { return bInitialized; }
 
-const fs::path& FPaths::EngineRoot()
-{
-    return GetConfig().EngineRoot;
-}
+const fs::path& FPaths::EngineRoot() { return GetConfig().EngineRoot; }
 
-const fs::path& FPaths::AppRoot()
-{
-    return GetConfig().AppRoot;
-}
+const fs::path& FPaths::AppRoot() { return GetConfig().AppRoot; }
 
-const fs::path& FPaths::EngineContentDir()
-{
-    return GetConfig().EngineContentDir;
-}
+const fs::path& FPaths::EngineContentDir() { return GetConfig().EngineContentDir; }
 
-const fs::path& FPaths::AppContentDir()
-{
-    return GetConfig().AppContentDir;
-}
+const fs::path& FPaths::AppContentDir() { return GetConfig().AppContentDir; }
 
-const fs::path& FPaths::SavedDir()
-{
-    return GetConfig().SavedDir;
-}
+const fs::path& FPaths::SavedDir() { return GetConfig().SavedDir; }
 
-const std::filesystem::path& FPaths::ShaderDir()
-{
-    return GetConfig().ShaderDir;
-}
+const fs::path& FPaths::ShaderDir() { return GetConfig().ShaderDir; }
 
-const fs::path& FPaths::ShaderCacheDir()
-{
-    return GetConfig().ShaderCacheDir;
-}
+const fs::path& FPaths::ShaderCacheDir() { return GetConfig().ShaderCacheDir; }
 
 void FPaths::EnsureRuntimeDirectories()
 {
@@ -91,6 +68,16 @@ void FPaths::EnsureRuntimeDirectories()
     fs::create_directories(CurrentConfig.ShaderCacheDir, ErrorCode);
 }
 
+fs::path FPaths::Normalize(const fs::path& InPath)
+{
+    if (InPath.empty())
+    {
+        return {};
+    }
+
+    return InPath.lexically_normal();
+}
+
 fs::path FPaths::Combine(const fs::path& Base, const fs::path& Relative)
 {
     return Normalize(Base / Relative);
@@ -98,24 +85,11 @@ fs::path FPaths::Combine(const fs::path& Base, const fs::path& Relative)
 
 const FPathConfig& FPaths::GetConfig()
 {
-    assert(bInitialized && "FPaths must be initialized by the host application before use.");
+    assert(bInitialized && "FPaths must be initialized before use.");
     return Config;
 }
 
-void FPaths::ValidateConfig(const FPathConfig& InConfig)
+bool FPaths::ValidateConfig(const FPathConfig& InConfig)
 {
-    assert(!InConfig.EngineRoot.empty() && "FPaths::Initialize requires EngineRoot.");
-    assert(!InConfig.AppRoot.empty() && "FPaths::Initialize requires AppRoot.");
-}
-
-fs::path FPaths::Normalize(const fs::path& InPath)
-{
-    std::error_code ErrorCode;
-    const fs::path CanonicalPath = fs::weakly_canonical(InPath, ErrorCode);
-    if (!ErrorCode)
-    {
-        return CanonicalPath.lexically_normal();
-    }
-
-    return InPath.lexically_normal();
+    return !InConfig.EngineRoot.empty() && !InConfig.AppRoot.empty();
 }
