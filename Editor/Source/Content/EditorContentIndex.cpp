@@ -2,6 +2,7 @@
 
 #include "Core/Misc/Paths.h"
 #include "Core/Logging/LogMacros.h"
+#include "Asset/Core/AssetNaming.h"
 #include "Engine/Scene/SceneAssetPath.h"
 
 #include <algorithm>
@@ -35,31 +36,32 @@ namespace
         return LowerValue;
     }
 
+
+    EContentBrowserItemType AssetFileKindToContentItemType(Asset::EAssetFileKind Kind)
+    {
+        switch (Kind)
+        {
+        case Asset::EAssetFileKind::Scene:
+            return EContentBrowserItemType::Scene;
+        case Asset::EAssetFileKind::Texture:
+            return EContentBrowserItemType::Texture;
+        case Asset::EAssetFileKind::Font:
+            return EContentBrowserItemType::Font;
+        case Asset::EAssetFileKind::TextureAtlas:
+            return EContentBrowserItemType::TextureAtlas;
+        case Asset::EAssetFileKind::StaticMesh:
+            return EContentBrowserItemType::StaticMesh;
+        case Asset::EAssetFileKind::MaterialLibrary:
+            return EContentBrowserItemType::MaterialLibrary;
+        default:
+            return EContentBrowserItemType::UnknownFile;
+        }
+    }
+
     EContentBrowserItemType ClassifyFileType(const std::filesystem::path& FilePath)
     {
-        FWString Extension = ToLowerWideCopy(FilePath.extension().wstring());
-        if (Extension == L".scene")
-        {
-            return EContentBrowserItemType::Scene;
-        }
-
-        if (Extension == L".png" || Extension == L".jpg" || Extension == L".jpeg" ||
-            Extension == L".bmp")
-        {
-            return EContentBrowserItemType::Texture;
-        }
-
-        if (Extension == L".font" || Extension == L".Font")
-        {
-            return EContentBrowserItemType::Font;
-        }
-
-        if (Extension == L".json")
-        {
-            return EContentBrowserItemType::TextureAtlas;
-        }
-
-        return EContentBrowserItemType::UnknownFile;
+        return AssetFileKindToContentItemType(
+            Asset::ClassifyAssetPath(PathToUtf8String(FilePath)));
     }
 
     FString GetFolderDisplayName(const std::filesystem::path& ContentRoot,
