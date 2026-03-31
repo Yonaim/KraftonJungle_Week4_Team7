@@ -22,8 +22,7 @@ static std::string NarrowFromWide(const std::wstring& In)
     std::string Result;
     Result.resize(static_cast<size_t>(RequiredSize - 1));
 
-    WideCharToMultiByte(
-        CP_UTF8, 0, In.c_str(), -1, Result.data(), RequiredSize, nullptr, nullptr);
+    WideCharToMultiByte(CP_UTF8, 0, In.c_str(), -1, Result.data(), RequiredSize, nullptr, nullptr);
 
     return Result;
 }

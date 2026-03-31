@@ -15,16 +15,16 @@ namespace Asset
     struct FIntermediateObjFace
     {
         TArray<FIntermediateObjFaceVertex> Vertices;
-        FString                             MaterialName;
+        FString                            MaterialName;
     };
 
     struct FIntermediateObjData
     {
-        TArray<FVector>               Positions;
-        TArray<FVector>               Colors;
-        TArray<FVector>               Normals;
-        TArray<FVector2>              UVs;
-        TArray<FString>               MaterialLibraries;
+        TArray<FVector>              Positions;
+        TArray<FVector>              Colors;
+        TArray<FVector>              Normals;
+        TArray<FVector2>             UVs;
+        TArray<FString>              MaterialLibraries;
         TArray<FIntermediateObjFace> Faces;
     };
 

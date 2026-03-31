@@ -5,24 +5,24 @@
 namespace Asset
 {
 
-struct FStaticMeshSectionData
-{
-    FString MaterialSlotName;
-    uint32  StartIndex = 0;
-    uint32  IndexCount = 0;
-    uint32  MaterialIndex = 0;
-};
+    struct FStaticMeshSectionData
+    {
+        FString MaterialSlotName;
+        uint32  StartIndex = 0;
+        uint32  IndexCount = 0;
+        uint32  MaterialIndex = 0;
+    };
 
-enum class EStaticMeshVertexFormat : uint8
-{
-    P,
-    PN,
-    PT,
-    PNT,
-    PC,
-    PCT,
-    PNC,
-    PNCT
-};
+    enum class EStaticMeshVertexFormat : uint8
+    {
+        P,
+        PN,
+        PT,
+        PNT,
+        PC,
+        PCT,
+        PNC,
+        PNCT
+    };
 
 } // namespace Asset

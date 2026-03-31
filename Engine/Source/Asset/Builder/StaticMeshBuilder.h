@@ -13,30 +13,30 @@
 namespace Asset
 {
 
-class FStaticMeshBuilder
-{
-  public:
-    explicit FStaticMeshBuilder(FAssetBuildCache& InCache) : Cache(InCache) {}
-
-    std::shared_ptr<FObjCookedData> Build(const std::filesystem::path& Path,
-                                                 const FStaticMeshBuildSettings& Settings = {});
-    std::shared_ptr<FObjCookedData> Build(const FWString& Path,
-                                                 const FStaticMeshBuildSettings& Settings = {})
+    class FStaticMeshBuilder
     {
-        return Build(std::filesystem::path(Path), Settings);
-    }
+      public:
+        explicit FStaticMeshBuilder(FAssetBuildCache& InCache) : Cache(InCache) {}
 
-    const FAssetBuildReport& GetLastBuildReport() const { return LastBuildReport; }
+        std::shared_ptr<FObjCookedData> Build(const std::filesystem::path&    Path,
+                                              const FStaticMeshBuildSettings& Settings = {});
+        std::shared_ptr<FObjCookedData> Build(const FWString&                 Path,
+                                              const FStaticMeshBuildSettings& Settings = {})
+        {
+            return Build(std::filesystem::path(Path), Settings);
+        }
 
-  private:
-    std::shared_ptr<FIntermediateObjData> ParseObj(const FSourceRecord& Source);
-    std::shared_ptr<FObjCookedData>       CookMesh(const FSourceRecord&               Source,
-                                                          const FIntermediateObjData& Intermediate,
-                                                          const FStaticMeshBuildSettings&    Settings);
+        const FAssetBuildReport& GetLastBuildReport() const { return LastBuildReport; }
 
-  private:
-    FAssetBuildCache& Cache;
-    FAssetBuildReport LastBuildReport;
-};
+      private:
+        std::shared_ptr<FIntermediateObjData> ParseObj(const FSourceRecord& Source);
+        std::shared_ptr<FObjCookedData>       CookMesh(const FSourceRecord&            Source,
+                                                       const FIntermediateObjData&     Intermediate,
+                                                       const FStaticMeshBuildSettings& Settings);
+
+      private:
+        FAssetBuildCache& Cache;
+        FAssetBuildReport LastBuildReport;
+    };
 
 } // namespace Asset

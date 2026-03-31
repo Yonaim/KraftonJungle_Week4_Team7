@@ -5,13 +5,13 @@
 namespace Asset
 {
 
-enum class EMaterialTextureSlot : uint8
-{
-    Diffuse = 0,
-    Normal,
-    Specular,
-    Opacity,
-    Emissive,
-};
+    enum class EMaterialTextureSlot : uint8
+    {
+        Diffuse = 0,
+        Normal,
+        Specular,
+        Opacity,
+        Emissive,
+    };
 
 } // namespace Asset

@@ -133,8 +133,8 @@ namespace Asset
             return -1;
         }
 
-        static bool ParseFaceVertexToken(const FString&                     Token,
-                                         FIntermediateObjFaceVertex&       OutVertex,
+        static bool ParseFaceVertexToken(const FString&              Token,
+                                         FIntermediateObjFaceVertex& OutVertex,
                                          const FIntermediateObjData& MeshData)
         {
             std::stringstream Ss(Token);
@@ -298,7 +298,7 @@ namespace Asset
 
         const FStaticMeshCookedKey CookedKey = KeyUtils::MakeCookedKey(IntermediateKey, Settings);
 
-        auto& CookedCache = Cache.GetCookedCache(FStaticMeshAssetTag{});
+        auto&                           CookedCache = Cache.GetCookedCache(FStaticMeshAssetTag{});
         std::shared_ptr<FObjCookedData> Cooked = CookedCache.Find(CookedKey);
         if (!Cooked)
         {
@@ -331,8 +331,7 @@ namespace Asset
         return Cooked;
     }
 
-    std::shared_ptr<FIntermediateObjData>
-    FStaticMeshBuilder::ParseObj(const FSourceRecord& Source)
+    std::shared_ptr<FIntermediateObjData> FStaticMeshBuilder::ParseObj(const FSourceRecord& Source)
     {
         std::ifstream File(std::filesystem::path(Source.NormalizedPath));
         if (!File)
@@ -424,9 +423,9 @@ namespace Asset
     }
 
     std::shared_ptr<FObjCookedData>
-    FStaticMeshBuilder::CookMesh(const FSourceRecord&               Source,
-                                 const FIntermediateObjData& Intermediate,
-                                 const FStaticMeshBuildSettings&    Settings)
+    FStaticMeshBuilder::CookMesh(const FSourceRecord&            Source,
+                                 const FIntermediateObjData&     Intermediate,
+                                 const FStaticMeshBuildSettings& Settings)
     {
         auto Result = std::make_shared<FObjCookedData>();
 
@@ -462,8 +461,8 @@ namespace Asset
         Result->VertexStride = ResolveVertexStride(Result->VertexFormat);
 
         std::unordered_map<FObjVertexKey, uint32, FObjVertexKeyHasher> VertexMap;
-        std::unordered_map<FString, uint32>                             MaterialSlotLookup;
-        TArray<TArray<uint32>>                                          MaterialBuckets;
+        std::unordered_map<FString, uint32>                            MaterialSlotLookup;
+        TArray<TArray<uint32>>                                         MaterialBuckets;
 
         auto ResolveMaterialAssetPath = [&](const FString& MaterialName) -> FString
         {
@@ -475,10 +474,11 @@ namespace Asset
             std::filesystem::path LibraryPath(Intermediate.MaterialLibraries.front());
             if (LibraryPath.is_relative())
             {
-                LibraryPath = std::filesystem::path(Source.NormalizedPath).parent_path() / LibraryPath;
+                LibraryPath =
+                    std::filesystem::path(Source.NormalizedPath).parent_path() / LibraryPath;
             }
 
-            std::error_code ErrorCode;
+            std::error_code       ErrorCode;
             std::filesystem::path CanonicalLibraryPath =
                 std::filesystem::weakly_canonical(LibraryPath, ErrorCode);
             if (ErrorCode)
@@ -634,7 +634,7 @@ namespace Asset
 
         for (const FIntermediateObjFace& Face : Intermediate.Faces)
         {
-            const uint32 MaterialIndex = GetOrCreateMaterialIndex(Face.MaterialName);
+            const uint32    MaterialIndex = GetOrCreateMaterialIndex(Face.MaterialName);
             TArray<uint32>& Bucket = MaterialBuckets[MaterialIndex];
 
             for (size_t VertexIndex = 1; VertexIndex + 1 < Face.Vertices.size(); ++VertexIndex)

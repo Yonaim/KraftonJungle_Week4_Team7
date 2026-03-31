@@ -8,33 +8,33 @@
 namespace Asset
 {
 
-struct FFontAtlasCookedData
-{
-    FString                              SourcePath;
-    std::shared_ptr<FTextureCookedData> AtlasTexture;
-    FFontInfo                           Info;
-    FFontCommon                         Common;
-    TMap<uint32, FFontGlyph>            Glyphs;
-
-    const FFontGlyph* FindGlyph(uint32 InCodePoint) const
+    struct FFontAtlasCookedData
     {
-        auto It = Glyphs.find(InCodePoint);
-        return It != Glyphs.end() ? &It->second : nullptr;
-    }
+        FString                             SourcePath;
+        std::shared_ptr<FTextureCookedData> AtlasTexture;
+        FFontInfo                           Info;
+        FFontCommon                         Common;
+        TMap<uint32, FFontGlyph>            Glyphs;
 
-    bool IsValid() const
-    {
-        return AtlasTexture != nullptr && AtlasTexture->IsValid() && !Glyphs.empty();
-    }
+        const FFontGlyph* FindGlyph(uint32 InCodePoint) const
+        {
+            auto It = Glyphs.find(InCodePoint);
+            return It != Glyphs.end() ? &It->second : nullptr;
+        }
 
-    void Reset()
-    {
-        SourcePath.clear();
-        AtlasTexture.reset();
-        Info = {};
-        Common = {};
-        Glyphs.clear();
-    }
-};
+        bool IsValid() const
+        {
+            return AtlasTexture != nullptr && AtlasTexture->IsValid() && !Glyphs.empty();
+        }
+
+        void Reset()
+        {
+            SourcePath.clear();
+            AtlasTexture.reset();
+            Info = {};
+            Common = {};
+            Glyphs.clear();
+        }
+    };
 
 } // namespace Asset

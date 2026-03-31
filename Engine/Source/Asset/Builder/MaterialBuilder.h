@@ -13,46 +13,48 @@
 namespace Asset
 {
 
-class FMaterialBuilder
-{
-  public:
-    explicit FMaterialBuilder(FAssetBuildCache& InCache) : Cache(InCache) {}
-
-    std::shared_ptr<FMtlCookedLibraryData> BuildLibrary(const std::filesystem::path& Path);
-    std::shared_ptr<FMtlCookedLibraryData> BuildLibrary(const FWString& Path)
+    class FMaterialBuilder
     {
-        return BuildLibrary(std::filesystem::path(Path));
-    }
+      public:
+        explicit FMaterialBuilder(FAssetBuildCache& InCache) : Cache(InCache) {}
 
-    std::shared_ptr<FMtlCookedData> BuildMaterial(const std::filesystem::path& Path,
-                                                       const FString& MaterialName = {});
-    std::shared_ptr<FMtlCookedData> BuildMaterial(const FWString& Path,
-                                                       const FString& MaterialName = {})
-    {
-        return BuildMaterial(std::filesystem::path(Path), MaterialName);
-    }
+        std::shared_ptr<FMtlCookedLibraryData> BuildLibrary(const std::filesystem::path& Path);
+        std::shared_ptr<FMtlCookedLibraryData> BuildLibrary(const FWString& Path)
+        {
+            return BuildLibrary(std::filesystem::path(Path));
+        }
 
-    static FString MakeMaterialAssetPath(const std::filesystem::path& LibraryPath,
-                                         const FString&               MaterialName);
-    static bool    SplitMaterialAssetPath(const FString& InAssetPath, FString& OutLibraryPath,
-                                          FString& OutMaterialName);
+        std::shared_ptr<FMtlCookedData> BuildMaterial(const std::filesystem::path& Path,
+                                                      const FString& MaterialName = {});
+        std::shared_ptr<FMtlCookedData> BuildMaterial(const FWString& Path,
+                                                      const FString&  MaterialName = {})
+        {
+            return BuildMaterial(std::filesystem::path(Path), MaterialName);
+        }
 
-    const FAssetBuildReport& GetLastBuildReport() const { return LastBuildReport; }
+        static FString MakeMaterialAssetPath(const std::filesystem::path& LibraryPath,
+                                             const FString&               MaterialName);
+        static bool    SplitMaterialAssetPath(const FString& InAssetPath, FString& OutLibraryPath,
+                                              FString& OutMaterialName);
 
-  private:
-    std::shared_ptr<FIntermediateMtlLibraryData> ParseMaterialLibrary(const FSourceRecord& Source);
-    std::shared_ptr<FMtlCookedLibraryData> CookMaterialLibrary(
-        const FSourceRecord& Source, const FIntermediateMtlLibraryData& Intermediate);
+        const FAssetBuildReport& GetLastBuildReport() const { return LastBuildReport; }
 
-    static bool                 ReadAllText(const std::filesystem::path& Path, FString& OutText);
-    static FString              Trim(const FString& Value);
-    static EMaterialTextureSlot ResolveTextureSlot(const FString& SlotName);
-    static FWString ResolveRelativePath(const std::filesystem::path& BasePath,
-                                        const FString&               RelativePath);
+      private:
+        std::shared_ptr<FIntermediateMtlLibraryData>
+        ParseMaterialLibrary(const FSourceRecord& Source);
+        std::shared_ptr<FMtlCookedLibraryData>
+        CookMaterialLibrary(const FSourceRecord&               Source,
+                            const FIntermediateMtlLibraryData& Intermediate);
 
-  private:
-    FAssetBuildCache& Cache;
-    FAssetBuildReport LastBuildReport;
-};
+        static bool    ReadAllText(const std::filesystem::path& Path, FString& OutText);
+        static FString Trim(const FString& Value);
+        static EMaterialTextureSlot ResolveTextureSlot(const FString& SlotName);
+        static FWString             ResolveRelativePath(const std::filesystem::path& BasePath,
+                                                        const FString&               RelativePath);
+
+      private:
+        FAssetBuildCache& Cache;
+        FAssetBuildReport LastBuildReport;
+    };
 
 } // namespace Asset

@@ -8,45 +8,45 @@
 namespace Asset
 {
 
-struct FSubUVAtlasCookedData
-{
-    FString                              SourcePath;
-    std::shared_ptr<FTextureCookedData> AtlasTexture;
-    FSubUVAtlasInfo                     Info;
-    TArray<FSubUVFrame>                 Frames;
-    TMap<FString, FSubUVSequence>       Sequences;
-
-    const FSubUVFrame* FindFrame(uint32 InId) const
+    struct FSubUVAtlasCookedData
     {
-        for (const FSubUVFrame& Frame : Frames)
+        FString                             SourcePath;
+        std::shared_ptr<FTextureCookedData> AtlasTexture;
+        FSubUVAtlasInfo                     Info;
+        TArray<FSubUVFrame>                 Frames;
+        TMap<FString, FSubUVSequence>       Sequences;
+
+        const FSubUVFrame* FindFrame(uint32 InId) const
         {
-            if (Frame.Id == InId)
+            for (const FSubUVFrame& Frame : Frames)
             {
-                return &Frame;
+                if (Frame.Id == InId)
+                {
+                    return &Frame;
+                }
             }
+            return nullptr;
         }
-        return nullptr;
-    }
 
-    const FSubUVSequence* FindSequence(const FString& InName) const
-    {
-        auto It = Sequences.find(InName);
-        return It != Sequences.end() ? &It->second : nullptr;
-    }
+        const FSubUVSequence* FindSequence(const FString& InName) const
+        {
+            auto It = Sequences.find(InName);
+            return It != Sequences.end() ? &It->second : nullptr;
+        }
 
-    bool IsValid() const
-    {
-        return AtlasTexture != nullptr && AtlasTexture->IsValid() && !Frames.empty();
-    }
+        bool IsValid() const
+        {
+            return AtlasTexture != nullptr && AtlasTexture->IsValid() && !Frames.empty();
+        }
 
-    void Reset()
-    {
-        SourcePath.clear();
-        AtlasTexture.reset();
-        Info = {};
-        Frames.clear();
-        Sequences.clear();
-    }
-};
+        void Reset()
+        {
+            SourcePath.clear();
+            AtlasTexture.reset();
+            Info = {};
+            Frames.clear();
+            Sequences.clear();
+        }
+    };
 
 } // namespace Asset

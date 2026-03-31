@@ -16,8 +16,8 @@ namespace Asset
         std::shared_ptr<RHI::FRHITexture>        ORMTexture;
         std::shared_ptr<RHI::FRHIConstantBuffer> ParameterBuffer;
 
-        static std::shared_ptr<FMaterialRenderResource>
-        Create(const FMtlCookedData& CookedData, RHI::FDynamicRHI& RHI);
+        static std::shared_ptr<FMaterialRenderResource> Create(const FMtlCookedData& CookedData,
+                                                               RHI::FDynamicRHI&     RHI);
 
         bool IsValid() const;
         void Reset();

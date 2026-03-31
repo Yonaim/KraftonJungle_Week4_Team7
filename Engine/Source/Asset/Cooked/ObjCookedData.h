@@ -5,42 +5,42 @@
 namespace Asset
 {
 
-struct FObjCookedData
-{
-    FString                 SourcePath;
-    EStaticMeshVertexFormat VertexFormat = EStaticMeshVertexFormat::P;
-
-    TArray<uint8> VertexData;
-    uint32        VertexStride = 0;
-    uint32        VertexCount = 0;
-
-    TArray<uint32>                 Indices;
-    TArray<FStaticMeshSectionData> Sections;
-    TArray<FString>                MaterialSlotNames;
-
-    bool bHasNormals = false;
-    bool bHasColors = false;
-    bool bHasUVs = false;
-
-    bool IsValid() const
+    struct FObjCookedData
     {
-        return !VertexData.empty() && VertexStride > 0 && VertexCount > 0 && !Indices.empty();
-    }
+        FString                 SourcePath;
+        EStaticMeshVertexFormat VertexFormat = EStaticMeshVertexFormat::P;
 
-    void Reset()
-    {
-        SourcePath.clear();
-        VertexFormat = EStaticMeshVertexFormat::P;
-        VertexData.clear();
-        VertexStride = 0;
-        VertexCount = 0;
-        Indices.clear();
-        Sections.clear();
-        MaterialSlotNames.clear();
-        bHasNormals = false;
-        bHasColors = false;
-        bHasUVs = false;
-    }
-};
+        TArray<uint8> VertexData;
+        uint32        VertexStride = 0;
+        uint32        VertexCount = 0;
+
+        TArray<uint32>                 Indices;
+        TArray<FStaticMeshSectionData> Sections;
+        TArray<FString>                MaterialSlotNames;
+
+        bool bHasNormals = false;
+        bool bHasColors = false;
+        bool bHasUVs = false;
+
+        bool IsValid() const
+        {
+            return !VertexData.empty() && VertexStride > 0 && VertexCount > 0 && !Indices.empty();
+        }
+
+        void Reset()
+        {
+            SourcePath.clear();
+            VertexFormat = EStaticMeshVertexFormat::P;
+            VertexData.clear();
+            VertexStride = 0;
+            VertexCount = 0;
+            Indices.clear();
+            Sections.clear();
+            MaterialSlotNames.clear();
+            bHasNormals = false;
+            bHasColors = false;
+            bHasUVs = false;
+        }
+    };
 
 } // namespace Asset

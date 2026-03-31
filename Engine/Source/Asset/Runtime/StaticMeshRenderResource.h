@@ -16,8 +16,8 @@ namespace Asset
         uint32 VertexCount = 0;
         uint32 IndexCount = 0;
 
-        static std::shared_ptr<FStaticMeshRenderResource>
-        Create(const FObjCookedData& CookedData, RHI::FDynamicRHI& RHI);
+        static std::shared_ptr<FStaticMeshRenderResource> Create(const FObjCookedData& CookedData,
+                                                                 RHI::FDynamicRHI&     RHI);
 
         bool IsValid() const;
         void Reset();

@@ -11,8 +11,8 @@ namespace Asset
 {
     struct FTextureRenderResource
     {
-        uint32 Width = 0;
-        uint32 Height = 0;
+        uint32            Width = 0;
+        uint32            Height = 0;
         RHI::EPixelFormat Format = RHI::EPixelFormat::Unknown;
 
         std::shared_ptr<RHI::FRHITexture> Texture;

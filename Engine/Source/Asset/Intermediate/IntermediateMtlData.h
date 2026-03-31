@@ -25,9 +25,9 @@ namespace Asset
 
     struct FIntermediateMtlLibraryData
     {
-        FString                     SourcePath;
+        FString                      SourcePath;
         TArray<FIntermediateMtlData> Materials;
-        TMap<FString, uint32>       NameToIndex;
+        TMap<FString, uint32>        NameToIndex;
 
         bool IsValid() const { return !Materials.empty(); }
 

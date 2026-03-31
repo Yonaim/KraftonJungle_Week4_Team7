@@ -3,20 +3,20 @@
 namespace Asset
 {
 
-struct FTextureAssetTag
-{
-};
-struct FMaterialAssetTag
-{
-};
-struct FStaticMeshAssetTag
-{
-};
-struct FSubUVAtlasAssetTag
-{
-};
-struct FFontAtlasAssetTag
-{
-};
+    struct FTextureAssetTag
+    {
+    };
+    struct FMaterialAssetTag
+    {
+    };
+    struct FStaticMeshAssetTag
+    {
+    };
+    struct FSubUVAtlasAssetTag
+    {
+    };
+    struct FFontAtlasAssetTag
+    {
+    };
 
 } // namespace Asset

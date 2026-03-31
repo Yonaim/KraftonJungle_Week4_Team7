@@ -34,8 +34,7 @@ namespace Asset
     FTextureBuilder::FTextureBuilder(FAssetBuildCache& InCache) : Cache(InCache) {}
 
     std::shared_ptr<FTextureCookedData>
-    FTextureBuilder::Build(const std::filesystem::path& Path,
-                           const FTextureBuildSettings& Settings)
+    FTextureBuilder::Build(const std::filesystem::path& Path, const FTextureBuildSettings& Settings)
     {
         LastBuildReport.Reset();
         const FSourceRecord* Source = Cache.GetSource(FTextureAssetTag{}, Path);
@@ -47,7 +46,7 @@ namespace Asset
         auto& IntermediateCache = Cache.GetIntermediateCache(FTextureAssetTag{});
 
         std::shared_ptr<FIntermediateTextureData> Intermediate;
-        FTextureIntermediateKey                  IntermediateKey;
+        FTextureIntermediateKey                   IntermediateKey;
 
         Intermediate = std::make_shared<FIntermediateTextureData>();
         if (!DecodeTexture(*Source, *Intermediate))
@@ -69,10 +68,9 @@ namespace Asset
             IntermediateCache.Insert(IntermediateKey, Intermediate);
         }
 
-        const FTextureCookedKey CookedKey =
-            KeyUtils::MakeCookedKey(IntermediateKey, Settings);
+        const FTextureCookedKey CookedKey = KeyUtils::MakeCookedKey(IntermediateKey, Settings);
 
-        auto& CookedCache = Cache.GetCookedCache(FTextureAssetTag{});
+        auto&                               CookedCache = Cache.GetCookedCache(FTextureAssetTag{});
         std::shared_ptr<FTextureCookedData> Cooked = CookedCache.Find(CookedKey);
 
         if (!Cooked)
@@ -107,7 +105,7 @@ namespace Asset
         return Cooked;
     }
 
-    bool FTextureBuilder::DecodeTexture(const FSourceRecord& Source,
+    bool FTextureBuilder::DecodeTexture(const FSourceRecord&      Source,
                                         FIntermediateTextureData& OutData) const
     {
         const std::string PathString = NarrowFromPath(Source.NormalizedPath);
@@ -148,9 +146,9 @@ namespace Asset
     }
 
     std::shared_ptr<FTextureCookedData>
-    FTextureBuilder::CookTexture(const FSourceRecord& Source,
+    FTextureBuilder::CookTexture(const FSourceRecord&            Source,
                                  const FIntermediateTextureData& Intermediate,
-                                 const FTextureBuildSettings& Settings) const
+                                 const FTextureBuildSettings&    Settings) const
     {
         if (Intermediate.Width == 0 || Intermediate.Height == 0)
         {

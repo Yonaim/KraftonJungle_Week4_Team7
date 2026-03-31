@@ -11,10 +11,10 @@ namespace Asset
 {
     struct FFontAtlasRenderResource
     {
-        FFontInfo                Info;
-        FFontCommon              Common;
+        FFontInfo                         Info;
+        FFontCommon                       Common;
         std::shared_ptr<RHI::FRHITexture> AtlasTexture;
-        TMap<uint32, FFontGlyph> Glyphs;
+        TMap<uint32, FFontGlyph>          Glyphs;
 
         static std::shared_ptr<FFontAtlasRenderResource>
         Create(const FFontAtlasCookedData& CookedData, RHI::FDynamicRHI& RHI);

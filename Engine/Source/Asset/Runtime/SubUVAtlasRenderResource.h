@@ -19,11 +19,11 @@ namespace Asset
 
     struct FSubUVAtlasRenderResource
     {
-        FSubUVAtlasInfo               Info;
-        FSubUVAtlasCommon             Common;
+        FSubUVAtlasInfo                   Info;
+        FSubUVAtlasCommon                 Common;
         std::shared_ptr<RHI::FRHITexture> AtlasTexture;
-        TArray<FSubUVFrame>           Frames;
-        TMap<FString, FSubUVSequence> Sequences;
+        TArray<FSubUVFrame>               Frames;
+        TMap<FString, FSubUVSequence>     Sequences;
 
         static std::shared_ptr<FSubUVAtlasRenderResource>
         Create(const FSubUVAtlasCookedData& CookedData, RHI::FDynamicRHI& RHI);

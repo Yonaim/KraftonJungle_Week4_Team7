@@ -27,7 +27,7 @@ namespace Asset
 
         const FAssetBuildReport& GetLastBuildReport() const { return LastBuildReport; }
 
-  private:
+      private:
         bool DecodeTexture(const FSourceRecord& Source, FIntermediateTextureData& OutData) const;
 
         std::shared_ptr<FTextureCookedData>
@@ -36,6 +36,6 @@ namespace Asset
 
       private:
         FAssetBuildCache& Cache;
-    FAssetBuildReport LastBuildReport;
+        FAssetBuildReport LastBuildReport;
     };
 } // namespace Asset

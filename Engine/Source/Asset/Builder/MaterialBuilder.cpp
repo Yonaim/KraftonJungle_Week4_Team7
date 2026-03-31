@@ -24,8 +24,8 @@ namespace Asset
             return true;
         }
 
-        static FIntermediateMtlData* EnsureCurrentMaterial(
-            FIntermediateMtlLibraryData& Library, const FString& FallbackName)
+        static FIntermediateMtlData* EnsureCurrentMaterial(FIntermediateMtlLibraryData& Library,
+                                                           const FString& FallbackName)
         {
             if (Library.Materials.empty())
             {
@@ -57,7 +57,8 @@ namespace Asset
             return nullptr;
         }
 
-        const FMaterialIntermediateKey IntermediateKey = KeyUtils::MakeIntermediateKey(*Intermediate);
+        const FMaterialIntermediateKey IntermediateKey =
+            KeyUtils::MakeIntermediateKey(*Intermediate);
         std::shared_ptr<FIntermediateMtlLibraryData> CachedIntermediate =
             IntermediateCache.Find(IntermediateKey);
         if (CachedIntermediate)
@@ -139,8 +140,8 @@ namespace Asset
         return LibraryPath.generic_string() + "::" + MaterialName;
     }
 
-    bool FMaterialBuilder::SplitMaterialAssetPath(const FString& InAssetPath, FString& OutLibraryPath,
-                                                  FString& OutMaterialName)
+    bool FMaterialBuilder::SplitMaterialAssetPath(const FString& InAssetPath,
+                                                  FString& OutLibraryPath, FString& OutMaterialName)
     {
         OutLibraryPath = InAssetPath;
         OutMaterialName.clear();
@@ -258,7 +259,7 @@ namespace Asset
     }
 
     std::shared_ptr<FMtlCookedLibraryData>
-    FMaterialBuilder::CookMaterialLibrary(const FSourceRecord& Source,
+    FMaterialBuilder::CookMaterialLibrary(const FSourceRecord&               Source,
                                           const FIntermediateMtlLibraryData& Intermediate)
     {
         auto Result = std::make_shared<FMtlCookedLibraryData>();
@@ -280,15 +281,16 @@ namespace Asset
             for (const FIntermediateMtlTextureRef& TextureRef : MaterialIntermediate.TextureRefs)
             {
                 const EMaterialTextureSlot TextureSlot = ResolveTextureSlot(TextureRef.SlotName);
-                const FWString             TexturePath = ResolveRelativePath(
-                    std::filesystem::path(Source.NormalizedPath).parent_path(), TextureRef.TexturePath);
+                const FWString             TexturePath =
+                    ResolveRelativePath(std::filesystem::path(Source.NormalizedPath).parent_path(),
+                                        TextureRef.TexturePath);
                 if (TexturePath.empty())
                 {
                     continue;
                 }
 
-                const FTextureBuildSettings TextureSettings{};
-                FTextureBuilder             TextureBuilder(Cache);
+                const FTextureBuildSettings         TextureSettings{};
+                FTextureBuilder                     TextureBuilder(Cache);
                 std::shared_ptr<FTextureCookedData> TextureCooked =
                     TextureBuilder.Build(TexturePath, TextureSettings);
                 if (TextureCooked == nullptr || !TextureCooked->IsValid())
@@ -372,8 +374,9 @@ namespace Asset
             ResolvedPath = BasePath / ResolvedPath;
         }
 
-        std::error_code ErrorCode;
-        std::filesystem::path CanonicalPath = std::filesystem::weakly_canonical(ResolvedPath, ErrorCode);
+        std::error_code       ErrorCode;
+        std::filesystem::path CanonicalPath =
+            std::filesystem::weakly_canonical(ResolvedPath, ErrorCode);
         if (ErrorCode)
         {
             CanonicalPath = ResolvedPath.lexically_normal();

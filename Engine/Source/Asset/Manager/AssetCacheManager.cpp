@@ -6,7 +6,6 @@
 
 #include "Engine/Scene/SceneAssetPath.h"
 
-
 namespace Asset
 {
     namespace
@@ -26,10 +25,12 @@ namespace Asset
             }
         }
 
-        void LogBuildReport(const char* AssetType, const FString& Path, const FAssetBuildReport& Report)
+        void LogBuildReport(const char* AssetType, const FString& Path,
+                            const FAssetBuildReport& Report)
         {
             UE_LOG(FEditor, ELogVerbosity::Log,
-                   "%s asset build path: %s (%s, cachedIntermediate=%d, cachedCooked=%d, builtNewCooked=%d)",
+                   "%s asset build path: %s (%s, cachedIntermediate=%d, cachedCooked=%d, "
+                   "builtNewCooked=%d)",
                    AssetType, Path.c_str(), DescribeBuildResultSource(Report.ResultSource),
                    Report.bUsedCachedIntermediate ? 1 : 0, Report.bUsedCachedCooked ? 1 : 0,
                    Report.bBuiltNewCooked ? 1 : 0);
@@ -94,9 +95,10 @@ namespace Asset
             return nullptr;
         }
 
-        const FString ResolvedPath = MaterialName.empty()
-                                         ? StringFromPath(AbsolutePath)
-                                         : FMaterialBuilder::MakeMaterialAssetPath(AbsolutePath, MaterialName);
+        const FString ResolvedPath =
+            MaterialName.empty()
+                ? StringFromPath(AbsolutePath)
+                : FMaterialBuilder::MakeMaterialAssetPath(AbsolutePath, MaterialName);
         UE_LOG(FEditor, ELogVerbosity::Log, "Material asset path resolved: %s -> %s", Path.c_str(),
                ResolvedPath.c_str());
 
@@ -167,7 +169,8 @@ namespace Asset
         {
             UE_LOG(FEditor, ELogVerbosity::Log, "Texture asset load succeeded: %s",
                    StringFromPath(AbsolutePath).c_str());
-            LogBuildReport("Texture", StringFromPath(AbsolutePath), TextureBuilder.GetLastBuildReport());
+            LogBuildReport("Texture", StringFromPath(AbsolutePath),
+                           TextureBuilder.GetLastBuildReport());
         }
         else
         {
@@ -182,19 +185,23 @@ namespace Asset
     FAssetCacheManager::BuildMaterialAbsolute(const std::filesystem::path& AbsolutePath,
                                               const FString&               MaterialName)
     {
-        std::shared_ptr<FMtlCookedData> Result = MaterialBuilder.BuildMaterial(AbsolutePath, MaterialName);
+        std::shared_ptr<FMtlCookedData> Result =
+            MaterialBuilder.BuildMaterial(AbsolutePath, MaterialName);
 
-        const FString LogPath = MaterialName.empty()
-                                    ? StringFromPath(AbsolutePath)
-                                    : FMaterialBuilder::MakeMaterialAssetPath(AbsolutePath, MaterialName);
+        const FString LogPath =
+            MaterialName.empty()
+                ? StringFromPath(AbsolutePath)
+                : FMaterialBuilder::MakeMaterialAssetPath(AbsolutePath, MaterialName);
         if (Result)
         {
-            UE_LOG(FEditor, ELogVerbosity::Log, "Material asset load succeeded: %s", LogPath.c_str());
+            UE_LOG(FEditor, ELogVerbosity::Log, "Material asset load succeeded: %s",
+                   LogPath.c_str());
             LogBuildReport("Material", LogPath, MaterialBuilder.GetLastBuildReport());
         }
         else
         {
-            UE_LOG(FEditor, ELogVerbosity::Error, "Material asset load failed: %s", LogPath.c_str());
+            UE_LOG(FEditor, ELogVerbosity::Error, "Material asset load failed: %s",
+                   LogPath.c_str());
         }
 
         return Result;
@@ -204,8 +211,7 @@ namespace Asset
     FAssetCacheManager::BuildStaticMeshAbsolute(const std::filesystem::path&    AbsolutePath,
                                                 const FStaticMeshBuildSettings& Settings)
     {
-        std::shared_ptr<FObjCookedData> Result =
-            StaticMeshBuilder.Build(AbsolutePath, Settings);
+        std::shared_ptr<FObjCookedData> Result = StaticMeshBuilder.Build(AbsolutePath, Settings);
 
         if (Result)
         {
@@ -223,8 +229,9 @@ namespace Asset
         return Result;
     }
 
-    std::shared_ptr<FSubUVAtlasCookedData> FAssetCacheManager::BuildSubUVAtlasAbsolute(
-        const std::filesystem::path& AbsolutePath, const FTextureBuildSettings& AtlasTextureSettings)
+    std::shared_ptr<FSubUVAtlasCookedData>
+    FAssetCacheManager::BuildSubUVAtlasAbsolute(const std::filesystem::path& AbsolutePath,
+                                                const FTextureBuildSettings& AtlasTextureSettings)
     {
         std::shared_ptr<FSubUVAtlasCookedData> Result =
             SubUVAtlasBuilder.Build(AbsolutePath, AtlasTextureSettings);
@@ -245,8 +252,9 @@ namespace Asset
         return Result;
     }
 
-    std::shared_ptr<FFontAtlasCookedData> FAssetCacheManager::BuildFontAtlasAbsolute(
-        const std::filesystem::path& AbsolutePath, const FTextureBuildSettings& AtlasTextureSettings)
+    std::shared_ptr<FFontAtlasCookedData>
+    FAssetCacheManager::BuildFontAtlasAbsolute(const std::filesystem::path& AbsolutePath,
+                                               const FTextureBuildSettings& AtlasTextureSettings)
     {
         std::shared_ptr<FFontAtlasCookedData> Result =
             FontAtlasBuilder.Build(AbsolutePath, AtlasTextureSettings);

@@ -14,34 +14,36 @@
 namespace Asset
 {
 
-class FSubUVAtlasBuilder
-{
-  public:
-    explicit FSubUVAtlasBuilder(FAssetBuildCache& InCache) : Cache(InCache) {}
-
-    std::shared_ptr<FSubUVAtlasCookedData> Build(const std::filesystem::path& Path,
-                                                 const FTextureBuildSettings& AtlasTextureSettings = {});
-    std::shared_ptr<FSubUVAtlasCookedData> Build(const FWString& Path,
-                                                 const FTextureBuildSettings& AtlasTextureSettings = {})
+    class FSubUVAtlasBuilder
     {
-        return Build(std::filesystem::path(Path), AtlasTextureSettings);
-    }
+      public:
+        explicit FSubUVAtlasBuilder(FAssetBuildCache& InCache) : Cache(InCache) {}
 
-    const FAssetBuildReport& GetLastBuildReport() const { return LastBuildReport; }
+        std::shared_ptr<FSubUVAtlasCookedData>
+        Build(const std::filesystem::path& Path,
+              const FTextureBuildSettings& AtlasTextureSettings = {});
+        std::shared_ptr<FSubUVAtlasCookedData>
+        Build(const FWString& Path, const FTextureBuildSettings& AtlasTextureSettings = {})
+        {
+            return Build(std::filesystem::path(Path), AtlasTextureSettings);
+        }
 
-  private:
-    std::shared_ptr<FIntermediateSubUVAtlasData> ParseAtlas(const FSourceRecord& Source);
-    std::shared_ptr<FSubUVAtlasCookedData>       CookAtlas(const FSourceRecord&             Source,
-                                                           const FIntermediateSubUVAtlasData& Intermediate,
-                                                           const FTextureBuildSettings&      AtlasTextureSettings);
+        const FAssetBuildReport& GetLastBuildReport() const { return LastBuildReport; }
 
-    static bool     ReadAllText(const std::filesystem::path& Path, FString& OutText);
-    static FString  Trim(const FString& Value);
-    static FWString              ResolveRelativePath(const std::filesystem::path& BasePath, const FString& RelativePath);
+      private:
+        std::shared_ptr<FIntermediateSubUVAtlasData> ParseAtlas(const FSourceRecord& Source);
+        std::shared_ptr<FSubUVAtlasCookedData>
+        CookAtlas(const FSourceRecord& Source, const FIntermediateSubUVAtlasData& Intermediate,
+                  const FTextureBuildSettings& AtlasTextureSettings);
 
-  private:
-    FAssetBuildCache& Cache;
-    FAssetBuildReport LastBuildReport;
-};
+        static bool     ReadAllText(const std::filesystem::path& Path, FString& OutText);
+        static FString  Trim(const FString& Value);
+        static FWString ResolveRelativePath(const std::filesystem::path& BasePath,
+                                            const FString&               RelativePath);
+
+      private:
+        FAssetBuildCache& Cache;
+        FAssetBuildReport LastBuildReport;
+    };
 
 } // namespace Asset

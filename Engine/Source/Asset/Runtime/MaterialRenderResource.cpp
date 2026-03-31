@@ -69,7 +69,7 @@ namespace Asset
 
     std::shared_ptr<RHI::FRHIConstantBuffer>
     FMaterialRenderResource::CreateParameterBuffer(const FMtlCookedData& CookedData,
-                                                   RHI::FDynamicRHI&          RHI)
+                                                   RHI::FDynamicRHI&     RHI)
     {
         FMaterialParameters Parameters;
         Parameters.DiffuseColor = CookedData.DiffuseColor;
