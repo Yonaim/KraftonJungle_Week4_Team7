@@ -7,7 +7,7 @@ namespace RHI
 
     // ======================== Base Resource ==========================
 
-    class FRHIResource
+    class ENGINE_API FRHIResource
     {
       public:
         virtual ~FRHIResource() = default;
