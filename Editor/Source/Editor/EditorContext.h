@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include "Core/CoreMinimal.h"
+
 #include "Core/Containers/Array.h"
 
 namespace Asset
@@ -26,6 +29,7 @@ struct FEditorContext
     FD3D11RHI* RHI = nullptr;
     RHI::FDynamicRHI* DynamicRHI = nullptr;
     Asset::FAssetCacheManager* AssetCacheManager = nullptr;
+    TArray<FString>             StartupPreloadAssetPaths;
     FEditorContentIndex* ContentIndex = nullptr;
 
     TArray<AActor*> SelectedActors;

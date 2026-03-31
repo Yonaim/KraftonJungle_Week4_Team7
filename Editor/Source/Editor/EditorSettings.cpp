@@ -342,5 +342,5 @@ bool FEditorSettings::Save(const FEditorSettingsData& InData) const
 
 std::filesystem::path FEditorSettings::GetSettingsFilePath() const
 {
-    return FPaths::Combine(L"Config", L"Editor.ini");
+    return FPaths::Combine(FPaths::Combine(FPaths::AppRoot(), L"Config"), L"Editor.ini");
 }

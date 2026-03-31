@@ -10,3 +10,18 @@ std::filesystem::path FEditorPaths::DefaultSceneDirectory()
 {
     return FPaths::Combine(FPaths::AppContentDir(), L"Scenes");
 }
+
+std::filesystem::path FEditorPaths::ConfigDirectory()
+{
+    return FPaths::Combine(FPaths::AppRoot(), L"Config");
+}
+
+std::filesystem::path FEditorPaths::EditorConfigFile()
+{
+    return FPaths::Combine(ConfigDirectory(), L"Editor.ini");
+}
+
+std::filesystem::path FEditorPaths::EditorStartupConfigFile()
+{
+    return FPaths::Combine(ConfigDirectory(), L"EditorStartup.ini");
+}

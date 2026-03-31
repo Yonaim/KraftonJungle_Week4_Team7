@@ -1,7 +1,10 @@
 #include "Editor.h"
 
 #include "Editor/EditorPaths.h"
+#include "Asset/Manager/AssetCacheManager.h"
+#include "Asset/Core/AssetNaming.h"
 #include "Viewport/EditorViewportClient.h"
+#include "Engine/Scene/SceneAssetPath.h"
 
 #include "Core/Misc/Paths.h"
 #include "Engine/Component/Core/SceneComponent.h"
@@ -30,6 +33,8 @@
 #include <algorithm>
 #include <array>
 #include <cstdint>
+#include <fstream>
+#include <vector>
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -264,6 +269,94 @@ namespace
         OutSelectedPath = NormalizeSceneFilePath(std::filesystem::path(FileBuffer.data()));
         return true;
     }
+
+    FString TrimIniValueCopy(const FString& InValue)
+    {
+        const size_t Start = InValue.find_first_not_of(" \t\r\n");
+        if (Start == FString::npos)
+        {
+            return {};
+        }
+
+        const size_t End = InValue.find_last_not_of(" \t\r\n");
+        return InValue.substr(Start, End - Start + 1);
+    }
+
+    std::filesystem::path GetEditorStartupIniPath()
+    {
+        return FPaths::Combine(FPaths::Combine(FPaths::AppRoot(), L"Config"), L"EditorStartup.ini");
+    }
+
+    bool LoadStartupAssetEntries(const std::filesystem::path& FilePath,
+                                 TArray<FString>& OutAssetPaths, FString* OutErrorMessage)
+    {
+        std::error_code ErrorCode;
+        if (!std::filesystem::exists(FilePath, ErrorCode))
+        {
+            return false;
+        }
+
+        std::ifstream File(FilePath);
+        if (!File.is_open())
+        {
+            if (OutErrorMessage != nullptr)
+            {
+                *OutErrorMessage = "Failed to open startup settings file.";
+            }
+            return false;
+        }
+
+        bool    bInPreloadSection = false;
+        FString Line;
+        int32   LineNumber = 0;
+        while (std::getline(File, Line))
+        {
+            ++LineNumber;
+            const FString TrimmedLine = TrimIniValueCopy(Line);
+            if (TrimmedLine.empty() || TrimmedLine[0] == ';' || TrimmedLine[0] == '#')
+            {
+                continue;
+            }
+
+            if (TrimmedLine.front() == '[')
+            {
+                bInPreloadSection = (TrimmedLine == "[PreloadAssets]");
+                continue;
+            }
+
+            if (!bInPreloadSection)
+            {
+                continue;
+            }
+
+            size_t EqualsIndex = TrimmedLine.find('=');
+            if (EqualsIndex == FString::npos)
+            {
+                continue;
+            }
+
+            FString Key = TrimIniValueCopy(TrimmedLine.substr(0, EqualsIndex));
+            if (!Key.empty() && Key[0] == '+')
+            {
+                Key.erase(Key.begin());
+            }
+
+            if (Key != "Asset" && Key != "Assets" && Key != "Path" && Key != "Paths")
+            {
+                continue;
+            }
+
+            const FString Value = TrimIniValueCopy(TrimmedLine.substr(EqualsIndex + 1));
+            if (Value.empty())
+            {
+                continue;
+            }
+
+            OutAssetPaths.push_back(Value);
+        }
+
+        return true;
+    }
 } // namespace
 
 // class FSamplePanel : public IPanel
@@ -340,6 +433,8 @@ void FEditor::Create()
     UE_LOG(FEditor, ELogLevel::Info,
            "Editor settings loaded. GridSpacing=%.2f ContentBrowserLeftPaneWidth=%.2f",
            UEngineStatics::GridSpacing, EditorContext.ContentBrowserLeftPaneWidth);
+
+    LoadStartupAssetPreloadList();
 
     // 메뉴 시스템은 command 등록과 배치 등록을 분리해서 초기화합니다.
     MenuRegistry.Clear();
@@ -439,6 +534,7 @@ void FEditor::SetRuntimeServices(FD3D11RHI* InRHI, RHI::FDynamicRHI* InDynamicRH
     bAttemptedAboutImageLoad = false;
     EnsureAboutImageLoaded();
     ResolveSceneAssetReferences(CurWorld != nullptr ? CurWorld->GetActiveScene() : nullptr);
+    PreloadStartupAssets();
     UE_LOG(FEditor, ELogLevel::Info,
            "Runtime services updated. RHI=%p DynamicRHI=%p AssetCacheManager=%p", InRHI,
            InDynamicRHI, InAssetCacheManager);
@@ -499,6 +595,152 @@ void FEditor::LoadEditorSettings()
            "LeftPaneWidth=%.2f",
            UEngineStatics::GridSpacing, SettingsData.CameraMoveSpeed,
            SettingsData.CameraRotationSpeed, EditorContext.ContentBrowserLeftPaneWidth);
+}
+
+void FEditor::LoadStartupAssetPreloadList()
+{
+    FString         ErrorMessage;
+    TArray<FString> StartupAssetPaths;
+    if (!LoadStartupAssetEntries(GetEditorStartupIniPath(), StartupAssetPaths, &ErrorMessage))
+    {
+        if (!ErrorMessage.empty())
+        {
+            UE_LOG(FEditor, ELogLevel::Error, "Failed to read EditorStartup.ini: %s",
+                   ErrorMessage.c_str());
+        }
+        else
+        {
+            UE_LOG(FEditor, ELogLevel::Info,
+                   "EditorStartup.ini was not found. Startup asset preloading is disabled.");
+        }
+        return;
+    }
+
+    EditorContext.StartupPreloadAssetPaths = std::move(StartupAssetPaths);
+    UE_LOG(FEditor, ELogLevel::Info, "Loaded EditorStartup.ini preload entries: Count=%zu",
+           EditorContext.StartupPreloadAssetPaths.size());
+}
+
+void FEditor::PreloadStartupAssets()
+{
+    if (EditorContext.AssetCacheManager == nullptr)
+    {
+        UE_LOG(FEditor, ELogLevel::Warning,
+               "Skipped startup asset preloading because AssetCacheManager is null.");
+        return;
+    }
+
+    if (EditorContext.StartupPreloadAssetPaths.empty())
+    {
+        UE_LOG(FEditor, ELogLevel::Debug, "No startup preload assets were configured.");
+        return;
+    }
+
+    int32 RequestedCount = 0;
+    int32 SuccessCount = 0;
+    int32 FailedCount = 0;
+    int32 SkippedCount = 0;
+
+    UE_LOG(FEditor, ELogLevel::Info, "Startup asset preloading begin. Count=%zu",
+           EditorContext.StartupPreloadAssetPaths.size());
+
+    for (const FString& AssetPathValue : EditorContext.StartupPreloadAssetPaths)
+    {
+        std::filesystem::path ResolvedPath =
+            Engine::Scene::ResolveSceneAssetPathToAbsolute(AssetPathValue);
+        if (ResolvedPath.empty())
+        {
+            ResolvedPath = AssetPathValue;
+        }
+
+        const FString               AbsolutePath = PathToUtf8String(ResolvedPath);
+        const Asset::EAssetFileKind AssetKind = Asset::ClassifyAssetPath(AbsolutePath);
+
+        if (AssetKind == Asset::EAssetFileKind::Unknown)
+        {
+            ++SkippedCount;
+            UE_LOG(
+                FEditor, ELogLevel::Warning,
+                "Skipped startup preload entry because the asset type could not be classified: %s",
+                AssetPathValue.c_str());
+            continue;
+        }
+
+        ++RequestedCount;
+
+        bool bSucceeded = false;
+
+        switch (AssetKind)
+        {
+        case Asset::EAssetFileKind::Texture:
+        {
+            bSucceeded = (EditorContext.AssetCacheManager->BuildTexture(AbsolutePath) != nullptr);
+            break;
+        }
+
+        case Asset::EAssetFileKind::MaterialLibrary:
+        {
+            bSucceeded = (EditorContext.AssetCacheManager->BuildMaterial(AbsolutePath) != nullptr);
+            break;
+        }
+
+        case Asset::EAssetFileKind::StaticMesh:
+        {
+            bSucceeded =
+                (EditorContext.AssetCacheManager->BuildStaticMesh(AbsolutePath) != nullptr);
+            break;
+        }
+
+        case Asset::EAssetFileKind::TextureAtlas:
+        {
+            bSucceeded =
+                (EditorContext.AssetCacheManager->BuildSubUVAtlas(AbsolutePath) != nullptr);
+            break;
+        }
+
+        case Asset::EAssetFileKind::Font:
+        {
+            bSucceeded = (EditorContext.AssetCacheManager->BuildFontAtlas(AbsolutePath) != nullptr);
+            break;
+        }
+
+        case Asset::EAssetFileKind::Scene:
+        {
+            ++SkippedCount;
+            UE_LOG(FEditor, ELogLevel::Warning,
+                   "Skipped startup preload scene asset because FAssetCacheManager does not build "
+                   "scenes: %s",
+                   AbsolutePath.c_str());
+            continue;
+        }
+
+        default:
+        {
+            ++SkippedCount;
+            UE_LOG(FEditor, ELogLevel::Warning,
+                   "Skipped startup preload unsupported asset kind=%d path=%s",
+                   static_cast<int32>(AssetKind), AbsolutePath.c_str());
+            continue;
+        }
+        }
+
+        if (bSucceeded)
+        {
+            ++SuccessCount;
+            UE_LOG(FEditor, ELogLevel::Info, "Startup preload succeeded: Kind=%d Path=%s",
+                   static_cast<int32>(AssetKind), AbsolutePath.c_str());
+        }
+        else
+        {
+            ++FailedCount;
+            UE_LOG(FEditor, ELogLevel::Warning, "Startup preload failed: Kind=%d Path=%s",
+                   static_cast<int32>(AssetKind), AbsolutePath.c_str());
+        }
+    }
+
+    UE_LOG(FEditor, ELogLevel::Info,
+           "Startup asset preloading finished. Requested=%d Succeeded=%d Failed=%d Skipped=%d",
+           RequestedCount, SuccessCount, FailedCount, SkippedCount);
 }
 
 void FEditor::SaveEditorSettings() const

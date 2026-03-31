@@ -126,6 +126,8 @@ class FEditor
     void RegisterWindowPanelCommand(const FPanelDescriptor& Descriptor);
     void LoadEditorSettings();
     void SaveEditorSettings() const;
+    void LoadStartupAssetPreloadList();
+    void PreloadStartupAssets();
     bool SaveScene();
     void SaveSceneAs();
     void RequestOpenScene();
