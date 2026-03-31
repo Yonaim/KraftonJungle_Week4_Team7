@@ -519,7 +519,6 @@
     <ClCompile Include="Source\ThirdParty\stb\stb_image_impl.cpp">
       <Filter>Source\ThirdParty\stb</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Renderer\ViewerRendererModule.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Resources\Mesh\Cone.h">
@@ -1155,7 +1154,6 @@
     <ClInclude Include="Source\ThirdParty\stb\stb_image.h">
       <Filter>Source\ThirdParty\stb</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Renderer\ViewerRendererModule.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

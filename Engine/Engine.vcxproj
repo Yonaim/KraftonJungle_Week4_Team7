@@ -215,7 +215,6 @@
     <ClInclude Include="Source\Renderer\Types\ShaderConstants.h" />
     <ClInclude Include="Source\Renderer\Types\VertexTypes.h" />
     <ClInclude Include="Source\Renderer\Types\ViewMode.h" />
-    <ClInclude Include="Source\Renderer\ViewerRendererModule.h" />
     <ClInclude Include="Source\RHI\D3D11\D3D11Buffer.h" />
     <ClInclude Include="Source\RHI\D3D11\D3D11Common.h" />
     <ClInclude Include="Source\RHI\D3D11\D3D11DynamicRHI.h" />
@@ -348,7 +347,6 @@
     <ClCompile Include="Source\Renderer\Shader\ShaderManager.cpp" />
     <ClCompile Include="Source\Renderer\Shader\ShaderMap.cpp" />
     <ClCompile Include="Source\Renderer\Shader\ShaderResource.cpp" />
-    <ClCompile Include="Source\Renderer\ViewerRendererModule.cpp" />
     <ClCompile Include="Source\RHI\D3D11\D3D11Common.cpp" />
     <ClCompile Include="Source\RHI\D3D11\D3D11DynamicRHI.cpp" />
     <ClCompile Include="Source\ThirdParty\stb\stb_image_impl.cpp" />

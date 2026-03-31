@@ -27,6 +27,7 @@ class ENGINE_API FRendererModule
 
     void Render(const FEditorRenderData& InEditorRenderData,
                 const FSceneRenderData&  InSceneRenderData);
+    void Render(const FSceneRenderData& InSceneRenderData);
 
     bool Pick(const FEditorRenderData& InEditorRenderData, 
               const FSceneRenderData&  InSceneRenderData,

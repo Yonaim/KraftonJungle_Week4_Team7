@@ -90,6 +90,11 @@ void FRendererModule::Render(const FEditorRenderData& InEditorRenderData,
     RenderOverlayPass(InEditorRenderData, InSceneRenderData);
 }
 
+void FRendererModule::Render(const FSceneRenderData& InSceneRenderData)
+{
+    RenderWorldPass({}, InSceneRenderData);
+}
+
 void FRendererModule::RenderWorldPass(const FEditorRenderData& InEditorRenderData,
                                       const FSceneRenderData&  InSceneRenderData)
 {

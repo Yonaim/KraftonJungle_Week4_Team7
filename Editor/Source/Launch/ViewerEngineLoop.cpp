@@ -7,6 +7,8 @@
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
 
+#include "Core/Misc/NameSubsystem.h"
+
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND HWnd, UINT Message, WPARAM WParam,
                                                              LPARAM LParam);
 
@@ -15,6 +17,7 @@ bool FViewerEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
     (void)HInstance;
     (void)NCmdShow;
 
+    Engine::Core::Misc::FNameSubsystem::Init();
     InputSystem = new Engine::ApplicationCore::FInputSystem();
 
 #if defined(_WIN32)
@@ -44,7 +47,7 @@ bool FViewerEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
     Viewer->Create();
     Viewer->OnRequestExit = [this]() { bIsExit = true; };
 
-    Renderer = new FViewerRendererModule();
+    Renderer = new FRendererModule();
     if (Renderer == nullptr)
     {
         return false;

@@ -1,5 +1,7 @@
 #include "Viewer.h"
 #include "Renderer/SceneView.h"
+#include "Engine/Component/Mesh/StaticMeshComponent.h"
+#include "Engine/Asset/StaticMesh.h"
 
 #include "imgui.h"
 #include <imgui_impl_dx11.h>
@@ -20,6 +22,9 @@ void FViewer::Create()
     ViewportCamera.SetRotation(FRotator::ZeroRotator);
 
     NavigationController.SetCamera(&ViewportCamera);
+
+    TestMeshActor = new AStaticMeshActor();
+    // TestMeshActor->GetStaticMeshComponent()->SetStaticMeshPath("Mesh/stanford_bunny.obj");
 }
 
 void FViewer::Release()
@@ -90,17 +95,6 @@ void FViewer::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
     }
 
     NavigationController.Tick(DeltaTime);
-
-    FPrimitiveRenderItem item;
-
-    item.MeshType = EBasicMeshType::Cube;
-    item.World = FMatrix::Identity;
-
-    SceneView->SetViewLocation(ViewportCamera.GetLocation());
-    SceneView->SetViewMatrix(ViewportCamera.GetViewMatrix());
-    SceneView->SetProjectionMatrix(ViewportCamera.GetProjectionMatrix());
-
-    SceneRenderData.SceneView = SceneView;
 }
 
 void FViewer::OnWindowResized(float Width, float Height)
@@ -116,6 +110,19 @@ void FViewer::OnWindowResized(float Width, float Height)
 FSceneView* FViewer::GetSceneView() const { return SceneView; }
 
 const FSceneRenderData& FViewer::GetSceneRenderData() const { return SceneRenderData; }
+
+void FViewer::BuildRenderCommand()
+{
+    SceneView->SetViewLocation(ViewportCamera.GetLocation());
+    SceneView->SetViewMatrix(ViewportCamera.GetViewMatrix());
+    SceneView->SetProjectionMatrix(ViewportCamera.GetProjectionMatrix());
+
+    SceneRenderData.SceneView = SceneView;
+    FRenderCommand RenderCommand;
+    RenderCommand.WorldMatrix = TestMeshActor->GetWorldMatrix();
+   
+    //렌더러 모듈에 추가 필요
+}
 
 void FViewer::DrawPanel(HWND hWnd)
 {

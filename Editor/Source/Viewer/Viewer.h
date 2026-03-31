@@ -4,6 +4,7 @@
 #include "ApplicationCore/Input/InputSystem.h"
 #include "Camera/ViewportCamera.h"
 #include "ViewerNavigationController.h"
+#include "Engine/Game/StaticMeshActor.h"
 
 class FViewer
 {
@@ -22,18 +23,20 @@ class FViewer
     FSceneView*             GetSceneView() const;
     const FSceneRenderData& GetSceneRenderData() const;
 
+    void BuildRenderCommand();
     void DrawPanel(HWND hWnd);
 
   public:
     std::function<void()> OnRequestExit;
 
   private:
-    // 내부 상태
     FSceneView*      SceneView = nullptr;
     FSceneRenderData SceneRenderData;
     FViewportCamera  ViewportCamera;
 
     FViewerNavigationController NavigationController;
+
+    AStaticMeshActor* TestMeshActor = nullptr;
 
     FD3D11RHI* RHI = nullptr;
 };
