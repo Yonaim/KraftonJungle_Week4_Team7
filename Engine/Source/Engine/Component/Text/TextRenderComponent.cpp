@@ -402,6 +402,7 @@ namespace Engine::Component
         if (!MeshData)
         {
             MeshData = std::make_shared<FMeshData>();
+            MeshData->bIsDynamicMesh = true;
             MeshData->Topology = EMeshTopology::EMT_TriangleList;
 
             FTextLayout Layout = BuildTextLayout();

@@ -22,58 +22,52 @@ namespace Engine::Component
     void ULineBatchComponent::CollectRenderData(FSceneRenderData& OutRenderData,
                                                 ESceneShowFlags   InShowFlags) const
     {
-        if (IsFlagSet(InShowFlags, ESceneShowFlags::SF_Primitives))
+        if (!IsFlagSet(InShowFlags, ESceneShowFlags::SF_Primitives))
+            return;
+
+        if (!BatchMeshData)
         {
-            if (Lines.empty())
-            {
-                return;
-            }
-
-            if (!BatchMeshData)
-            {
-                BatchMeshData = std::make_shared<FMeshData>();
-                BatchMeshData->Topology = EMeshTopology::EMT_LineList;
-            }
-
-            BatchMeshData->Vertices.clear();
-            BatchMeshData->Indices.clear();
-
-            for (const auto& Line : Lines)
-            {
-                uint32 StartIdx = static_cast<uint32>(BatchMeshData->Vertices.size());
-
-                FPrimitiveVertex V0;
-                V0.Position = Line.Start;
-                V0.Color = Line.Color;
-                V0.Normal = FVector::ZeroVector;
-                V0.UV = FVector2::ZeroVector;
-
-                FPrimitiveVertex V1;
-                V1.Position = Line.End;
-                V1.Color = Line.Color;
-                V1.Normal = FVector::ZeroVector;
-                V1.UV = FVector2::ZeroVector;
-
-                BatchMeshData->Vertices.push_back(V0);
-                BatchMeshData->Vertices.push_back(V1);
-
-                BatchMeshData->Indices.push_back(StartIdx);
-                BatchMeshData->Indices.push_back(StartIdx + 1);
-            }
-
-            BatchMeshData->bIsDirty = true;
-
-            FRenderCommand Cmd;
-            Cmd.MeshData = BatchMeshData.get();
-            Cmd.Material = FGeneralRenderer::GetDefaultMaterial(); // Fallback to default or line material
-            Cmd.WorldMatrix = FMatrix::Identity;
-            Cmd.RenderLayer = ERenderLayer::Default;
-            Cmd.SetDefaultStates();
-            Cmd.RasterizerOption.FillMode = D3D11_FILL_WIREFRAME;
-            Cmd.SetStates(Cmd.Material, BatchMeshData->Topology);
-
-            OutRenderData.RenderCommands.push_back(Cmd);
+            BatchMeshData = std::make_shared<FMeshData>();
+            BatchMeshData->bIsDynamicMesh = true;
+            BatchMeshData->Topology = EMeshTopology::EMT_LineList;
         }
+
+        BatchMeshData->Vertices.clear();
+        BatchMeshData->Indices.clear();
+
+        for (const auto& Line : Lines)
+        {
+            uint32 StartIdx = static_cast<uint32>(BatchMeshData->Vertices.size());
+
+            FPrimitiveVertex V0;
+            V0.Position = Line.Start;
+            V0.Color = Line.Color;
+            V0.Normal = FVector::ZeroVector;
+            V0.UV = FVector2::ZeroVector;
+
+            FPrimitiveVertex V1;
+            V1.Position = Line.End;
+            V1.Color = Line.Color;
+            V1.Normal = FVector::ZeroVector;
+            V1.UV = FVector2::ZeroVector;
+
+            BatchMeshData->Vertices.push_back(V0);
+            BatchMeshData->Vertices.push_back(V1);
+
+            BatchMeshData->Indices.push_back(StartIdx);
+            BatchMeshData->Indices.push_back(StartIdx + 1);
+        }
+            
+        FRenderCommand Cmd;
+        Cmd.MeshData = BatchMeshData.get();
+        Cmd.Material = FGeneralRenderer::GetDefaultMaterial(); // Fallback to default or line material
+        Cmd.WorldMatrix = FMatrix::Identity;
+        Cmd.RenderLayer = ERenderLayer::Default;
+        Cmd.SetDefaultStates();
+        Cmd.RasterizerOption.FillMode = D3D11_FILL_WIREFRAME;
+        Cmd.SetStates(Cmd.Material, EMeshTopology::EMT_LineList);
+
+        OutRenderData.RenderCommands.push_back(Cmd);
     }
 
     void ULineBatchComponent::Update(float InDeltaTime)

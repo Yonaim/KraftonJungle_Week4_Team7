@@ -19,7 +19,7 @@ enum class EMeshTopology
 
 struct ENGINE_API FMeshData
 {
-    FMeshData() : SortId(NextSortId++)
+    FMeshData() : SortId(NextSortId++), VertexBufferCount(0), IndexBufferCount(0)
     {
     }
 
@@ -28,29 +28,24 @@ struct ENGINE_API FMeshData
     ~FMeshData() { /*Release();*/ }
 
     uint32 GetSortId() const { return SortId; }
-    bool   bIsDirty = true; // 최초 1회 초기화 보장
 
     void Bind(FD3D11RHI* Context);
+    
+    bool bIsDynamicMesh = false;    
+    
+    // Dynamic mesh인 경우에는 동적으로 채워넣는 Vertices/Indices를 사용
+    TArray<FPrimitiveVertex> Vertices;
+    TArray<uint32>           Indices;
+    
+    // Dynamic mesh인 경우엔 SceneAssetBinder에서 미리 만들어준 VertexBuffer를 고정 사용
+    std::shared_ptr<RHI::FRHIVertexBuffer> VertexBuffer = nullptr;
+    std::shared_ptr<RHI::FRHIIndexBuffer> IndexBuffer = nullptr;
+    uint32 VertexBufferCount;
+    uint32 IndexBufferCount;
 
     // 토폴로지 옵션
     EMeshTopology Topology = EMeshTopology::EMT_Undefined;
-
-    // Deprecated
-    // 이제 메시는 FMeshData 대신 SceneAssetBinder에서 관리함
-    // PrimitiveXXX 삭제되면 이것도 삭제할 것.
-    TArray<FPrimitiveVertex> Vertices;
-    // Deprecated
-    // 이제 메시는 FMeshData 대신 SceneAssetBinder에서 관리함
-    // PrimitiveXXX 삭제되면 이것도 삭제할 것.
-    TArray<uint32>           Indices;
     
-    uint32 VertexBufferCount;
-    uint32 IndexBufferCount;
-    
-    // SceneAssetBinder에서 설정됨
-    std::shared_ptr<RHI::FRHIVertexBuffer> VertexBuffer = nullptr;
-    std::shared_ptr<RHI::FRHIIndexBuffer> IndexBuffer = nullptr;
-
     /** AABB Box Extent 및 Local Bound Radius 갱신 */
     void  UpdateLocalBound();
     float GetLocalBoundRadius() const { return LocalBoundRadius; }

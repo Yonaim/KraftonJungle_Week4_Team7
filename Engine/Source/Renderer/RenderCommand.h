@@ -33,7 +33,7 @@ struct ENGINE_API FRenderCommand
 
     uint32 FirstIndex = 0;
     uint32 IndexCount = 0;
-
+    
     bool bIsVisible = true;
     bool bIsPickable = true;
     bool bIsSelected = false;
