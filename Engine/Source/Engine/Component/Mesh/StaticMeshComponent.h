@@ -5,6 +5,8 @@
 
 class UStaticMesh;
 
+struct FMeshData;
+
 namespace Engine::Component
 {
     class ENGINE_API UStaticMeshComponent : public UMeshComponent
@@ -53,6 +55,8 @@ namespace Engine::Component
       protected:
         UStaticMesh*       StaticMesh = nullptr;
         TArray<UMaterial*> OverrideMaterials;
+
+        mutable std::shared_ptr<FMeshData> MeshData;
     };
 
 } // namespace Engine::Component

@@ -3,7 +3,7 @@
 
 #include "Core/Misc/BitMaskEnum.h"
 #include "Renderer/SceneRenderData.h"
-#include "Renderer/Material/MaterialManager.h"
+#include "Renderer/D3D11/GeneralRenderer.h"
 #include "Renderer/Primitive/PrimitiveBase.h"
 
 namespace Engine::Component
@@ -65,9 +65,12 @@ namespace Engine::Component
 
             FRenderCommand Cmd;
             Cmd.MeshData = BatchMeshData.get();
-            Cmd.Material = FMaterialManager::Get().FindByName("M_AABB").get();
+            Cmd.Material = FGeneralRenderer::GetDefaultMaterial(); // Fallback to default or line material
             Cmd.WorldMatrix = FMatrix::Identity;
             Cmd.RenderLayer = ERenderLayer::Default;
+            Cmd.SetDefaultStates();
+            Cmd.RasterizerOption.FillMode = D3D11_FILL_WIREFRAME;
+            Cmd.SetStates(Cmd.Material, BatchMeshData->Topology);
 
             OutRenderData.RenderCommands.push_back(Cmd);
         }

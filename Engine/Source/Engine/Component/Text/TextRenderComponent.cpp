@@ -4,8 +4,9 @@
 #include "Renderer/SceneRenderData.h"
 #include "Renderer/SceneView.h"
 #include "Renderer/D3D11/GeneralRenderer.h"
-#include "Renderer/Material/Material.h"
+#include "Engine/Asset/Material.h"
 #include "Renderer/Types/RenderDebugColors.h"
+#include "RHI/D3D11/D3D11Texture.h"
 
 #include <algorithm>
 
@@ -404,67 +405,27 @@ namespace Engine::Component
             MeshData->Topology = EMeshTopology::EMT_TriangleList;
 
             FTextLayout Layout = BuildTextLayout();
-            // if (Layout.IsValid())
-            // {
-            //     const float InvW = FontResource->GetInvAtlasWidth();
-            //     const float InvH = FontResource->GetInvAtlasHeight();
-            //     
-            //     float CenterX = (Layout.MinX + Layout.MaxX) * 0.5f;
-            //     float CenterY = (Layout.MinY + Layout.MaxY) * 0.5f;
-            //
-            //     for (const FLaidOutGlyph& G : Layout.Glyphs)
-            //     {
-            //         uint32 BaseIndex = static_cast<uint32>(MeshData->Vertices.size());
-            //         
-            //         float X0 = G.MinX - CenterX;
-            //         float X1 = G.MaxX - CenterX;
-            //         float Y0 = CenterY - G.MinY; 
-            //         float Y1 = CenterY - G.MaxY;
-            //
-            //         FColor GlyphColor = G.bSolidColorQuad ? G.SolidColor : Color;
-            //
-            //         if (G.Glyph)
-            //         {
-            //             const float U0 = static_cast<float>(G.Glyph->X) * InvW;
-            //             const float V0 = static_cast<float>(G.Glyph->Y) * InvH;
-            //             const float U1 = static_cast<float>(G.Glyph->X + G.Glyph->Width) * InvW;
-            //             const float V1 = static_cast<float>(G.Glyph->Y + G.Glyph->Height) * InvH;
-            //
-            //             // PaperSpriteComponent style: Local X is Vertical (Up), Local Y is Horizontal (Right)
-            //             MeshData->Vertices.push_back({ FVector(Y1, X0, 0), GlyphColor, FVector(0,0,1), FVector2(U0, V1) }); // BL
-            //             MeshData->Vertices.push_back({ FVector(Y1, X1, 0), GlyphColor, FVector(0,0,1), FVector2(U1, V1) }); // BR
-            //             MeshData->Vertices.push_back({ FVector(Y0, X1, 0), GlyphColor, FVector(0,0,1), FVector2(U1, V0) }); // TR
-            //             MeshData->Vertices.push_back({ FVector(Y0, X0, 0), GlyphColor, FVector(0,0,1), FVector2(U0, V0) }); // TL
-            //         }
-            //         else
-            //         {
-            //             // PaperSpriteComponent style: Local X is Vertical (Up), Local Y is Horizontal (Right)
-            //             MeshData->Vertices.push_back({ FVector(Y1, X0, 0), GlyphColor, FVector(0,0,1), FVector2(0, 1) }); // BL
-            //             MeshData->Vertices.push_back({ FVector(Y1, X1, 0), GlyphColor, FVector(0,0,1), FVector2(1, 1) }); // BR
-            //             MeshData->Vertices.push_back({ FVector(Y0, X1, 0), GlyphColor, FVector(0,0,1), FVector2(1, 0) }); // TR
-            //             MeshData->Vertices.push_back({ FVector(Y0, X0, 0), GlyphColor, FVector(0,0,1), FVector2(0, 0) }); // TL
-            //         }
-            //
-            //         MeshData->Indices.push_back(BaseIndex + 0);
-            //         MeshData->Indices.push_back(BaseIndex + 2);
-            //         MeshData->Indices.push_back(BaseIndex + 1);
-            //         MeshData->Indices.push_back(BaseIndex + 0);
-            //         MeshData->Indices.push_back(BaseIndex + 3);
-            //         MeshData->Indices.push_back(BaseIndex + 2);
-            //     }
-            //     MeshData->UpdateLocalBound();
-            // }
+            // ... (rest of commented out logic)
         }
 
         if (!Material && FontResource)
         {
-            Material = FGeneralRenderer::GetDefaultSpriteMaterial()->CreateDynamicMaterial();
-            if (FontResource->GetSRV())
-            {
-                auto Tex = std::make_shared<FMaterialTexture>();
-                Tex->TextureSRV = FontResource->GetSRV();
-                Material->SetMaterialTexture(Tex);
-            }
+            Material = std::make_shared<UMaterial>();
+            Material->SetAssetName("M_Text");
+            auto CookedData = std::make_shared<FMtlCookedData>();
+            CookedData->Name = "M_Text";
+            Material->SetCookedData(CookedData);
+
+            auto RenderResource = std::make_shared<FMaterialRenderResource>();
+            // if (FontResource->GetSRV())
+            // {
+            //     RHI::FTextureDesc Desc;
+            //     Desc.Width = FontResource->AtlasWidth;
+            //     Desc.Height = FontResource->AtlasHeight;
+            //     Desc.Format = RHI::EPixelFormat::RGBA32F; 
+            //     RenderResource->BaseColorTexture = std::make_shared<RHI::D3D11::FD3D11Texture2D>(Desc, nullptr, FontResource->GetSRV());
+            // }
+            Material->SetRenderResource(RenderResource);
         }
 
         FRenderCommand Command;
@@ -503,6 +464,17 @@ namespace Engine::Component
         Command.ObjectId = Actor->GetObjectId();
         Command.bDrawAABB = Actor->IsSelected();
         Command.WorldAABB = GetWorldAABB();
+        Command.SetDefaultStates();
+        // Text needs alpha blending
+        Command.BlendOption.BlendEnable = true;
+        Command.BlendOption.SrcBlend = D3D11_BLEND_SRC_ALPHA;
+        Command.BlendOption.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+        Command.BlendOption.BlendOp = D3D11_BLEND_OP_ADD;
+        Command.BlendOption.SrcBlendAlpha = D3D11_BLEND_ONE;
+        Command.BlendOption.DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
+        Command.BlendOption.BlendOpAlpha = D3D11_BLEND_OP_ADD;
+
+        Command.SetStates(Command.Material, MeshData->Topology);
 
         Command.bIsVisible = Actor->IsVisible();
         Command.bIsPickable = Actor->IsPickable();

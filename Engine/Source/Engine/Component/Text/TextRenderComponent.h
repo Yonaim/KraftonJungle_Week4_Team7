@@ -114,7 +114,7 @@ namespace Engine::Component
         bool    bBillboard = false;
         FVector BillboardOffset = FVector(0.0f, 0.0f, 0.0f);
 
-        mutable std::shared_ptr<FMeshData> MeshData;
-        mutable std::shared_ptr<FMaterial> Material;
+        mutable std::shared_ptr<FMeshData>       MeshData;
+        mutable std::shared_ptr<UMaterial> Material;
     };
 } // namespace Engine::Component

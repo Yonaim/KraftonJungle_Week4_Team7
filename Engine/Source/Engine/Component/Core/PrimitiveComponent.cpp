@@ -123,6 +123,8 @@ namespace Engine::Component
         MutableRenderCommand.ObjectId = Actor->GetObjectId();
         MutableRenderCommand.bDrawAABB = Actor->IsSelected() || Actor->IsShowBounds();
         MutableRenderCommand.WorldAABB = GetWorldAABB();
+        MutableRenderCommand.SetDefaultStates();
+        MutableRenderCommand.SetStates(MutableRenderCommand.Material, MutableRenderCommand.MeshData->Topology);
 
         MutableRenderCommand.bIsVisible = Actor->IsVisible();
         MutableRenderCommand.bIsPickable = Actor->IsPickable();

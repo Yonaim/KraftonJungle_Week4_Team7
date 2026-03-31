@@ -84,14 +84,6 @@ public:
         return nullptr;
     }
 
-    // 캐시에서 가져오거나 파일에서 로드
-    static std::shared_ptr<FMeshData> LoadFromFile(const FString& Key, const FString& FilePath);
-    // 캐시에서만 조회
-    static std::shared_ptr<FMeshData> GetCached(const FString& Key);
-    // 코드로 생성한 데이터를 캐시에 등록
-    static void RegisterMeshData(const FString& Key, std::shared_ptr<FMeshData> Data);
-    static void ClearCache();
-
     void    SetPrimitiveFileName(const FString& InFileName) { PrimitiveFileName = InFileName; }
     FString GetPrimitiveFileName() const { return PrimitiveFileName; }
 
@@ -99,9 +91,5 @@ protected:
     std::shared_ptr<FMeshData> MeshData;
 
 private:
-    static TMap<FString, std::shared_ptr<FMeshData>> MeshCache;
-
-    static std::shared_ptr<FMeshData> LoadFromFile(const FString& FilePath);
-
     FString PrimitiveFileName = "";
 };

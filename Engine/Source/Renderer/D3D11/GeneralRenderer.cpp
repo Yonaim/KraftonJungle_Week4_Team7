@@ -2,13 +2,15 @@
 #include "GeneralRenderer.h"
 
 #include "Core/Misc/Paths.h"
-#include "Renderer/Material/Material.h"
-#include "Renderer/Material/MaterialManager.h"
+#include "Engine/Asset/Material.h"
+#include "Renderer/Shader/Shader.h"
 #include "Renderer/Shader/ShaderMap.h"
 #include "Renderer/Shader/ShaderType.h"
+#include "RHI/D3D11/D3D11Texture.h"
+#include "RHI/D3D11/D3D11Buffer.h"
 
-std::shared_ptr<FMaterial> FGeneralRenderer::DefaultMaterial;
-std::shared_ptr<FMaterial> FGeneralRenderer::DefaultSpriteMaterial;
+std::shared_ptr<UMaterial> FGeneralRenderer::DefaultMaterial;
+std::shared_ptr<UMaterial> FGeneralRenderer::DefaultSpriteMaterial;
 
 FGeneralRenderer::FGeneralRenderer(HWND InHwnd, int32 InWidth, int32 InHeight)
 {
@@ -90,7 +92,7 @@ bool FGeneralRenderer::Pick(int32 MouseX, int32 MouseY, uint32& OutPickId)
 
         Cmd.MeshData->Bind(&RHI);
         
-        D3D11_PRIMITIVE_TOPOLOGY Topology = (D3D11_PRIMITIVE_TOPOLOGY)Cmd.MeshData->Topology;
+        D3D11_PRIMITIVE_TOPOLOGY Topology = (D3D11_PRIMITIVE_TOPOLOGY)Cmd.Topology;
         DeviceContext->IASetPrimitiveTopology(Topology);
 
         UpdateObjectConstantBuffer(Cmd.WorldMatrix, Cmd.ObjectId);
@@ -165,69 +167,35 @@ bool FGeneralRenderer::InitializeDefaultMaterial()
 
     /** 기본 Material 생성 */
     {
-        auto VS = FShaderMap::Get().GetOrCreateVertexShader(Device, VSPath, L"VSMain");
-        auto PS = FShaderMap::Get().GetOrCreatePixelShader(Device, PSPath, L"PSMain");
-        DefaultMaterial = std::make_shared<FMaterial>();
-        DefaultMaterial->SetOriginName("M_Default");
-        DefaultMaterial->SetVertexShader(VS);
-        DefaultMaterial->SetPixelShader(PS);
+        DefaultMeshVS = FShaderMap::Get().GetOrCreateVertexShader(Device, VSPath, L"VSMain");
+        DefaultMeshPS = FShaderMap::Get().GetOrCreatePixelShader(Device, PSPath, L"PSMain");
 
+        DefaultMaterial = std::make_shared<UMaterial>();
+        DefaultMaterial->SetAssetName("M_Default");
+        auto CookedData = std::make_shared<FMtlCookedData>();
+        CookedData->Name = "M_Default";
+        DefaultMaterial->SetCookedData(CookedData);
+        
+        auto RenderResource = std::make_shared<FMaterialRenderResource>();
         if (WhiteSRV)
         {
-            auto Tex = std::make_shared<FMaterialTexture>();
-            Tex->TextureSRV = WhiteSRV;
-            DefaultMaterial->SetMaterialTexture(Tex);
+            RHI::FTextureDesc WhiteDesc;
+            WhiteDesc.Width = 1;
+            WhiteDesc.Height = 1;
+            WhiteDesc.Format = RHI::EPixelFormat::RGBA32F;
+            RenderResource->BaseColorTexture = std::make_shared<RHI::D3D11::FD3D11Texture2D>(WhiteDesc, nullptr, WhiteSRV);
         }
-
-        FRasterizerStateOption rasterizerOption;
-        rasterizerOption.FillMode = D3D11_FILL_SOLID;
-        rasterizerOption.CullMode = D3D11_CULL_BACK;
-        auto RS = RenderStateManager->GetOrCreateRasterizerState(rasterizerOption);
-        DefaultMaterial->SetRasterizerOption(rasterizerOption);
-        DefaultMaterial->SetRasterizerState(RS);
-
-        FDepthStencilStateOption depthStencilOption;
-        depthStencilOption.DepthEnable = true;
-        depthStencilOption.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-        auto DSS = RenderStateManager->GetOrCreateDepthStencilState(depthStencilOption);
-        DefaultMaterial->SetDepthStencilOption(depthStencilOption);
-        DefaultMaterial->SetDepthStencilState(DSS);
-        
-        FBlendStateOption blendStateOption;
-        auto BS = RenderStateManager->GetOrCreateBlendState(blendStateOption);
-        DefaultMaterial->SetBlendOption(blendStateOption);
-        DefaultMaterial->SetBlendState(BS);
-
-        int32 SlotIndex = DefaultMaterial->CreateConstantBuffer(Device, 16);
-        if (SlotIndex >= 0)
-        {
-            DefaultMaterial->RegisterParameter("BaseColor", SlotIndex, 0, 16);
-            float White[4] = {1.0f, 1.0f, 1.0f, 1.0f};
-            DefaultMaterial->GetConstantBuffer(SlotIndex)->SetData(White, sizeof(White));
-        }
-        FMaterialManager::Get().Register("M_Default", DefaultMaterial);
+        DefaultMaterial->SetRenderResource(RenderResource);
     }
 
     /** 기본 Sprite Material 생성 */
     {
-        DefaultSpriteMaterial = DefaultMaterial->CreateDynamicMaterial();
-        DefaultSpriteMaterial->SetOriginName("M_DefaultSprite");
-        DefaultSpriteMaterial->SetInstanceName("M_DefaultSprite");
-
-        FBlendStateOption blendStateOption;
-        blendStateOption.BlendEnable = true;
-        blendStateOption.SrcBlend = D3D11_BLEND_SRC_ALPHA;
-        blendStateOption.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-        blendStateOption.BlendOp = D3D11_BLEND_OP_ADD;
-        blendStateOption.SrcBlendAlpha = D3D11_BLEND_ONE;
-        blendStateOption.DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
-        blendStateOption.BlendOpAlpha = D3D11_BLEND_OP_ADD;
-
-        auto BS = RenderStateManager->GetOrCreateBlendState(blendStateOption);
-        DefaultSpriteMaterial->SetBlendOption(blendStateOption);
-        DefaultSpriteMaterial->SetBlendState(BS);
-
-        FMaterialManager::Get().Register("M_DefaultSprite", DefaultSpriteMaterial);
+        DefaultSpriteMaterial = std::make_shared<UMaterial>();
+        DefaultSpriteMaterial->SetAssetName("M_DefaultSprite");
+        auto CookedData = std::make_shared<FMtlCookedData>();
+        CookedData->Name = "M_DefaultSprite";
+        DefaultSpriteMaterial->SetCookedData(CookedData);
+        DefaultSpriteMaterial->SetRenderResource(DefaultMaterial->GetRenderResource());
     }
     
     InitializeAABBResources();
@@ -291,7 +259,6 @@ void FGeneralRenderer::Release()
     ClearSceneRenderTarget();
     ShaderManager.Release();
     FShaderMap::Get().Clear();
-    FMaterialManager::Get().Clear();
     if (NormalSampler)
         NormalSampler->Release();
     DefaultMaterial.reset();
@@ -487,7 +454,7 @@ void FGeneralRenderer::ClearDepthBuffer()
 
 void FGeneralRenderer::ExecuteRenderPass(ERenderLayer InRenderLayer)
 {
-    FMaterial*               CurrentMaterial = nullptr;
+    UMaterial*        CurrentMaterial = nullptr;
     FMeshData*               CurrentMesh = nullptr;
     D3D11_PRIMITIVE_TOPOLOGY CurrentMeshTopology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
     
@@ -501,6 +468,10 @@ void FGeneralRenderer::ExecuteRenderPass(ERenderLayer InRenderLayer)
 
     ID3D11DeviceContext* DeviceContext = RHI.GetDeviceContext();
     RenderStateManager->RebindState();
+
+    if (DefaultMeshVS) DefaultMeshVS->Bind(DeviceContext);
+    if (DefaultMeshPS) DefaultMeshPS->Bind(DeviceContext);
+
     for (; it != CommandList.end(); it++)
     {
         auto Cmd = *it;
@@ -511,15 +482,41 @@ void FGeneralRenderer::ExecuteRenderPass(ERenderLayer InRenderLayer)
 
         if (Cmd.Material != CurrentMaterial)
         {
-            Cmd.Material->Bind(DeviceContext);
-
-            RenderStateManager->BindState(Cmd.Material->GetRasterizerState());
-            RenderStateManager->BindState(Cmd.Material->GetDepthStencilState());
-            RenderStateManager->BindState(Cmd.Material->GetBlendState());
-
+            if (Cmd.Material)
+            {
+                auto Resource = Cmd.Material->GetRenderResource();
+                if (Resource)
+                {
+                    if (Resource->BaseColorTexture)
+                    {
+                        ID3D11ShaderResourceView* SRV = static_cast<RHI::D3D11::FD3D11Texture2D*>(Resource->BaseColorTexture.get())->GetSRV();
+                        DeviceContext->PSSetShaderResources(0, 1, &SRV);
+                    }
+                    if (Resource->NormalTexture)
+                    {
+                        ID3D11ShaderResourceView* SRV = static_cast<RHI::D3D11::FD3D11Texture2D*>(Resource->NormalTexture.get())->GetSRV();
+                        DeviceContext->PSSetShaderResources(1, 1, &SRV);
+                    }
+                    if (Resource->ORMTexture)
+                    {
+                        ID3D11ShaderResourceView* SRV = static_cast<RHI::D3D11::FD3D11Texture2D*>(Resource->ORMTexture.get())->GetSRV();
+                        DeviceContext->PSSetShaderResources(2, 1, &SRV);
+                    }
+                    if (Resource->ParameterBuffer)
+                    {
+                        ID3D11Buffer* CB = static_cast<RHI::D3D11::FD3D11ConstantBuffer*>(Resource->ParameterBuffer.get())->GetBuffer();
+                        DeviceContext->VSSetConstantBuffers(2, 1, &CB);
+                        DeviceContext->PSSetConstantBuffers(2, 1, &CB);
+                    }
+                }
+            }
             CurrentMaterial = Cmd.Material;
             DeviceContext->PSSetSamplers(0, 1, &NormalSampler);
         }
+
+        RenderStateManager->BindState(RenderStateManager->GetOrCreateRasterizerState(Cmd.RasterizerOption));
+        RenderStateManager->BindState(RenderStateManager->GetOrCreateDepthStencilState(Cmd.DepthStencilOption));
+        RenderStateManager->BindState(RenderStateManager->GetOrCreateBlendState(Cmd.BlendOption));
 
         if (Cmd.MeshData != CurrentMesh)
         {
@@ -527,7 +524,7 @@ void FGeneralRenderer::ExecuteRenderPass(ERenderLayer InRenderLayer)
             CurrentMesh = Cmd.MeshData;
         }
 
-        D3D11_PRIMITIVE_TOPOLOGY DesiredTopology = (D3D11_PRIMITIVE_TOPOLOGY)CurrentMesh->Topology;
+        D3D11_PRIMITIVE_TOPOLOGY DesiredTopology = (D3D11_PRIMITIVE_TOPOLOGY)Cmd.Topology;
         if (DesiredTopology != CurrentMeshTopology)
         {
             DeviceContext->IASetPrimitiveTopology(DesiredTopology);
@@ -670,27 +667,15 @@ void FGeneralRenderer::InitializeAABBResources()
     std::wstring LineVSPath = ShaderDirW + L"\\NewShaderLine.hlsl";
     std::wstring LinePSPath = ShaderDirW + L"\\NewShaderLine.hlsl";
 
-    auto VS = FShaderMap::Get().GetOrCreateVertexShader(Device, LineVSPath, L"VSMain");
-    auto PS = FShaderMap::Get().GetOrCreatePixelShader(Device, LinePSPath, L"PSMain");
+    DefaultLineVS = FShaderMap::Get().GetOrCreateVertexShader(Device, LineVSPath, L"VSMain");
+    DefaultLinePS = FShaderMap::Get().GetOrCreatePixelShader(Device, LinePSPath, L"PSMain");
 
-    AABBMaterial = std::make_shared<FMaterial>();
-    AABBMaterial->SetOriginName("M_AABB");
-    AABBMaterial->SetVertexShader(VS);
-    AABBMaterial->SetPixelShader(PS);
-    
-    FMaterialManager::Get().Register("M_AABB", AABBMaterial);
-
-    FRasterizerStateOption rasterizerOption;
-    rasterizerOption.FillMode = D3D11_FILL_SOLID;
-    rasterizerOption.CullMode = D3D11_CULL_NONE;
-    AABBMaterial->SetRasterizerOption(rasterizerOption);
-    AABBMaterial->SetRasterizerState(RenderStateManager->GetOrCreateRasterizerState(rasterizerOption));
-
-    FDepthStencilStateOption depthStencilOption;
-    depthStencilOption.DepthEnable = true;
-    depthStencilOption.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-    AABBMaterial->SetDepthStencilOption(depthStencilOption);
-    AABBMaterial->SetDepthStencilState(RenderStateManager->GetOrCreateDepthStencilState(depthStencilOption));
+    AABBMaterial = std::make_shared<UMaterial>();
+    AABBMaterial->SetAssetName("M_AABB");
+    auto CookedData = std::make_shared<FMtlCookedData>();
+    CookedData->Name = "M_AABB";
+    AABBMaterial->SetCookedData(CookedData);
+    AABBMaterial->SetRenderResource(std::make_shared<FMaterialRenderResource>());
 
     AABBMeshData = std::make_unique<FMeshData>();
     AABBMeshData->Topology = EMeshTopology::EMT_LineList;
@@ -722,9 +707,21 @@ void FGeneralRenderer::DrawAllAABBLines(ERenderLayer InRenderLayer)
         return;
 
     ID3D11DeviceContext* DeviceContext = RHI.GetDeviceContext();
-    AABBMaterial->Bind(DeviceContext);
-    RenderStateManager->BindState(AABBMaterial->GetRasterizerState());
-    RenderStateManager->BindState(AABBMaterial->GetDepthStencilState());
+    if (DefaultLineVS) DefaultLineVS->Bind(DeviceContext);
+    if (DefaultLinePS) DefaultLinePS->Bind(DeviceContext);
+
+    if (AABBMaterial)
+    {
+        auto Resource = AABBMaterial->GetRenderResource();
+        if (Resource)
+        {
+            if (Resource->BaseColorTexture)
+            {
+                ID3D11ShaderResourceView* SRV = static_cast<RHI::D3D11::FD3D11Texture2D*>(Resource->BaseColorTexture.get())->GetSRV();
+                DeviceContext->PSSetShaderResources(0, 1, &SRV);
+            }
+        }
+    }
 
     AABBMeshData->Bind(&RHI);
     DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
@@ -733,6 +730,10 @@ void FGeneralRenderer::DrawAllAABBLines(ERenderLayer InRenderLayer)
     {
         if (Cmd.RenderLayer != InRenderLayer || !Cmd.bDrawAABB)
             continue;
+
+        RenderStateManager->BindState(RenderStateManager->GetOrCreateRasterizerState(Cmd.RasterizerOption));
+        RenderStateManager->BindState(RenderStateManager->GetOrCreateDepthStencilState(Cmd.DepthStencilOption));
+        RenderStateManager->BindState(RenderStateManager->GetOrCreateBlendState(Cmd.BlendOption));
 
         const FVector& Min = Cmd.WorldAABB.Min;
         const FVector& Max = Cmd.WorldAABB.Max;

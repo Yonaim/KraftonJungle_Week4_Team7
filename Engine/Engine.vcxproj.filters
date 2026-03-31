@@ -28,6 +28,9 @@
     <Filter Include="Source\Launch">
       <UniqueIdentifier>{3ff2eba7-1724-b5b0-ebd8-4a23450e4f65}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Primitive">
+      <UniqueIdentifier>{b1c8ef7e-4da0-b414-9db6-0f275d54f96c}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source\Renderer">
       <UniqueIdentifier>{b4935566-c566-3c8c-ae88-5cc13eba9d31}</UniqueIdentifier>
     </Filter>
@@ -441,46 +444,10 @@
     <ClCompile Include="Source\Renderer\D3D11\GeneralRenderer.cpp">
       <Filter>Source\Renderer\D3D11</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Renderer\Material\Material.cpp">
-      <Filter>Source\Renderer\Material</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Renderer\Material\MaterialManager.cpp">
-      <Filter>Source\Renderer\Material</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Renderer\Primitive\PrimitiveBase.cpp">
       <Filter>Source\Renderer\Primitive</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Renderer\Primitive\PrimitiveCone.cpp">
-      <Filter>Source\Renderer\Primitive</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Renderer\Primitive\PrimitiveCube.cpp">
-      <Filter>Source\Renderer\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Renderer\Primitive\PrimitiveCylinder.cpp">
-      <Filter>Source\Renderer\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Renderer\Primitive\PrimitiveGizmo.cpp">
-      <Filter>Source\Renderer\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Renderer\Primitive\PrimitiveObj.cpp">
-      <Filter>Source\Renderer\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Renderer\Primitive\PrimitivePlane.cpp">
-      <Filter>Source\Renderer\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Renderer\Primitive\PrimitiveQuad.cpp">
-      <Filter>Source\Renderer\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Renderer\Primitive\PrimitiveRing.cpp">
-      <Filter>Source\Renderer\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Renderer\Primitive\PrimitiveSky.cpp">
-      <Filter>Source\Renderer\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Renderer\Primitive\PrimitiveSphere.cpp">
-      <Filter>Source\Renderer\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Renderer\Primitive\PrimitiveTriangle.cpp">
       <Filter>Source\Renderer\Primitive</Filter>
     </ClCompile>
     <ClCompile Include="Source\Renderer\Primitive\UnrealEditorStyledGizmo.cpp">
@@ -995,46 +962,10 @@
     <ClInclude Include="Source\Renderer\EditorRenderData.h">
       <Filter>Source\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Renderer\Material\Material.h">
-      <Filter>Source\Renderer\Material</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Renderer\Material\MaterialManager.h">
-      <Filter>Source\Renderer\Material</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Renderer\Primitive\PrimitiveBase.h">
       <Filter>Source\Renderer\Primitive</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Renderer\Primitive\PrimitiveCone.h">
-      <Filter>Source\Renderer\Primitive</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Renderer\Primitive\PrimitiveCube.h">
-      <Filter>Source\Renderer\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Renderer\Primitive\PrimitiveCylinder.h">
-      <Filter>Source\Renderer\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Renderer\Primitive\PrimitiveGizmo.h">
-      <Filter>Source\Renderer\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Renderer\Primitive\PrimitiveObj.h">
-      <Filter>Source\Renderer\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Renderer\Primitive\PrimitivePlane.h">
-      <Filter>Source\Renderer\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Renderer\Primitive\PrimitiveQuad.h">
-      <Filter>Source\Renderer\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Renderer\Primitive\PrimitiveRing.h">
-      <Filter>Source\Renderer\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Renderer\Primitive\PrimitiveSky.h">
-      <Filter>Source\Renderer\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Renderer\Primitive\PrimitiveSphere.h">
-      <Filter>Source\Renderer\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Renderer\Primitive\PrimitiveTriangle.h">
       <Filter>Source\Renderer\Primitive</Filter>
     </ClInclude>
     <ClInclude Include="Source\Renderer\Primitive\UnrealEditorStyledGizmo.h">

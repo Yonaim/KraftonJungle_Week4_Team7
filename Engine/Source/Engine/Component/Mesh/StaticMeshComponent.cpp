@@ -8,6 +8,7 @@
 #include "Engine/Game/Actor.h"
 #include "Renderer/SceneRenderData.h"
 #include "Renderer/D3D11/GeneralRenderer.h"
+#include "Renderer/Primitive/PrimitiveBase.h"
 #include "RHI/D3D11/D3D11Buffer.h"
 
 namespace Engine::Component
@@ -73,24 +74,32 @@ namespace Engine::Component
 
         FRenderCommand& MutableRenderCommand = const_cast<FRenderCommand&>(RenderCommand);
 
-        // Generate FMeshData
-        FMeshData* MeshData = new FMeshData();
+        // Update FMeshData
         if (StaticMesh)
         {
+            if (!MeshData)
+            {
+                MeshData = std::make_shared<FMeshData>();
+            }
+
             MeshData->Topology = EMeshTopology::EMT_TriangleList;
             MeshData->VertexBufferCount = StaticMesh->GetVerticesCount();
             MeshData->IndexBufferCount = StaticMesh->GetIndicesCount();
             MeshData->VertexBuffer = StaticMesh->GetRenderResource()->VertexBuffer;
             MeshData->IndexBuffer = StaticMesh->GetRenderResource()->IndexBuffer;
             // DEBUG: 렌더링을 위해 Vertices와 Indices의 count 채우기
-            MeshData->Vertices.insert(MeshData->Vertices.begin(),
-                                      StaticMesh->GetRenderResource()->VertexCount,
-                                      FPrimitiveVertex());
-            MeshData->Indices.insert(MeshData->Indices.begin(),
-                                     StaticMesh->GetRenderResource()->IndexCount, 0);
+            if (MeshData->Vertices.size() != StaticMesh->GetRenderResource()->VertexCount)
+            {
+                MeshData->Vertices.assign(StaticMesh->GetRenderResource()->VertexCount, FPrimitiveVertex());
+            }
+            if (MeshData->Indices.size() != StaticMesh->GetRenderResource()->IndexCount)
+            {
+                MeshData->Indices.assign(StaticMesh->GetRenderResource()->IndexCount, 0);
+            }
             MeshData->bIsDirty = false;
         }
-        MutableRenderCommand.MeshData = MeshData;
+        
+        MutableRenderCommand.MeshData = MeshData.get();
         if (MutableRenderCommand.MeshData == nullptr)
         {
             return;
@@ -98,13 +107,19 @@ namespace Engine::Component
 
         if (MutableRenderCommand.Material == nullptr)
         {
-            MutableRenderCommand.Material = FGeneralRenderer::GetDefaultMaterial();
+            MutableRenderCommand.Material = GetMaterial(0);
+            if (MutableRenderCommand.Material == nullptr)
+            {
+                MutableRenderCommand.Material = FGeneralRenderer::GetDefaultMaterial();
+            }
         }
 
         MutableRenderCommand.WorldMatrix = GetRelativeMatrix();
         MutableRenderCommand.ObjectId = Actor->GetObjectId();
         MutableRenderCommand.bDrawAABB = Actor->IsSelected() || Actor->IsShowBounds();
         MutableRenderCommand.WorldAABB = GetWorldAABB();
+        MutableRenderCommand.SetDefaultStates();
+        MutableRenderCommand.SetStates(MutableRenderCommand.Material, MutableRenderCommand.MeshData->Topology);
 
         MutableRenderCommand.bIsVisible = Actor->IsVisible();
         MutableRenderCommand.bIsPickable = Actor->IsPickable();

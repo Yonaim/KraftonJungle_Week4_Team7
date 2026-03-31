@@ -9,7 +9,9 @@
 // === Forward Declaraction
 struct FRenderCommandQueue;
 using FGUICallback = std::function<void()>;
+class UMaterial;
 // === Forward Declaraction
+
 
 class FGeneralRenderer
 {
@@ -42,9 +44,9 @@ public:
     void ClearViewportCallbacks();
     void SetGUIUpdateCallback(FGUICallback InUpdate);
     
-    static FMaterial* GetDefaultMaterial() { return DefaultMaterial.get(); }
-    static FMaterial* GetDefaultSpriteMaterial() { return DefaultSpriteMaterial.get(); }
-    FMaterial* GetLineMaterial() const { return AABBMaterial.get(); }
+    static UMaterial* GetDefaultMaterial() { return DefaultMaterial.get(); }
+    static UMaterial* GetDefaultSpriteMaterial() { return DefaultSpriteMaterial.get(); }
+    UMaterial* GetLineMaterial() const { return AABBMaterial.get(); }
     std::unique_ptr<CRenderStateManager>& GetRenderStateManager() { return RenderStateManager; }
     ID3D11Device* GetDevice() const { return RHI.GetDevice(); }
     ID3D11DeviceContext* GetDeviceContext() const { return RHI.GetDeviceContext(); }
@@ -116,13 +118,18 @@ private:
     // FPostRenderCallback PostRenderCallback;
     
     /** 기본 공유 리소스 */
-    static std::shared_ptr<FMaterial> DefaultMaterial;
-    static std::shared_ptr<FMaterial> DefaultSpriteMaterial;
-    std::shared_ptr<FMaterial> DefaultTextureMaterial;
+    static std::shared_ptr<UMaterial> DefaultMaterial;
+    static std::shared_ptr<UMaterial> DefaultSpriteMaterial;
+    std::shared_ptr<UMaterial> DefaultTextureMaterial;
+
+    std::shared_ptr<FVertexShader> DefaultMeshVS;
+    std::shared_ptr<FPixelShader>  DefaultMeshPS;
+    std::shared_ptr<FVertexShader> DefaultLineVS;
+    std::shared_ptr<FPixelShader>  DefaultLinePS;
     
     /** AABB 전용 리소스 */
     std::shared_ptr<FMeshData> AABBMeshData;
-    std::shared_ptr<FMaterial> AABBMaterial;
+    std::shared_ptr<UMaterial> AABBMaterial;
     
     ID3D11SamplerState* NormalSampler = nullptr;
     

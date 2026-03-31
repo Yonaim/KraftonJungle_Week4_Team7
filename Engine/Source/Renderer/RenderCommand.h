@@ -1,8 +1,11 @@
 #pragma once
 
 #include "Primitive/PrimitiveBase.h"
+#include "Renderer/RenderState/RenderState.h"
+#include "Engine/Asset/Material.h"
 
-class FMaterial;
+
+class UMaterial;
 
 enum class ERenderLayer
 {
@@ -13,25 +16,30 @@ enum class ERenderLayer
 
 struct ENGINE_API FRenderCommand
 {
-    FMeshData*      MeshData = nullptr;
-    FMatrix         WorldMatrix;
-    FMaterial*      Material = nullptr;
-    uint64          SortKey = 0;
-    Geometry::FAABB WorldAABB;
-    bool            bDrawAABB = false;
+    FMeshData*        MeshData = nullptr;
+    FMatrix           WorldMatrix;
+    UMaterial* Material = nullptr;
+    uint64            SortKey = 0;
+    Geometry::FAABB  WorldAABB;
+    bool             bDrawAABB = false;
 
     ERenderLayer RenderLayer = ERenderLayer::Default;
     uint32       ObjectId = 0;
-    bool         bDisableDepthTest = false;
-    bool         bDisableDepthWrite = false;
-    bool         bDisableCulling = false;
+
+    FRasterizerStateOption   RasterizerOption;
+    FDepthStencilStateOption DepthStencilOption;
+    FBlendStateOption        BlendOption;
+    EMeshTopology            Topology = EMeshTopology::EMT_TriangleList;
 
     bool bIsVisible = true;
     bool bIsPickable = true;
     bool bIsSelected = false;
     bool bIsHovered = false;
 
-    static uint64 MakeSortKey(const FMaterial* InMaterial, const FMeshData* InMeshData);
+    void SetStates(const UMaterial* InMaterial, EMeshTopology InTopology);
+    void SetDefaultStates();
+
+    static uint64 MakeSortKey(const UMaterial* InMaterial, const FMeshData* InMeshData);
 };
 
 /**

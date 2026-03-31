@@ -7,15 +7,17 @@ const FString CPrimitiveCube::Key = "Cube";
 
 CPrimitiveCube::CPrimitiveCube()
 {
-	auto Cached = GetCached(Key);
-	if (Cached)
-	{
-		MeshData = Cached;
-	}
-	else
-	{
-		Generate();
-	}
+    // 어차피 추후 CPrimtivieCube는 삭제되고 .obj 파일 로드로 대체될 것이기 때문에
+    // 컴파일 에러 해결을 위해 임시로 Cache 기능 비활성화
+ //    auto Cached = GetCached(Key);
+ //    if (Cached)
+ //    {
+	// MeshData = Cached;
+ //    }
+ //    else
+    {
+	Generate();
+    }
 }
 
 void CPrimitiveCube::Generate()
@@ -79,6 +81,5 @@ void CPrimitiveCube::Generate()
 
 	Data->Topology = EMeshTopology::EMT_TriangleList;
 	MeshData = Data;
-	RegisterMeshData(Key, Data);
-
+	// RegisterMeshData(Key, Data);
 }

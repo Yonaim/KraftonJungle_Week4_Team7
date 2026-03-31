@@ -7,8 +7,9 @@
 #include "Renderer/SceneRenderData.h"
 #include "Renderer/SceneView.h"
 #include "Renderer/D3D11/GeneralRenderer.h"
-#include "Renderer/Material/Material.h"
+#include "Engine/Asset/Material.h"
 #include "Engine/Game/Actor.h"
+#include "RHI/D3D11/D3D11Texture.h"
 
 namespace Engine::Component
 {
@@ -79,15 +80,23 @@ namespace Engine::Component
 
         if (!Material && TextureAsset)
         {
-            // Create a dynamic material based on default sprite material and set texture
-            Material = FGeneralRenderer::GetDefaultSpriteMaterial()->CreateDynamicMaterial();
-            
+            // Create a UMaterial based on default sprite material and set texture
+            Material = std::make_shared<UMaterial>();
+            Material->SetAssetName("M_Sprite_" + TextureAsset->GetAssetName());
+            auto CookedData = std::make_shared<FMtlCookedData>();
+            CookedData->Name = "M_Sprite_" + TextureAsset->GetAssetName();
+            Material->SetCookedData(CookedData);
+
+            auto RenderResource = std::make_shared<FMaterialRenderResource>();
             if (TextureAsset->GetRenderResource()->GetSRV())
             {
-                auto Tex = std::make_shared<FMaterialTexture>();
-                Tex->TextureSRV = TextureAsset->GetRenderResource()->GetSRV();
-                Material->SetMaterialTexture(Tex);
+                RHI::FTextureDesc Desc;
+                Desc.Width = TextureAsset->GetCookedData()->Width;
+                Desc.Height = TextureAsset->GetCookedData()->Height;
+                Desc.Format = RHI::EPixelFormat::RGBA32F; // Assume common format
+                RenderResource->BaseColorTexture = std::make_shared<RHI::D3D11::FD3D11Texture2D>(Desc, nullptr, TextureAsset->GetRenderResource()->GetSRV());
             }
+            Material->SetRenderResource(RenderResource);
         }
 
         FRenderCommand Command;
@@ -132,6 +141,17 @@ namespace Engine::Component
         Command.ObjectId = Actor->GetObjectId();
         Command.bDrawAABB = Actor->IsSelected();
         Command.WorldAABB = GetWorldAABB();
+        Command.SetDefaultStates();
+        // Sprites need alpha blending by default
+        Command.BlendOption.BlendEnable = true;
+        Command.BlendOption.SrcBlend = D3D11_BLEND_SRC_ALPHA;
+        Command.BlendOption.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+        Command.BlendOption.BlendOp = D3D11_BLEND_OP_ADD;
+        Command.BlendOption.SrcBlendAlpha = D3D11_BLEND_ONE;
+        Command.BlendOption.DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
+        Command.BlendOption.BlendOpAlpha = D3D11_BLEND_OP_ADD;
+
+        Command.SetStates(Command.Material, MeshData->Topology);
         OutRenderData.RenderCommands.push_back(Command);
     }
 
