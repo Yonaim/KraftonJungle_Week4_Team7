@@ -87,6 +87,31 @@ namespace Engine::ApplicationCore
 
     void FInputSystem::BeginFrame() { State.BeginFrame(); }
 
+    void FInputSystem::HandleMouseButtonEvent(HWND HWnd, UINT Msg, LPARAM LParam) 
+    {
+        EKey Key = TranslationMouseButton(Msg);
+        if (Key == EKey::Unknown)
+        {
+            return;
+        }
+
+        UpdateModifiers();
+
+        const bool bPressed =
+            (Msg == WM_LBUTTONDOWN || Msg == WM_RBUTTONDOWN || Msg == WM_MBUTTONDOWN);
+
+        State.KeysDown[static_cast<int32>(Key)] = bPressed;
+
+        FInputEvent Event;
+        Event.Type = bPressed ? EInputEventType::MouseButtonDown : EInputEventType::MouseButtonUp;
+        Event.Key = Key;
+        Event.MouseX = GET_X_LPARAM(LParam);
+        Event.MouseY = GET_Y_LPARAM(LParam);
+        Event.Modifiers = State.Modifiers;
+
+        EventQueue.push(Event);
+    }
+
     bool FInputSystem::PollEvent(FInputEvent& OutEvent)
     {
         if (EventQueue.empty())
@@ -136,33 +161,17 @@ namespace Engine::ApplicationCore
         case WM_LBUTTONDOWN:
         case WM_LBUTTONUP:
         case WM_RBUTTONDOWN:
+        {
+            SetCapture(HWnd);
+            HandleMouseButtonEvent(HWnd, Msg, LParam);
+            break;
+        }
         case WM_RBUTTONUP:
         case WM_MBUTTONDOWN:
         case WM_MBUTTONUP:
         {
-            EKey Key = TranslationMouseButton(Msg);
-            if (Key == EKey::Unknown)
-            {
-                break;
-            }
-
-            UpdateModifiers();
-
-            const bool bPressed =
-                (Msg == WM_LBUTTONDOWN || Msg == WM_RBUTTONDOWN || Msg == WM_MBUTTONDOWN);
-
-            State.KeysDown[static_cast<int32>(Key)] = bPressed;
-
-            FInputEvent Event;
-            Event.Type = bPressed
-                             ? EInputEventType::MouseButtonDown
-                             : EInputEventType::MouseButtonUp;
-            Event.Key = Key;
-            Event.MouseX = GET_X_LPARAM(LParam);
-            Event.MouseY = GET_Y_LPARAM(LParam);
-            Event.Modifiers = State.Modifiers;
-
-            EventQueue.push(Event);
+            ReleaseCapture();
+            HandleMouseButtonEvent(HWnd, Msg, LParam);
             break;
         }
 

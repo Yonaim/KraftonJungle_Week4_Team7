@@ -12,6 +12,7 @@ namespace Engine::ApplicationCore
         ~FInputSystem() = default;
 
         void BeginFrame();
+        void    HandleMouseButtonEvent(HWND HWnd, UINT Msg, LPARAM LParam);
         LRESULT ProcessWin32Message(HWND HWnd, UINT Msg, WPARAM WParam, LPARAM LParam);
         
         bool PollEvent(FInputEvent & OutEvent);
