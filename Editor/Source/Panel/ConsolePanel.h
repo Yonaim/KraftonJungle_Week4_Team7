@@ -8,6 +8,14 @@
 
 class FEditorLogBuffer;
 
+enum EStatOverlayFlags : uint32
+{
+    STAT_NONE = 0,
+    STAT_FPS = 1 << 0,    
+    STAT_MEMORY = 1 << 1, 
+    STAT_GPU = 1 << 2,    
+};
+
 class FConsolePanel : public IPanel
 {
   public:
@@ -26,6 +34,7 @@ class FConsolePanel : public IPanel
     void DrawInputRow();
     void SubmitInput();
     void ExecuteCommand(const FString& CommandLine);
+    void RenderCommandOverlays();
 
   private:
     FEditorLogBuffer* LogBuffer = nullptr;
@@ -34,5 +43,7 @@ class FConsolePanel : public IPanel
     bool bAutoScroll = true;
     bool bScrollToBottom = false;
     bool bReclaimInputFocus = false;
+
+    uint32 ActiveStatOverlays;
 };
 
