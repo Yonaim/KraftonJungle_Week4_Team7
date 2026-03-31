@@ -2,6 +2,8 @@
 #include "Renderer/SceneView.h"
 #include "Engine/Component/Mesh/StaticMeshComponent.h"
 #include "Engine/Asset/StaticMesh.h"
+#include "Engine/Scene/SceneAssetBinder.h"
+#include "RHI/DynamicRHI.h"
 
 #include "imgui.h"
 #include <imgui_impl_dx11.h>
@@ -18,30 +20,40 @@ void FViewer::Create()
     ViewportCamera.SetFOV(3.141592f * 0.5f);
     ViewportCamera.SetNearPlane(0.1f);
     ViewportCamera.SetFarPlane(2000.0f);
-    ViewportCamera.SetLocation(FVector(-3.0f, 0.0f, 0.0f));
+    ViewportCamera.SetLocation(FVector(3.0f, 0.0f, 0.0f));
     ViewportCamera.SetRotation(FRotator::ZeroRotator);
 
     NavigationController.SetCamera(&ViewportCamera);
 
     TestMeshActor = new AStaticMeshActor();
-    // TestMeshActor->GetStaticMeshComponent()->SetStaticMeshPath("Mesh/stanford_bunny.obj");
+
+    TestMeshActor->SetLocation(FVector(0, 0, 0));
 }
 
 void FViewer::Release()
 {
-    // 리소스 해제
+    delete TestMeshActor;
+    TestMeshActor = nullptr;
+
+    RHI = nullptr;
+    DynamicRHI = nullptr;
+    AssetCacheManager = nullptr;
+
     delete SceneView;
     SceneView = nullptr;
 }
 
-void FViewer::SetRuntimeServices(FD3D11RHI* InRHI)
+void FViewer::SetRuntimeServices(FD3D11RHI* InRHI, RHI::FDynamicRHI* InDynamicRHI,
+                                 Asset::FAssetCacheManager* InAssetCacheManager)
 {
     RHI = InRHI;
-    // 필요시 리소스 로더 등 초기화
+    DynamicRHI = InDynamicRHI;
+    AssetCacheManager = InAssetCacheManager;
 }
 
 void FViewer::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* InputSystem)
 {
+    SceneRenderData.RenderCommands.clear();
 
     const Engine::ApplicationCore::FInputState& InputState = InputSystem->GetInputState();
     const FVector2 MousePosition = {static_cast<float>(InputState.MouseX),
@@ -95,6 +107,8 @@ void FViewer::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
     }
 
     NavigationController.Tick(DeltaTime);
+
+    BuildRenderData();
 }
 
 void FViewer::OnWindowResized(float Width, float Height)
@@ -103,7 +117,6 @@ void FViewer::OnWindowResized(float Width, float Height)
     if (SceneView)
     {
         SceneView->OnResize({0, 0, static_cast<int32>(Width), static_cast<int32>(Height)});
-        // ViewportCamera.OnResize(Width, Height);
     }
 }
 
@@ -111,17 +124,15 @@ FSceneView* FViewer::GetSceneView() const { return SceneView; }
 
 const FSceneRenderData& FViewer::GetSceneRenderData() const { return SceneRenderData; }
 
-void FViewer::BuildRenderCommand()
+void FViewer::BuildRenderData()
 {
     SceneView->SetViewLocation(ViewportCamera.GetLocation());
     SceneView->SetViewMatrix(ViewportCamera.GetViewMatrix());
     SceneView->SetProjectionMatrix(ViewportCamera.GetProjectionMatrix());
 
     SceneRenderData.SceneView = SceneView;
-    FRenderCommand RenderCommand;
-    RenderCommand.WorldMatrix = TestMeshActor->GetWorldMatrix();
-   
-    //렌더러 모듈에 추가 필요
+    TestMeshActor->GetStaticMeshComponent()->CollectRenderData(SceneRenderData,
+                                                               ESceneShowFlags::SF_Primitives);
 }
 
 void FViewer::DrawPanel(HWND hWnd)
@@ -148,9 +159,12 @@ void FViewer::DrawPanel(HWND hWnd)
 
                 if (GetOpenFileNameW(&Dialog))
                 {
-                    std::wstring SelectedPath = FileBuffer.data();
-                    // TODO: OBJ 파일 로드 함수 호출
-                    // LoadObjFile(SelectedPath);
+                    FWString SelectedPath = FileBuffer.data();
+                    if (TryLoadObjFile(SelectedPath))
+                    {
+                        FSceneAssetBinder::BindActor(TestMeshActor, AssetCacheManager, DynamicRHI);
+                        NavigationController.ResetView(FVector(-3, 0, 0), FVector::Zero());
+                    }
                 }
             }
             ImGui::EndMenu();
@@ -164,4 +178,43 @@ void FViewer::DrawPanel(HWND hWnd)
     }
     ImGui::Render();
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+}
+
+FString WideToUtf8(const FWString& InText)
+{
+    if (InText.empty())
+    {
+        return {};
+    }
+
+    const int RequiredSize = WideCharToMultiByte(
+        CP_UTF8, 0, InText.c_str(), static_cast<int>(InText.size()), nullptr, 0, nullptr, nullptr);
+    if (RequiredSize <= 0)
+    {
+        return {};
+    }
+
+    FString OutText(static_cast<size_t>(RequiredSize), '\0');
+    WideCharToMultiByte(CP_UTF8, 0, InText.c_str(), static_cast<int>(InText.size()), OutText.data(),
+                        RequiredSize, nullptr, nullptr);
+    return OutText;
+}
+
+bool FViewer::TryLoadObjFile(const FWString& FilePath)
+{
+    if (TestMeshActor == nullptr)
+    {
+        return false;
+    }
+    Engine::Component::UStaticMeshComponent* StaticMeshComponent =
+        TestMeshActor->GetStaticMeshComponent();
+
+    if (StaticMeshComponent == nullptr)
+    {
+        return false;
+    }
+
+    FString Utf8Path = WideToUtf8(FilePath);
+    StaticMeshComponent->SetStaticMeshPath(Utf8Path);
+    return true;
 }

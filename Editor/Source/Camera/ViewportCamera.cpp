@@ -162,8 +162,3 @@ void FViewportCamera::OnResize(uint32 InWidth, uint32 InHeight)
     // 창 크기가 바뀌면 aspect ratio가 바뀌므로 다음 프레임에 projection cache를 다시 만듭니다.
     MarkProjectionDirty();
 }
-
-const FViewportCameraInfo& FViewportCamera::GetViewportCameraInfo() const
-{
-    return {ProjectionType, OrthographicType, CachedPerspectiveInfo};
-}

@@ -19,14 +19,6 @@ enum class EViewportOrthographicType
     Back
 };
 
-// 씬 저장용
-struct FViewportCameraInfo
-{
-    EViewportProjectionType   ProjectionType;
-    EViewportOrthographicType OrthographicType;
-    FPerspectiveInfo          PerspectiveInfo;
-};
-
 struct FPerspectiveInfo
 {
     FVector Location;
@@ -82,7 +74,7 @@ class FViewportCamera
     uint32 GetHeight() const { return Height; }
     float  GetAspectRatio() const { return AspectRatio; }
 
-    const FViewportCameraInfo& GetViewportCameraInfo() const;
+    const FPerspectiveInfo& GetPerspectiveInfo() const { return CachedPerspectiveInfo; }
 
   private:
     void MarkViewDirty() { bIsViewDirty = true; }

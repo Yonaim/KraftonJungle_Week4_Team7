@@ -5,6 +5,10 @@
 #include "Camera/ViewportCamera.h"
 #include "ViewerNavigationController.h"
 #include "Engine/Game/StaticMeshActor.h"
+#include "Engine/Scene/Scene.h"
+
+class FDynamicRHI;
+class Asset::FAssetCacheManager;
 
 class FViewer
 {
@@ -14,7 +18,8 @@ class FViewer
 
     void Create();
     void Release();
-    void SetRuntimeServices(FD3D11RHI* InRHI);
+    void SetRuntimeServices(FD3D11RHI* InRHI, RHI::FDynamicRHI* InDynamicRHI,
+                            Asset::FAssetCacheManager* InAssetCacheManager);
 
     void Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* InputSystem);
     void OnWindowResized(float Width, float Height);
@@ -23,8 +28,9 @@ class FViewer
     FSceneView*             GetSceneView() const;
     const FSceneRenderData& GetSceneRenderData() const;
 
-    void BuildRenderCommand();
+    void BuildRenderData();
     void DrawPanel(HWND hWnd);
+    bool TryLoadObjFile(const FWString& FilePath);
 
   public:
     std::function<void()> OnRequestExit;
@@ -38,5 +44,7 @@ class FViewer
 
     AStaticMeshActor* TestMeshActor = nullptr;
 
-    FD3D11RHI* RHI = nullptr;
+    FD3D11RHI*                 RHI = nullptr;
+    RHI::FDynamicRHI*          DynamicRHI = nullptr;
+    Asset::FAssetCacheManager* AssetCacheManager = nullptr;
 };

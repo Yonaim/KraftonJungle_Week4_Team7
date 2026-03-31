@@ -11,6 +11,15 @@
 #endif
 
 class FViewer;
+namespace Asset
+{
+    class FAssetCacheManager;
+}
+
+namespace RHI
+{
+    class FDynamicRHI;
+}
 
 class FViewerEngineLoop : public IEngineLoop
 {
@@ -37,6 +46,8 @@ class FViewerEngineLoop : public IEngineLoop
 
     FViewer*               Viewer = nullptr;
     FRendererModule* Renderer = nullptr;
+    Asset::FAssetCacheManager* AssetCacheManager = nullptr;
+    RHI::FDynamicRHI*          AssetDynamicRHI = nullptr;
 
     int32 CachedWindowWidth = 0;
     int32 CachedWindowHeight = 0;

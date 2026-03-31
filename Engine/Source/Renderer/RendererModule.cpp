@@ -104,6 +104,8 @@ void FRendererModule::RenderWorldPass(const FEditorRenderData& InEditorRenderDat
         for (auto el : InSceneRenderData.RenderCommands)
         {
             CommandQueue.AddCommand(el);
+            CommandQueue.ViewMatrix = InSceneRenderData.SceneView->GetViewMatrix();
+            CommandQueue.ProjectionMatrix = InSceneRenderData.SceneView->GetProjectionMatrix();
         }
         
         if (InEditorRenderData.SceneView)
