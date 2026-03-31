@@ -192,6 +192,7 @@
     <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutSinglePane.cpp" />
     <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutThreePanes.cpp" />
     <ClCompile Include="Source\Viewport\Layout\EditorViewportLayoutTwoPanes.cpp" />
+    <ClCompile Include="Source\Editor\EditorPaths.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Camera\ViewportCamera.h">
@@ -345,6 +346,7 @@
     <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutThreePanes.h" />
     <ClInclude Include="Source\Viewport\Layout\EditorViewportLayoutTwoPanes.h" />
     <ClInclude Include="Source\ThirdParty\ImGui\IconsFontAwesome4.h" />
+    <ClInclude Include="Source\Editor\EditorPaths.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\ThirdParty\ImGui\imgui.natstepfilter">

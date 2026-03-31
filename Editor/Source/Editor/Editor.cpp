@@ -1,9 +1,8 @@
 #include "Editor.h"
 
+#include "Editor/EditorPaths.h"
 #include "Viewport/EditorViewportClient.h"
 
-// #include "Asset/AssetManager.h"
-// #include "Asset/Texture2DAsset.h"
 #include "Core/Misc/Paths.h"
 #include "Engine/Component/Core/SceneComponent.h"
 #include "Engine/EngineStatics.h"
@@ -348,11 +347,11 @@ void FEditor::Create()
                                                        { RegisterWindowPanelCommand(Descriptor); });
     PanelManager->RegisterPanelInstance<FConsolePanel>(&LogBuffer);
     PanelManager->RegisterPanelType<FContentBrowserPanel>();
-    //PanelManager->RegisterPanelInstance<FControlPanel>();
+    // PanelManager->RegisterPanelInstance<FControlPanel>();
     PanelManager->RegisterPanelInstance<FOutlinerPanel>();
     PanelManager->RegisterPanelInstance<FPropertiesPanel>();
     PanelManager->RegisterPanelInstance<FShortcutsPanel>();
-    //PanelManager->RegisterPanelInstance<FStatePanel>();
+    // PanelManager->RegisterPanelInstance<FStatePanel>();
 
     // TODO: ViewportTab도 Panel로 만들기
     ViewportTab.InitializeControlPanels(&EditorContext);
@@ -500,7 +499,7 @@ void FEditor::MarkSceneClean() { SceneDocument.bDirty = false; }
 
 std::filesystem::path FEditor::GetSceneDirectory() const
 {
-    return FPaths::Combine(FPaths::AppContentDir(), L"Scenes");
+    return FEditorPaths::DefaultSceneDirectory();
 }
 
 bool FEditor::SaveScene()
@@ -681,8 +680,7 @@ void FEditor::ResolveActorAssetReferences(AActor* Actor)
         return;
     }
 
-    FSceneAssetBinder::BindActor(Actor, EditorContext.AssetCacheManager,
-                                 EditorContext.DynamicRHI);
+    FSceneAssetBinder::BindActor(Actor, EditorContext.AssetCacheManager, EditorContext.DynamicRHI);
 }
 
 void FEditor::ResolveSceneAssetReferences(FScene* Scene)
@@ -693,8 +691,7 @@ void FEditor::ResolveSceneAssetReferences(FScene* Scene)
         return;
     }
 
-    FSceneAssetBinder::BindScene(Scene, EditorContext.AssetCacheManager,
-                                 EditorContext.DynamicRHI);
+    FSceneAssetBinder::BindScene(Scene, EditorContext.AssetCacheManager, EditorContext.DynamicRHI);
 }
 
 void FEditor::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* InputSystem)
@@ -703,7 +700,7 @@ void FEditor::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
     Engine::ApplicationCore::FInputEvent Event;
     Engine::ApplicationCore::FInputState InputState = InputSystem->GetInputState();
 
-    FViewport* HoveredViewport = nullptr;
+    FViewport*    HoveredViewport = nullptr;
     FViewportRect Rect;
     for (auto Viewport : ViewportTab.GetViewports())
     {
@@ -732,7 +729,7 @@ void FEditor::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
         Event.MouseX -= Rect.X;
         Event.MouseY -= Rect.Y;
 
-        InputState.ChangeToLocal(Event.MouseX, Event.MouseY);    
+        InputState.ChangeToLocal(Event.MouseX, Event.MouseY);
         int32 LocalY = Event.MouseY - Rect.Y;
 
         if (GlobalInputRouter.RouteEvent(Event, InputState))
@@ -781,7 +778,7 @@ void FEditor::OnWindowResized(float Width, float Height)
     OnViewportResized();
 }
 
-void FEditor::OnViewportResized() 
+void FEditor::OnViewportResized()
 {
     if (RootDockSpaceId != 0)
     {
@@ -923,23 +920,8 @@ void FEditor::EnsureAboutImageLoaded()
 
     bAttemptedAboutImageLoad = true;
 
-    const std::filesystem::path ImagePath =
-        FPaths::Combine(FPaths::AppRoot(), L"Content\\Texture\\Logo\\copass.png");
-
-    // FAssetLoadParams LoadParams;
-    // LoadParams.ExplicitType = EAssetType::Texture;
-
-    // UAsset* LoadedAsset = EditorContext.AssetCacheManager->...;
-    // UTexture2DAsset* TextureAsset = Cast<UTexture2DAsset>(LoadedAsset);
-    // if (TextureAsset == nullptr || TextureAsset->GetResource() == nullptr
-    //     || TextureAsset->GetSRV() == nullptr)
-    //{
-    //     UE_LOG(FEditor, ELogVerbosity::Warning, "Failed to load About image: %s",
-    //            PathToUtf8String(ImagePath).c_str());
-    //     return;
-    // }
-
-    // AboutImageResource = TextureAsset->GetResource();
+    const std::filesystem::path ImagePath = FEditorPaths::AboutLogo();
+    // TODO
 }
 
 void FEditor::RequestAboutPopup()
@@ -1361,14 +1343,15 @@ void FEditor::BuildSceneView()
     {
         if (Viewport->IsValid())
         {
-            Viewport->GetSceneView()->SetViewMatrix(Viewport->GetViewportClient()->GetCamera().GetViewMatrix());
+            Viewport->GetSceneView()->SetViewMatrix(
+                Viewport->GetViewportClient()->GetCamera().GetViewMatrix());
             Viewport->GetSceneView()->SetProjectionMatrix(
                 Viewport->GetViewportClient()->GetCamera().GetProjectionMatrix());
             Viewport->GetSceneView()->SetViewLocation(
                 Viewport->GetViewportClient()->GetCamera().GetLocation());
             Viewport->GetSceneView()->SetClipPlanes(
                 Viewport->GetViewportClient()->GetCamera().GetNearPlane(),
-            Viewport->GetViewportClient()->GetCamera().GetFarPlane());
+                Viewport->GetViewportClient()->GetCamera().GetFarPlane());
         }
     }
 }
@@ -1426,8 +1409,7 @@ void FEditor::DrawRootDockSpace()
     if (ImGui::Begin("##EditorRootDockSpace", nullptr, WindowFlags))
     {
         RootDockSpaceId = ImGui::GetID("EditorRootDockSpace");
-        ImGui::DockSpace(RootDockSpaceId, ImVec2(0.0f, 0.0f),
-                         RootDockSpaceFlags);
+        ImGui::DockSpace(RootDockSpaceId, ImVec2(0.0f, 0.0f), RootDockSpaceFlags);
     }
 
     ImGui::End();
