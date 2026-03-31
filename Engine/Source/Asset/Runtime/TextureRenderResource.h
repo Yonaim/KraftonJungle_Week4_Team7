@@ -6,6 +6,7 @@
 #include "Renderer/D3D11/D3D11Common.h"
 #include "RHI/DynamicRHI.h"
 #include "RHI/RHITexture.h"
+#include "RHI/D3D11/D3D11Texture.h"
 
 namespace Asset
 {
@@ -23,7 +24,15 @@ namespace Asset
         bool IsValid() const;
         void Reset();
 
-        ID3D11ShaderResourceView* GetSRV() const { return nullptr; }
+        ID3D11ShaderResourceView* GetSRV() const 
+        { 
+            if (!Texture)
+            {
+                return nullptr;
+            }
+            auto* D3D11Tex = dynamic_cast<RHI::D3D11::FD3D11Texture2D*>(Texture.get());
+            return D3D11Tex ? D3D11Tex->GetSRV() : nullptr;
+        }
 
       private:
         static RHI::EPixelFormat ResolvePixelFormat(uint32 Channels);
