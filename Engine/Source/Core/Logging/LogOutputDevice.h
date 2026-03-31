@@ -7,7 +7,8 @@ enum class ELogVerbosity
 {
     Log,
     Warning,
-    Error
+    Error,
+    Stat
 };
 
 class ENGINE_API ILogOutputDevice

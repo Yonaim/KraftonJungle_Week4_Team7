@@ -352,7 +352,7 @@ void FEditor::Create()
     PanelManager->RegisterPanelInstance<FOutlinerPanel>();
     PanelManager->RegisterPanelInstance<FPropertiesPanel>();
     PanelManager->RegisterPanelInstance<FShortcutsPanel>();
-    PanelManager->RegisterPanelInstance<FStatePanel>();
+    //PanelManager->RegisterPanelInstance<FStatePanel>();
 
     // TODO: ViewportTab도 Panel로 만들기
     ViewportTab.InitializeControlPanels(&EditorContext);

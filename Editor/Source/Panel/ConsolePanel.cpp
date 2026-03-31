@@ -405,6 +405,7 @@ void FConsolePanel::Draw()
     DrawLogOutput();
     ImGui::Separator();
     DrawInputRow();
+    RenderCommandOverlays();
 
     ImGui::End();
 }
@@ -501,10 +502,19 @@ void FConsolePanel::SubmitInput()
 void FConsolePanel::ExecuteCommand(const FString& CommandLine)
 {
     const FString TrimmedCommand = TrimCopy(CommandLine);
+
     if (TrimmedCommand.empty())
     {
         return;
     }
+
+    const TArray<FString> Tokens = TokenizeCommandLine(TrimmedCommand);
+    if (Tokens.empty())
+    {
+        return;
+    }
+
+    FString CommandName = ToLowerAsciiCopy(Tokens[0]);
 
     if (TrimmedCommand == "clear")
     {
@@ -562,18 +572,19 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
         return;
     }
 
+    if (StartsWith(TrimmedCommand, "stat "))
+    {
+        UE_LOG(Console, ELogVerbosity::Stat, "%s", TrimmedCommand.substr(5).c_str());
+        if (Tokens.size() >= 2)
+            CommandName = "stat " + ToLowerAsciiCopy(Tokens[1]);
+        bScrollToBottom = true;
+    }
+
     FEditorContext*       Context = GetContext();
     FEditor*              Editor = Context != nullptr ? Context->Editor : nullptr;
     FScene*               Scene = (Context != nullptr && Context->World != nullptr)
                                       ? Context->World->GetActiveScene()
                                       : nullptr;
-    const TArray<FString> Tokens = TokenizeCommandLine(TrimmedCommand);
-    if (Tokens.empty())
-    {
-        return;
-    }
-
-    const FString CommandName = ToLowerAsciiCopy(Tokens[0]);
 
     auto RequireEditor = [&]() -> bool
     {
@@ -1200,7 +1211,21 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
         return;
     }
 
-    if (CommandName == "stats.fps")
+    if (CommandName == "stat all")
+    {
+        ActiveStatOverlays = STAT_FPS | STAT_MEMORY;
+        bScrollToBottom = true;
+        return;
+    }
+
+    if (CommandName == "stat none")
+    {
+        ActiveStatOverlays = STAT_NONE;
+        bScrollToBottom = true;
+        return;
+    }
+
+    if (CommandName == "stat fps")
     {
         if (Context == nullptr)
         {
@@ -1210,22 +1235,25 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
         {
             UE_LOG(Console, ELogVerbosity::Log, "FPS = %.1f (%.3f ms)", Context->CurrentFPS,
                    Context->DeltaTime * 1000.0f);
+
+            ActiveStatOverlays ^= STAT_FPS;
         }
         bScrollToBottom = true;
         return;
     }
 
-    if (CommandName == "stats.memory")
+    if (CommandName == "stat memory")
     {
         UE_LOG(Console, ELogVerbosity::Log, "TotalAllocationCount = %u",
                UEngineStatics::TotalAllocationCount);
         UE_LOG(Console, ELogVerbosity::Log, "Heap Usage = %.2f KB",
                UEngineStatics::TotalAllocatedBytes / 1024.0f);
+        ActiveStatOverlays ^= STAT_MEMORY;
         bScrollToBottom = true;
         return;
     }
 
-    if (CommandName == "stats.gpu")
+    if (CommandName == "stat gpu")
     {
         UE_LOG(Console, ELogVerbosity::Warning,
                "GPU memory stats are not available in the current build.");
@@ -1295,4 +1323,41 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
 
     UE_LOG(Console, ELogVerbosity::Warning, "Unknown command: %s", TrimmedCommand.c_str());
     bScrollToBottom = true;
+}
+
+void FConsolePanel::RenderCommandOverlays() 
+{
+    if (ActiveStatOverlays == STAT_NONE)
+        return;
+
+    ImDrawList* DrawList = ImGui::GetForegroundDrawList();
+    float       Y = 10.0f;
+    const float LineHeight = ImGui::GetTextLineHeight() + 4.0f;
+
+    auto DrawStatText = [&](const char* Text, ImVec4 Color = {1, 1, 0, 1})
+    {
+        ImVec2 Pos = ImVec2(10.0f, Y + 100.0f);
+        DrawList->AddText(ImVec2(Pos.x + 1, Pos.y + 1), IM_COL32(0, 0, 0, 200), Text);
+        DrawList->AddText(Pos, ImGui::ColorConvertFloat4ToU32(Color), Text);
+        Y += LineHeight;
+    };
+
+    char Buf[128];
+
+    if (ActiveStatOverlays & STAT_FPS && Context != nullptr)
+    {
+        snprintf(Buf, sizeof(Buf), "FPS: %.1f (%.3f ms)", Context->CurrentFPS,
+                 Context->DeltaTime * 1000.0f);
+        DrawStatText(Buf);
+    }
+    if (ActiveStatOverlays & STAT_MEMORY)
+    {
+        snprintf(Buf, sizeof(Buf), "TotalAllocationCount = %u",
+                 UEngineStatics::TotalAllocationCount);
+        DrawStatText(Buf, {0.4f, 1.0f, 0.4f, 1.0f});
+
+        snprintf(Buf, sizeof(Buf), "Heap Usage = %.2f KB",
+                 UEngineStatics::TotalAllocatedBytes / 1024.0f);
+        DrawStatText(Buf, {0.4f, 1.0f, 0.4f, 1.0f});
+    }
 }
