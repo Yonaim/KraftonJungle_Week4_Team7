@@ -123,16 +123,30 @@ void FViewer::DrawPanel(HWND hWnd)
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
-    ImGuiIO& io = ImGui::GetIO();
-    ImGui::Text("WantCaptureMouse: %s", io.WantCaptureMouse ? "true" : "false");
-    ImGui::Text("MouseDown[0]: %s", io.MouseDown[0] ? "true" : "false");
-
-    ImGui::ShowDemoWindow();
-
     if (ImGui::BeginMainMenuBar())
     {
-        if (ImGui::MenuItem("Open OBJ..."))
-        { /* 파일 열기 */
+        if (ImGui::BeginMenu("File"))
+        {
+            if (ImGui::MenuItem("Open OBJ..."))
+            {
+                std::array<wchar_t, 1024> FileBuffer{};
+                OPENFILENAMEW             Dialog = {};
+                Dialog.lStructSize = sizeof(Dialog);
+                Dialog.hwndOwner = hWnd;
+                Dialog.lpstrFilter = L"OBJ Files (*.obj)\0*.obj\0All Files (*.*)\0*.*\0";
+                Dialog.lpstrFile = FileBuffer.data();
+                Dialog.nMaxFile = static_cast<DWORD>(FileBuffer.size());
+                Dialog.Flags =
+                    OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
+
+                if (GetOpenFileNameW(&Dialog))
+                {
+                    std::wstring SelectedPath = FileBuffer.data();
+                    // TODO: OBJ 파일 로드 함수 호출
+                    // LoadObjFile(SelectedPath);
+                }
+            }
+            ImGui::EndMenu();
         }
         ImGui::SameLine(ImGui::GetWindowWidth() - 60);
         if (ImGui::MenuItem("Exit"))
