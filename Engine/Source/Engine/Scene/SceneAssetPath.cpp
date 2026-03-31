@@ -1,5 +1,7 @@
 #include "Engine/Scene/SceneAssetPath.h"
 
+#include "Asset/Core/AssetNaming.h"
+
 #include <algorithm>
 #include <cstring>
 #include <system_error>
@@ -162,6 +164,16 @@ namespace Engine::Scene
         }
 
         return NormalizeAbsolutePath(AbsolutePath);
+    }
+
+    Asset::EAssetFileKind ClassifySceneAssetPath(const FString& InPath)
+    {
+        return Asset::ClassifyAssetPath(NormalizeSceneAssetPath(InPath));
+    }
+
+    const char* GetSceneAssetKindLabel(const FString& InPath)
+    {
+        return Asset::GetAssetFileKindLabel(ClassifySceneAssetPath(InPath));
     }
 
 } // namespace Engine::Scene
