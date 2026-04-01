@@ -835,6 +835,12 @@ void FPropertiesPanel::DrawComponentPropertyEditor(
 
 void FPropertiesPanel::DrawStaticMeshEditor(Engine::Component::USceneComponent* TargetComponent)
 {
+    if (TargetComponent == nullptr ||
+        !TargetComponent->IsA(Engine::Component::UStaticMeshComponent::GetClass()))
+    {
+        return;
+    }
+
     if (bDirty)
     {
         RebuildAssetComboCache();
