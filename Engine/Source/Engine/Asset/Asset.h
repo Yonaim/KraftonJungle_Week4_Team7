@@ -3,7 +3,7 @@
 #include "Core/CoreMinimal.h"
 #include "CoreUObject/Object.h"
 
-class UAsset : public UObject
+class ENGINE_API UAsset : public UObject
 {
     DECLARE_RTTI(UAsset, UObject)
 

@@ -10,7 +10,7 @@
 
 using namespace Asset;
 
-class UFontAtlas : public UAsset
+class ENGINE_API UFontAtlas : public UAsset
 {
     DECLARE_RTTI(UFontAtlas, UAsset)
 

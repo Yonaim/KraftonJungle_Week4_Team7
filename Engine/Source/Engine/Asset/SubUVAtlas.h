@@ -10,7 +10,7 @@
 
 using namespace Asset;
 
-class USubUVAtlas : public UAsset
+class ENGINE_API USubUVAtlas : public UAsset
 {
     DECLARE_RTTI(USubUVAtlas, UAsset)
 

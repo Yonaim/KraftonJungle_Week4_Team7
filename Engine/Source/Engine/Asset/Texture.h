@@ -10,7 +10,7 @@
 
 using namespace Asset;
 
-class UTexture : public UAsset
+class ENGINE_API UTexture : public UAsset
 {
     DECLARE_RTTI(UTexture, UAsset)
 
@@ -41,9 +41,9 @@ class UTexture : public UAsset
         RenderResource.reset();
     }
 
-    ENGINE_API bool LoadFromCooked(const FString&                      InAssetPath,
-                        std::shared_ptr<FTextureCookedData> InCookedData,
-                        RHI::FDynamicRHI&                   InDynamicRHI);
+    bool LoadFromCooked(const FString&                      InAssetPath,
+                                   std::shared_ptr<FTextureCookedData> InCookedData,
+                                   RHI::FDynamicRHI&                   InDynamicRHI);
 
     bool IsValidLowLevel() const override;
 
