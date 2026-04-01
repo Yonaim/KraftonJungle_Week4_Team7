@@ -595,6 +595,7 @@ namespace
 FConsolePanel::FConsolePanel(FEditorLogBuffer* InLogBuffer) : LogBuffer(InLogBuffer)
 {
     InputBuffer.fill('\0');
+    SearchBuffer.fill('\0');
 }
 
 const wchar_t* FConsolePanel::GetPanelID() const { return L"ConsolePanel"; }
@@ -695,6 +696,12 @@ void FConsolePanel::DrawToolbar()
             bScrollToBottom = true;
         }
     }
+
+    ImGui::SameLine();
+    ImGui::TextUnformatted("Search");
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(220.0f);
+    ImGui::InputText("##ConsoleSearch", SearchBuffer.data(), SearchBuffer.size());
 }
 
 void FConsolePanel::DrawLogOutput()
@@ -715,12 +722,24 @@ void FConsolePanel::DrawLogOutput()
 
     const TArray<FEditorLogEntry>& Entries = LogBuffer->GetLogBuffer();
     const ELogLevel               VisibleLogLevel = GetGlobalLogLevel();
+    const FString                 SearchText = TrimCopy(SearchBuffer.data());
+    const FString                 SearchTextLower = ToLowerAsciiCopy(SearchText);
+    const bool                    bUseSearchFilter = !SearchTextLower.empty();
     int32                         VisibleEntryCount = 0;
     for (const FEditorLogEntry& Entry : Entries)
     {
         if (static_cast<uint8>(Entry.Level) < static_cast<uint8>(VisibleLogLevel))
         {
             continue;
+        }
+
+        if (bUseSearchFilter)
+        {
+            const FString EntryMessageLower = ToLowerAsciiCopy(Entry.Message);
+            if (EntryMessageLower.find(SearchTextLower) == FString::npos)
+            {
+                continue;
+            }
         }
 
         ++VisibleEntryCount;
