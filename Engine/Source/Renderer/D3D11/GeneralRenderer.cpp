@@ -69,10 +69,6 @@ bool FGeneralRenderer::Pick(int32 MouseX, int32 MouseY, uint32& OutPickId)
     if (DeviceContext == nullptr || PickRTV == nullptr || PickDSV == nullptr)
         return false;
 
-    D3D11_VIEWPORT Viewport = RHI.GetViewport();
-    if (MouseX < 0 || MouseY < 0 || MouseX >= Viewport.Width || MouseY >= Viewport.Height)
-        return false;
-
     // 1. 현재 렌더 상태 저장
     ID3D11RenderTargetView* PrevRTV = nullptr;
     ID3D11DepthStencilView* PrevDSV = nullptr;
@@ -84,11 +80,6 @@ bool FGeneralRenderer::Pick(int32 MouseX, int32 MouseY, uint32& OutPickId)
 
     // 2. 픽킹용 렌더 타겟 설정
     DeviceContext->OMSetRenderTargets(1, &PickRTV, PickDSV);
-    
-    D3D11_VIEWPORT PickVP = Viewport;
-    PickVP.TopLeftX = 0;
-    PickVP.TopLeftY = 0;
-    DeviceContext->RSSetViewports(1, &PickVP);
 
     static const float ClearColor[4] = {0, 0, 0, 0};
     DeviceContext->ClearRenderTargetView(PickRTV, ClearColor);
@@ -99,7 +90,18 @@ bool FGeneralRenderer::Pick(int32 MouseX, int32 MouseY, uint32& OutPickId)
     DeviceContext->PSSetShader(PickPixelShader, nullptr, 0);
     DeviceContext->IASetInputLayout(PickInputLayout);
     
+    // ImGui로 인해 State가 덮어씌워졌을 가능성 방지
     RenderStateManager->RebindState();
+    
+    // 상수 버퍼 바인딩 및 업데이트
+    SetConstantBuffers();
+    UpdateFrameConstantBuffer();
+    
+    // BlendState 비활성화
+    FBlendStateOption blendStateOption;
+    blendStateOption.BlendEnable = false;
+    auto blendState = RenderStateManager->GetOrCreateBlendState(blendStateOption);
+    RenderStateManager->BindState(blendState);
 
     for (const auto& Cmd : CommandList)
     {
@@ -127,7 +129,7 @@ bool FGeneralRenderer::Pick(int32 MouseX, int32 MouseY, uint32& OutPickId)
     
     if (PrevRTV) PrevRTV->Release();
     if (PrevDSV) PrevDSV->Release();
-
+    
     // 6. 결과 읽어오기
     return ReadBackMousePixel(MouseX, MouseY, OutPickId);
 }
@@ -355,8 +357,6 @@ void FGeneralRenderer::ExecuteCommands()
     
     ExecuteRenderPass(ERenderLayer::Overlay);
     DrawAllAABBLines(ERenderLayer::Overlay);
-
-    ClearCommandList();
 }
 
 void FGeneralRenderer::SetGUICallbacks(FGUICallback InInit, FGUICallback     InShutdown,
@@ -405,6 +405,7 @@ void FGeneralRenderer::SetConstantBuffers()
 {
     ID3D11Buffer* CBs[2] = {FrameConstantBuffer, ObjectConstantBuffer};
     RHI.GetDeviceContext()->VSSetConstantBuffers(0, 2, CBs);
+    RHI.GetDeviceContext()->PSSetConstantBuffers(0, 2, CBs);
 }
 
 void FGeneralRenderer::AddCommand(const FRenderCommand& Command)
@@ -679,6 +680,7 @@ bool FGeneralRenderer::ReadBackMousePixel(int32 MouseX, int32 MouseY, uint32& Ou
         return false;
 
     OutObjectId = *reinterpret_cast<const uint32*>(Mapped.pData);
+    UE_LOG(Renderer.Pick, ELogVerbosity::Warning, "(%d, %d), OutObjectId: %d", MouseX, MouseY, OutObjectId);
     DeviceContext->Unmap(ReadbackTexture, 0);
     return true;
 }
@@ -784,7 +786,7 @@ static std::shared_ptr<FMeshData> ConvertGizmoMesh(const Mesh& InMesh, FD3D11RHI
     auto MeshData = std::make_shared<FMeshData>();
     MeshData->Vertices.reserve(static_cast<uint32>(InMesh.vertices.size()));
     
-    float ScaleFactor = 0.08f;
+    const float ScaleFactor = 0.08f;
     for (const auto& V : InMesh.vertices)
     {
         FPrimitiveVertex PV;
@@ -840,22 +842,6 @@ void FGeneralRenderer::InitializeGizmoResources()
         GizmoResources.ScaleParts.emplace_back(ConvertGizmoMesh(G.axisZ, RHI), PickId::MakeGizmoPartId(EGizmoType::Scaling, EAxis::Z));
         GizmoResources.ScaleParts.emplace_back(ConvertGizmoMesh(G.centerCube, RHI), PickId::MakeGizmoCenterId(EGizmoType::Scaling));
     }
-}
-
-void FGeneralRenderer::DrawGizmoMesh(FMeshData* InMeshData, const FMatrix& InWorld, uint32 InObjectId)
-{
-    if (!InMeshData) return;
-    
-    ID3D11DeviceContext* DeviceContext = RHI.GetDeviceContext();
-    InMeshData->Bind(&RHI);
-    DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-    UpdateObjectConstantBuffer(InWorld, InObjectId);
-
-    if (!InMeshData->Indices.empty())
-        DeviceContext->DrawIndexed(static_cast<UINT>(InMeshData->Indices.size()), 0, 0);
-    else
-        DeviceContext->Draw(static_cast<UINT>(InMeshData->Vertices.size()), 0);
 }
 
 UMaterial* FGeneralRenderer::GetDefaultMaterial()

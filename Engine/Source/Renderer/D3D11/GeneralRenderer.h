@@ -78,7 +78,6 @@ private:
 
     /** 기즈모 전용 리소스 초기화 */
     void InitializeGizmoResources();
-    void DrawGizmoMesh(FMeshData* InMeshData, const FMatrix& InWorld, uint32 InObjectId = 0);
 
     /** 픽킹 리소스 */
     bool CreatePickResources(int32 Width, int32 Height);

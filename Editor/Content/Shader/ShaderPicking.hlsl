@@ -1,13 +1,30 @@
+cbuffer FrameConstants : register(b0)
+{
+    row_major float4x4 ViewMatrix;
+    row_major float4x4 ProjectionMatrix;
+}
+
+cbuffer ObjectConstants : register(b1)
+{
+    row_major float4x4 WorldMatrix;
+    uint ObjectId;
+    uint Padding0;
+    uint Padding1;
+    uint Padding2;
+};
+
 cbuffer PickingConstants : register(b0)
 {
-    row_major float4x4 MVP;
     uint ObjectId;
     float3 Padding;
 };
 
 struct VS_INPUT
 {
-    float3 position : POSITION;
+    float3 Position : POSITION;
+    float3 Normal   : NORMAL;
+    float4 Color    : COLOR;
+    float2 UV       : TEXCOORD;
 };
 
 struct VS_OUTPUT
@@ -18,11 +35,18 @@ struct VS_OUTPUT
 VS_OUTPUT mainVS(VS_INPUT input)
 {
     VS_OUTPUT output;
+    float4x4 MVP = mul(mul(WorldMatrix, ViewMatrix), ProjectionMatrix);
     output.position = mul(float4(input.position, 1.0f), MVP);
     return output;
 }
 
-uint mainPS(VS_OUTPUT input) : SV_TARGET
+float4 mainPS(VS_OUTPUT input)
 {
-    return ObjectId;
+    return float4(1,0,0,1);
 }
+
+// uint mainPS(VS_OUTPUT input) : SV_TARGET
+// {
+//     return 100; // TEST
+//     //return ObjectId;
+// }
