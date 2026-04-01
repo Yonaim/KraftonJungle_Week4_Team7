@@ -454,7 +454,7 @@ namespace
             }
 
             FString Value = TrimIniValueCopy(TrimmedLine.substr(EqualsIndex + 1));
-            if (Value.size() >= 2 && Value.front() == "\"" && Value.back() == "\"")
+            if (Value.size() >= 2 && Value.front() == '\"' && Value.back() == '\"')
             {
                 Value = Value.substr(1, Value.size() - 2);
             }
