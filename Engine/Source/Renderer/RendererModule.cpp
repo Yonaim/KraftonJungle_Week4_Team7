@@ -138,11 +138,9 @@ bool FRendererModule::Pick(const FEditorRenderData& InEditorRenderData,
     
     uint32 PickId = 0;
     if (GeneralRenderer->Pick(MouseX, MouseY, PickId))
-    {
-        OutResult.ObjectId = PickId;
-        return PickId != 0;
-    }
-    return false;
+        OutResult = PickResult::FromPickId(PickId);
+    
+    return PickId != 0;
 }
 
 void FRendererModule::SetVSyncEnabled(bool bEnabled) 
