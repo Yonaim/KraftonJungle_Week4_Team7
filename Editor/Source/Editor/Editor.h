@@ -146,6 +146,8 @@ class FEditor
   private:
     uint32_t           RootDockSpaceId = 0;
     SEditorViewportTab ViewportTab;
+    FViewport*         CapturedViewport = nullptr;
+    bool               bIsMouseCaptured = false;
 
     Engine::ApplicationCore::FInputRouter GlobalInputRouter;
     FEditorGlobalController               GlobalInputController;

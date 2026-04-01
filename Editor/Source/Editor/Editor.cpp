@@ -16,6 +16,7 @@
 #include "Engine/Scene/Serialization/Core/SceneDeserializer.h"
 #include "Engine/Scene/CameraInfo.h"
 #include "Engine/Scene/SceneAssetBinder.h"
+
 #include "Panel/ConsolePanel.h"
 #include "Panel/ContentBrowserPanel.h"
 #include "Panel/ControlPanel.h"
@@ -1207,20 +1208,23 @@ void FEditor::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
     Engine::ApplicationCore::FInputState InputState = InputSystem->GetInputState();
 
     FViewport*    HoveredViewport = nullptr;
-    FViewportRect Rect;
+    FViewportRect HoveredRect{};;
     for (auto Viewport : ViewportTab.GetViewports())
     {
         if (!Viewport->IsValid())
             continue;
 
-        Rect = Viewport->GetSceneView()->GetViewRect();
+        FViewportRect Rect = Viewport->GetSceneView()->GetViewRect();
         if (InputState.MouseX >= Rect.X && InputState.MouseX < Rect.X + Rect.Width &&
             InputState.MouseY >= Rect.Y && InputState.MouseY < Rect.Y + Rect.Height)
         {
             HoveredViewport = Viewport;
+            HoveredRect = Rect;
             break;
         }
     }
+
+    FViewport* ActiveViewport = bIsMouseCaptured ? CapturedViewport : HoveredViewport;
 
     if (HoveredViewport != nullptr)
     {
@@ -1230,21 +1234,46 @@ void FEditor::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
             &HoveredViewport->GetViewportClient()->GetSelectionController());
     }
 
+    FViewportRect ActiveRect = {};
+    if (ActiveViewport != nullptr)
+        ActiveRect = ActiveViewport->GetSceneView()->GetViewRect();
+
     while (InputSystem->PollEvent(Event))
     {
-        Event.MouseX -= Rect.X;
-        Event.MouseY -= Rect.Y;
+        if (Event.Type ==
+            Engine::ApplicationCore::EInputEventType::MouseButtonDown)
+        {
+            if (HoveredViewport != nullptr && !bIsMouseCaptured)
+            {
+                CapturedViewport = HoveredViewport;
+                bIsMouseCaptured = true;
+                ActiveViewport = CapturedViewport;
+                ActiveRect = HoveredRect;
+            }
+        }
 
+        Event.MouseX -= ActiveRect.X;
+        Event.MouseY -= ActiveRect.Y;
         InputState.ChangeToLocal(Event.MouseX, Event.MouseY);
-        int32 LocalY = Event.MouseY - Rect.Y;
 
         if (GlobalInputRouter.RouteEvent(Event, InputState))
         {
+            if (Event.Type == Engine::ApplicationCore::EInputEventType::MouseButtonUp)
+            {
+                bIsMouseCaptured = false;
+                CapturedViewport = nullptr;
+            }
             continue;
         }
 
-        if (HoveredViewport != nullptr)
-            HoveredViewport->GetViewportClient()->HandleInputEvent(Event, InputState);
+        if (ActiveViewport != nullptr)
+            ActiveViewport->GetViewportClient()->HandleInputEvent(Event, InputState);
+
+        if (Event.Type == Engine::ApplicationCore::EInputEventType::MouseButtonUp)
+        {
+            bIsMouseCaptured = false;
+            CapturedViewport = nullptr;
+        }
     }
 
     for (auto Viewport : ViewportTab.GetViewports())
