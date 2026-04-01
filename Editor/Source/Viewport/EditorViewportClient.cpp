@@ -20,6 +20,7 @@ void FEditorViewportClient::Create()
     InputRouter->AddContext(&GizmoInputContext);
     GizmoController.SetViewportClient(this);
     GizmoController.SetViewportSelectionController(&SelectionController);
+    SelectionController.SetViewportClient(this);
 
     NavigationController.SetCamera(&ViewportCamera);
     NavigationController.SetSelectionController(&SelectionController);
