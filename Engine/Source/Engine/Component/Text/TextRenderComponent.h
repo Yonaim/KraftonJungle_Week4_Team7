@@ -1,4 +1,5 @@
 #pragma once
+#include <filesystem>
 #include "Engine/Component/Core/PrimitiveComponent.h"
 #include "Renderer/RenderAsset/FontResource.h"
 #include "Renderer/Types/RenderItem.h"
@@ -26,8 +27,12 @@ namespace Engine::Component
         const FFontResource* GetFontResource() { return FontResource; }
         void                 SetFontResource(const FFontResource* InFontResource);
 
-        const FString& GetFontPath() const { return FontPath; }
-        void           SetFontPath(const FString& InFontPath);
+        const std::filesystem::path& GetFontPath() const { return FontPath; }
+        void                         SetFontPath(const std::filesystem::path& InFontPath);
+        void                         SetFontPath(const FString& InFontPath)
+        {
+            SetFontPath(std::filesystem::path(InFontPath));
+        }
 
         float GetTextScale() const { return TextScale; }
         void  SetTextScale(float InTextScale);
@@ -104,7 +109,7 @@ namespace Engine::Component
 
       protected:
         FString Text;
-        FString FontPath;
+        std::filesystem::path FontPath;
         const FFontResource* FontResource = nullptr;
 
         float TextScale = 1.0f;

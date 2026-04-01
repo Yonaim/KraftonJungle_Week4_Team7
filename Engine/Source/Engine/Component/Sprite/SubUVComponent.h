@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include "Engine/Asset/SubUVAtlas.h"
 #include "AtlasComponent.h"
 #include "Core/CoreMinimal.h"
@@ -18,8 +19,12 @@ namespace Engine::Component
         USubUVAtlas*       GetSubUVAtlasAsset() { return SubUVAtlasAsset; }
         void               SetSubUVAtlasAsset(USubUVAtlas* InAsset);
 
-        const FString& GetSubUVAtlasPath() const { return SubUVAtlasPath; }
-        void           SetSubUVAtlasPath(const FString& InPath);
+        const std::filesystem::path& GetSubUVAtlasPath() const { return SubUVAtlasPath; }
+        void                         SetSubUVAtlasPath(const std::filesystem::path& InPath);
+        void                         SetSubUVAtlasPath(const FString& InPath)
+        {
+            SetSubUVAtlasPath(std::filesystem::path(InPath));
+        }
 
         const FSubUVAtlasRenderResource* GetSubUVAtlasRenderResource() const;
         FSubUVAtlasRenderResource*       GetSubUVAtlasRenderResource();
@@ -36,7 +41,7 @@ namespace Engine::Component
         void DescribeProperties(FComponentPropertyBuilder& Builder) override;
 
       protected:
-        FString     SubUVAtlasPath;
+        std::filesystem::path SubUVAtlasPath;
         USubUVAtlas* SubUVAtlasAsset = nullptr;
         int32        FrameIndex = 0;
     };

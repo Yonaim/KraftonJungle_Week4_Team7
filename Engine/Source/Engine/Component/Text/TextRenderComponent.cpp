@@ -9,6 +9,7 @@
 #include "RHI/D3D11/D3D11Texture.h"
 
 #include <algorithm>
+#include <filesystem>
 
 namespace
 {
@@ -100,6 +101,16 @@ namespace
 
         return CodePoints;
     }
+
+    FString PathToString(const std::filesystem::path& InPath)
+    {
+        if (InPath.empty())
+        {
+            return {};
+        }
+        const FWString Wide = InPath.generic_wstring();
+        return FString(Wide.begin(), Wide.end());
+    }
 }
 
 namespace Engine::Component
@@ -130,7 +141,7 @@ namespace Engine::Component
         }
     }
 
-    void UTextRenderComponent::SetFontPath(const FString& InFontPath)
+    void UTextRenderComponent::SetFontPath(const std::filesystem::path& InFontPath)
     {
         if (FontPath != InFontPath)
         {
@@ -201,7 +212,7 @@ namespace Engine::Component
             [this](float InValue) { SetLineSpacing(InValue); });
 
         Builder.AddAssetPath(
-            "font_path", L"Font Path", [this]() { return GetFontPath(); },
+            "font_path", L"Font Path", [this]() { return PathToString(GetFontPath()); },
             [this](const FString& InValue) { SetFontPath(InValue); }, FontPathOptions);
 
         Builder.AddVector3(

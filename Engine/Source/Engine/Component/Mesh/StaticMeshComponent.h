@@ -1,4 +1,5 @@
 #pragma once
+#include <filesystem>
 #include "MeshComponent.h"
 #include "Renderer/Types/BasicMeshType.h"
 #include "Engine/Asset/Material.h"
@@ -16,8 +17,12 @@ namespace Engine::Component
         UStaticMeshComponent() = default;
         ~UStaticMeshComponent() override = default;
 
-        const FString& GetStaticMeshPath() const { return MeshPath; }
-        void           SetStaticMeshPath(const FString& InPath);
+        const std::filesystem::path& GetStaticMeshPath() const { return MeshPath; }
+        void                         SetStaticMeshPath(const std::filesystem::path& InPath);
+        void                         SetStaticMeshPath(const FString& InPath)
+        {
+            SetStaticMeshPath(std::filesystem::path(InPath));
+        }
 
         const UStaticMesh* GetStaticMeshAsset() const { return StaticMesh; }
         UStaticMesh*       GetStaticMeshAsset() { return StaticMesh; }
@@ -57,7 +62,7 @@ namespace Engine::Component
         void SyncMaterialOverridesWithStaticMesh();
 
       private:
-        FString MeshPath;
+        std::filesystem::path MeshPath;
 
       protected:
         UStaticMesh*       StaticMesh = nullptr;

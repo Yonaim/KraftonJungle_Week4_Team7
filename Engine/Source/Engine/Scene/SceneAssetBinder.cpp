@@ -1,5 +1,7 @@
 #include "Engine/Scene/SceneAssetBinder.h"
 
+#include <filesystem>
+
 #include "Engine/Asset/AssetObjectManager.h"
 #include "Engine/Asset/FontAtlas.h"
 #include "Engine/Asset/StaticMesh.h"
@@ -17,7 +19,17 @@ using namespace Engine::Component;
 
 namespace
 {
-    FString ResolveTexturePath(const UPaperSpriteComponent* InComponent)
+    FString PathToString(const std::filesystem::path& InPath)
+    {
+        if (InPath.empty())
+        {
+            return {};
+        }
+        const FWString Wide = InPath.generic_wstring();
+        return FString(Wide.begin(), Wide.end());
+    }
+
+    std::filesystem::path ResolveTexturePath(const UPaperSpriteComponent* InComponent)
     {
         if (InComponent == nullptr)
         {
@@ -38,7 +50,7 @@ namespace
         return AtlasAsset != nullptr ? AtlasAsset->GetAssetPath() : FString();
     }
 
-    FString ResolveFontPath(const UAtlasTextComponent* InComponent)
+    std::filesystem::path ResolveFontPath(const UAtlasTextComponent* InComponent)
     {
         if (InComponent == nullptr)
         {
@@ -96,7 +108,7 @@ void FSceneAssetBinder::BindComponent(USceneComponent* InComponent,
 
     if (auto* StaticMeshComponent = Cast<UStaticMeshComponent>(InComponent))
     {
-        const FString MeshPath = StaticMeshComponent->GetStaticMeshPath();
+        const FString MeshPath = PathToString(StaticMeshComponent->GetStaticMeshPath());
         if (MeshPath.empty())
         {
             UE_LOG(SceneBinder, ELogLevel::Warning, "StaticMeshComponent has empty mesh path");
@@ -144,7 +156,7 @@ void FSceneAssetBinder::BindComponent(USceneComponent* InComponent,
 
     if (auto* SpriteComponent = Cast<UPaperSpriteComponent>(InComponent))
     {
-        const FString MeshPath = SpriteComponent->GetMeshAssetPath();
+        const FString MeshPath = PathToString(SpriteComponent->GetMeshAssetPath());
         if (MeshPath.empty())
         {
             UE_LOG(SceneBinder, ELogLevel::Warning, "PaperSpriteComponent has empty mesh path");
@@ -167,7 +179,7 @@ void FSceneAssetBinder::BindComponent(USceneComponent* InComponent,
             }
         }
 
-        const FString TexturePath = ResolveTexturePath(SpriteComponent);
+        const FString TexturePath = PathToString(ResolveTexturePath(SpriteComponent));
         if (TexturePath.empty())
         {
             UE_LOG(SceneBinder, ELogLevel::Warning, "PaperSpriteComponent has empty texture path");
@@ -192,7 +204,7 @@ void FSceneAssetBinder::BindComponent(USceneComponent* InComponent,
 
     if (auto* AtlasTextComponent = Cast<UAtlasTextComponent>(InComponent))
     {
-        const FString FontPath = ResolveFontPath(AtlasTextComponent);
+        const FString FontPath = PathToString(ResolveFontPath(AtlasTextComponent));
         if (FontPath.empty())
         {
             UE_LOG(SceneBinder, ELogLevel::Warning, "AtlasTextComponent has empty font path");

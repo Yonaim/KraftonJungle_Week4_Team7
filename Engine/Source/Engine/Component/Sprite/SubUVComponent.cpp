@@ -7,6 +7,19 @@
 
 namespace Engine::Component
 {
+    namespace
+    {
+        static FString PathToString(const std::filesystem::path& InPath)
+        {
+            if (InPath.empty())
+            {
+                return {};
+            }
+            const FWString Wide = InPath.generic_wstring();
+            return FString(Wide.begin(), Wide.end());
+        }
+    }
+
     void USubUVComponent::SetSubUVAtlasAsset(USubUVAtlas* InAsset)
     {
         if (SubUVAtlasAsset == InAsset)
@@ -18,7 +31,7 @@ namespace Engine::Component
         SetFrameIndex(FrameIndex);
     }
 
-    void USubUVComponent::SetSubUVAtlasPath(const FString& InPath)
+    void USubUVComponent::SetSubUVAtlasPath(const std::filesystem::path& InPath)
     {
         if (SubUVAtlasPath == InPath)
         {
@@ -115,7 +128,7 @@ namespace Engine::Component
         IntOptions.DragSpeed = 1.0f;
 
         Builder.AddAssetPath(
-            "subuv_atlas", L"SubUV Atlas", [this]() { return GetSubUVAtlasPath(); },
+            "subuv_atlas", L"SubUV Atlas", [this]() { return PathToString(GetSubUVAtlasPath()); },
             [this](const FString& InPath) { SetSubUVAtlasPath(InPath); }, AtlasPathOptions);
 
         Builder.AddInt(

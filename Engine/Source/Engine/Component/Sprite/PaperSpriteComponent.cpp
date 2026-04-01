@@ -22,6 +22,16 @@ namespace Engine::Component
 {
     namespace
     {
+        static FString PathToString(const std::filesystem::path& InPath)
+        {
+            if (InPath.empty())
+            {
+                return {};
+            }
+            const FWString Wide = InPath.generic_wstring();
+            return FString(Wide.begin(), Wide.end());
+        }
+
         static bool ReadStaticMeshVertexPosition(const UStaticMesh* InMeshAsset, uint32 VertexIndex,
                                                  FVector& OutPosition)
         {
@@ -49,15 +59,15 @@ namespace Engine::Component
         }
     } // namespace
 
-    const FString& UPaperSpriteComponent::GetDefaultQuadMeshPath()
+    const std::filesystem::path& UPaperSpriteComponent::GetDefaultQuadMeshPath()
     {
-        static const FString Path = "/Content/Mesh/Primitive/quad.obj";
+        static const std::filesystem::path Path = "/Content/Mesh/Primitive/quad.obj";
         return Path;
     }
 
-    void UPaperSpriteComponent::SetMeshAssetPath(const FString& InPath)
+    void UPaperSpriteComponent::SetMeshAssetPath(const std::filesystem::path& InPath)
     {
-        const FString& NewPath = InPath.empty() ? GetDefaultQuadMeshPath() : InPath;
+        const std::filesystem::path NewPath = InPath.empty() ? GetDefaultQuadMeshPath() : InPath;
         if (MeshPath == NewPath)
         {
             return;
@@ -67,7 +77,8 @@ namespace Engine::Component
         MeshAsset = nullptr;
         MeshData.reset();
         bBoundsDirty = true;
-        UE_LOG(SpriteComponent, ELogLevel::Verbose, "Sprite mesh path changed: %s", MeshPath.c_str());
+        const FString MeshPathString = PathToString(MeshPath);
+        UE_LOG(SpriteComponent, ELogLevel::Verbose, "Sprite mesh path changed: %s", MeshPathString.c_str());
     }
 
     void UPaperSpriteComponent::SetMeshAsset(UStaticMesh* InMeshAsset)
@@ -98,7 +109,7 @@ namespace Engine::Component
                TextureAsset ? TextureAsset->GetAssetPath().c_str() : "<null>");
     }
 
-    void UPaperSpriteComponent::SetTexturePath(const FString& InPath)
+    void UPaperSpriteComponent::SetTexturePath(const std::filesystem::path& InPath)
     {
         if (TexturePath == InPath)
         {
@@ -109,7 +120,8 @@ namespace Engine::Component
         TextureAsset = nullptr;
         Material = nullptr;
         bBoundsDirty = true;
-        UE_LOG(SpriteComponent, ELogLevel::Verbose, "Sprite texture path changed: %s", TexturePath.c_str());
+        const FString TexturePathString = PathToString(TexturePath);
+        UE_LOG(SpriteComponent, ELogLevel::Verbose, "Sprite texture path changed: %s", TexturePathString.c_str());
     }
 
     const FTextureRenderResource* UPaperSpriteComponent::GetTextureRenderResource() const
@@ -160,7 +172,7 @@ namespace Engine::Component
         TexturePathOptions.ExpectedAssetPathKind = EComponentAssetPathKind::TextureImage;
 
         Builder.AddAssetPath(
-            "texture", L"Texture", [this]() { return GetTexturePath(); },
+            "texture", L"Texture", [this]() { return PathToString(GetTexturePath()); },
             [this](const FString& InPath) { SetTexturePath(InPath); }, TexturePathOptions);
 
         Builder.AddBool(

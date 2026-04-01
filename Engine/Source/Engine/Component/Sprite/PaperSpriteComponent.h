@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include "Engine/Asset/Texture.h"
 #include "Engine/Component/Mesh/MeshComponent.h"
 #include "Renderer/Types/BasicMeshType.h"
@@ -18,12 +19,16 @@ namespace Engine::Component
         UPaperSpriteComponent() = default;
         ~UPaperSpriteComponent() override = default;
 
-        static const FString& GetDefaultQuadMeshPath();
+        static const std::filesystem::path& GetDefaultQuadMeshPath();
 
         EBasicMeshType GetBasicMeshType() const override { return EBasicMeshType::Quad; }
 
-        const FString& GetMeshAssetPath() const { return MeshPath; }
-        void           SetMeshAssetPath(const FString& InPath);
+        const std::filesystem::path& GetMeshAssetPath() const { return MeshPath; }
+        void                         SetMeshAssetPath(const std::filesystem::path& InPath);
+        void                         SetMeshAssetPath(const FString& InPath)
+        {
+            SetMeshAssetPath(std::filesystem::path(InPath));
+        }
 
         const UStaticMesh* GetMeshAsset() const { return MeshAsset; }
         UStaticMesh*       GetMeshAsset() { return MeshAsset; }
@@ -33,8 +38,12 @@ namespace Engine::Component
         UTexture*       GetTextureAsset() { return TextureAsset; }
         void            SetTextureAsset(UTexture* InTextureAsset);
 
-        const FString& GetTexturePath() const { return TexturePath; }
-        void           SetTexturePath(const FString& InPath);
+        const std::filesystem::path& GetTexturePath() const { return TexturePath; }
+        void                         SetTexturePath(const std::filesystem::path& InPath);
+        void                         SetTexturePath(const FString& InPath)
+        {
+            SetTexturePath(std::filesystem::path(InPath));
+        }
 
         const FTextureRenderResource* GetTextureRenderResource() const;
         FTextureRenderResource*       GetTextureRenderResource();
@@ -70,10 +79,10 @@ namespace Engine::Component
         void     EnsureStaticMeshRenderData() const;
 
       protected:
-        FString      MeshPath = GetDefaultQuadMeshPath();
+        std::filesystem::path MeshPath = GetDefaultQuadMeshPath();
         UStaticMesh* MeshAsset = nullptr;
 
-        FString   TexturePath;
+        std::filesystem::path TexturePath;
         UTexture* TextureAsset = nullptr;
         bool      bBillboard = false;
         FVector   BillboardOffset = FVector(0.0f, 0.0f, 0.0f);

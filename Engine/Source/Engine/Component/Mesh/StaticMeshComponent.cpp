@@ -18,6 +18,16 @@ namespace Engine::Component
 
     namespace
     {
+        static FString PathToString(const std::filesystem::path& InPath)
+        {
+            if (InPath.empty())
+            {
+                return {};
+            }
+            const FWString Wide = InPath.generic_wstring();
+            return FString(Wide.begin(), Wide.end());
+        }
+
         static bool ReadVertexPosition(const TArray<uint8>& VertexData, uint32 VertexStride,
                                        uint32 VertexIndex, FVector& OutPosition)
         {
@@ -37,7 +47,7 @@ namespace Engine::Component
         }
     } // namespace
 
-    void UStaticMeshComponent::SetStaticMeshPath(const FString& InPath)
+    void UStaticMeshComponent::SetStaticMeshPath(const std::filesystem::path& InPath)
     {
         if (MeshPath == InPath)
         {
@@ -49,8 +59,9 @@ namespace Engine::Component
         MeshData.reset();
         OverrideMaterials.clear();
         bBoundsDirty = true;
+        const FString MeshPathString = PathToString(MeshPath);
         UE_LOG(StaticMeshComponent, ELogLevel::Verbose,
-               "Static mesh path changed: %s", MeshPath.c_str());
+               "Static mesh path changed: %s", MeshPathString.c_str());
     }
 
     void UStaticMeshComponent::SetStaticMeshAsset(UStaticMesh* InStaticMesh)
@@ -184,7 +195,7 @@ namespace Engine::Component
         UMeshComponent::DescribeProperties(Builder);
 
         Builder.AddAssetPath(
-            "ObjStaticMeshAsset", L"Mesh Asset", [this]() { return GetStaticMeshPath(); },
+            "ObjStaticMeshAsset", L"Mesh Asset", [this]() { return PathToString(GetStaticMeshPath()); },
             [this](const FString& InValue) { SetStaticMeshPath(InValue); });
 
         Builder.AddBool(
