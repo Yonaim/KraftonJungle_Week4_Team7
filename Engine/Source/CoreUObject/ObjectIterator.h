@@ -1,6 +1,9 @@
 #pragma once
 
+#include "Core/CoreMinimal.h"
 #include "Object.h"
+
+//extern ENGINE_API TArray<UObject*> GUObjectArray;
 
 /**
  * FObjectIterator — 모든 UObject를 순회합니다.

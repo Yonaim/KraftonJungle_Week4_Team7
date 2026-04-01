@@ -88,4 +88,4 @@ template <typename To, typename From> To *Cast(From* Object)
     return nullptr;
 }
 
-extern TArray<UObject*> GUObjectArray;
+extern ENGINE_API TArray<UObject*> GUObjectArray;
