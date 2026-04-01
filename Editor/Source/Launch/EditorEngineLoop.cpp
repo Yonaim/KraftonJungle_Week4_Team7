@@ -156,7 +156,7 @@ bool FEditorEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
     AssetCacheManager = new Asset::FAssetCacheManager();
     AssetDynamicRHI = new RHI::D3D11::FD3D11DynamicRHI(Renderer->GetRHI().GetDevice(),
                                                        Renderer->GetRHI().GetDeviceContext());
-    Editor->SetRuntimeServices(&Renderer->GetRHI(), AssetDynamicRHI, AssetCacheManager);
+    Editor->SetRuntimeServices(&Renderer->GetRHI(), Renderer, AssetDynamicRHI, AssetCacheManager);
 
     ImGui::CreateContext();
     ApplyCoPassImGuiStyle();
@@ -244,7 +244,7 @@ void FEditorEngineLoop::ShutDown()
 
     if (Editor != nullptr)
     {
-        Editor->SetRuntimeServices(nullptr, nullptr, nullptr);
+        Editor->SetRuntimeServices(nullptr, nullptr, nullptr, nullptr);
     }
 
     delete AssetDynamicRHI;

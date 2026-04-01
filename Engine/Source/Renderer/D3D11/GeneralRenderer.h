@@ -6,6 +6,8 @@
 #include <functional>
 #include <memory>
 
+#include "Renderer/EditorRenderData.h"
+
 // === Forward Declaraction
 struct FRenderCommandQueue;
 using FGUICallback = std::function<void()>;
@@ -13,7 +15,7 @@ class UMaterial;
 // === Forward Declaraction
 
 
-class FGeneralRenderer
+class ENGINE_API FGeneralRenderer
 {
 public:
     FGeneralRenderer(HWND InHwnd, int32 InWidth, int32 InHeight);
@@ -44,8 +46,8 @@ public:
     void ClearViewportCallbacks();
     void SetGUIUpdateCallback(FGUICallback InUpdate);
     
-    static UMaterial* GetDefaultMaterial() { return DefaultMaterial.get(); }
-    static UMaterial* GetDefaultSpriteMaterial() { return DefaultSpriteMaterial.get(); }
+    static UMaterial* GetDefaultMaterial();
+    static UMaterial* GetDefaultSpriteMaterial();
     UMaterial* GetLineMaterial() const { return AABBMaterial.get(); }
     std::unique_ptr<CRenderStateManager>& GetRenderStateManager() { return RenderStateManager; }
     ID3D11Device* GetDevice() const { return RHI.GetDevice(); }
@@ -56,6 +58,8 @@ public:
 
     FVector GetCameraPosition() const;
     FD3D11RHI& GetRHI() { return RHI; }
+    
+    const FGizmoResources& GetGizmoResources() const { return GizmoResources; }
     
 private:
     bool InitializeDefaultMaterial();
@@ -71,6 +75,10 @@ private:
     
     /** AABB 전용 리소스 초기화 */
     void InitializeAABBResources();
+
+    /** 기즈모 전용 리소스 초기화 */
+    void InitializeGizmoResources();
+    void DrawGizmoMesh(FMeshData* InMeshData, const FMatrix& InWorld, uint32 InObjectId = 0);
 
     /** 픽킹 리소스 */
     bool CreatePickResources(int32 Width, int32 Height);
@@ -130,6 +138,9 @@ private:
     /** AABB 전용 리소스 */
     std::shared_ptr<FMeshData> AABBMeshData;
     std::shared_ptr<UMaterial> AABBMaterial;
+
+    /** 기즈모 전용 리소스 */
+    FGizmoResources GizmoResources;
     
     ID3D11SamplerState* NormalSampler = nullptr;
     

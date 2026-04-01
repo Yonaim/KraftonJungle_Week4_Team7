@@ -14,6 +14,7 @@ namespace RHI
 
 class UObject;
 class FD3D11RHI;
+class FRendererModule;
 class FWorld;
 class FEditor;
 class AActor;
@@ -24,6 +25,7 @@ struct FEditorContext
     FEditor* Editor = nullptr;
     FWorld* World = nullptr;
     FD3D11RHI* RHI = nullptr;
+    FRendererModule* Renderer = nullptr;
     RHI::FDynamicRHI* DynamicRHI = nullptr;
     Asset::FAssetCacheManager* AssetCacheManager = nullptr;
     FEditorContentIndex* ContentIndex = nullptr;

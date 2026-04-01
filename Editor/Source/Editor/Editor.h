@@ -78,7 +78,7 @@ class FEditor
     void Initialize();
     void Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* InputSystem);
     void SetChromeHost(IEditorChromeHost* InChromeHost);
-    void SetRuntimeServices(FD3D11RHI* InRHI, RHI::FDynamicRHI* InDynamicRHI,
+    void SetRuntimeServices(FD3D11RHI* InRHI, FRendererModule* InRenderer, RHI::FDynamicRHI* InDynamicRHI,
                             Asset::FAssetCacheManager* InAssetCacheManager);
 
     void OnWindowResized(float Width, float Height);

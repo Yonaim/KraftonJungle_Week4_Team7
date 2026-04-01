@@ -418,10 +418,11 @@ void FEditor::SetChromeHost(IEditorChromeHost* InChromeHost)
     EditorChrome.SetHost(InChromeHost);
 }
 
-void FEditor::SetRuntimeServices(FD3D11RHI* InRHI, RHI::FDynamicRHI* InDynamicRHI,
+void FEditor::SetRuntimeServices(FD3D11RHI* InRHI, FRendererModule* InRenderer, RHI::FDynamicRHI* InDynamicRHI,
                                  Asset::FAssetCacheManager* InAssetCacheManager)
 {
     EditorContext.RHI = InRHI;
+    EditorContext.Renderer = InRenderer;
     EditorContext.DynamicRHI = InDynamicRHI;
     EditorContext.AssetCacheManager = InAssetCacheManager;
     AboutImageResource = nullptr;
@@ -1505,12 +1506,12 @@ void FEditor::BuildRenderData()
             const ESceneShowFlags SceneShowFlags =
                 Viewport->GetViewportClient()->GetRenderSetting().BuildSceneShowFlags();
 
-            Viewport->GetViewportClient()->BuildRenderData(EditorRenderData, EditorShowFlags);
-
             if (CurWorld != nullptr)
             {
                 CurWorld->BuildRenderData(SceneRenderData, SceneShowFlags);
             }
+
+            Viewport->GetViewportClient()->BuildRenderData(EditorRenderData, SceneRenderData, EditorShowFlags);
 
             EditorRenderDatas.push_back(EditorRenderData);
             SceneRenderDatas.push_back(SceneRenderData);

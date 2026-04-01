@@ -8,6 +8,11 @@
 #include "Renderer/Shader/ShaderType.h"
 #include "RHI/D3D11/D3D11Texture.h"
 #include "RHI/D3D11/D3D11Buffer.h"
+#include "RHI/D3D11/D3D11Common.h"
+#include "Renderer/Primitive/UnrealEditorStyledGizmo.h"
+#include "Renderer/Types/PickId.h"
+#include "Renderer/EditorRenderData.h"
+#include "Renderer/SceneView.h"
 
 std::shared_ptr<UMaterial> FGeneralRenderer::DefaultMaterial;
 std::shared_ptr<UMaterial> FGeneralRenderer::DefaultSpriteMaterial;
@@ -33,14 +38,25 @@ bool FGeneralRenderer::Initialize(HWND InHwnd, int32 Width, int32 Height)
     RenderStateManager->PrepareCommonStates();
 
     if (!CreateConstantBuffers())
+    {
+        
         return false;
+    }
     SetConstantBuffers();
 
-    if (!InitializeDefaultMaterial()) 
+    if (!InitializeDefaultMaterial())
+    {
+        MessageBox(nullptr, L"[Renderer] InitializeDefaultMaterial failed", L"Debug", MB_OK);
         return false;
-
+    }
+    
     if (!CreatePickResources(Width, Height))
+    {
+        MessageBox(nullptr, L"[Renderer] CreatePickResources failed", L"Debug", MB_OK);
         return false;
+    }
+    
+    InitializeGizmoResources();
 
     return true;
 }
@@ -337,7 +353,6 @@ void FGeneralRenderer::ExecuteCommands()
     ExecuteRenderPass(ERenderLayer::Default);
     DrawAllAABBLines(ERenderLayer::Default);
     
-    ClearDepthBuffer();
     ExecuteRenderPass(ERenderLayer::Overlay);
     DrawAllAABBLines(ERenderLayer::Overlay);
 
@@ -599,7 +614,7 @@ bool FGeneralRenderer::CreatePickResources(int32 Width, int32 Height)
     if (FAILED(Device->CreateTexture2D(&ReadbackDesc, nullptr, &ReadbackTexture)))
         return false;
 
-    std::wstring ShaderPath = FPaths::ShaderDir() / L"\\ShaderObjectId.hlsl";
+    std::filesystem::path ShaderPath = FPaths::ShaderDir() / L"ShaderObjectId.hlsl";
     ID3DBlob* VSCode = nullptr;
     ID3DBlob* ErrorBlob = nullptr;
     
@@ -707,7 +722,16 @@ void FGeneralRenderer::InitializeAABBResources()
         0, 4, 1, 5, 2, 6, 3, 7
     };
 
-    // AABBMeshData->CreateVertexAndIndexBuffer(Device);
+    ID3D11Buffer* VB = nullptr;
+    if (RHI.CreateVertexBuffer(AABBMeshData->Vertices.data(), static_cast<uint32>(AABBMeshData->Vertices.size() * sizeof(FPrimitiveVertex)), sizeof(FPrimitiveVertex), false, &VB))
+    {
+        AABBMeshData->VertexBuffer = std::make_shared<RHI::D3D11::FD3D11VertexBuffer>(RHI::FBufferDesc{}, VB);
+    }
+    ID3D11Buffer* IB = nullptr;
+    if (RHI.CreateIndexBuffer(AABBMeshData->Indices.data(), static_cast<uint32>(AABBMeshData->Indices.size() * sizeof(uint32)), false, &IB))
+    {
+        AABBMeshData->IndexBuffer = std::make_shared<RHI::D3D11::FD3D11IndexBuffer>(RHI::FBufferDesc{}, RHI::EIndexFormat::UInt32, IB);
+    }
 }
 
 void FGeneralRenderer::DrawAllAABBLines(ERenderLayer InRenderLayer)
@@ -754,3 +778,93 @@ void FGeneralRenderer::DrawAllAABBLines(ERenderLayer InRenderLayer)
         DeviceContext->DrawIndexed(static_cast<UINT>(AABBMeshData->Indices.size()), 0, 0);
     }
 }
+
+static std::shared_ptr<FMeshData> ConvertGizmoMesh(const Mesh& InMesh, FD3D11RHI& RHI)
+{
+    auto MeshData = std::make_shared<FMeshData>();
+    MeshData->Vertices.reserve(static_cast<uint32>(InMesh.vertices.size()));
+    
+    float ScaleFactor = 0.08f;
+    for (const auto& V : InMesh.vertices)
+    {
+        FPrimitiveVertex PV;
+        PV.Position = V.position * ScaleFactor;
+        PV.Normal = V.normal;
+        PV.UV = FVector2(V.uv.x, V.uv.y);
+        PV.Color = FColor(V.color.r, V.color.g, V.color.b, V.color.a);
+        MeshData->Vertices.push_back(PV);
+    }
+    MeshData->Indices.reserve(static_cast<uint32>(InMesh.indices.size()));
+    for (auto Idx : InMesh.indices)
+    {
+        MeshData->Indices.push_back(Idx);
+    }
+    MeshData->Topology = EMeshTopology::EMT_TriangleList;
+    
+    ID3D11Buffer* VB = nullptr;
+    if (RHI.CreateVertexBuffer(MeshData->Vertices.data(), static_cast<uint32>(MeshData->Vertices.size() * sizeof(FPrimitiveVertex)), sizeof(FPrimitiveVertex), false, &VB))
+    {
+        MeshData->VertexBuffer = std::make_shared<RHI::D3D11::FD3D11VertexBuffer>(RHI::FBufferDesc{}, VB);
+    }
+    ID3D11Buffer* IB = nullptr;
+    if (RHI.CreateIndexBuffer(MeshData->Indices.data(), static_cast<uint32>(MeshData->Indices.size() * sizeof(uint32)), false, &IB))
+    {
+        MeshData->IndexBuffer = std::make_shared<RHI::D3D11::FD3D11IndexBuffer>(RHI::FBufferDesc{}, RHI::EIndexFormat::UInt32, IB);
+    }
+
+    return MeshData;
+}
+
+void FGeneralRenderer::InitializeGizmoResources()
+{
+    // Translation
+    {
+        TranslationGizmo G = GenerateTranslationGizmo();
+        GizmoResources.TranslationParts.emplace_back(ConvertGizmoMesh(G.axisX, RHI), PickId::MakeGizmoPartId(EGizmoType::Translation, EAxis::X));
+        GizmoResources.TranslationParts.emplace_back(ConvertGizmoMesh(G.axisY, RHI), PickId::MakeGizmoPartId(EGizmoType::Translation, EAxis::Y));
+        GizmoResources.TranslationParts.emplace_back(ConvertGizmoMesh(G.axisZ, RHI), PickId::MakeGizmoPartId(EGizmoType::Translation, EAxis::Z));
+        GizmoResources.TranslationParts.emplace_back(ConvertGizmoMesh(G.screenSphere, RHI), PickId::MakeGizmoCenterId(EGizmoType::Translation));
+    }
+    // Rotation
+    {
+        RotationGizmo G = GenerateRotationGizmo();
+        GizmoResources.RotationParts.emplace_back(ConvertGizmoMesh(G.ringX, RHI), PickId::MakeGizmoPartId(EGizmoType::Rotation, EAxis::X));
+        GizmoResources.RotationParts.emplace_back(ConvertGizmoMesh(G.ringY, RHI), PickId::MakeGizmoPartId(EGizmoType::Rotation, EAxis::Y));
+        GizmoResources.RotationParts.emplace_back(ConvertGizmoMesh(G.ringZ, RHI), PickId::MakeGizmoPartId(EGizmoType::Rotation, EAxis::Z));
+    } 
+    // Scale
+    {
+        ScaleGizmo G = GenerateScaleGizmo();
+        GizmoResources.ScaleParts.emplace_back(ConvertGizmoMesh(G.axisX, RHI), PickId::MakeGizmoPartId(EGizmoType::Scaling, EAxis::X));
+        GizmoResources.ScaleParts.emplace_back(ConvertGizmoMesh(G.axisY, RHI), PickId::MakeGizmoPartId(EGizmoType::Scaling, EAxis::Y));
+        GizmoResources.ScaleParts.emplace_back(ConvertGizmoMesh(G.axisZ, RHI), PickId::MakeGizmoPartId(EGizmoType::Scaling, EAxis::Z));
+        GizmoResources.ScaleParts.emplace_back(ConvertGizmoMesh(G.centerCube, RHI), PickId::MakeGizmoCenterId(EGizmoType::Scaling));
+    }
+}
+
+void FGeneralRenderer::DrawGizmoMesh(FMeshData* InMeshData, const FMatrix& InWorld, uint32 InObjectId)
+{
+    if (!InMeshData) return;
+    
+    ID3D11DeviceContext* DeviceContext = RHI.GetDeviceContext();
+    InMeshData->Bind(&RHI);
+    DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+    UpdateObjectConstantBuffer(InWorld, InObjectId);
+
+    if (!InMeshData->Indices.empty())
+        DeviceContext->DrawIndexed(static_cast<UINT>(InMeshData->Indices.size()), 0, 0);
+    else
+        DeviceContext->Draw(static_cast<UINT>(InMeshData->Vertices.size()), 0);
+}
+
+UMaterial* FGeneralRenderer::GetDefaultMaterial()
+{
+    return DefaultMaterial.get();
+}
+
+UMaterial* FGeneralRenderer::GetDefaultSpriteMaterial()
+{
+    return DefaultSpriteMaterial.get();
+}
+

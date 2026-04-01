@@ -104,6 +104,10 @@ void FRendererModule::RenderWorldPass(const FEditorRenderData& InEditorRenderDat
         for (auto el : InSceneRenderData.RenderCommands)
         {
             CommandQueue.AddCommand(el);
+        }
+        
+        if (InSceneRenderData.SceneView)
+        {
             CommandQueue.ViewMatrix = InSceneRenderData.SceneView->GetViewMatrix();
             CommandQueue.ProjectionMatrix = InSceneRenderData.SceneView->GetProjectionMatrix();
         }
@@ -122,7 +126,7 @@ void FRendererModule::RenderWorldPass(const FEditorRenderData& InEditorRenderDat
 void FRendererModule::RenderOverlayPass(const FEditorRenderData& InEditorRenderData,
                                         const FSceneRenderData&  InSceneRenderData)
 {
-    // Gizmo etc. would be rendered here using GeneralRenderer commands if needed.
+    // Gizmo etc. are now submitted as RenderCommands from EditorViewportClient
 }
 
 bool FRendererModule::Pick(const FEditorRenderData& InEditorRenderData,
