@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "Asset/Cache/AssetKeyUtils.h"
+#include "Core/Misc/Paths.h"
 
 namespace Asset
 {
@@ -261,7 +262,7 @@ namespace Asset
                                                      const FString&               RelativePath)
     {
         const std::filesystem::path BaseDirectory = std::filesystem::path(BasePath).parent_path();
-        return (BaseDirectory / std::filesystem::path(RelativePath)).lexically_normal();
+        return (BaseDirectory / FPaths::PathFromUtf8(RelativePath)).lexically_normal();
     }
 
 } // namespace Asset

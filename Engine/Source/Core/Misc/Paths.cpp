@@ -83,6 +83,27 @@ fs::path FPaths::Combine(const fs::path& Base, const fs::path& Relative)
     return Normalize(Base / Relative);
 }
 
+fs::path FPaths::PathFromUtf8(const FString& Utf8Path)
+{
+    if (Utf8Path.empty())
+    {
+        return {};
+    }
+
+    return fs::u8path(Utf8Path);
+}
+
+FString FPaths::Utf8FromPath(const fs::path& Path)
+{
+    if (Path.empty())
+    {
+        return {};
+    }
+
+    const std::u8string Utf8Path = Path.u8string();
+    return FString(reinterpret_cast<const char*>(Utf8Path.data()), Utf8Path.size());
+}
+
 const FPathConfig& FPaths::GetConfig()
 {
     assert(bInitialized && "FPaths must be initialized before use.");
