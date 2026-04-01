@@ -47,6 +47,7 @@ PSInput VSMain(VSInput In)
 float4 PSMain(PSInput In) : SV_TARGET
 {   
     float4 TexColor = MaterialTexture.Sample(NormalSampler, In.UV);
+    clip(TexColor.a - 1.0/255.0);
     float4 BaseColor = TexColor * In.Color;
     
     float4 FinalColor = (BaseColor * MultiplyColor) + AdditiveColor;
