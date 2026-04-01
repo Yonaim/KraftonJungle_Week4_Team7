@@ -5,15 +5,7 @@
 class FScene;
 class AActor;
 
-namespace Asset
-{
-    class FAssetCacheManager;
-}
-
-namespace RHI
-{
-    class FDynamicRHI;
-}
+class FAssetObjectManager;
 
 namespace Engine::Component
 {
@@ -23,11 +15,8 @@ namespace Engine::Component
 class ENGINE_API FSceneAssetBinder
 {
   public:
-    static void BindScene(FScene* InScene, Asset::FAssetCacheManager* InAssetCacheManager,
-                          RHI::FDynamicRHI* InDynamicRHI);
-    static void BindActor(AActor* InActor, Asset::FAssetCacheManager* InAssetCacheManager,
-                          RHI::FDynamicRHI* InDynamicRHI);
+    static void BindScene(FScene* InScene, FAssetObjectManager* InAssetObjectManager);
+    static void BindActor(AActor* InActor, FAssetObjectManager* InAssetObjectManager);
     static void BindComponent(Engine::Component::USceneComponent* InComponent,
-                              Asset::FAssetCacheManager* InAssetCacheManager,
-                              RHI::FDynamicRHI* InDynamicRHI);
+                              FAssetObjectManager* InAssetObjectManager);
 };

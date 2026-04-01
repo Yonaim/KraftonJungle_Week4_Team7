@@ -1,3 +1,4 @@
+#include "Engine/Asset/AssetObjectManager.h"
 #include "Asset/Manager/AssetCacheManager.h"
 #include "RHI/D3D11/D3D11DynamicRHI.h"
 #include "EditorEngineLoop.h"
@@ -153,10 +154,12 @@ bool FEditorEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
         return false;
     }
 
-    AssetCacheManager = new Asset::FAssetCacheManager();
-    AssetDynamicRHI = new RHI::D3D11::FD3D11DynamicRHI(Renderer->GetRHI().GetDevice(),
-                                                       Renderer->GetRHI().GetDeviceContext());
-    Editor->SetRuntimeServices(&Renderer->GetRHI(), AssetDynamicRHI, AssetCacheManager);
+    AssetObjectManager = new FAssetObjectManager(
+        new FAssetCacheManager,
+        new RHI::D3D11::FD3D11DynamicRHI(Renderer->GetRHI().GetDevice(),
+                                         Renderer->GetRHI().GetDeviceContext()));
+    Editor->SetRuntimeServices(&Renderer->GetRHI(), AssetObjectManager->GetDynamicRHI(),
+                               AssetObjectManager);
 
     ImGui::CreateContext();
     ApplyCoPassImGuiStyle();
@@ -247,10 +250,8 @@ void FEditorEngineLoop::ShutDown()
         Editor->SetRuntimeServices(nullptr, nullptr, nullptr);
     }
 
-    delete AssetDynamicRHI;
-    AssetDynamicRHI = nullptr;
-    delete AssetCacheManager;
-    AssetCacheManager = nullptr;
+    delete AssetObjectManager;
+    AssetObjectManager = nullptr;
 
     if (Renderer != nullptr)
     {

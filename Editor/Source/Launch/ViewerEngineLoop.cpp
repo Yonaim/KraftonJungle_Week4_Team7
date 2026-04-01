@@ -1,8 +1,9 @@
 #include "ViewerEngineLoop.h"
 #include "Viewer/Viewer.h"
 #include "Renderer/SceneView.h"
-#include "Asset/Manager/AssetCacheManager.h"
+#include "Engine/Asset/AssetObjectManager.h"
 #include "RHI/D3D11/D3D11DynamicRHI.h"
+#include "Asset/Manager/AssetCacheManager.h"
 
 #include <windows.h>
 #include <imgui.h>
@@ -66,11 +67,14 @@ bool FViewerEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
         return false;
     }
 
-    AssetCacheManager = new Asset::FAssetCacheManager();
-    AssetDynamicRHI = new RHI::D3D11::FD3D11DynamicRHI(Renderer->GetRHI().GetDevice(),
-                                                       Renderer->GetRHI().GetDeviceContext());
+    AssetObjectManager = new FAssetObjectManager(
+        new FAssetCacheManager,
+        new RHI::D3D11::FD3D11DynamicRHI(Renderer->GetRHI().GetDevice(),
+                                         Renderer->GetRHI().GetDeviceContext()));
 
-    Viewer->SetRuntimeServices(&Renderer->GetRHI(), AssetDynamicRHI, AssetCacheManager);
+     Viewer->SetRuntimeServices(&Renderer->GetRHI(),
+                                AssetObjectManager->GetDynamicRHI(),
+                                AssetObjectManager);
 
     ImGui::CreateContext();
     ImGuiIO& IO = ImGui::GetIO();
@@ -120,6 +124,9 @@ void FViewerEngineLoop::ShutDown()
     {
         Viewer->SetRuntimeServices(nullptr, nullptr, nullptr);
     }
+
+    delete AssetObjectManager;
+    AssetObjectManager = nullptr;
 
     if (Renderer != nullptr)
     {

@@ -45,6 +45,8 @@ class UFontAtlas : public UAsset
                         std::shared_ptr<FFontAtlasCookedData> InCookedData,
                         RHI::FDynamicRHI& InDynamicRHI);
 
+    bool IsValidLowLevel() const override;
+
   private:
     std::shared_ptr<FFontAtlasCookedData>     CookedData;
     std::shared_ptr<FFontAtlasRenderResource> RenderResource;

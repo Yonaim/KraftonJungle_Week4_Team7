@@ -1,12 +1,10 @@
 #include "Engine/Scene/SceneAssetBinder.h"
 
-#include "Asset/Manager/AssetCacheManager.h"
+#include "Engine/Asset/AssetObjectManager.h"
 #include "Engine/Asset/FontAtlas.h"
 #include "Engine/Asset/StaticMesh.h"
 #include "Engine/Asset/SubUVAtlas.h"
 #include "Engine/Asset/Texture.h"
-#include "Engine/Asset/Material.h"
-#include "Asset/Builder/MaterialBuilder.h"
 #include "Engine/Component/Core/SceneComponent.h"
 #include "Engine/Component/Mesh/StaticMeshComponent.h"
 #include "Engine/Component/Sprite/PaperSpriteComponent.h"
@@ -14,17 +12,11 @@
 #include "Engine/Component/Text/AtlasTextComponent.h"
 #include "Engine/Game/Actor.h"
 #include "Engine/Scene/Scene.h"
-#include "RHI/DynamicRHI.h"
 
 using namespace Engine::Component;
 
 namespace
 {
-    template <typename TObjectType> TObjectType* EnsureAssetObject(TObjectType* ExistingObject)
-    {
-        return ExistingObject != nullptr ? ExistingObject : new TObjectType();
-    }
-
     FString ResolveTexturePath(const UPaperSpriteComponent* InComponent)
     {
         if (InComponent == nullptr)
@@ -53,100 +45,13 @@ namespace
             return {};
         }
 
-        const UFontAtlas* FontAsset = InComponent->GetFontAsset();
-        return FontAsset != nullptr ? FontAsset->GetAssetPath() : FString();
-    }
-
-    static void BindStaticMeshMaterials(UStaticMesh*               StaticMeshAsset,
-                                        Asset::FAssetCacheManager* InAssetCacheManager,
-                                        RHI::FDynamicRHI*          InDynamicRHI)
-    {
-        if (StaticMeshAsset == nullptr || InAssetCacheManager == nullptr || InDynamicRHI == nullptr)
-        {
-            return;
-        }
-
-        const std::shared_ptr<Asset::FObjCookedData>& MeshCookedData =
-            StaticMeshAsset->GetCookedData();
-        if (MeshCookedData == nullptr)
-        {
-            return;
-        }
-
-        TArray<UMaterial*>& MaterialSlots = StaticMeshAsset->GetMaterialSlots();
-        const size_t        SlotCount = MeshCookedData->Materials.size();
-
-        if (MaterialSlots.size() < SlotCount)
-        {
-            MaterialSlots.resize(SlotCount, nullptr);
-        }
-
-        for (size_t SlotIndex = 0; SlotIndex < SlotCount; ++SlotIndex)
-        {
-            if (SlotIndex >= MeshCookedData->Materials.size())
-            {
-                MaterialSlots[SlotIndex] = nullptr;
-                continue;
-            }
-
-            const Asset::FObjCookedMaterialRef& MaterialRef = MeshCookedData->Materials[SlotIndex];
-            if (MaterialRef.Name.empty())
-            {
-                MaterialSlots[SlotIndex] = nullptr;
-                continue;
-            }
-
-            if (MaterialRef.LibraryIndex >= MeshCookedData->MaterialLibraries.size())
-            {
-                MaterialSlots[SlotIndex] = nullptr;
-                continue;
-            }
-
-            const FString& LibraryPath =
-                MeshCookedData->MaterialLibraries[MaterialRef.LibraryIndex];
-            if (LibraryPath.empty())
-            {
-                MaterialSlots[SlotIndex] = nullptr;
-                continue;
-            }
-
-            const FString MaterialAssetPath =
-                Asset::FMaterialBuilder::MakeMaterialAssetPath(LibraryPath, MaterialRef.Name);
-
-            std::shared_ptr<Asset::FMtlCookedData> MaterialCookedData =
-                InAssetCacheManager->BuildMaterial(MaterialAssetPath);
-
-            if (MaterialCookedData == nullptr)
-            {
-                UE_LOG(FEditor, ELogLevel::Error,
-                       "Failed to build material for mesh slot %zu: %s -> %s", SlotIndex,
-                       StaticMeshAsset->GetAssetPath().c_str(), MaterialAssetPath.c_str());
-                MaterialSlots[SlotIndex] = nullptr;
-                continue;
-            }
-
-            UMaterial* MaterialAsset = EnsureAssetObject(MaterialSlots[SlotIndex]);
-            if (!MaterialAsset->LoadFromCooked(MaterialAssetPath, std::move(MaterialCookedData),
-                                               *InDynamicRHI))
-            {
-                UE_LOG(FEditor, ELogLevel::Error,
-                       "Failed to load material asset for mesh slot %zu: %s -> %s", SlotIndex,
-                       StaticMeshAsset->GetAssetPath().c_str(), MaterialAssetPath.c_str());
-                MaterialSlots[SlotIndex] = nullptr;
-                continue;
-            }
-
-            MaterialSlots[SlotIndex] = MaterialAsset;
-            UE_LOG(FEditor, ELogLevel::Debug, "Bound material slot %zu: %s -> %s", SlotIndex,
-                   StaticMeshAsset->GetAssetPath().c_str(), MaterialAssetPath.c_str());
-        }
+        return InComponent->GetFontPath();
     }
 } // namespace
 
-void FSceneAssetBinder::BindScene(FScene* InScene, Asset::FAssetCacheManager* InAssetCacheManager,
-                                  RHI::FDynamicRHI* InDynamicRHI)
+void FSceneAssetBinder::BindScene(FScene* InScene, FAssetObjectManager* InAssetObjectManager)
 {
-    if (InScene == nullptr || InAssetCacheManager == nullptr || InDynamicRHI == nullptr)
+    if (InScene == nullptr || InAssetObjectManager == nullptr || !InAssetObjectManager->IsReady())
     {
         return;
     }
@@ -161,14 +66,13 @@ void FSceneAssetBinder::BindScene(FScene* InScene, Asset::FAssetCacheManager* In
 
     for (AActor* Actor : *Actors)
     {
-        BindActor(Actor, InAssetCacheManager, InDynamicRHI);
+        BindActor(Actor, InAssetObjectManager);
     }
 }
 
-void FSceneAssetBinder::BindActor(AActor* InActor, Asset::FAssetCacheManager* InAssetCacheManager,
-                                  RHI::FDynamicRHI* InDynamicRHI)
+void FSceneAssetBinder::BindActor(AActor* InActor, FAssetObjectManager* InAssetObjectManager)
 {
-    if (InActor == nullptr || InAssetCacheManager == nullptr || InDynamicRHI == nullptr)
+    if (InActor == nullptr || InAssetObjectManager == nullptr || !InAssetObjectManager->IsReady())
     {
         return;
     }
@@ -178,15 +82,14 @@ void FSceneAssetBinder::BindActor(AActor* InActor, Asset::FAssetCacheManager* In
 
     for (USceneComponent* Component : InActor->GetOwnedComponents())
     {
-        BindComponent(Component, InAssetCacheManager, InDynamicRHI);
+        BindComponent(Component, InAssetObjectManager);
     }
 }
 
-void FSceneAssetBinder::BindComponent(USceneComponent*           InComponent,
-                                      Asset::FAssetCacheManager* InAssetCacheManager,
-                                      RHI::FDynamicRHI*          InDynamicRHI)
+void FSceneAssetBinder::BindComponent(USceneComponent* InComponent,
+                                      FAssetObjectManager* InAssetObjectManager)
 {
-    if (InComponent == nullptr || InAssetCacheManager == nullptr || InDynamicRHI == nullptr)
+    if (InComponent == nullptr || InAssetObjectManager == nullptr || !InAssetObjectManager->IsReady())
     {
         return;
     }
@@ -201,29 +104,17 @@ void FSceneAssetBinder::BindComponent(USceneComponent*           InComponent,
             return;
         }
 
-        std::shared_ptr<Asset::FObjCookedData> CookedData =
-            InAssetCacheManager->BuildStaticMesh(MeshPath);
-        if (CookedData == nullptr)
+        UStaticMesh* StaticMeshAsset = InAssetObjectManager->LoadStaticMeshObject(MeshPath);
+        if (StaticMeshAsset == nullptr)
         {
-            UE_LOG(FEditor, ELogLevel::Error, "Failed to build static mesh asset: %s",
+            UE_LOG(FEditor, ELogLevel::Error, "Failed to load static mesh object: %s",
                    MeshPath.c_str());
             StaticMeshComponent->SetStaticMeshAsset(nullptr);
             return;
         }
-
-        UStaticMesh* StaticMeshAsset = EnsureAssetObject(StaticMeshComponent->GetStaticMeshAsset());
-        if (!StaticMeshAsset->LoadFromCooked(MeshPath, std::move(CookedData), *InDynamicRHI))
-        {
-            UE_LOG(FEditor, ELogLevel::Error, "Failed to load static mesh asset: %s",
-                   MeshPath.c_str());
-            StaticMeshComponent->SetStaticMeshAsset(nullptr);
-            return;
-        }
-
-        BindStaticMeshMaterials(StaticMeshAsset, InAssetCacheManager, InDynamicRHI);
 
         StaticMeshComponent->SetStaticMeshAsset(StaticMeshAsset);
-        UE_LOG(FEditor, ELogLevel::Info, "Bound static mesh asset: %s", MeshPath.c_str());
+        UE_LOG(FEditor, ELogLevel::Info, "Bound static mesh asset object: %s", MeshPath.c_str());
         return;
     }
 
@@ -233,30 +124,21 @@ void FSceneAssetBinder::BindComponent(USceneComponent*           InComponent,
         if (AtlasPath.empty())
         {
             UE_LOG(FEditor, ELogLevel::Warning, "SubUVComponent has empty atlas path");
-            return;
-        }
-
-        std::shared_ptr<Asset::FSubUVAtlasCookedData> CookedData =
-            InAssetCacheManager->BuildSubUVAtlas(AtlasPath);
-        if (CookedData == nullptr)
-        {
-            UE_LOG(FEditor, ELogLevel::Error, "Failed to build SubUV atlas asset: %s",
-                   AtlasPath.c_str());
             SubUVComponent->SetSubUVAtlasAsset(nullptr);
             return;
         }
 
-        USubUVAtlas* AtlasAsset = EnsureAssetObject(SubUVComponent->GetSubUVAtlasAsset());
-        if (!AtlasAsset->LoadFromCooked(AtlasPath, std::move(CookedData), *InDynamicRHI))
+        USubUVAtlas* AtlasAsset = InAssetObjectManager->LoadSubUVAtlasObject(AtlasPath);
+        if (AtlasAsset == nullptr)
         {
-            UE_LOG(FEditor, ELogLevel::Error, "Failed to load SubUV atlas asset: %s",
+            UE_LOG(FEditor, ELogLevel::Error, "Failed to load SubUV atlas object: %s",
                    AtlasPath.c_str());
             SubUVComponent->SetSubUVAtlasAsset(nullptr);
             return;
         }
 
         SubUVComponent->SetSubUVAtlasAsset(AtlasAsset);
-        UE_LOG(FEditor, ELogLevel::Info, "Bound SubUV atlas asset: %s", AtlasPath.c_str());
+        UE_LOG(FEditor, ELogLevel::Info, "Bound SubUV atlas asset object: %s", AtlasPath.c_str());
         return;
     }
 
@@ -270,28 +152,18 @@ void FSceneAssetBinder::BindComponent(USceneComponent*           InComponent,
         }
         else
         {
-            std::shared_ptr<Asset::FObjCookedData> MeshCookedData =
-                InAssetCacheManager->BuildStaticMesh(MeshPath);
-            if (MeshCookedData == nullptr)
+            UStaticMesh* MeshAsset = InAssetObjectManager->LoadStaticMeshObject(MeshPath);
+            if (MeshAsset == nullptr)
             {
-                UE_LOG(FEditor, ELogLevel::Error, "Failed to build sprite mesh asset: %s",
+                UE_LOG(FEditor, ELogLevel::Error, "Failed to load sprite mesh object: %s",
                        MeshPath.c_str());
                 SpriteComponent->SetMeshAsset(nullptr);
             }
             else
             {
-                UStaticMesh* MeshAsset = EnsureAssetObject(SpriteComponent->GetMeshAsset());
-                if (!MeshAsset->LoadFromCooked(MeshPath, std::move(MeshCookedData), *InDynamicRHI))
-                {
-                    UE_LOG(FEditor, ELogLevel::Error, "Failed to load sprite mesh asset: %s",
-                           MeshPath.c_str());
-                    SpriteComponent->SetMeshAsset(nullptr);
-                }
-                else
-                {
-                    SpriteComponent->SetMeshAsset(MeshAsset);
-                    UE_LOG(FEditor, ELogLevel::Debug, "Bound sprite mesh asset: %s", MeshPath.c_str());
-                }
+                SpriteComponent->SetMeshAsset(MeshAsset);
+                UE_LOG(FEditor, ELogLevel::Debug, "Bound sprite mesh asset object: %s",
+                       MeshPath.c_str());
             }
         }
 
@@ -303,27 +175,17 @@ void FSceneAssetBinder::BindComponent(USceneComponent*           InComponent,
             return;
         }
 
-        std::shared_ptr<Asset::FTextureCookedData> CookedData =
-            InAssetCacheManager->BuildTexture(TexturePath);
-        if (CookedData == nullptr)
+        UTexture* TextureAsset = InAssetObjectManager->LoadTextureObject(TexturePath);
+        if (TextureAsset == nullptr)
         {
-            UE_LOG(FEditor, ELogLevel::Error, "Failed to build texture asset: %s",
-                   TexturePath.c_str());
-            SpriteComponent->SetTextureAsset(nullptr);
-            return;
-        }
-
-        UTexture* TextureAsset = EnsureAssetObject(SpriteComponent->GetTextureAsset());
-        if (!TextureAsset->LoadFromCooked(TexturePath, std::move(CookedData), *InDynamicRHI))
-        {
-            UE_LOG(FEditor, ELogLevel::Error, "Failed to load texture asset: %s",
+            UE_LOG(FEditor, ELogLevel::Error, "Failed to load texture object: %s",
                    TexturePath.c_str());
             SpriteComponent->SetTextureAsset(nullptr);
             return;
         }
 
         SpriteComponent->SetTextureAsset(TextureAsset);
-        UE_LOG(FEditor, ELogLevel::Info, "Bound sprite assets: mesh=%s texture=%s",
+        UE_LOG(FEditor, ELogLevel::Info, "Bound sprite asset objects: mesh=%s texture=%s",
                MeshPath.c_str(), TexturePath.c_str());
         return;
     }
@@ -334,30 +196,22 @@ void FSceneAssetBinder::BindComponent(USceneComponent*           InComponent,
         if (FontPath.empty())
         {
             UE_LOG(FEditor, ELogLevel::Warning, "AtlasTextComponent has empty font path");
-            return;
-        }
-
-        std::shared_ptr<Asset::FFontAtlasCookedData> CookedData =
-            InAssetCacheManager->BuildFontAtlas(FontPath);
-        if (CookedData == nullptr)
-        {
-            UE_LOG(FEditor, ELogLevel::Error, "Failed to build font atlas asset: %s",
-                   FontPath.c_str());
             AtlasTextComponent->SetFontAsset(nullptr);
             return;
         }
 
-        UFontAtlas* FontAsset = EnsureAssetObject(AtlasTextComponent->GetFontAsset());
-        if (!FontAsset->LoadFromCooked(FontPath, std::move(CookedData), *InDynamicRHI))
+        UFontAtlas* FontAsset = InAssetObjectManager->LoadFontAtlasObject(FontPath);
+        if (FontAsset == nullptr)
         {
-            UE_LOG(FEditor, ELogLevel::Error, "Failed to load font atlas asset: %s",
+            UE_LOG(FEditor, ELogLevel::Error, "Failed to load font atlas object: %s",
                    FontPath.c_str());
             AtlasTextComponent->SetFontAsset(nullptr);
             return;
         }
 
         AtlasTextComponent->SetFontAsset(FontAsset);
-        UE_LOG(FEditor, ELogLevel::Info, "Bound font atlas asset: %s", FontPath.c_str());
+        UE_LOG(FEditor, ELogLevel::Info, "Bound font atlas asset object: %s",
+               FontPath.c_str());
         return;
     }
 }

@@ -45,6 +45,8 @@ class USubUVAtlas : public UAsset
                         std::shared_ptr<FSubUVAtlasCookedData> InCookedData,
                         RHI::FDynamicRHI&                      InDynamicRHI);
 
+    bool IsValidLowLevel() const override;
+
   private:
     std::shared_ptr<FSubUVAtlasCookedData>     CookedData;
     std::shared_ptr<FSubUVAtlasRenderResource> RenderResource;

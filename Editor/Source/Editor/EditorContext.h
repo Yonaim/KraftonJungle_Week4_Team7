@@ -2,13 +2,8 @@
 
 #include <vector>
 #include "Core/CoreMinimal.h"
-
 #include "Core/Containers/Array.h"
-
-namespace Asset
-{
-    class FAssetCacheManager;
-}
+#include "Engine/Asset/AssetObjectManager.h"
 
 namespace RHI
 {
@@ -24,12 +19,12 @@ class FEditorContentIndex;
 
 struct FEditorContext
 {
-    FEditor* Editor = nullptr;
-    FWorld* World = nullptr;
-    FD3D11RHI* RHI = nullptr;
-    RHI::FDynamicRHI* DynamicRHI = nullptr;
-    Asset::FAssetCacheManager* AssetCacheManager = nullptr;
-    TArray<FString>             StartupPreloadAssetPaths;
+    FEditor*             Editor = nullptr;
+    FWorld*              World = nullptr;
+    FD3D11RHI*           RHI = nullptr;
+    RHI::FDynamicRHI*    DynamicRHI = nullptr;
+    FAssetObjectManager* AssetObjectManager = nullptr;
+    TArray<FString>      StartupPreloadAssetPaths;
     FEditorContentIndex* ContentIndex = nullptr;
 
     TArray<AActor*> SelectedActors;

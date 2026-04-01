@@ -24,6 +24,11 @@ class UAsset : public UObject
 
     virtual void ResetAsset() { bLoaded = false; }
 
+    virtual bool IsValidLowLevel() const
+    {
+        return !AssetPath.empty();
+    }
+
   private:
     FString AssetPath;
     FString AssetName;

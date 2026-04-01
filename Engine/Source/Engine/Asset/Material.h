@@ -45,6 +45,8 @@ class UMaterial : public UAsset
         RenderResource.reset();
     }
 
+    bool IsValidLowLevel() const override;
+
   private:
     std::shared_ptr<FMtlCookedData>          CookedData;
     std::shared_ptr<FMaterialRenderResource> RenderResource;

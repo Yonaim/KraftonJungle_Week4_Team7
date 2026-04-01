@@ -294,6 +294,9 @@
     <ClCompile Include="Source\Engine\Asset\Asset.cpp">
       <Filter>Source\Engine\Asset</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\Asset\AssetObjectManager.cpp">
+      <Filter>Source\Engine\Asset</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Engine\Asset\FontAtlas.cpp">
       <Filter>Source\Engine\Asset</Filter>
     </ClCompile>
@@ -457,9 +460,6 @@
       <Filter>Source\Renderer\D3D11</Filter>
     </ClCompile>
     <ClCompile Include="Source\Renderer\Primitive\FMeshData.cpp">
-      <Filter>Source\Renderer\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Renderer\Primitive\UnrealEditorStyledGizmo.cpp">
       <Filter>Source\Renderer\Primitive</Filter>
     </ClCompile>
     <ClCompile Include="Source\Renderer\RenderCommand.cpp">
@@ -809,6 +809,9 @@
     <ClInclude Include="Source\Engine\Asset\Asset.h">
       <Filter>Source\Engine\Asset</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Engine\Asset\AssetObjectManager.h">
+      <Filter>Source\Engine\Asset</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Engine\Asset\FontAtlas.h">
       <Filter>Source\Engine\Asset</Filter>
     </ClInclude>
@@ -990,9 +993,6 @@
       <Filter>Source\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="Source\Renderer\Primitive\FMeshData.h">
-      <Filter>Source\Renderer\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Renderer\Primitive\UnrealEditorStyledGizmo.h">
       <Filter>Source\Renderer\Primitive</Filter>
     </ClInclude>
     <ClInclude Include="Source\Renderer\RenderAsset\FontResource.h">

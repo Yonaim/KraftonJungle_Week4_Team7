@@ -50,7 +50,7 @@ inline void LogMessage(ELogLevel Level, const char* Category, const char* Format
     }
 
     char Prefix[256];
-    snprintf(Prefix, sizeof(Prefix), "[%-6s] %-17s: ", GetLogLevelLabel(Level), Category);
+    snprintf(Prefix, sizeof(Prefix), "[%s] %s: ", GetLogLevelLabel(Level), Category);
 
     char    Message[1024];
     va_list Args;

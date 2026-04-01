@@ -1,3 +1,4 @@
+#include "Engine/Asset/AssetObjectManager.h"
 #pragma once
 
 #include "Chrome/EditorChrome.h"
@@ -13,10 +14,7 @@
 #include "ApplicationCore/Windows/WindowsApplication.h"
 #endif
 
-namespace Asset
-{
-    class FAssetCacheManager;
-}
+class FAssetObjectManager;
 
 namespace RHI
 {
@@ -26,28 +24,28 @@ namespace RHI
 class FEditorEngineLoop : public IEngineLoop, public IEditorChromeHost
 {
   public:
-    bool PreInit(HINSTANCE HInstance, uint32 NCmdShow) override;
+    bool  PreInit(HINSTANCE HInstance, uint32 NCmdShow) override;
     int32 Run() override;
-    void ShutDown() override;
+    void  ShutDown() override;
 
-    void SetTitleBarMetrics(int32 Height,
-                            const TArray<FEditorChromeRect>& InteractiveRects) override;
-    void MinimizeWindow() override;
-    void ToggleMaximizeWindow() override;
-    void CloseWindow() override;
-    bool IsWindowMaximized() const override;
+    void           SetTitleBarMetrics(int32                            Height,
+                                      const TArray<FEditorChromeRect>& InteractiveRects) override;
+    void           MinimizeWindow() override;
+    void           ToggleMaximizeWindow() override;
+    void           CloseWindow() override;
+    bool           IsWindowMaximized() const override;
     const wchar_t* GetWindowTitle() const override;
-    void* GetNativeWindowHandle() const override;
+    void*          GetNativeWindowHandle() const override;
 
   private:
     static bool HandleEditorMessage(HWND HWnd, UINT Message, WPARAM WParam, LPARAM LParam,
                                     LRESULT& OutResult, void* UserData);
-    bool HandleEditorMessageInternal(HWND HWnd, UINT Message, WPARAM WParam, LPARAM LParam,
-                                     LRESULT& OutResult);
-    bool HandleWindowResize();
-    bool RunFrameOnce();
-    bool RunFrameOnceWithoutResize();
-    void UpdateFrameTiming();
+    bool        HandleEditorMessageInternal(HWND HWnd, UINT Message, WPARAM WParam, LPARAM LParam,
+                                            LRESULT& OutResult);
+    bool        HandleWindowResize();
+    bool        RunFrameOnce();
+    bool        RunFrameOnceWithoutResize();
+    void        UpdateFrameTiming();
     Engine::ApplicationCore::FWindowsApplication* GetWindowsApplication() const;
 
     void Tick() override;
@@ -57,10 +55,9 @@ class FEditorEngineLoop : public IEngineLoop, public IEditorChromeHost
     Engine::ApplicationCore::IApplication* Application = nullptr;
     Engine::ApplicationCore::FInputSystem* InputSystem = nullptr;
 
-    FEditor* Editor = nullptr;
-    FRendererModule* Renderer = nullptr;
-    Asset::FAssetCacheManager* AssetCacheManager = nullptr;
-    RHI::FDynamicRHI* AssetDynamicRHI = nullptr;
+    FEditor*             Editor = nullptr;
+    FRendererModule*     Renderer = nullptr;
+    FAssetObjectManager* AssetObjectManager = nullptr;
 
     float DeltaTime = 0.0f;
     float MainLoopFPS = 0.0f;
