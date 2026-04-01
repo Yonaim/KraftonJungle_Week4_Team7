@@ -587,6 +587,8 @@ void FEditor::Release()
         PanelManager = nullptr;
     }
 
+    ViewportTab.Release();
+
     delete CurWorld;
     CurWorld = nullptr;
     GlobalInputContext.SetNavigationController(nullptr);
@@ -1131,7 +1133,7 @@ void FEditor::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
 
     FViewport*    HoveredViewport = nullptr;
     FViewportRect HoveredRect{};
-    ;
+
     for (auto Viewport : ViewportTab.GetViewports())
     {
         if (!Viewport->IsValid())

@@ -16,7 +16,7 @@ public:
 
 public:
     void Construct();
-    void Initialize();
+    void Release();
     void OnResize(FViewportRect WindowRect, bool Force = 0);
 
     TArray<FViewport*> const& GetViewports() const { return Viewports; }

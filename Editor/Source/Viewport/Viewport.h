@@ -15,7 +15,8 @@ class FViewport
     }
     void SetSceneView(FSceneView* NewSceneView) { SceneView = NewSceneView; }
 
-    bool IsValid() { return ViewportClient != nullptr; }
+    bool IsValid() { return bValid; }
+    void SetValid(bool Valid) { bValid = Valid; }
     void RemoveViewportClient() { ViewportClient = nullptr; }
 
     void Release()
@@ -30,4 +31,5 @@ class FViewport
   private:
     FEditorViewportClient* ViewportClient = nullptr;
     FSceneView*            SceneView = nullptr;
+    bool                   bValid = true;
 };

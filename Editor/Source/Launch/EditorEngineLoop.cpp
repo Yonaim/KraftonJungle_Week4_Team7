@@ -234,26 +234,22 @@ bool FEditorEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
     auto Views = Editor->GetViewportTab().GetViewports();
     for (int i = 0; i < Views.size(); i++)
     {
-        if (Views[i]->IsValid())
+        Views[i]->GetViewportClient()->OnPickRequested = [Views, this, i](int32 X,
+                                                                    int32 Y) -> FPickResult
         {
-            Views[i]->GetViewportClient()->OnPickRequested = [Views, this, i](int32 X,
-                                                                       int32 Y) -> FPickResult
-            {
-                FPickResult Result;
+            FPickResult Result;
 
-                Renderer->SetViewport(Views[i]->GetSceneView()->GetViewport());
-                // EngineLoop는 Renderer와 Editor 모두에 접근 가능하므로 픽킹을 직접 수행해서 반환
-                Renderer->Pick(
-                    Editor->GetEditorRenderData()[i], Editor->GetSceneRenderData()[i],
-                    Editor->GetViewportTab().GetViewports()[i]->GetSceneView()->GetWorldX(X),
-                    Editor->GetViewportTab().GetViewports()[i]->GetSceneView()->GetWorldY(Y),
-                    Result);
+            Renderer->SetViewport(Views[i]->GetSceneView()->GetViewport());
+            // EngineLoop는 Renderer와 Editor 모두에 접근 가능하므로 픽킹을 직접 수행해서 반환
+            Renderer->Pick(
+                Editor->GetEditorRenderData()[i], Editor->GetSceneRenderData()[i],
+                Editor->GetViewportTab().GetViewports()[i]->GetSceneView()->GetWorldX(X),
+                Editor->GetViewportTab().GetViewports()[i]->GetSceneView()->GetWorldY(Y),
+                Result);
 
-                return Result;
-            };
-        }
+            return Result;
+        };
     }
-    Editor->GetViewportTab().Initialize();
 
     return true;
 }

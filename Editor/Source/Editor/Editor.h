@@ -107,7 +107,7 @@ class FEditor
 
     const TArray<FEditorRenderData>& GetEditorRenderData() const { return EditorRenderDatas; }
     const TArray<FSceneRenderData>&  GetSceneRenderData() const { return SceneRenderDatas; }
-    SEditorViewportTab&              GetViewportTab() { return ViewportTab; }
+    SEditorViewportTab&        GetViewportTab() { return ViewportTab; }
 
     void DrawPanel();
 

@@ -6,22 +6,7 @@
 
 SEditorViewportTab::SEditorViewportTab() {}
 
-SEditorViewportTab::~SEditorViewportTab() 
-{
-    for (auto* Viewport : Viewports)
-	{
-        Viewport->Release();
-        delete Viewport;
-	}
-
-    for (auto* P : ControlPanels)
-    {
-        delete P;
-    }
-
-    delete ViewportLayout;
-    ViewportLayout = nullptr;
-}
+SEditorViewportTab::~SEditorViewportTab() {}
 
 void SEditorViewportTab::Construct()
 { 
@@ -43,9 +28,21 @@ void SEditorViewportTab::Construct()
     SetLayout(EViewportLayoutType::_2X2);
 }
 
-void SEditorViewportTab::Initialize()
-{ 
-    //SetLayout(EViewportLayoutType::Single); 
+void SEditorViewportTab::Release()
+{
+    for (auto* Viewport : Viewports)
+    {
+        Viewport->Release();
+        delete Viewport;
+    }
+
+    for (auto* P : ControlPanels)
+    {
+        delete P;
+    }
+
+    delete ViewportLayout;
+    ViewportLayout = nullptr;
 }
 
 void SEditorViewportTab::OnResize(FViewportRect WindowRect, bool Force)
@@ -92,11 +89,11 @@ void SEditorViewportTab::AdjustViewportCount(EViewportLayoutType NewType)
         if (i < Required)
         {
             if (!Viewports[i]->IsValid())
-                Viewports[i]->SetViewportClient(ViewportClients[i]);
+                Viewports[i]->SetValid(true);
         }
         else
         {
-            Viewports[i]->RemoveViewportClient();
+            Viewports[i]->SetValid(false);
         }
     }
 }
