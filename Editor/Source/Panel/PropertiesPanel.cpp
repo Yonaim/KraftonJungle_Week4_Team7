@@ -840,13 +840,27 @@ void FPropertiesPanel::DrawStaticMeshEditor(Engine::Component::USceneComponent* 
         RebuildAssetComboCache();
     }
 
+    int32 CurrentIndex = 0;
+
+    if (auto* StaticMeshComponent = Cast<Engine::Component::UStaticMeshComponent>(TargetComponent))
+    {
+        const FString CurrentPath = StaticMeshComponent->GetStaticMeshPath();
+        for (int32 i = 1; i < (int32)CachedStaticMeshes.size(); ++i)
+        {
+            if (CachedStaticMeshes[i].Ptr->GetCookedData()->SourcePath == CurrentPath)
+            {
+                CurrentIndex = i;
+                break;
+            }
+        }
+    }
+
     TArray<const char*> NamePtrs;
     for (const FStaticMeshEntry& Mesh : CachedStaticMeshes)
     {
         NamePtrs.push_back(Mesh.Name.c_str());
     }
 
-    int CurrentIndex = 0;
     ImGui::PushID("Static Mesh");
     ImGui::TextUnformatted("Static Mesh");
     ImGui::SetNextItemWidth(-1.0f);
@@ -897,26 +911,42 @@ void FPropertiesPanel::DrawMaterialsEditor(Engine::Component::USceneComponent* T
     ImGui::TextUnformatted("Materials");
     for (int i = 0; i < StaticMeshComponent->GetMaterialSlotCount(); i++)
     {
-        int CurrentIndex = 0;
-        ImGui::PushID("Materials");
+        int32 CurrentIndex = 0;
 
+        UMaterial* CurrentMaterial = StaticMeshComponent->GetMaterial(i);
+        if (CurrentMaterial != nullptr && CurrentMaterial->GetCookedData() != nullptr)
+        {
+            const FString CurrentPath =
+                StaticMeshComponent->GetMaterial(i)->GetCookedData()->SourcePath;
+            for (int32 j = 0; j < (int32)CachedMaterials.size(); ++j)
+            {
+                if (CachedMaterials[j].Ptr != nullptr &&
+                    CachedMaterials[j].Ptr->GetCookedData()->SourcePath == CurrentPath)
+                {
+                    CurrentIndex = j;
+                    break;
+                }
+            }
+        }
+        
         std::string slotName = "Element " + std::to_string(i);
+        ImGui::PushID(slotName.c_str());
         ImGui::TextUnformatted(slotName.c_str());
         ImGui::SetNextItemWidth(-1.0f);
         ImGui::SameLine();
         if (ImGui::Combo("##Combo", &CurrentIndex, NamePtrs.data(), (int32)NamePtrs.size()))
         {
-            if (CurrentIndex == 0)
-                return;
-
-            UMaterial* SelectedMaterial = CachedMaterials[CurrentIndex].Ptr;
-
-            if (GetContext() != nullptr && GetContext()->AssetObjectManager != nullptr &&
-                GetContext()->DynamicRHI != nullptr)
+            if (CurrentIndex != 0)
             {
-                StaticMeshComponent->SetMaterial(i, SelectedMaterial);
+                UMaterial* SelectedMaterial = CachedMaterials[CurrentIndex].Ptr;
 
-                FSceneAssetBinder::BindComponent(TargetComponent, GetContext()->AssetObjectManager);
+                if (GetContext() != nullptr && GetContext()->AssetObjectManager != nullptr &&
+                    GetContext()->DynamicRHI != nullptr)
+                {
+                    StaticMeshComponent->SetMaterial(i, SelectedMaterial);
+                    //FSceneAssetBinder::BindComponent(TargetComponent,
+                                                     //GetContext()->AssetObjectManager);
+                }
             }
         }
         ImGui::PopID();

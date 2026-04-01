@@ -10,7 +10,7 @@ namespace Engine::Component
 {
     ULineBatchComponent::ULineBatchComponent()
     {
-        AddWorldGrid(1000.0f, 1.0f);
+        AddWorldGrid(1000.0f, 15.0f);
     }
 
     Geometry::FAABB ULineBatchComponent::GetLocalAABB() const
@@ -183,7 +183,7 @@ namespace Engine::Component
 
     void ULineBatchComponent::ClearLines()
     {
-        Lines.clear();
+        Lines.clear(); 
     }
 
     REGISTER_CLASS(Engine::Component, ULineBatchComponent)
