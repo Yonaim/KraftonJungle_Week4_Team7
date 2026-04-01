@@ -869,7 +869,7 @@ void FPropertiesPanel::DrawStaticMeshEditor(Engine::Component::USceneComponent* 
         if (CurrentIndex == 0)
             return;
 
-        const FString& SelectedPath = CachedStaticMeshes[CurrentIndex].Ptr->GetCookedData()->SourcePath;
+        const FString& SelectedPath = CachedStaticMeshes[CurrentIndex].Ptr->GetCookedData()->SourcePath.string();
         
         if (auto* StaticMeshComponent = Cast<Engine::Component::UStaticMeshComponent>(TargetComponent))
         {
@@ -917,7 +917,7 @@ void FPropertiesPanel::DrawMaterialsEditor(Engine::Component::USceneComponent* T
         if (CurrentMaterial != nullptr && CurrentMaterial->GetCookedData() != nullptr)
         {
             const FString CurrentPath =
-                StaticMeshComponent->GetMaterial(i)->GetCookedData()->SourcePath;
+                StaticMeshComponent->GetMaterial(i)->GetCookedData()->SourcePath.string();
             for (int32 j = 0; j < (int32)CachedMaterials.size(); ++j)
             {
                 if (CachedMaterials[j].Ptr != nullptr &&

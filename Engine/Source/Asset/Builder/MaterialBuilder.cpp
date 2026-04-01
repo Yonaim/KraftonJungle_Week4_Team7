@@ -286,7 +286,7 @@ namespace Asset
                 const EMaterialTextureSlot TextureSlot = ResolveTextureSlot(TextureRef.SlotName);
                 const FWString             TexturePath =
                     ResolveRelativePath(std::filesystem::path(Source.NormalizedPath).parent_path(),
-                                        TextureRef.TexturePath);
+                                        TextureRef.TexturePath.string());
                 if (TexturePath.empty())
                 {
                     continue;
