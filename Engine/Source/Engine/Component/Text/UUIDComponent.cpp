@@ -4,6 +4,7 @@
 #include "Engine/Component/Core/PrimitiveComponent.h"
 #include "Engine/Game/Actor.h"
 #include "Renderer/SceneRenderData.h"
+#include "Renderer/SceneView.h"
 
 namespace Engine::Component
 {
@@ -44,6 +45,27 @@ namespace Engine::Component
         if (CreateRenderCommand(OutRenderData, InShowFlags, Command)) 
             return;
         
+        // 부모(액터)의 Scale에 영향 받지 않도록 World Matrix 덮어쓰기
+        AActor* Actor = GetOwnerActor();
+        const FMatrix PlacementWorld = GetRenderPlacementWorld(*Actor);
+        const FVector PlacementOffset = GetRenderPlacementOffset(*Actor);
+        FVector       Origin = PlacementWorld.GetOrigin() + PlacementOffset + BillboardOffset;
+        
+        const FMatrix CameraWorld = OutRenderData.SceneView->GetViewMatrix().GetInverse();
+        FVector       RightAxis = CameraWorld.GetRightVector();
+        FVector       UpAxis = CameraWorld.GetUpVector();
+        FVector       ForwardAxis = CameraWorld.GetForwardVector();
+
+        FVector       Row0 = UpAxis;
+        FVector       Row1 = RightAxis;
+        FVector       Row2 = -ForwardAxis;
+
+        Command.WorldMatrix.M[0][0] = Row0.X; Command.WorldMatrix.M[0][1] = Row0.Y; Command.WorldMatrix.M[0][2] = Row0.Z; Command.WorldMatrix.M[0][3] = 0.0f;
+        Command.WorldMatrix.M[1][0] = Row1.X; Command.WorldMatrix.M[1][1] = Row1.Y; Command.WorldMatrix.M[1][2] = Row1.Z; Command.WorldMatrix.M[1][3] = 0.0f;
+        Command.WorldMatrix.M[2][0] = Row2.X; Command.WorldMatrix.M[2][1] = Row2.Y; Command.WorldMatrix.M[2][2] = Row2.Z; Command.WorldMatrix.M[2][3] = 0.0f;
+        Command.WorldMatrix.M[3][0] = Origin.X; Command.WorldMatrix.M[3][1] = Origin.Y; Command.WorldMatrix.M[3][2] = Origin.Z; Command.WorldMatrix.M[3][3] = 1.0f;
+        
+        // Wireframe 옵션 무시하게 설정
         Command.bIgnoreWireFrame = true;
         OutRenderData.RenderCommands.push_back(Command);
     }
