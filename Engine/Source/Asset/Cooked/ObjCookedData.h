@@ -1,5 +1,7 @@
 #pragma once
 
+#include <filesystem>
+
 #include "Asset/Core/StaticMeshTypes.h"
 
 namespace Asset
@@ -24,7 +26,7 @@ namespace Asset
 
     struct FObjCookedData
     {
-        FString                 SourcePath;
+        std::filesystem::path   SourcePath;
         EStaticMeshVertexFormat VertexFormat = EStaticMeshVertexFormat::P;
 
         TArray<uint8> VertexData;
@@ -34,7 +36,7 @@ namespace Asset
         TArray<uint32>                 Indices;
         TArray<FStaticMeshSectionData> Sections;
 
-        TArray<FString>               MaterialLibraries;
+        TArray<std::filesystem::path> MaterialLibraries;
         TArray<FObjCookedMaterialRef> Materials;
 
         bool bHasNormals = false;

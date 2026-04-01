@@ -1,5 +1,7 @@
 #pragma once
 
+#include <filesystem>
+
 #include "Asset/Core/TextureTypes.h"
 
 namespace Asset
@@ -7,7 +9,7 @@ namespace Asset
 
     struct FTextureCookedData
     {
-        FString       SourcePath;
+        std::filesystem::path SourcePath;
         uint32        Width = 0;
         uint32        Height = 0;
         uint32        Channels = 0;

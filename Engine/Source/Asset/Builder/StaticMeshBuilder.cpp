@@ -161,7 +161,7 @@ namespace Asset
 
 
         static std::filesystem::path ResolveMaterialLibraryPathForObj(
-            const std::filesystem::path& ObjPath, const FString& LibraryReference)
+            const std::filesystem::path& ObjPath, const std::filesystem::path& LibraryReference)
         {
             std::filesystem::path LibraryPath(LibraryReference);
             if (LibraryPath.is_relative())
@@ -413,7 +413,7 @@ namespace Asset
                         continue;
                     }
 
-                    Result->MaterialLibraries.push_back(LibraryPath);
+                    Result->MaterialLibraries.push_back(std::filesystem::path(LibraryPath));
                     CurrentMaterialLibraryIndex =
                         static_cast<int32>(Result->MaterialLibraries.size()) - 1;
                 }
@@ -459,7 +459,7 @@ namespace Asset
                                  const FStaticMeshBuildSettings& Settings)
     {
         auto Result = std::make_shared<FObjCookedData>();
-        Result->SourcePath = Source.NormalizedPath.generic_string();
+        Result->SourcePath = Source.NormalizedPath;
 
         bool bHasColors = !Intermediate.Colors.empty() &&
                           Intermediate.Colors.size() == Intermediate.Positions.size();
@@ -492,10 +492,10 @@ namespace Asset
         Result->VertexFormat = ResolveVertexFormat(bHasNormals, bHasColors, bHasUVs);
         Result->VertexStride = ResolveVertexStride(Result->VertexFormat);
 
-        std::unordered_map<FObjVertexKey, uint32, FObjVertexKeyHasher> VertexMap;
-        std::unordered_map<FString, uint32>                            MaterialLibraryLookup;
-        std::unordered_map<FString, uint32>                            MaterialRefLookup;
-        TArray<TArray<uint32>>                                         MaterialBuckets;
+        std::unordered_map<FObjVertexKey, uint32, FObjVertexKeyHasher>   VertexMap;
+        std::unordered_map<std::filesystem::path, uint32>                MaterialLibraryLookup;
+        std::unordered_map<FString, uint32>                              MaterialRefLookup;
+        TArray<TArray<uint32>>                                           MaterialBuckets;
 
         auto ResolveCookedLibraryIndex = [&](int32 SourceLibraryIndex) -> uint32
         {
@@ -508,17 +508,15 @@ namespace Asset
             const std::filesystem::path CanonicalLibraryPath = ResolveMaterialLibraryPathForObj(
                 std::filesystem::path(Source.NormalizedPath),
                 Intermediate.MaterialLibraries[SourceLibraryIndex]);
-            const FString LibraryPath = CanonicalLibraryPath.generic_string();
-
-            auto It = MaterialLibraryLookup.find(LibraryPath);
+            auto It = MaterialLibraryLookup.find(CanonicalLibraryPath);
             if (It != MaterialLibraryLookup.end())
             {
                 return It->second;
             }
 
             const uint32 NewLibraryIndex = static_cast<uint32>(Result->MaterialLibraries.size());
-            MaterialLibraryLookup.emplace(LibraryPath, NewLibraryIndex);
-            Result->MaterialLibraries.push_back(LibraryPath);
+            MaterialLibraryLookup.emplace(CanonicalLibraryPath, NewLibraryIndex);
+            Result->MaterialLibraries.push_back(CanonicalLibraryPath);
             return NewLibraryIndex;
         };
 

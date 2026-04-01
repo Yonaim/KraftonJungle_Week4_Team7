@@ -4,33 +4,11 @@
 #include <filesystem>
 
 #include "Asset/Cache/AssetKeyUtils.h"
+#include "Asset/Source/SourceLoader.h"
 #include "ThirdParty/stb/stb_image.h"
 
 namespace Asset
 {
-    namespace
-    {
-        static std::string NarrowFromPath(const FWString& InPath)
-        {
-            if (InPath.empty())
-            {
-                return {};
-            }
-
-            return std::filesystem::path(InPath).string();
-        }
-
-        static FString StringFromPath(const FWString& InPath)
-        {
-            if (InPath.empty())
-            {
-                return {};
-            }
-
-            return std::filesystem::path(InPath).string();
-        }
-    } // namespace
-
     FTextureBuilder::FTextureBuilder(FAssetBuildCache& InCache) : Cache(InCache) {}
 
     std::shared_ptr<FTextureCookedData>
@@ -108,8 +86,8 @@ namespace Asset
     bool FTextureBuilder::DecodeTexture(const FSourceRecord&      Source,
                                         FIntermediateTextureData& OutData) const
     {
-        const std::string PathString = NarrowFromPath(Source.NormalizedPath);
-        if (PathString.empty())
+        TArray<uint8> SourceBytes;
+        if (!FSourceLoader::ReadAllBytes(Source.NormalizedPath, SourceBytes) || SourceBytes.empty())
         {
             return false;
         }
@@ -118,8 +96,9 @@ namespace Asset
         int Height = 0;
         int ChannelsInFile = 0;
 
-        stbi_uc* DecodedPixels =
-            stbi_load(PathString.c_str(), &Width, &Height, &ChannelsInFile, STBI_rgb_alpha);
+        stbi_uc* DecodedPixels = stbi_load_from_memory(
+            SourceBytes.data(), static_cast<int>(SourceBytes.size()), &Width, &Height,
+            &ChannelsInFile, STBI_rgb_alpha);
 
         if (DecodedPixels == nullptr)
         {
@@ -161,7 +140,7 @@ namespace Asset
         }
 
         auto Result = std::make_shared<FTextureCookedData>();
-        Result->SourcePath = StringFromPath(Source.NormalizedPath);
+        Result->SourcePath = Source.NormalizedPath;
         Result->Width = Intermediate.Width;
         Result->Height = Intermediate.Height;
         Result->Channels = Intermediate.Channels;

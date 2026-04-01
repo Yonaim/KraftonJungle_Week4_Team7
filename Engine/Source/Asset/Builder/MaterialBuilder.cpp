@@ -170,7 +170,7 @@ namespace Asset
         }
 
         auto Result = std::make_shared<FIntermediateMtlLibraryData>();
-        Result->SourcePath = std::filesystem::path(Source.NormalizedPath).generic_string();
+        Result->SourcePath = Source.NormalizedPath;
 
         const FString DefaultName = std::filesystem::path(Source.NormalizedPath).stem().string();
 
@@ -266,7 +266,7 @@ namespace Asset
                                           const FIntermediateMtlLibraryData& Intermediate)
     {
         auto Result = std::make_shared<FMtlCookedLibraryData>();
-        Result->SourcePath = std::filesystem::path(Source.NormalizedPath).generic_string();
+        Result->SourcePath = Source.NormalizedPath;
 
         for (const FIntermediateMtlData& MaterialIntermediate : Intermediate.Materials)
         {
@@ -292,9 +292,8 @@ namespace Asset
                     continue;
                 }
 
-                const FString SourceTexturePath =
-                    std::filesystem::path(TexturePath).generic_string();
-                const FString BakedTexturePath = MakeBakedAssetPath(SourceTexturePath);
+                const std::filesystem::path SourceTexturePath = std::filesystem::path(TexturePath);
+                const FString BakedTexturePath = MakeBakedAssetPath(SourceTexturePath.generic_string());
                 if (BakedTexturePath.empty())
                 {
                     continue;
@@ -310,7 +309,7 @@ namespace Asset
                 }
 
                 Binary::SaveTexture(*TextureCooked, BakedTexturePath);
-                Material.TextureBindings.push_back({TextureSlot, BakedTexturePath});
+                Material.TextureBindings.push_back({TextureSlot, std::filesystem::path(BakedTexturePath)});
             }
 
             const uint32 MaterialIndex = static_cast<uint32>(Result->Materials.size());
@@ -323,7 +322,7 @@ namespace Asset
             return nullptr;
         }
 
-        const FString BakedLibraryPath = MakeBakedAssetPath(Result->SourcePath);
+        const FString BakedLibraryPath = MakeBakedAssetPath(Result->SourcePath.generic_string());
         if (!BakedLibraryPath.empty())
         {
             Binary::SaveMaterialLibrary(*Result, BakedLibraryPath);

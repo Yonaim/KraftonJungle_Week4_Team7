@@ -24,7 +24,13 @@ namespace Asset
 
         inline FString StringFromPath(const std::filesystem::path& Path)
         {
-            return Path.empty() ? FString{} : Path.generic_string();
+            if (Path.empty())
+            {
+                return {};
+            }
+
+            const FWString Wide = Path.generic_wstring();
+            return FString(Wide.begin(), Wide.end());
         }
 
         inline bool IsVirtualContentPath(const std::filesystem::path& Path)

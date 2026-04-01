@@ -3,7 +3,7 @@
 namespace Asset
 {
     FWindowsBinWriter::FWindowsBinWriter(const std::filesystem::path& Path)
-        : FArchive(EMode::Save), Stream(Path.string(), std::ios::binary | std::ios::trunc)
+        : FArchive(EMode::Save), Stream(Path, std::ios::binary | std::ios::trunc)
     {
     }
 
@@ -29,7 +29,7 @@ namespace Asset
     }
 
     FWindowsBinReader::FWindowsBinReader(const std::filesystem::path& Path)
-        : FArchive(EMode::Load), Stream(Path.string(), std::ios::binary)
+        : FArchive(EMode::Load), Stream(Path, std::ios::binary)
     {
     }
 
