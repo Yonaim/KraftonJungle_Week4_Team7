@@ -48,7 +48,7 @@ public:
     
     static UMaterial* GetDefaultMaterial();
     static UMaterial* GetDefaultSpriteMaterial();
-    UMaterial* GetLineMaterial() const { return AABBMaterial.get(); }
+    UMaterial* GetLineMaterial() const { return AABBMaterial; }
     std::unique_ptr<CRenderStateManager>& GetRenderStateManager() { return RenderStateManager; }
     ID3D11Device* GetDevice() const { return RHI.GetDevice(); }
     ID3D11DeviceContext* GetDeviceContext() const { return RHI.GetDeviceContext(); }
@@ -131,9 +131,9 @@ private:
     // FPostRenderCallback PostRenderCallback;
     
     /** 기본 공유 리소스 */
-    static std::shared_ptr<UMaterial> DefaultMaterial;
-    static std::shared_ptr<UMaterial> DefaultSpriteMaterial;
-    std::shared_ptr<UMaterial> DefaultTextureMaterial;
+    static UMaterial* DefaultMaterial;
+    static UMaterial* DefaultSpriteMaterial;
+    UMaterial* DefaultTextureMaterial;
 
     std::shared_ptr<FVertexShader> DefaultMeshVS;
     std::shared_ptr<FPixelShader>  DefaultMeshPS;
@@ -142,7 +142,7 @@ private:
     
     /** AABB 전용 리소스 */
     std::shared_ptr<FMeshData> AABBMeshData;
-    std::shared_ptr<UMaterial> AABBMaterial;
+    UMaterial* AABBMaterial;
 
     /** 기즈모 전용 리소스 */
     FGizmoResources GizmoResources;

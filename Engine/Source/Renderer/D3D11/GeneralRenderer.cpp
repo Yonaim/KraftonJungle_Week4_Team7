@@ -14,8 +14,8 @@
 #include "Renderer/EditorRenderData.h"
 #include "Renderer/SceneView.h"
 
-std::shared_ptr<UMaterial> FGeneralRenderer::DefaultMaterial;
-std::shared_ptr<UMaterial> FGeneralRenderer::DefaultSpriteMaterial;
+UMaterial* FGeneralRenderer::DefaultMaterial;
+UMaterial* FGeneralRenderer::DefaultSpriteMaterial;
 
 FGeneralRenderer::FGeneralRenderer(HWND InHwnd, int32 InWidth, int32 InHeight)
 {
@@ -196,7 +196,7 @@ bool FGeneralRenderer::InitializeDefaultMaterial()
         DefaultMeshVS = FShaderMap::Get().GetOrCreateVertexShader(Device, VSPath, L"VSMain");
         DefaultMeshPS = FShaderMap::Get().GetOrCreatePixelShader(Device, PSPath, L"PSMain");
 
-        DefaultMaterial = std::make_shared<UMaterial>();
+        DefaultMaterial = new UMaterial();
         DefaultMaterial->SetAssetName("M_Default");
         auto CookedData = std::make_shared<FMtlCookedData>();
         CookedData->Name = "M_Default";
@@ -216,7 +216,7 @@ bool FGeneralRenderer::InitializeDefaultMaterial()
 
     /** 기본 Sprite Material 생성 */
     {
-        DefaultSpriteMaterial = std::make_shared<UMaterial>();
+        DefaultSpriteMaterial = new UMaterial();
         DefaultSpriteMaterial->SetAssetName("M_DefaultSprite");
         auto CookedData = std::make_shared<FMtlCookedData>();
         CookedData->Name = "M_DefaultSprite";
@@ -287,7 +287,10 @@ void FGeneralRenderer::Release()
     FShaderMap::Get().Clear();
     if (NormalSampler)
         NormalSampler->Release();
-    DefaultMaterial.reset();
+    delete DefaultMaterial;
+    delete DefaultSpriteMaterial;
+    delete DefaultTextureMaterial;
+    delete AABBMaterial;
     if (FrameConstantBuffer)
         FrameConstantBuffer->Release();
     if (ObjectConstantBuffer)
@@ -419,7 +422,7 @@ void FGeneralRenderer::AddCommand(const FRenderCommand& Command)
     CommandList.push_back(Command);
     FRenderCommand& Added = CommandList.back();
     if (!Added.Material)
-        Added.Material = DefaultMaterial.get();
+        Added.Material = DefaultMaterial;
     Added.SortKey = FRenderCommand::MakeSortKey(Added.Material, Added.MeshData);
 }
 
@@ -750,7 +753,7 @@ void FGeneralRenderer::InitializeAABBResources()
     DefaultLineVS = FShaderMap::Get().GetOrCreateVertexShader(Device, LineVSPath, L"VSMain");
     DefaultLinePS = FShaderMap::Get().GetOrCreatePixelShader(Device, LinePSPath, L"PSMain");
 
-    AABBMaterial = std::make_shared<UMaterial>();
+    AABBMaterial = new UMaterial();
     AABBMaterial->SetAssetName("M_AABB");
     auto CookedData = std::make_shared<FMtlCookedData>();
     CookedData->Name = "M_AABB";
@@ -902,12 +905,8 @@ void FGeneralRenderer::InitializeGizmoResources()
 }
 
 UMaterial* FGeneralRenderer::GetDefaultMaterial()
-{
-    return DefaultMaterial.get();
-}
+{ return DefaultMaterial; }
 
 UMaterial* FGeneralRenderer::GetDefaultSpriteMaterial()
-{
-    return DefaultSpriteMaterial.get();
-}
+{ return DefaultSpriteMaterial; }
 
