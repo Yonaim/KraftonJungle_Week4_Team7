@@ -50,6 +50,8 @@ namespace
                                     bool bWasCacheHit = false)
     {
         const double ElapsedMs = ToMilliseconds(FPlatformTime::Seconds() - StartSeconds);
+        UEngineStatics::RecordResourceLoad(AssetTypeLabel, AssetPath, ElapsedMs, bWasCacheHit,
+                                           Result != nullptr);
         if (Result != nullptr)
         {
             UE_LOG(AssetObject, ELogLevel::Info, "%s load succeeded: %s (%.3f ms%s)",
