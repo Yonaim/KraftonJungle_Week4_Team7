@@ -1,5 +1,7 @@
 #pragma once
 
+#include <filesystem>
+
 #include "Core/CoreMinimal.h"
 
 namespace Asset
@@ -7,8 +9,8 @@ namespace Asset
 
     struct FIntermediateMtlTextureRef
     {
-        FString SlotName;
-        FString TexturePath;
+        FString               SlotName;
+        std::filesystem::path TexturePath;
     };
 
     struct FIntermediateMtlData
@@ -25,7 +27,7 @@ namespace Asset
 
     struct FIntermediateMtlLibraryData
     {
-        FString                      SourcePath;
+        std::filesystem::path        SourcePath;
         TArray<FIntermediateMtlData> Materials;
         TMap<FString, uint32>        NameToIndex;
 

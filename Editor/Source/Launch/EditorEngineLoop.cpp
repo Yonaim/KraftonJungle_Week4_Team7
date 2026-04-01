@@ -1,6 +1,9 @@
 #include "Engine/Asset/AssetObjectManager.h"
 
 #include <filesystem>
+#include <cstring>
+#include <limits>
+#include <vector>
 #include "Asset/Manager/AssetCacheManager.h"
 #include "RHI/D3D11/D3D11DynamicRHI.h"
 #include "EditorEngineLoop.h"
@@ -23,24 +26,76 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND HWnd, UINT Mes
 
 namespace
 {
-    void EnsureEditorImGuiIniPaths(std::string& OutDefaultIniPath, std::string& OutUserIniPath)
+    bool ReadBinaryFileToBuffer(const std::filesystem::path& FilePath, std::vector<uint8>& OutBuffer)
+    {
+        OutBuffer.clear();
+        if (FilePath.empty())
+        {
+            return false;
+        }
+
+        HANDLE FileHandle = CreateFileW(FilePath.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr,
+                                        OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+        if (FileHandle == INVALID_HANDLE_VALUE)
+        {
+            return false;
+        }
+
+        LARGE_INTEGER FileSize;
+        if (!GetFileSizeEx(FileHandle, &FileSize) || FileSize.QuadPart < 0 ||
+            FileSize.QuadPart > static_cast<LONGLONG>(std::numeric_limits<DWORD>::max()))
+        {
+            CloseHandle(FileHandle);
+            return false;
+        }
+
+        if (FileSize.QuadPart == 0)
+        {
+            CloseHandle(FileHandle);
+            return true;
+        }
+
+        OutBuffer.resize(static_cast<size_t>(FileSize.QuadPart));
+        DWORD BytesRead = 0;
+        const BOOL bReadOk =
+            ReadFile(FileHandle, OutBuffer.data(), static_cast<DWORD>(OutBuffer.size()), &BytesRead, nullptr);
+        CloseHandle(FileHandle);
+        return bReadOk && static_cast<size_t>(BytesRead) == OutBuffer.size();
+    }
+
+    void* CopyBufferToImGuiOwnedMemory(const std::vector<uint8>& Buffer)
+    {
+        if (Buffer.empty())
+        {
+            return nullptr;
+        }
+
+        void* OwnedBuffer = ImGui::MemAlloc(Buffer.size());
+        if (OwnedBuffer == nullptr)
+        {
+            return nullptr;
+        }
+
+        std::memcpy(OwnedBuffer, Buffer.data(), Buffer.size());
+        return OwnedBuffer;
+    }
+
+    void EnsureEditorImGuiIniPaths(std::filesystem::path& OutDefaultIniPath,
+                                   std::filesystem::path& OutUserIniPath)
     {
         namespace fs = std::filesystem;
 
-        const fs::path DefaultPath = FEditorPaths::ImGuiDefaultIniFile();
-        const fs::path UserPath = FEditorPaths::ImGuiUserIniFile();
+        OutDefaultIniPath = FEditorPaths::ImGuiDefaultIniFile();
+        OutUserIniPath = FEditorPaths::ImGuiUserIniFile();
 
         std::error_code Ec;
         fs::create_directories(FEditorPaths::ConfigDirectory(), Ec);
         Ec.clear();
 
-        if (!fs::exists(UserPath, Ec) && !Ec && fs::exists(DefaultPath, Ec) && !Ec)
+        if (!fs::exists(OutUserIniPath, Ec) && !Ec && fs::exists(OutDefaultIniPath, Ec) && !Ec)
         {
-            fs::copy_file(DefaultPath, UserPath, fs::copy_options::overwrite_existing, Ec);
+            fs::copy_file(OutDefaultIniPath, OutUserIniPath, fs::copy_options::overwrite_existing, Ec);
         }
-
-        OutDefaultIniPath = DefaultPath.string();
-        OutUserIniPath = UserPath.string();
     }
 
     ImVec4 MakeColor(uint8 R, uint8 G, uint8 B, uint8 A = 255)
@@ -187,24 +242,37 @@ bool FEditorEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
     ApplyCoPassImGuiStyle();
     ImGuiIO& IO = ImGui::GetIO();
 
-    static std::string GEditorImGuiDefaultIniPath;
-    static std::string GEditorImGuiUserIniPath;
+    static std::filesystem::path GEditorImGuiDefaultIniPath;
+    static std::filesystem::path GEditorImGuiUserIniPath;
     EnsureEditorImGuiIniPaths(GEditorImGuiDefaultIniPath, GEditorImGuiUserIniPath);
     IO.IniFilename = nullptr;
 
     ImGui::ClearIniSettings();
-    if (!GEditorImGuiDefaultIniPath.empty())
+    std::vector<uint8> DefaultIniBuffer;
+    if (ReadBinaryFileToBuffer(GEditorImGuiDefaultIniPath, DefaultIniBuffer) &&
+        !DefaultIniBuffer.empty())
     {
-        ImGui::LoadIniSettingsFromDisk(GEditorImGuiDefaultIniPath.c_str());
+        ImGui::LoadIniSettingsFromMemory(reinterpret_cast<const char*>(DefaultIniBuffer.data()),
+                                         DefaultIniBuffer.size());
     }
 #ifdef IMGUI_HAS_DOCK
     // 도킹 지원 ImGui를 교체한 뒤에는 여기서 기능 플래그를 켜야 DockSpace API가 실제로 동작합니다.
     IO.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 #endif
-    if (ImFont* KoreanFont = IO.Fonts->AddFontFromFileTTF(
-            "C:\\Windows\\Fonts\\malgun.ttf", 18.0f, nullptr, IO.Fonts->GetGlyphRangesKorean()))
+    std::vector<uint8> KoreanFontFileBuffer;
+    if (ReadBinaryFileToBuffer(std::filesystem::path(L"C:\\Windows\\Fonts\\malgun.ttf"),
+                               KoreanFontFileBuffer))
     {
-        IO.FontDefault = KoreanFont;
+        void* KoreanFontData = CopyBufferToImGuiOwnedMemory(KoreanFontFileBuffer);
+        if (KoreanFontData != nullptr)
+        {
+            if (ImFont* KoreanFont = IO.Fonts->AddFontFromMemoryTTF(
+                    KoreanFontData, static_cast<int>(KoreanFontFileBuffer.size()), 18.0f, nullptr,
+                    IO.Fonts->GetGlyphRangesKorean()))
+            {
+                IO.FontDefault = KoreanFont;
+            }
+        }
     }
 
     static const ImWchar IconRanges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
@@ -213,8 +281,17 @@ bool FEditorEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
     IconConfig.PixelSnapH = true;
     IconConfig.GlyphMinAdvanceX = 18.0f;
 
-    IO.Fonts->AddFontFromFileTTF("Source\\ThirdParty\\ImGui\\fontawesome-webfont.ttf", 18.0f,
-                                 &IconConfig, IconRanges);
+    std::vector<uint8> IconFontFileBuffer;
+    if (ReadBinaryFileToBuffer(std::filesystem::path(L"Source\\ThirdParty\\ImGui\\fontawesome-webfont.ttf"),
+                               IconFontFileBuffer))
+    {
+        void* IconFontData = CopyBufferToImGuiOwnedMemory(IconFontFileBuffer);
+        if (IconFontData != nullptr)
+        {
+            IO.Fonts->AddFontFromMemoryTTF(IconFontData, static_cast<int>(IconFontFileBuffer.size()),
+                                           18.0f, &IconConfig, IconRanges);
+        }
+    }
 
     ImGui_ImplWin32_Init((void*)WindowHandle);
     ImGui_ImplDX11_Init(Renderer->GetRHI().GetDevice(), Renderer->GetRHI().GetDeviceContext());

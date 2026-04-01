@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <type_traits>
 
 #include "Core/CoreMinimal.h"
@@ -76,6 +77,30 @@ namespace Asset
         {
             Ar.SerializeBytes(Value.data(), Size);
         }
+        return Ar;
+    }
+
+    inline FArchive& operator<<(FArchive& Ar, std::filesystem::path& Value)
+    {
+        FWString WidePath = Value.generic_wstring();
+        uint64   Size = static_cast<uint64>(WidePath.size());
+        Ar << Size;
+
+        if (Ar.IsLoading())
+        {
+            WidePath.resize(static_cast<size_t>(Size));
+        }
+
+        if (Size > 0)
+        {
+            Ar.SerializeBytes(WidePath.data(), Size * sizeof(FWString::value_type));
+        }
+
+        if (Ar.IsLoading())
+        {
+            Value = std::filesystem::path(WidePath);
+        }
+
         return Ar;
     }
 

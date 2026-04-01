@@ -1,5 +1,7 @@
 #pragma once
 
+#include <filesystem>
+
 #include "Core/CoreMinimal.h"
 
 namespace Asset
@@ -25,7 +27,7 @@ namespace Asset
         TArray<FVector>              Colors;
         TArray<FVector>              Normals;
         TArray<FVector2>             UVs;
-        TArray<FString>              MaterialLibraries;
+        TArray<std::filesystem::path> MaterialLibraries;
         TArray<FIntermediateObjFace> Faces;
     };
 

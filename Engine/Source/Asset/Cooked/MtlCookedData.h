@@ -1,5 +1,7 @@
 #pragma once
 
+#include <filesystem>
+
 #include "Asset/Core/MaterialTypes.h"
 
 namespace Asset
@@ -7,13 +9,13 @@ namespace Asset
 
     struct FMtlTextureBinding
     {
-        EMaterialTextureSlot Slot = EMaterialTextureSlot::Diffuse;
-        FString              TexturePath;
+        EMaterialTextureSlot     Slot = EMaterialTextureSlot::Diffuse;
+        std::filesystem::path TexturePath;
     };
 
     struct FMtlCookedData
     {
-        FString                    SourcePath;
+        std::filesystem::path      SourcePath;
         FString                    Name;
         FVector                    DiffuseColor = FVector(1.0f, 1.0f, 1.0f);
         FVector                    AmbientColor = FVector(0.0f, 0.0f, 0.0f);
@@ -39,7 +41,7 @@ namespace Asset
 
     struct FMtlCookedLibraryData
     {
-        FString                SourcePath;
+        std::filesystem::path SourcePath;
         TArray<FMtlCookedData> Materials;
         TMap<FString, uint32>  NameToIndex;
 

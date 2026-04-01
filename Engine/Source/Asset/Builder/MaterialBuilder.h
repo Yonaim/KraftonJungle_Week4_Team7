@@ -48,8 +48,8 @@ namespace Asset
         static bool    ReadAllText(const std::filesystem::path& Path, FString& OutText);
         static FString Trim(const FString& Value);
         static EMaterialTextureSlot ResolveTextureSlot(const FString& SlotName);
-        static FWString             ResolveRelativePath(const std::filesystem::path& BasePath,
-                                                        const FString&               RelativePath);
+        static std::filesystem::path ResolveRelativePath(const std::filesystem::path& BasePath,
+                                                         const std::filesystem::path& RelativePath);
 
       private:
         FAssetBuildCache& Cache;

@@ -1,5 +1,7 @@
 #include "Engine/Asset/AssetObjectManager.h"
 
+#include <filesystem>
+
 #include "Asset/Builder/MaterialBuilder.h"
 #include "Asset/Core/AssetNaming.h"
 #include "Asset/Manager/AssetCacheManager.h"
@@ -289,7 +291,8 @@ void FAssetObjectManager::BindStaticMeshMaterialSlots(UStaticMesh* StaticMeshAss
             continue;
         }
 
-        const FString& LibraryPath = MeshCookedData->MaterialLibraries[MaterialRef.LibraryIndex];
+        const std::filesystem::path& LibraryPath =
+            MeshCookedData->MaterialLibraries[MaterialRef.LibraryIndex];
         if (LibraryPath.empty())
         {
             MaterialSlots[SlotIndex] = nullptr;
