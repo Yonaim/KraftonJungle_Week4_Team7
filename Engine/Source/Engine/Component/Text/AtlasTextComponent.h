@@ -25,13 +25,13 @@ namespace Engine::Component
         const FFontAtlasRenderResource* GetFontResource() const { return GetFontRenderResource(); }
         FFontAtlasRenderResource*       GetFontResource() { return GetFontRenderResource(); }
 
-        float GetTextScale() const { return TextScale; }
+        float GetTextScale() const { return UTextRenderComponent::GetTextScale(); }
         void  SetTextScale(float InTextScale);
 
-        float GetLetterSpacing() const { return LetterSpacing; }
+        float GetLetterSpacing() const { return UTextRenderComponent::GetLetterSpacing(); }
         void  SetLetterSpacing(float InLetterSpacing);
 
-        float GetLineSpacing() const { return LineSpacing; }
+        float GetLineSpacing() const { return UTextRenderComponent::GetLineSpacing(); }
         void  SetLineSpacing(float InLineSpacing);
 
         void            DescribeProperties(FComponentPropertyBuilder& Builder) override;
@@ -42,11 +42,8 @@ namespace Engine::Component
 
       protected:
         Geometry::FAABB GetLocalAABB() const override { return {}; }
+        FFontResource* ResolveFontResourceForCollect() const override;
 
         UFontAtlas* FontAsset = nullptr;
-
-        float TextScale = 1.0f;
-        float LetterSpacing = 0.0f;
-        float LineSpacing = 0.0f;
     };
 } // namespace Engine::Component

@@ -5,7 +5,18 @@
 
 namespace Engine::Component
 {
-    void UAtlasTextComponent::SetFontAsset(UFontAtlas* InFontAsset) { FontAsset = InFontAsset; }
+    void UAtlasTextComponent::SetFontAsset(UFontAtlas* InFontAsset)
+    {
+        if (FontAsset == InFontAsset)
+        {
+            return;
+        }
+
+        FontAsset = InFontAsset;
+        SetFontResource((FontAsset != nullptr && FontAsset->GetRenderResource())
+                            ? FontAsset->GetRenderResource().get()
+                            : nullptr);
+    }
 
     const FFontAtlasRenderResource* UAtlasTextComponent::GetFontRenderResource() const
     {
@@ -21,28 +32,24 @@ namespace Engine::Component
                    : nullptr;
     }
 
-    void UAtlasTextComponent::SetTextScale(float InTextScale) { TextScale = InTextScale; }
+    void UAtlasTextComponent::SetTextScale(float InTextScale)
+    {
+        UTextRenderComponent::SetTextScale(InTextScale);
+    }
 
     void UAtlasTextComponent::SetLetterSpacing(float InLetterSpacing)
     {
-        LetterSpacing = InLetterSpacing;
+        UTextRenderComponent::SetLetterSpacing(InLetterSpacing);
     }
 
-    void UAtlasTextComponent::SetLineSpacing(float InLineSpacing) { LineSpacing = InLineSpacing; }
+    void UAtlasTextComponent::SetLineSpacing(float InLineSpacing)
+    {
+        UTextRenderComponent::SetLineSpacing(InLineSpacing);
+    }
 
     void UAtlasTextComponent::DescribeProperties(FComponentPropertyBuilder& Builder)
     {
         UTextRenderComponent::DescribeProperties(Builder);
-
-        Builder.AddFloat(
-            "text_scale", L"Text Scale", [this]() { return GetTextScale(); },
-            [this](float InValue) { SetTextScale(InValue); });
-        Builder.AddFloat(
-            "letter_spacing", L"Letter Spacing", [this]() { return GetLetterSpacing(); },
-            [this](float InValue) { SetLetterSpacing(InValue); });
-        Builder.AddFloat(
-            "line_spacing", L"Line Spacing", [this]() { return GetLineSpacing(); },
-            [this](float InValue) { SetLineSpacing(InValue); });
     }
 
     FMatrix UAtlasTextComponent::GetRenderPlacementWorld(const AActor& InOwnerActor) const
@@ -54,6 +61,12 @@ namespace Engine::Component
     {
         (void)InOwnerActor;
         return FVector::ZeroVector;
+    }
+
+
+    FFontResource* UAtlasTextComponent::ResolveFontResourceForCollect() const
+    {
+        return GetFontRenderResource();
     }
 
     EBasicMeshType UAtlasTextComponent::GetBasicMeshType() const { return EBasicMeshType::None; }

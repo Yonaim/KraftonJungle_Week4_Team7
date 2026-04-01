@@ -56,6 +56,9 @@ namespace Engine::Component
       protected:
         Geometry::FAABB GetLocalAABB() const override;
 
+      protected:
+        virtual void GetUVs(FVector2& OutUVMin, FVector2& OutUVMax) const;
+
       private:
         FVector2 GetSpriteAspectScale() const;
         void     EnsureDynamicQuadMeshData() const;

@@ -143,6 +143,13 @@ namespace Engine::Component
             [this](bool bInValue) { SetBillboard(bInValue); });
     }
 
+
+    void UPaperSpriteComponent::GetUVs(FVector2& OutUVMin, FVector2& OutUVMax) const
+    {
+        OutUVMin = FVector2(0.0f, 0.0f);
+        OutUVMax = FVector2(1.0f, 1.0f);
+    }
+
     FVector2 UPaperSpriteComponent::GetSpriteAspectScale() const
     {
         const FTextureRenderResource* TextureResource = GetTextureRenderResource();
@@ -174,15 +181,19 @@ namespace Engine::Component
             MeshData = std::make_shared<FMeshData>();
         }
 
+        FVector2 UVMin;
+        FVector2 UVMax;
+        GetUVs(UVMin, UVMax);
+
         MeshData->bIsDynamicMesh = true;
         MeshData->Topology = EMeshTopology::EMT_TriangleList;
         MeshData->VertexBuffer.reset();
         MeshData->IndexBuffer.reset();
         MeshData->Vertices = {
-            {FVector(-1.0f, -1.0f, 0.0f), FVector(0, 0, 1), FColor::White(), FVector2(0, 1)},
-            {FVector(-1.0f, 1.0f, 0.0f), FVector(0, 0, 1), FColor::White(), FVector2(1, 1)},
-            {FVector(1.0f, 1.0f, 0.0f), FVector(0, 0, 1), FColor::White(), FVector2(1, 0)},
-            {FVector(1.0f, -1.0f, 0.0f), FVector(0, 0, 1), FColor::White(), FVector2(0, 0)},
+            {FVector(-1.0f, -1.0f, 0.0f), FVector(0, 0, 1), FColor::White(), FVector2(UVMin.X, UVMax.Y)},
+            {FVector(-1.0f, 1.0f, 0.0f), FVector(0, 0, 1), FColor::White(), FVector2(UVMax.X, UVMax.Y)},
+            {FVector(1.0f, 1.0f, 0.0f), FVector(0, 0, 1), FColor::White(), FVector2(UVMax.X, UVMin.Y)},
+            {FVector(1.0f, -1.0f, 0.0f), FVector(0, 0, 1), FColor::White(), FVector2(UVMin.X, UVMin.Y)},
         };
         MeshData->Indices = {0, 2, 1, 0, 3, 2};
         MeshData->VertexBufferCount = static_cast<uint32>(MeshData->Vertices.size());
@@ -228,6 +239,11 @@ namespace Engine::Component
         }
 
         EnsureStaticMeshRenderData();
+
+        if (MeshData && MeshData->bIsDynamicMesh)
+        {
+            EnsureDynamicQuadMeshData();
+        }
 
         if (TextureAsset)
         {

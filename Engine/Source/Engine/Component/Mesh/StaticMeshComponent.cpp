@@ -36,9 +36,19 @@ namespace Engine::Component
         }
     } // namespace
 
-    FString UStaticMeshComponent::GetStaticMeshPath() const { return MeshPath; }
+    void UStaticMeshComponent::SetStaticMeshPath(const FString& InPath)
+    {
+        if (MeshPath == InPath)
+        {
+            return;
+        }
 
-    void UStaticMeshComponent::SetStaticMeshPath(const FString& InPath) { MeshPath = InPath; }
+        MeshPath = InPath;
+        StaticMesh = nullptr;
+        MeshData.reset();
+        OverrideMaterials.clear();
+        bBoundsDirty = true;
+    }
 
     void UStaticMeshComponent::SetStaticMeshAsset(UStaticMesh* InStaticMesh)
     {
@@ -161,6 +171,8 @@ namespace Engine::Component
 
     void UStaticMeshComponent::DescribeProperties(FComponentPropertyBuilder& Builder)
     {
+        UMeshComponent::DescribeProperties(Builder);
+
         Builder.AddAssetPath(
             "ObjStaticMeshAsset", L"Mesh Asset", [this]() { return GetStaticMeshPath(); },
             [this](const FString& InValue) { SetStaticMeshPath(InValue); });
