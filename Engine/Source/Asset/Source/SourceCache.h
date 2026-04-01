@@ -28,9 +28,7 @@ namespace Asset
             {
                 return {};
             }
-
-            const FWString Wide = Path.generic_wstring();
-            return FString(Wide.begin(), Wide.end());
+            return FPaths::Utf8FromPath(Path);
         }
 
         inline bool IsVirtualContentPath(const std::filesystem::path& Path)

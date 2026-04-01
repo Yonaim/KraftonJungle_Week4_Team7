@@ -1,31 +1,9 @@
 #include "Asset/Source/SourceLoader.h"
+#include "Core/Misc/Paths.h"
 
 #include <chrono>
 #include <filesystem>
 #include <fstream>
-
-static std::string NarrowFromWide(const std::wstring& In)
-{
-    if (In.empty())
-    {
-        return {};
-    }
-
-    const int RequiredSize =
-        WideCharToMultiByte(CP_UTF8, 0, In.c_str(), -1, nullptr, 0, nullptr, nullptr);
-
-    if (RequiredSize <= 1)
-    {
-        return {};
-    }
-
-    std::string Result;
-    Result.resize(static_cast<size_t>(RequiredSize - 1));
-
-    WideCharToMultiByte(CP_UTF8, 0, In.c_str(), -1, Result.data(), RequiredSize, nullptr, nullptr);
-
-    return Result;
-}
 
 namespace Asset
 {
@@ -47,8 +25,7 @@ namespace Asset
         OutFileSize = 0;
         OutWriteTimeTicks = 0;
 
-        const std::wstring NativePath = Path.native();
-        const std::string  DebugPath = NarrowFromWide(NativePath);
+        const FString DebugPath = FPaths::Utf8FromPath(Path);
 
         UE_LOG(AssetSource, ELogLevel::Verbose, "QueryFileInfo native path: %s", DebugPath.c_str());
 
