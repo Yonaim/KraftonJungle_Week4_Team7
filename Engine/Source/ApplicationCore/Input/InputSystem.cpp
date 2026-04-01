@@ -162,7 +162,6 @@ namespace Engine::ApplicationCore
         case WM_LBUTTONUP:
         case WM_RBUTTONDOWN:
         {
-            SetCapture(HWnd);
             HandleMouseButtonEvent(HWnd, Msg, LParam);
             break;
         }
@@ -170,7 +169,6 @@ namespace Engine::ApplicationCore
         case WM_MBUTTONDOWN:
         case WM_MBUTTONUP:
         {
-            ReleaseCapture();
             HandleMouseButtonEvent(HWnd, Msg, LParam);
             break;
         }
@@ -227,5 +225,12 @@ namespace Engine::ApplicationCore
         }
 
         return DefWindowProc(HWnd, Msg, WParam, LParam);
+    }
+    void FInputSystem::ResetAllInputStates() 
+    { 
+        for (int i = 0; i < static_cast<int>(EKey::Count); ++i)
+        {
+            State.KeysDown[i] = false;
+        }
     }
 } // namespace Engine::ApplicationCore
