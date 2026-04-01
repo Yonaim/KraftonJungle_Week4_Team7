@@ -637,9 +637,11 @@ void FEditor::SetChromeHost(IEditorChromeHost* InChromeHost)
 void FEditor::SetRuntimeServices(FRendererModule*     InRenderer, RHI::FDynamicRHI* InDynamicRHI,
                                  FAssetObjectManager* InAssetObjectManager)
 {
-    if (InRenderer != nullptr)
+    if (InRenderer)
         EditorContext.RHI = &InRenderer->GetRHI();
-
+    else
+        EditorContext.RHI = nullptr;
+    
     EditorContext.Renderer = InRenderer;
     EditorContext.DynamicRHI = InDynamicRHI;
     EditorContext.AssetObjectManager = InAssetObjectManager;
@@ -1135,7 +1137,7 @@ void FEditor::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
 
     FViewport*    HoveredViewport = nullptr;
     FViewportRect HoveredRect{};
-
+    ;
     for (auto Viewport : ViewportTab.GetViewports())
     {
         if (!Viewport->IsValid())

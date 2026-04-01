@@ -11,8 +11,6 @@ namespace RHI
     class ENGINE_API FRHIBuffer : public FRHIResource
     {
       public:
-        virtual ~FRHIBuffer() = default;
-
         const FBufferDesc& GetDesc() const { return Desc; }
 
       protected:
@@ -23,8 +21,7 @@ namespace RHI
 
     class ENGINE_API FRHIVertexBuffer : public FRHIBuffer
     {
-      public:
-        virtual ~FRHIVertexBuffer() = default;
+
     };
 
     // ======================== Index Buffer ==========================
@@ -32,8 +29,6 @@ namespace RHI
     class ENGINE_API FRHIIndexBuffer : public FRHIBuffer
     {
       public:
-        virtual ~FRHIIndexBuffer() = default;
-
         EIndexFormat GetIndexFormat() const { return IndexFormat; }
 
       protected:
@@ -44,8 +39,7 @@ namespace RHI
 
     class ENGINE_API FRHIConstantBuffer : public FRHIBuffer
     {
-      public:
-        virtual ~FRHIConstantBuffer() = default;
+
     };
 
 } // namespace RHI

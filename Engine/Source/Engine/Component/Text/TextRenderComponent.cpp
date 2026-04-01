@@ -412,7 +412,7 @@ namespace Engine::Component
             MeshData->Topology = EMeshTopology::EMT_TriangleList;
 
             FTextLayout Layout = BuildTextLayout();
-            // ... (rest of commented out logic)
+            BuildMeshWithTextLayout(MeshData);
         }
 
         if (!Material && FontResource)
@@ -424,20 +424,17 @@ namespace Engine::Component
             Material->SetCookedData(CookedData);
 
             auto RenderResource = std::make_shared<FMaterialRenderResource>();
-            // if (FontResource->GetSRV())
-            // {
-            //     RHI::FTextureDesc Desc;
-            //     Desc.Width = FontResource->AtlasWidth;
-            //     Desc.Height = FontResource->AtlasHeight;
-            //     Desc.Format = RHI::EPixelFormat::RGBA32F; 
-            //     RenderResource->BaseColorTexture = std::make_shared<RHI::D3D11::FD3D11Texture2D>(Desc, nullptr, FontResource->GetSRV());
-            // }
+            if (FontResource->AtlasTexture)
+            {
+                RenderResource->BaseColorTexture = FontResource->AtlasTexture;
+            }
             Material->SetRenderResource(RenderResource);
         }
 
         FRenderCommand Command;
         Command.MeshData = MeshData.get();
         Command.Material = Material ? Material.get() : FGeneralRenderer::GetDefaultSpriteMaterial();
+        Command.MeshData->bIsDynamicMesh = true;
         
         const FMatrix PlacementWorld = GetRenderPlacementWorld(*Actor);
         const FVector PlacementOffset = GetRenderPlacementOffset(*Actor);
@@ -509,6 +506,90 @@ namespace Engine::Component
         }
 
         return {};
+    }
+
+    void UTextRenderComponent::BuildMeshWithTextLayout(std::shared_ptr<FMeshData> InMeshData) const
+    {
+        if (InMeshData == nullptr || FontResource == nullptr)
+        {
+            return;
+        }
+
+        const FTextLayout Layout = BuildTextLayout();
+        if (!Layout.IsValid())
+        {
+            InMeshData->Vertices.clear();
+            InMeshData->Indices.clear();
+            InMeshData->VertexBufferCount = 0;
+            InMeshData->IndexBufferCount = 0;
+            return;
+        }
+
+        const float CenterX = (Layout.MinX + Layout.MaxX) * 0.5f;
+        const float CenterY = (Layout.MinY + Layout.MaxY) * 0.5f;
+
+        const float ScaleW = (FontResource->Common.ScaleW > 0)
+                                 ? static_cast<float>(FontResource->Common.ScaleW)
+                                 : 1.0f;
+        const float ScaleH = (FontResource->Common.ScaleH > 0)
+                                 ? static_cast<float>(FontResource->Common.ScaleH)
+                                 : 1.0f;
+
+        const uint32 GlyphCount = static_cast<uint32>(Layout.Glyphs.size());
+        InMeshData->Vertices.clear();
+        InMeshData->Indices.clear();
+        InMeshData->Vertices.reserve(GlyphCount * 4);
+        InMeshData->Indices.reserve(GlyphCount * 6);
+
+        for (const FLaidOutGlyph& LaidOutGlyph : Layout.Glyphs)
+        {
+            const uint32 VertexOffset = static_cast<uint32>(InMeshData->Vertices.size());
+
+            const float X_left = LaidOutGlyph.MinX - CenterX;
+            const float X_right = LaidOutGlyph.MaxX - CenterX;
+            const float Y_top = CenterY - LaidOutGlyph.MinY;
+            const float Y_bottom = CenterY - LaidOutGlyph.MaxY;
+
+            float  U_min = 0.0f, V_min = 0.0f, U_max = 0.0f, V_max = 0.0f;
+            FColor GlyphColor = FColor::White();
+
+            if (LaidOutGlyph.bSolidColorQuad)
+            {
+                GlyphColor = LaidOutGlyph.SolidColor;
+                U_min = 0.0f; V_min = 0.0f; U_max = 1.0f; V_max = 1.0f;
+            }
+            else if (LaidOutGlyph.Glyph)
+            {
+                const FFontGlyph* Glyph = LaidOutGlyph.Glyph;
+                U_min = static_cast<float>(Glyph->X) / ScaleW;
+                V_min = static_cast<float>(Glyph->Y) / ScaleH;
+                U_max = static_cast<float>(Glyph->X + Glyph->Width) / ScaleW;
+                V_max = static_cast<float>(Glyph->Y + Glyph->Height) / ScaleH;
+            }
+
+            const FVector Normal(0.0f, 0.0f, 1.0f);
+
+            // TL, TR, BR, BL (Clockwise winding for front face in Left-Handed space)
+            InMeshData->Vertices.push_back(
+                {FVector(Y_top, X_left, 0.0f), Normal, GlyphColor, FVector2(U_min, V_min)});
+            InMeshData->Vertices.push_back(
+                {FVector(Y_top, X_right, 0.0f), Normal, GlyphColor, FVector2(U_max, V_min)});
+            InMeshData->Vertices.push_back(
+                {FVector(Y_bottom, X_right, 0.0f), Normal, GlyphColor, FVector2(U_max, V_max)});
+            InMeshData->Vertices.push_back(
+                {FVector(Y_bottom, X_left, 0.0f), Normal, GlyphColor, FVector2(U_min, V_max)});
+
+            InMeshData->Indices.push_back(VertexOffset + 0);
+            InMeshData->Indices.push_back(VertexOffset + 1);
+            InMeshData->Indices.push_back(VertexOffset + 2);
+            InMeshData->Indices.push_back(VertexOffset + 0);
+            InMeshData->Indices.push_back(VertexOffset + 2);
+            InMeshData->Indices.push_back(VertexOffset + 3);
+        }
+
+        InMeshData->VertexBufferCount = static_cast<uint32>(InMeshData->Vertices.size());
+        InMeshData->IndexBufferCount = static_cast<uint32>(InMeshData->Indices.size());
+        InMeshData->UpdateLocalBound();
     }
 
     REGISTER_CLASS(Engine::Component, UTextRenderComponent)

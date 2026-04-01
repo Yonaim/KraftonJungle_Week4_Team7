@@ -34,7 +34,8 @@ struct ENGINE_API FRenderCommand
     EMeshTopology            Topology = EMeshTopology::EMT_TriangleList;
 
     uint32 FirstIndex = 0;
-    uint32 IndexCount = 0;
+    // Vertex Buffer에 존재하는 총 vertex 갯수와는 별개로 draw call에서 지정하는 렌더링할 vertex의 갯수
+    uint32 DrawVertexCount = 0;
     
     bool bIsVisible = true;
     bool bIsPickable = true;

@@ -148,7 +148,7 @@ namespace Engine::Component
                 Cmd.SetDefaultStates();
 
                 Cmd.FirstIndex = Section.FirstIndex;
-                Cmd.IndexCount = Section.IndexCount;
+                Cmd.DrawVertexCount = Section.IndexCount;
 
                 Cmd.Material = GetMaterial(Section.MaterialIndex);
                 if (Cmd.Material == nullptr)
