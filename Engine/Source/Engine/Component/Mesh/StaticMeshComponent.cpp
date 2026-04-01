@@ -37,6 +37,8 @@ namespace Engine::Component
         }
     } // namespace
 
+    const FString& UStaticMeshComponent::GetStaticMeshPath() const { return MeshPath; }
+
     void UStaticMeshComponent::SetStaticMeshPath(const FString& InPath)
     {
         if (MeshPath == InPath)
@@ -149,6 +151,7 @@ namespace Engine::Component
 
                 Cmd.FirstIndex = Section.FirstIndex;
                 Cmd.DrawVertexCount = Section.IndexCount;
+                Cmd.DrawIndexCount = Section.IndexCount;
 
                 Cmd.Material = GetMaterial(Section.MaterialIndex);
                 if (Cmd.Material == nullptr)
