@@ -635,7 +635,11 @@ void FEditor::SetChromeHost(IEditorChromeHost* InChromeHost)
 void FEditor::SetRuntimeServices(FRendererModule*     InRenderer, RHI::FDynamicRHI* InDynamicRHI,
                                  FAssetObjectManager* InAssetObjectManager)
 {
-    EditorContext.RHI = &InRenderer->GetRHI();
+    if (InRenderer)
+        EditorContext.RHI = &InRenderer->GetRHI();
+    else
+        EditorContext.RHI = nullptr;
+    
     EditorContext.Renderer = InRenderer;
     EditorContext.DynamicRHI = InDynamicRHI;
     EditorContext.AssetObjectManager = InAssetObjectManager;
