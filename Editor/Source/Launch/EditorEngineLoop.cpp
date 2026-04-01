@@ -16,42 +16,30 @@
 #include <imgui_impl_win32.h>
 
 #include "Core/Misc/NameSubsystem.h"
+#include "Editor/EditorPaths.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND HWnd, UINT Message, WPARAM WParam,
                                                              LPARAM LParam);
 
 namespace
 {
-    void EnsureEditorImGuiIniPaths(std::string& OutUserIniPath)
+    void EnsureEditorImGuiIniPaths(std::string& OutDefaultIniPath, std::string& OutUserIniPath)
     {
         namespace fs = std::filesystem;
 
-        const fs::path LegacyPath("Editor/imgui.ini");
-        const fs::path DefaultPath("Editor/imgui.default.ini");
-        const fs::path UserPath("Editor/imgui.user.ini");
+        const fs::path DefaultPath = FEditorPaths::ImGuiDefaultIniFile();
+        const fs::path UserPath = FEditorPaths::ImGuiUserIniFile();
 
         std::error_code Ec;
-        fs::create_directories(DefaultPath.parent_path(), Ec);
+        fs::create_directories(FEditorPaths::ConfigDirectory(), Ec);
         Ec.clear();
 
-        if (!fs::exists(DefaultPath, Ec) && !Ec && fs::exists(LegacyPath, Ec) && !Ec)
+        if (!fs::exists(UserPath, Ec) && !Ec && fs::exists(DefaultPath, Ec) && !Ec)
         {
-            fs::copy_file(LegacyPath, DefaultPath, fs::copy_options::overwrite_existing, Ec);
+            fs::copy_file(DefaultPath, UserPath, fs::copy_options::overwrite_existing, Ec);
         }
 
-        Ec.clear();
-        if (!fs::exists(UserPath, Ec) && !Ec)
-        {
-            if (fs::exists(DefaultPath, Ec) && !Ec)
-            {
-                fs::copy_file(DefaultPath, UserPath, fs::copy_options::overwrite_existing, Ec);
-            }
-            else if (fs::exists(LegacyPath, Ec) && !Ec)
-            {
-                fs::copy_file(LegacyPath, UserPath, fs::copy_options::overwrite_existing, Ec);
-            }
-        }
-
+        OutDefaultIniPath = DefaultPath.string();
         OutUserIniPath = UserPath.string();
     }
 
@@ -200,10 +188,19 @@ bool FEditorEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
     ApplyCoPassImGuiStyle();
     ImGuiIO& IO = ImGui::GetIO();
 
+    static std::string GEditorImGuiDefaultIniPath;
     static std::string GEditorImGuiUserIniPath;
-    EnsureEditorImGuiIniPaths(GEditorImGuiUserIniPath);
+    EnsureEditorImGuiIniPaths(GEditorImGuiDefaultIniPath, GEditorImGuiUserIniPath);
     IO.IniFilename = GEditorImGuiUserIniPath.c_str();
-    ImGui::LoadIniSettingsFromDisk(IO.IniFilename);
+
+    if (!GEditorImGuiDefaultIniPath.empty())
+    {
+        ImGui::LoadIniSettingsFromDisk(GEditorImGuiDefaultIniPath.c_str());
+    }
+    if (!GEditorImGuiUserIniPath.empty())
+    {
+        ImGui::LoadIniSettingsFromDisk(GEditorImGuiUserIniPath.c_str());
+    }
 #ifdef IMGUI_HAS_DOCK
     // 도킹 지원 ImGui를 교체한 뒤에는 여기서 기능 플래그를 켜야 DockSpace API가 실제로 동작합니다.
     IO.ConfigFlags |= ImGuiConfigFlags_DockingEnable;

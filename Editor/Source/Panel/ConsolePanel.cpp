@@ -4,6 +4,7 @@
 #include "Core/Misc/Paths.h"
 #include "Editor/Editor.h"
 #include "Editor/EditorContext.h"
+#include "Editor/EditorPaths.h"
 #include "Editor/Logging/EditorLogBuffer.h"
 #include "Engine/Component/Core/SceneComponent.h"
 #include "Engine/EngineStatics.h"
@@ -272,12 +273,12 @@ namespace
 
     std::string GetEditorImGuiDefaultIniPath()
     {
-        return "Editor/imgui.default.ini";
+        return FEditorPaths::ImGuiDefaultIniFile().string();
     }
 
     std::string GetEditorImGuiUserIniPath()
     {
-        return "Editor/imgui.user.ini";
+        return FEditorPaths::ImGuiUserIniFile().string();
     }
 
     bool ResetEditorImGuiLayoutToDefault()

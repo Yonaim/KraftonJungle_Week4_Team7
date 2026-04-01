@@ -25,3 +25,14 @@ std::filesystem::path FEditorPaths::EditorStartupConfigFile()
 {
     return FPaths::Combine(ConfigDirectory(), L"EditorStartup.ini");
 }
+
+std::filesystem::path FEditorPaths::ImGuiDefaultIniFile()
+{
+    return FPaths::Combine(ConfigDirectory(), L"imgui.default.ini");
+}
+
+std::filesystem::path FEditorPaths::ImGuiUserIniFile()
+{
+    return FPaths::Combine(ConfigDirectory(), L"imgui.user.ini");
+}
+
