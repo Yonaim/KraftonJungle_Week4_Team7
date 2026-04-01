@@ -453,6 +453,9 @@
     <ClCompile Include="Source\Renderer\Primitive\FMeshData.cpp">
       <Filter>Source\Renderer\Primitive</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Renderer\Primitive\UnrealEditorStyledGizmo.cpp">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Renderer\RenderCommand.cpp">
       <Filter>Source\Renderer</Filter>
     </ClCompile>
@@ -954,6 +957,9 @@
       <Filter>Source\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="Source\Renderer\Primitive\FMeshData.h">
+      <Filter>Source\Renderer\Primitive</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Primitive\UnrealEditorStyledGizmo.h">
       <Filter>Source\Renderer\Primitive</Filter>
     </ClInclude>
     <ClInclude Include="Source\Renderer\RenderAsset\FontResource.h">

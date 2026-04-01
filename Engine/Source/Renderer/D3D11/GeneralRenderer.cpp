@@ -50,11 +50,15 @@ bool FGeneralRenderer::Initialize(HWND InHwnd, int32 Width, int32 Height)
         return false;
     }
     
+    #ifdef IS_OBJ_VIEWER
+
+    #else
     if (!CreatePickResources(Width, Height))
     {
         MessageBox(nullptr, L"[Renderer] CreatePickResources failed", L"Debug", MB_OK);
         return false;
     }
+    #endif 
     
     InitializeGizmoResources();
 
