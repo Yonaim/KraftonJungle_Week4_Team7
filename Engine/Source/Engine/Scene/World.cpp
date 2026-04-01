@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-#include "Engine/Component/Core/BatchLineComponent.h"
+#include "Engine/Component/Mesh/LineBatchComponent.h"
 #include "Engine/Game/Actor.h"
 #include "Engine/Scene/Scene.h"
 
@@ -180,7 +180,7 @@ void FWorld::CreatePersistentSceneActor()
 
         for (Engine::Component::USceneComponent* Component : Actor->GetOwnedComponents())
         {
-            if (dynamic_cast<Engine::Component::UBatchLineComponent*>(Component) != nullptr)
+            if (dynamic_cast<Engine::Component::ULineBatchComponent*>(Component) != nullptr)
             {
                 Actor->SetPickable(false);
                 return;
@@ -190,6 +190,6 @@ void FWorld::CreatePersistentSceneActor()
 
     AActor* PersistentActor = new AActor();
     PersistentActor->SetPickable(false);
-    PersistentActor->SetRootComponent(new Engine::Component::UBatchLineComponent());
+    PersistentActor->SetRootComponent(new Engine::Component::ULineBatchComponent());
     PersistentScene->AddActor(PersistentActor);
 }

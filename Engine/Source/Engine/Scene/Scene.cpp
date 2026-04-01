@@ -8,14 +8,11 @@
 
 FScene::FScene()
 {
-    LineBatcher = new Engine::Component::ULineBatchComponent();
 }
 
 FScene::~FScene()
 {
     Clear();
-    delete LineBatcher;
-    LineBatcher = nullptr;
 }
 
 bool FScene::RemoveActor(AActor* InActor)
@@ -47,20 +44,10 @@ void FScene::Clear()
         delete Actor;
     }
     Actors.clear();
-
-    if (LineBatcher)
-    {
-        LineBatcher->ClearLines();
-    }
 }
 
 void FScene::Tick(float DeltaTime)
 {
-    if (LineBatcher)
-    {
-        LineBatcher->Update(DeltaTime);
-    }
-
     for (auto& actor : Actors)
     {
         if (actor)
@@ -73,11 +60,6 @@ void FScene::Tick(float DeltaTime)
 void FScene::BuildRenderData(FSceneRenderData& OutRenderData,
                              ESceneShowFlags   InShowFlags) const
 {
-    if (LineBatcher)
-    {
-        LineBatcher->CollectRenderData(OutRenderData, InShowFlags);
-    }
-
     for (AActor* Actor : Actors)
     {
         if (Actor == nullptr)

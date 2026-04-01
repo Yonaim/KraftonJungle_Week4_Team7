@@ -10,6 +10,7 @@ namespace Engine::Component
 {
     ULineBatchComponent::ULineBatchComponent()
     {
+        UE_LOG(ULineBatchComponent, ELogLevel::Verbose, "Test");
     }
 
     Geometry::FAABB ULineBatchComponent::GetLocalAABB() const

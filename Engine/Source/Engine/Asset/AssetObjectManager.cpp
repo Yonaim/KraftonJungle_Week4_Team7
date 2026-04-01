@@ -8,12 +8,12 @@
 #include "Core/HAL/PlatformTime.h"
 #include "Core/Logging/LogMacros.h"
 #include "CoreUObject/ObjectIterator.h"
+#include "Engine/EngineStatics.h"
 #include "Engine/Asset/FontAtlas.h"
 #include "Engine/Asset/Material.h"
 #include "Engine/Asset/StaticMesh.h"
 #include "Engine/Asset/SubUVAtlas.h"
 #include "Engine/Asset/Texture.h"
-#include "RHI/DynamicRHI.h"
 
 namespace
 {
