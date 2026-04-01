@@ -35,6 +35,8 @@ class ENGINE_API FRendererModule
 
     FD3D11RHI& GetRHI() { return GeneralRenderer->GetRHI(); }
 
+    FGeneralRenderer* GetGeneralRenderer() { return GeneralRenderer; }
+
     void SetVSyncEnabled(bool bEnabled);
     bool IsVSyncEnabled() const;
 

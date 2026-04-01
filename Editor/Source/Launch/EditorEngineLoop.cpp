@@ -193,8 +193,7 @@ bool FEditorEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
         new FAssetCacheManager,
         new RHI::D3D11::FD3D11DynamicRHI(Renderer->GetRHI().GetDevice(),
                                          Renderer->GetRHI().GetDeviceContext()));
-    Editor->SetRuntimeServices(&Renderer->GetRHI(), AssetObjectManager->GetDynamicRHI(),
-                               AssetObjectManager);
+    Editor->SetRuntimeServices(Renderer, AssetObjectManager->GetDynamicRHI(), AssetObjectManager);
 
     ImGui::CreateContext();
     ApplyCoPassImGuiStyle();
@@ -243,11 +242,12 @@ bool FEditorEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
     {
         if (Views[i]->IsValid())
         {
-            Views[i]->GetViewportClient()->OnPickRequested = [this, i](int32 X,
+            Views[i]->GetViewportClient()->OnPickRequested = [Views, this, i](int32 X,
                                                                        int32 Y) -> FPickResult
             {
                 FPickResult Result;
 
+                Renderer->SetViewport(Views[i]->GetSceneView()->GetViewport());
                 // EngineLoop는 Renderer와 Editor 모두에 접근 가능하므로 픽킹을 직접 수행해서 반환
                 Renderer->Pick(
                     Editor->GetEditorRenderData()[i], Editor->GetSceneRenderData()[i],

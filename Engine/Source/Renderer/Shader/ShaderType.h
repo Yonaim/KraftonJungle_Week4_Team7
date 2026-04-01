@@ -15,4 +15,6 @@ struct FObjectConstantBuffer
     uint32 ObjectId;
     FVector2 UVOffset;
     uint32 Padding;
+    FVector4 MultiplyColor; // Default (1, 1, 1, 1)
+    FVector4 AdditiveColor; // Default (0, 0, 0, 0)
 };

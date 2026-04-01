@@ -98,20 +98,20 @@ void FRendererModule::Render(const FSceneRenderData& InSceneRenderData)
 void FRendererModule::RenderWorldPass(const FEditorRenderData& InEditorRenderData,
                                       const FSceneRenderData&  InSceneRenderData)
 {
-    if (!InSceneRenderData.RenderCommands.empty())
+    if (GeneralRenderer)
     {
+        GeneralRenderer->ClearCommandList();
+
         FRenderCommandQueue CommandQueue;
-        for (auto el : InSceneRenderData.RenderCommands)
+        for (const auto& el : InSceneRenderData.RenderCommands)
         {
             CommandQueue.AddCommand(el);
-            CommandQueue.ViewMatrix = InSceneRenderData.SceneView->GetViewMatrix();
-            CommandQueue.ProjectionMatrix = InSceneRenderData.SceneView->GetProjectionMatrix();
         }
         
-        if (InEditorRenderData.SceneView)
+        if (InSceneRenderData.SceneView)
         {
-            CommandQueue.ViewMatrix = InEditorRenderData.SceneView->GetViewMatrix();
-            CommandQueue.ProjectionMatrix = InEditorRenderData.SceneView->GetProjectionMatrix();
+            CommandQueue.ViewMatrix = InSceneRenderData.SceneView->GetViewMatrix();
+            CommandQueue.ProjectionMatrix = InSceneRenderData.SceneView->GetProjectionMatrix();
         }
         
         GeneralRenderer->SubmitCommands(CommandQueue);
@@ -122,7 +122,7 @@ void FRendererModule::RenderWorldPass(const FEditorRenderData& InEditorRenderDat
 void FRendererModule::RenderOverlayPass(const FEditorRenderData& InEditorRenderData,
                                         const FSceneRenderData&  InSceneRenderData)
 {
-    // Gizmo etc. would be rendered here using GeneralRenderer commands if needed.
+    // Gizmo etc. are now submitted as RenderCommands from EditorViewportClient
 }
 
 bool FRendererModule::Pick(const FEditorRenderData& InEditorRenderData,
@@ -132,13 +132,29 @@ bool FRendererModule::Pick(const FEditorRenderData& InEditorRenderData,
 {
     if (!GeneralRenderer) return false;
     
-    uint32 PickId = 0;
-    if (GeneralRenderer->Pick(MouseX, MouseY, PickId))
+    // Clear and Submit commands for this specific pick pass
+    GeneralRenderer->ClearCommandList();
+    
+    FRenderCommandQueue CommandQueue;
+    for (const auto& Cmd : InSceneRenderData.RenderCommands)
     {
-        OutResult.ObjectId = PickId;
-        return PickId != 0;
+        CommandQueue.AddCommand(Cmd);
     }
-    return false;
+    
+    if (InSceneRenderData.SceneView)
+    {
+        CommandQueue.ViewMatrix = InSceneRenderData.SceneView->GetViewMatrix();
+        CommandQueue.ProjectionMatrix = InSceneRenderData.SceneView->GetProjectionMatrix();
+    }
+    
+    GeneralRenderer->SubmitCommands(CommandQueue);
+
+    uint32 PickId = 0;
+    // MouseX, MouseY는 이미 월드 좌표계(윈도우 전체 상대)이므로 그대로 전달
+    if (GeneralRenderer->Pick(MouseX, MouseY, PickId))
+        OutResult = PickResult::FromPickId(PickId);
+    
+    return PickId != 0;
 }
 
 void FRendererModule::SetVSyncEnabled(bool bEnabled) 
