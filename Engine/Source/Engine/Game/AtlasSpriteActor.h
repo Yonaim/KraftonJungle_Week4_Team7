@@ -1,5 +1,5 @@
 #pragma once
-#include "SpriteActor.h"
+#include "Actor.h"
 
 namespace Engine::Component
 {
@@ -7,9 +7,9 @@ namespace Engine::Component
     class USubUVComponent;
 }
 
-class ENGINE_API AAtlasSpriteActor : public ASpriteActor
+class ENGINE_API AAtlasSpriteActor : public AActor
 {
-    DECLARE_RTTI(AAtlasSpriteActor, ASpriteActor)
+    DECLARE_RTTI(AAtlasSpriteActor, AActor)
 public:
     AAtlasSpriteActor();
     ~AAtlasSpriteActor() override = default;

@@ -14,6 +14,8 @@ namespace Engine::ApplicationCore
         void BeginFrame();
         void    HandleMouseButtonEvent(HWND HWnd, UINT Msg, LPARAM LParam);
         LRESULT ProcessWin32Message(HWND HWnd, UINT Msg, WPARAM WParam, LPARAM LParam);
+
+        void ResetAllInputStates();
         
         bool PollEvent(FInputEvent & OutEvent);
         const FInputState & GetInputState() const { return State; }
