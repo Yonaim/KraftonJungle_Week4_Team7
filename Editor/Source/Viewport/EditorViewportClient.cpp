@@ -266,97 +266,107 @@ void FEditorViewportClient::DrawWorldGrid(FEditorRenderData& OutEditorRenderData
     {
         return;
     }
-
-    GridLineBatcher->ClearLines();
-
-    const float GridSpacing = UEngineStatics::GridSpacing;
-    const FColor GridColor(0.3f, 0.3f, 0.3f, 1.0f);
+    
     const float  PersistentLifeTime = -1.0f;
 
-    // 카메라 위치를 기준으로 그리드 범위를 결정합니다.
-    const FVector CamLoc = ViewportCamera.GetLocation();
-    const float   MaxGridRange = 2000.0f; // 카메라로부터 그리드가 그려질 반경
-    const int32   LineCount = static_cast<int32>(MaxGridRange / GridSpacing);
+    GridLineBatcher->ClearLines();
     
-    const EViewportProjectionType ProjType = ViewportCamera.GetProjectionType();
-    const EViewportOrthographicType OrthoType = ViewportCamera.GetOrthographicType();
-
-    if (ProjType == EViewportProjectionType::Perspective || OrthoType == EViewportOrthographicType::Top ||
-        OrthoType == EViewportOrthographicType::Bottom)
+    if (OutEditorRenderData.bShowGrid)
     {
-        // XY 평면 그리드: 카메라 위치 주변으로 스냅된 중심 계산
-        float SnapX = std::floor(CamLoc.X / GridSpacing) * GridSpacing;
-        float SnapY = std::floor(CamLoc.Y / GridSpacing) * GridSpacing;
+        const float GridSpacing = UEngineStatics::GridSpacing;
+        const FColor GridColor(0.3f, 0.3f, 0.3f, 1.0f);
 
-        float MinX = SnapX - LineCount * GridSpacing;
-        float MaxX = SnapX + LineCount * GridSpacing;
-        float MinY = SnapY - LineCount * GridSpacing;
-        float MaxY = SnapY + LineCount * GridSpacing;
+        // 카메라 위치를 기준으로 그리드 범위를 결정합니다.
+        const FVector CamLoc = ViewportCamera.GetLocation();
+        const float   MaxGridRange = 2000.0f; // 카메라로부터 그리드가 그려질 반경
+        const int32   LineCount = static_cast<int32>(MaxGridRange / GridSpacing);
+    
+        const EViewportProjectionType ProjType = ViewportCamera.GetProjectionType();
+        const EViewportOrthographicType OrthoType = ViewportCamera.GetOrthographicType();
 
-        // X축에 평행한 선들 (Y축 값을 변화시키며 그림)
-        for (int32 i = -LineCount; i <= LineCount; ++i)
+        if (ProjType == EViewportProjectionType::Perspective || OrthoType == EViewportOrthographicType::Top ||
+            OrthoType == EViewportOrthographicType::Bottom)
         {
-            float y = SnapY + i * GridSpacing;
-            if (std::abs(y) < 0.01f) continue; // 월드 축과 겹치는 부분 제외
-            GridLineBatcher->AddLine(FVector(MinX, y, 0.0f), FVector(MaxX, y, 0.0f), GridColor, PersistentLifeTime);
+            // XY 평면 그리드: 카메라 위치 주변으로 스냅된 중심 계산
+            float SnapX = std::floor(CamLoc.X / GridSpacing) * GridSpacing;
+            float SnapY = std::floor(CamLoc.Y / GridSpacing) * GridSpacing;
+
+            float MinX = SnapX - LineCount * GridSpacing;
+            float MaxX = SnapX + LineCount * GridSpacing;
+            float MinY = SnapY - LineCount * GridSpacing;
+            float MaxY = SnapY + LineCount * GridSpacing;
+
+            // X축에 평행한 선들 (Y축 값을 변화시키며 그림)
+            for (int32 i = -LineCount; i <= LineCount; ++i)
+            {
+                float y = SnapY + i * GridSpacing;
+                if (OutEditorRenderData.bShowWorldAxes && std::abs(y) < 0.01f) 
+                    continue; // 월드 축과 겹치는 부분 제외
+                GridLineBatcher->AddLine(FVector(MinX, y, 0.0f), FVector(MaxX, y, 0.0f), GridColor, PersistentLifeTime);
+            }
+
+            // Y축에 평행한 선들 (X축 값을 변화시키며 그림)
+            for (int32 i = -LineCount; i <= LineCount; ++i)
+            {
+                float x = SnapX + i * GridSpacing;
+                if (OutEditorRenderData.bShowWorldAxes && std::abs(x) < 0.01f) 
+                    continue; // 월드 축과 겹치는 부분 제외
+                GridLineBatcher->AddLine(FVector(x, MinY, 0.0f), FVector(x, MaxY, 0.0f), GridColor, PersistentLifeTime);
+            }
         }
-
-        // Y축에 평행한 선들 (X축 값을 변화시키며 그림)
-        for (int32 i = -LineCount; i <= LineCount; ++i)
+        else if (OrthoType == EViewportOrthographicType::Front || OrthoType == EViewportOrthographicType::Back)
         {
-            float x = SnapX + i * GridSpacing;
-            if (std::abs(x) < 0.01f) continue; // 월드 축과 겹치는 부분 제외
-            GridLineBatcher->AddLine(FVector(x, MinY, 0.0f), FVector(x, MaxY, 0.0f), GridColor, PersistentLifeTime);
+            // YZ 평면 그리드
+            float SnapY = std::floor(CamLoc.Y / GridSpacing) * GridSpacing;
+            float SnapZ = std::floor(CamLoc.Z / GridSpacing) * GridSpacing;
+
+            float MinY = SnapY - LineCount * GridSpacing;
+            float MaxY = SnapY + LineCount * GridSpacing;
+            float MinZ = SnapZ - LineCount * GridSpacing;
+            float MaxZ = SnapZ + LineCount * GridSpacing;
+
+            for (int32 i = -LineCount; i <= LineCount; ++i)
+            {
+                float z = SnapZ + i * GridSpacing;
+                if (OutEditorRenderData.bShowWorldAxes && std::abs(z) < 0.01f) 
+                    continue;
+                GridLineBatcher->AddLine(FVector(0.0f, MinY, z), FVector(0.0f, MaxY, z), GridColor, PersistentLifeTime);
+            }
+
+            for (int32 i = -LineCount; i <= LineCount; ++i)
+            {
+                float y = SnapY + i * GridSpacing;
+                if (OutEditorRenderData.bShowWorldAxes && std::abs(y) < 0.01f) 
+                    continue;
+                GridLineBatcher->AddLine(FVector(0.0f, y, MinZ), FVector(0.0f, y, MaxZ), GridColor, PersistentLifeTime);
+            }
         }
-    }
-    else if (OrthoType == EViewportOrthographicType::Front || OrthoType == EViewportOrthographicType::Back)
-    {
-        // YZ 평면 그리드
-        float SnapY = std::floor(CamLoc.Y / GridSpacing) * GridSpacing;
-        float SnapZ = std::floor(CamLoc.Z / GridSpacing) * GridSpacing;
-
-        float MinY = SnapY - LineCount * GridSpacing;
-        float MaxY = SnapY + LineCount * GridSpacing;
-        float MinZ = SnapZ - LineCount * GridSpacing;
-        float MaxZ = SnapZ + LineCount * GridSpacing;
-
-        for (int32 i = -LineCount; i <= LineCount; ++i)
+        else if (OrthoType == EViewportOrthographicType::Left || OrthoType == EViewportOrthographicType::Right)
         {
-            float z = SnapZ + i * GridSpacing;
-            if (std::abs(z) < 0.01f) continue;
-            GridLineBatcher->AddLine(FVector(0.0f, MinY, z), FVector(0.0f, MaxY, z), GridColor, PersistentLifeTime);
-        }
+            // XZ 평면 그리드
+            float SnapX = std::floor(CamLoc.X / GridSpacing) * GridSpacing;
+            float SnapZ = std::floor(CamLoc.Z / GridSpacing) * GridSpacing;
 
-        for (int32 i = -LineCount; i <= LineCount; ++i)
-        {
-            float y = SnapY + i * GridSpacing;
-            if (std::abs(y) < 0.01f) continue;
-            GridLineBatcher->AddLine(FVector(0.0f, y, MinZ), FVector(0.0f, y, MaxZ), GridColor, PersistentLifeTime);
-        }
-    }
-    else if (OrthoType == EViewportOrthographicType::Left || OrthoType == EViewportOrthographicType::Right)
-    {
-        // XZ 평면 그리드
-        float SnapX = std::floor(CamLoc.X / GridSpacing) * GridSpacing;
-        float SnapZ = std::floor(CamLoc.Z / GridSpacing) * GridSpacing;
+            float MinX = SnapX - LineCount * GridSpacing;
+            float MaxX = SnapX + LineCount * GridSpacing;
+            float MinZ = SnapZ - LineCount * GridSpacing;
+            float MaxZ = SnapZ + LineCount * GridSpacing;
 
-        float MinX = SnapX - LineCount * GridSpacing;
-        float MaxX = SnapX + LineCount * GridSpacing;
-        float MinZ = SnapZ - LineCount * GridSpacing;
-        float MaxZ = SnapZ + LineCount * GridSpacing;
+            for (int32 i = -LineCount; i <= LineCount; ++i)
+            {
+                float z = SnapZ + i * GridSpacing;
+                if (OutEditorRenderData.bShowWorldAxes && std::abs(z) < 0.01f) 
+                    continue;
+                GridLineBatcher->AddLine(FVector(MinX, 0.0f, z), FVector(MaxX, 0.0f, z), GridColor, PersistentLifeTime);
+            }
 
-        for (int32 i = -LineCount; i <= LineCount; ++i)
-        {
-            float z = SnapZ + i * GridSpacing;
-            if (std::abs(z) < 0.01f) continue;
-            GridLineBatcher->AddLine(FVector(MinX, 0.0f, z), FVector(MaxX, 0.0f, z), GridColor, PersistentLifeTime);
-        }
-
-        for (int32 i = -LineCount; i <= LineCount; ++i)
-        {
-            float x = SnapX + i * GridSpacing;
-            if (std::abs(x) < 0.01f) continue;
-            GridLineBatcher->AddLine(FVector(x, 0.0f, MinZ), FVector(x, 0.0f, MaxZ), GridColor, PersistentLifeTime);
+            for (int32 i = -LineCount; i <= LineCount; ++i)
+            {
+                float x = SnapX + i * GridSpacing;
+                if (OutEditorRenderData.bShowWorldAxes && std::abs(x) < 0.01f) 
+                    continue;
+                GridLineBatcher->AddLine(FVector(x, 0.0f, MinZ), FVector(x, 0.0f, MaxZ), GridColor, PersistentLifeTime);
+            }
         }
     }
 
