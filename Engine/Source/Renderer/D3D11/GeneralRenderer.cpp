@@ -117,8 +117,8 @@ bool FGeneralRenderer::Pick(int32 MouseX, int32 MouseY, uint32& OutPickId)
 
         UpdateObjectConstantBuffer(Cmd.WorldMatrix, Cmd.ObjectId, Cmd.UVOffset, Cmd.MultiplyColor, Cmd.AdditiveColor);
 
-        if (Cmd.IndexCount > 0) 
-            DeviceContext->DrawIndexed(Cmd.IndexCount, Cmd.FirstIndex, 0);
+        if (Cmd.DrawVertexCount > 0) 
+            DeviceContext->DrawIndexed(Cmd.DrawVertexCount, Cmd.FirstIndex, 0);
         else if (Cmd.MeshData->IndexBufferCount > 0)
             DeviceContext->DrawIndexed(Cmd.MeshData->IndexBufferCount, 0, 0);
         else if (Cmd.MeshData->VertexBufferCount > 0)
@@ -548,6 +548,33 @@ void FGeneralRenderer::ExecuteRenderPass(ERenderLayer InRenderLayer)
         if (!Cmd.MeshData || !bHasData)
             continue;
 
+        // 동적 메시일 경우 매 프레임 Cmd.MeshData->Vertices/Indices 정보로 Vertex/Index buffer 재생성
+        if (Cmd.MeshData->bIsDynamicMesh)
+        {
+            Cmd.MeshData->VertexBuffer.reset();
+            constexpr uint32 VBStride = sizeof(FPrimitiveVertex);
+            ID3D11Buffer* VertexBuffer;
+            RHI.CreateVertexBuffer(Cmd.MeshData->Vertices.data(), 
+                VBStride * Cmd.MeshData->Vertices.size(), VBStride, true, &VertexBuffer);
+            Cmd.MeshData->VertexBuffer = std::make_shared<RHI::D3D11::FD3D11VertexBuffer>(
+                            RHI::FBufferDesc{}, VertexBuffer
+            );
+            Cmd.MeshData->VertexBufferCount = Cmd.MeshData->Vertices.size();
+            
+            Cmd.MeshData->IndexBuffer.reset();
+            constexpr uint32 IBStride = sizeof(uint32);
+            ID3D11Buffer* IndexBuffer;
+            RHI.CreateIndexBuffer(Cmd.MeshData->Indices.data(), 
+                            IBStride * Cmd.MeshData->Indices.size(), true, &IndexBuffer);
+            Cmd.MeshData->IndexBuffer = std::make_shared<RHI::D3D11::FD3D11IndexBuffer>(
+                            RHI::FBufferDesc{}, RHI::EIndexFormat::UInt32, IndexBuffer
+            );
+            Cmd.MeshData->IndexBufferCount = Cmd.MeshData->Indices.size();
+            
+            // 동적 메시는 섹션 구분 안하고 전체를 하나의 섹션으로 취급, 모든 vertex를 렌더링
+            Cmd.DrawVertexCount = Cmd.MeshData->IndexBufferCount;
+        }
+        
         if (Cmd.Material != CurrentMaterial)
         {
             if (Cmd.Material)
@@ -579,8 +606,8 @@ void FGeneralRenderer::ExecuteRenderPass(ERenderLayer InRenderLayer)
                                     Cmd.MultiplyColor, 
                                     Cmd.AdditiveColor);
 
-        if (Cmd.IndexCount > 0) 
-            DeviceContext->DrawIndexed(Cmd.IndexCount, Cmd.FirstIndex, 0);
+        if (Cmd.DrawVertexCount > 0) 
+            DeviceContext->DrawIndexed(Cmd.DrawVertexCount, Cmd.FirstIndex, 0);
         else if (Cmd.MeshData->IndexBufferCount > 0)
             DeviceContext->DrawIndexed(Cmd.MeshData->IndexBufferCount, 0, 0);
         else if (Cmd.MeshData->VertexBufferCount > 0)

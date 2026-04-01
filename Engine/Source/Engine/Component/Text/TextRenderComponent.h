@@ -52,6 +52,7 @@ namespace Engine::Component
 
       protected:
         Geometry::FAABB GetLocalAABB() const override;
+        void BuildMeshWithTextLayout(std::shared_ptr<FMeshData> InMeshData) const;
 
       protected:
         enum class EResolvedGlyphKind : uint8

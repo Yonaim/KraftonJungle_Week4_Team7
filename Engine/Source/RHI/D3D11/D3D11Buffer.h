@@ -16,6 +16,15 @@ public:
     {
         Desc = InDesc;
     }
+    
+    ~FD3D11Buffer() override
+    {
+        if (Buffer)
+        {
+            Buffer->Release();
+            Buffer = nullptr;
+        }
+    }
 
     ID3D11Buffer* GetBuffer() const
     {
@@ -35,6 +44,15 @@ public:
         : Buffer(std::move(InBuffer))
     {
         Desc = InDesc;
+    }
+    
+    ~FD3D11VertexBuffer() override
+    {
+        if (Buffer)
+        {
+            Buffer->Release();
+            Buffer = nullptr;
+        }
     }
 
     ID3D11Buffer* GetBuffer() const
@@ -59,6 +77,15 @@ public:
         Desc = InDesc;
         IndexFormat = InIndexFormat;
     }
+    
+    ~FD3D11IndexBuffer() override
+    {
+        if (Buffer)
+        {
+            Buffer->Release();
+            Buffer = nullptr;
+        }
+    }
 
     ID3D11Buffer* GetBuffer() const
     {
@@ -78,6 +105,15 @@ public:
         : Buffer(std::move(InBuffer))
     {
         Desc = InDesc;
+    }
+    
+    ~FD3D11ConstantBuffer() override
+    {
+        if (Buffer)
+        {
+            Buffer->Release();
+            Buffer = nullptr;
+        }
     }
 
     ID3D11Buffer* GetBuffer() const

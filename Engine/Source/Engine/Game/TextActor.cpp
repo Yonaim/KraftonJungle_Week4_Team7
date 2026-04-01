@@ -1,11 +1,12 @@
 #include "TextActor.h"
 
 #include "Engine/Component/Core/PrimitiveComponent.h"
+#include "Engine/Component/Text/AtlasTextComponent.h"
 #include "Engine/Component/Text/TextRenderComponent.h"
 
 ATextActor::ATextActor()
 {
-    auto* TextComponent = new Engine::Component::UTextRenderComponent();
+    auto* TextComponent = new Engine::Component::UAtlasTextComponent();
     TextComponent->SetColor({0.8f, 0.8f, 0.8f, 1.f});
     AddOwnedComponent(TextComponent, true);
 
