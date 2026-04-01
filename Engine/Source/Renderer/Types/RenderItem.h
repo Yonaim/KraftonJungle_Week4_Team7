@@ -35,12 +35,10 @@ struct FRenderItemState
     bool IsVisible() const { return IsFlagSet(Flags, ERenderItemFlags::Visible); }
     bool IsPickable() const { return IsFlagSet(Flags, ERenderItemFlags::Pickable); }
     bool IsSelected() const { return IsFlagSet(Flags, ERenderItemFlags::Selected); }
-    bool IsHovered() const { return IsFlagSet(Flags, ERenderItemFlags::Hovered); }
 
     void SetVisible(bool bInVisible) { SetFlag(Flags, ERenderItemFlags::Visible, bInVisible); }
     void SetPickable(bool bInPickable) { SetFlag(Flags, ERenderItemFlags::Pickable, bInPickable); }
     void SetSelected(bool bInSelected) { SetFlag(Flags, ERenderItemFlags::Selected, bInSelected); }
-    void SetHovered(bool bInHovered) { SetFlag(Flags, ERenderItemFlags::Hovered, bInHovered); }
 };
 
 enum class ERenderPlacementMode : uint8

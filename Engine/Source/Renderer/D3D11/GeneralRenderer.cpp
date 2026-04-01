@@ -113,7 +113,7 @@ bool FGeneralRenderer::Pick(int32 MouseX, int32 MouseY, uint32& OutPickId)
         D3D11_PRIMITIVE_TOPOLOGY Topology = (D3D11_PRIMITIVE_TOPOLOGY)Cmd.Topology;
         DeviceContext->IASetPrimitiveTopology(Topology);
 
-        UpdateObjectConstantBuffer(Cmd.WorldMatrix, Cmd.ObjectId);
+        UpdateObjectConstantBuffer(Cmd.WorldMatrix, Cmd.ObjectId, Cmd.MultiplyColor, Cmd.AdditiveColor);
 
         if (Cmd.IndexCount > 0) 
             DeviceContext->DrawIndexed(Cmd.IndexCount, Cmd.FirstIndex, 0); // 메시 파츠별 렌더링
@@ -450,11 +450,14 @@ void FGeneralRenderer::UpdateFrameConstantBuffer()
     }
 }
 
-void FGeneralRenderer::UpdateObjectConstantBuffer(const FMatrix& WorldMatrix, uint32 ObjectId)
+void FGeneralRenderer::UpdateObjectConstantBuffer(const FMatrix& WorldMatrix, uint32 ObjectId, 
+                                                  const FVector4& MultiplyColor, const FVector4& AdditiveColor)
 {
     FObjectConstantBuffer CBData;
     CBData.World = WorldMatrix;
     CBData.ObjectId = ObjectId;
+    CBData.MultiplyColor = MultiplyColor;
+    CBData.AdditiveColor = AdditiveColor;
     D3D11_MAPPED_SUBRESOURCE Mapped;
     if (SUCCEEDED(RHI.GetDeviceContext()->Map(ObjectConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped)))
     {
@@ -554,7 +557,7 @@ void FGeneralRenderer::ExecuteRenderPass(ERenderLayer InRenderLayer)
             CurrentMeshTopology = DesiredTopology;
         }
 
-        UpdateObjectConstantBuffer(Cmd.WorldMatrix, Cmd.ObjectId);
+        UpdateObjectConstantBuffer(Cmd.WorldMatrix, Cmd.ObjectId, Cmd.MultiplyColor, Cmd.AdditiveColor);
 
         if (Cmd.IndexCount > 0)
             DeviceContext->DrawIndexed(Cmd.IndexCount, Cmd.FirstIndex, 0);
@@ -776,7 +779,7 @@ void FGeneralRenderer::DrawAllAABBLines(ERenderLayer InRenderLayer)
 
         FMatrix AABBMatrix = FMatrix::MakeScale(Size) * FMatrix::MakeTranslation(Min);
 
-        UpdateObjectConstantBuffer(AABBMatrix);
+        UpdateObjectConstantBuffer(AABBMatrix, Cmd.ObjectId, Cmd.MultiplyColor, Cmd.AdditiveColor);
         DeviceContext->DrawIndexed(static_cast<UINT>(AABBMeshData->Indices.size()), 0, 0);
     }
 }

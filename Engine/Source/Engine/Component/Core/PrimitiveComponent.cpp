@@ -129,7 +129,6 @@ namespace Engine::Component
         MutableRenderCommand.bIsVisible = Actor->IsVisible();
         MutableRenderCommand.bIsPickable = Actor->IsPickable();
         MutableRenderCommand.bIsSelected = Actor->IsSelected();
-        MutableRenderCommand.bIsHovered = Actor->IsHovered();
 
         OutRenderData.RenderCommands.push_back(MutableRenderCommand);
     }

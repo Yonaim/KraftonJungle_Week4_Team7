@@ -479,7 +479,6 @@ namespace Engine::Component
         Command.bIsVisible = Actor->IsVisible();
         Command.bIsPickable = Actor->IsPickable();
         Command.bIsSelected = Actor->IsSelected();
-        Command.bIsHovered = Actor->IsHovered();
 
         OutRenderData.RenderCommands.push_back(Command);
     }

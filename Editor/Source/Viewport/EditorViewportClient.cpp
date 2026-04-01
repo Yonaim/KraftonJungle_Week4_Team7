@@ -100,7 +100,6 @@ void FEditorViewportClient::BuildRenderData(FEditorRenderData& OutEditorRenderDa
     SceneView.SetViewLocation(ViewportCamera.GetLocation());
     SceneView.SetClipPlanes(ViewportCamera.GetNearPlane(), ViewportCamera.GetFarPlane());
     SceneView.OnResize({0, 0, (int32)ViewportCamera.GetWidth(), (int32)ViewportCamera.GetHeight()});
-    OutEditorRenderData.SceneView = &SceneView;
     OutSceneRenderData.SceneView = &SceneView;
 
     OutEditorRenderData.bShowGrid = IsFlagSet(InShowFlags, EEditorShowFlags::SF_Grid);
@@ -164,6 +163,34 @@ void FEditorViewportClient::BuildRenderData(FEditorRenderData& OutEditorRenderDa
                             Cmd.Material = FGeneralRenderer::GetDefaultMaterial();
                             Cmd.RenderLayer = ERenderLayer::Overlay;
                             Cmd.ObjectId = Part.PickId;
+
+                            // Highlight Check
+                            EGizmoType DecodedType;
+                            EAxis DecodedAxis;
+                            bool bIsHovered = false;
+                            if (PickId::DecodeGizmoPart(Part.PickId, DecodedType, DecodedAxis))
+                            {
+                                if (DecodedAxis == EAxis::Center)
+                                    bIsHovered = (GizmoDraw.Highlight == EGizmoHighlight::Center);
+                                else if (DecodedAxis == EAxis::X)
+                                    bIsHovered = (GizmoDraw.Highlight == EGizmoHighlight::X);
+                                else if (DecodedAxis == EAxis::Y)
+                                    bIsHovered = (GizmoDraw.Highlight == EGizmoHighlight::Y);
+                                else if (DecodedAxis == EAxis::Z)
+                                    bIsHovered = (GizmoDraw.Highlight == EGizmoHighlight::Z);
+                            }
+                            
+                            if (bIsHovered)
+                            {
+                                // Solid Yellow
+                                Cmd.MultiplyColor = FVector4(0.0f, 0.0f, 0.0f, 1.0f);
+                                Cmd.AdditiveColor = FVector4(1.0f, 1.0f, 0.0f, 1.0f);
+                            }
+                            else
+                            {
+                                Cmd.MultiplyColor = FVector4(1.0f, 1.0f, 1.0f, 1.0f);
+                                Cmd.AdditiveColor = FVector4(0.0f, 0.0f, 0.0f, 1.0f);
+                            }
                             
                             Cmd.DepthStencilOption.DepthEnable = true;
                             Cmd.DepthStencilOption.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
@@ -231,27 +258,3 @@ void FEditorViewportClient::DrawViewportOverlay()
     DrawList->AddRect(ImVec2(MinX, MinY), ImVec2(MaxX, MaxY), IM_COL32(80, 140, 255, 255), 0.0f, 0,
                       1.5f);
 }
-
-// void FEditorViewportClient::DrawViewportOverlay()
-//{
-//     if (!SelectionController.IsDraggingSelection())
-//     {
-//         return;
-//     }
-//
-//     int32 StartX, StartY, EndX, EndY;
-//     SelectionController.GetSelectionRect(StartX, StartY, EndX, EndY);
-//
-//     const float MinX = (float)std::min(StartX, EndX);
-//     const float MinY = (float)std::min(StartY, EndY);
-//     const float MaxX = (float)std::max(StartX, EndX);
-//     const float MaxY = (float)std::max(StartY, EndY);
-//
-//     ImDrawList* DrawList = ImGui::GetForegroundDrawList();
-//     DrawList->AddRectFilled(ImVec2(MinX, MinY), ImVec2(MaxX, MaxY), IM_COL32(80, 140, 255, 40));
-//     DrawList->AddRect(ImVec2(MinX, MinY), ImVec2(MaxX, MaxY), IM_COL32(80, 140, 255, 255), 0.0f,
-//     0,
-//                       1.5f);
-// }
-
-void FEditorViewportClient::DrawOutline() {}

@@ -1496,7 +1496,6 @@ void FEditor::BuildRenderData()
             FEditorRenderData EditorRenderData = FEditorRenderData{};
             FSceneRenderData  SceneRenderData = FSceneRenderData{};
 
-            EditorRenderData.SceneView = Viewport->GetSceneView();
             SceneRenderData.SceneView = Viewport->GetSceneView();
             SceneRenderData.ViewMode =
                 Viewport->GetViewportClient()->GetRenderSetting().GetViewMode();

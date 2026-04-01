@@ -123,7 +123,6 @@ namespace Engine::Component
             Cmd.bIsVisible = Actor->IsVisible();
             Cmd.bIsPickable = Actor->IsPickable();
             Cmd.bIsSelected = Actor->IsSelected();
-            Cmd.bIsHovered = Actor->IsHovered();
 
             OutRenderData.RenderCommands.push_back(Cmd);
         }
@@ -152,7 +151,6 @@ namespace Engine::Component
                 Cmd.bIsVisible = Actor->IsVisible();
                 Cmd.bIsPickable = Actor->IsPickable();
                 Cmd.bIsSelected = Actor->IsSelected();
-                Cmd.bIsHovered = Actor->IsHovered();
 
                 OutRenderData.RenderCommands.push_back(Cmd);
             }

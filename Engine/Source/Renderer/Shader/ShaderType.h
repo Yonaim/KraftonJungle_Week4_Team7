@@ -14,4 +14,6 @@ struct FObjectConstantBuffer
     FMatrix World;
     uint32 ObjectId;
     uint32 Padding[3];
+    FVector4 MultiplyColor; // Default (1, 1, 1, 1)
+    FVector4 AdditiveColor; // Default (0, 0, 0, 0)
 };

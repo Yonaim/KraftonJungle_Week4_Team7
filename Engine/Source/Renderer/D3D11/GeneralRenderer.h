@@ -67,7 +67,9 @@ private:
     void SetConstantBuffers();
     bool CreateConstantBuffers();
     void UpdateFrameConstantBuffer();
-    void UpdateObjectConstantBuffer(const FMatrix& WorldMatrix, uint32 ObjectId = 0);
+    void UpdateObjectConstantBuffer(const FMatrix& WorldMatrix, uint32 ObjectId = 0, 
+                                    const FVector4& MultiplyColor = FVector4(1.0f, 1.0f, 1.0f, 1.0f),
+                                    const FVector4& AdditiveColor = FVector4(0.0f, 0.0f, 0.0f, 0.0f));
     void ClearDepthBuffer();
     
     void ExecuteRenderPass(ERenderLayer InRenderLayer);

@@ -98,10 +98,12 @@ void FRendererModule::Render(const FSceneRenderData& InSceneRenderData)
 void FRendererModule::RenderWorldPass(const FEditorRenderData& InEditorRenderData,
                                       const FSceneRenderData&  InSceneRenderData)
 {
-    if (!InSceneRenderData.RenderCommands.empty())
+    if (GeneralRenderer)
     {
+        GeneralRenderer->ClearCommandList();
+
         FRenderCommandQueue CommandQueue;
-        for (auto el : InSceneRenderData.RenderCommands)
+        for (const auto& el : InSceneRenderData.RenderCommands)
         {
             CommandQueue.AddCommand(el);
         }
@@ -110,12 +112,6 @@ void FRendererModule::RenderWorldPass(const FEditorRenderData& InEditorRenderDat
         {
             CommandQueue.ViewMatrix = InSceneRenderData.SceneView->GetViewMatrix();
             CommandQueue.ProjectionMatrix = InSceneRenderData.SceneView->GetProjectionMatrix();
-        }
-        
-        if (InEditorRenderData.SceneView)
-        {
-            CommandQueue.ViewMatrix = InEditorRenderData.SceneView->GetViewMatrix();
-            CommandQueue.ProjectionMatrix = InEditorRenderData.SceneView->GetProjectionMatrix();
         }
         
         GeneralRenderer->SubmitCommands(CommandQueue);
@@ -136,7 +132,25 @@ bool FRendererModule::Pick(const FEditorRenderData& InEditorRenderData,
 {
     if (!GeneralRenderer) return false;
     
+    // Clear and Submit commands for this specific pick pass
+    GeneralRenderer->ClearCommandList();
+    
+    FRenderCommandQueue CommandQueue;
+    for (const auto& Cmd : InSceneRenderData.RenderCommands)
+    {
+        CommandQueue.AddCommand(Cmd);
+    }
+    
+    if (InSceneRenderData.SceneView)
+    {
+        CommandQueue.ViewMatrix = InSceneRenderData.SceneView->GetViewMatrix();
+        CommandQueue.ProjectionMatrix = InSceneRenderData.SceneView->GetProjectionMatrix();
+    }
+    
+    GeneralRenderer->SubmitCommands(CommandQueue);
+
     uint32 PickId = 0;
+    // MouseX, MouseY는 이미 월드 좌표계(윈도우 전체 상대)이므로 그대로 전달
     if (GeneralRenderer->Pick(MouseX, MouseY, PickId))
         OutResult = PickResult::FromPickId(PickId);
     

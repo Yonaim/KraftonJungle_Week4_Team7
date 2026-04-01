@@ -59,8 +59,6 @@ struct FGizmoDrawData
 
 struct FEditorRenderData
 {
-    const FSceneView* SceneView = nullptr;
-
     bool bShowGrid = false;
     bool bShowWorldAxes = false;
     bool bShowSelectionOutline = false;
