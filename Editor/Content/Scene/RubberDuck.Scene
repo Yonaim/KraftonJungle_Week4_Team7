@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "NextUUID": 1,
+  "NextUUID": 2,
   "Primitives": {
     "1": {
       "ObjStaticMeshAsset": "Mesh/Model/rubber_duck/rubber_duck_toy_4k.obj",
