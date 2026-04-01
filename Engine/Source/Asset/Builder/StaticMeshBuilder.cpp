@@ -10,6 +10,7 @@
 
 #include "Asset/Cache/AssetKeyUtils.h"
 #include "Asset/Builder/MaterialBuilder.h"
+#include "Core/Misc/Paths.h"
 
 namespace Asset
 {
@@ -413,7 +414,7 @@ namespace Asset
                         continue;
                     }
 
-                    Result->MaterialLibraries.push_back(std::filesystem::path(LibraryPath));
+                    Result->MaterialLibraries.push_back(FPaths::PathFromUtf8(LibraryPath));
                     CurrentMaterialLibraryIndex =
                         static_cast<int32>(Result->MaterialLibraries.size()) - 1;
                 }

@@ -2,6 +2,7 @@
 #include <fstream>
 #include "Asset/Serialization/CookedDataBinaryIO.h"
 #include "Asset/Core/AssetNaming.h"
+#include "Core/Misc/Paths.h"
 
 namespace Asset::Binary
 {
@@ -163,7 +164,7 @@ namespace Asset::Binary
 
     bool SaveTexture(const FTextureCookedData& Data, const FString& Path)
     {
-        return SaveTexture(Data, std::filesystem::path(Path));
+        return SaveTexture(Data, FPaths::PathFromUtf8(Path));
     }
 
     bool SaveTexture(const FTextureCookedData& Data, const std::filesystem::path& Path)
@@ -173,7 +174,7 @@ namespace Asset::Binary
 
     bool LoadTexture(const FString& Path, FTextureCookedData& OutData)
     {
-        return LoadTexture(std::filesystem::path(Path), OutData);
+        return LoadTexture(FPaths::PathFromUtf8(Path), OutData);
     }
 
     bool LoadTexture(const std::filesystem::path& Path, FTextureCookedData& OutData)
@@ -183,7 +184,7 @@ namespace Asset::Binary
 
     bool SaveMaterialLibrary(const FMtlCookedLibraryData& Data, const FString& Path)
     {
-        return SaveMaterialLibrary(Data, std::filesystem::path(Path));
+        return SaveMaterialLibrary(Data, FPaths::PathFromUtf8(Path));
     }
 
     bool SaveMaterialLibrary(const FMtlCookedLibraryData&       Data,
@@ -194,7 +195,7 @@ namespace Asset::Binary
 
     bool LoadMaterialLibrary(const FString& Path, FMtlCookedLibraryData& OutData)
     {
-        return LoadMaterialLibrary(std::filesystem::path(Path), OutData);
+        return LoadMaterialLibrary(FPaths::PathFromUtf8(Path), OutData);
     }
 
     bool LoadMaterialLibrary(const std::filesystem::path& Path, FMtlCookedLibraryData& OutData)
@@ -204,7 +205,7 @@ namespace Asset::Binary
 
     bool SaveStaticMesh(const FObjCookedData& Data, const FString& Path)
     {
-        return SaveStaticMesh(Data, std::filesystem::path(Path));
+        return SaveStaticMesh(Data, FPaths::PathFromUtf8(Path));
     }
 
     bool SaveStaticMesh(const FObjCookedData& Data, const std::filesystem::path& Path)
@@ -214,7 +215,7 @@ namespace Asset::Binary
 
     bool LoadStaticMesh(const FString& Path, FObjCookedData& OutData)
     {
-        return LoadStaticMesh(std::filesystem::path(Path), OutData);
+        return LoadStaticMesh(FPaths::PathFromUtf8(Path), OutData);
     }
 
     bool LoadStaticMesh(const std::filesystem::path& Path, FObjCookedData& OutData)
@@ -224,7 +225,7 @@ namespace Asset::Binary
 
     bool SaveFontAtlas(const FFontAtlasCookedData& Data, const FString& Path)
     {
-        return SaveFontAtlas(Data, std::filesystem::path(Path));
+        return SaveFontAtlas(Data, FPaths::PathFromUtf8(Path));
     }
 
     bool SaveFontAtlas(const FFontAtlasCookedData& Data, const std::filesystem::path& Path)
@@ -234,7 +235,7 @@ namespace Asset::Binary
 
     bool LoadFontAtlas(const FString& Path, FFontAtlasCookedData& OutData)
     {
-        return LoadFontAtlas(std::filesystem::path(Path), OutData);
+        return LoadFontAtlas(FPaths::PathFromUtf8(Path), OutData);
     }
 
     bool LoadFontAtlas(const std::filesystem::path& Path, FFontAtlasCookedData& OutData)
@@ -244,7 +245,7 @@ namespace Asset::Binary
 
     bool SaveSubUVAtlas(const FSubUVAtlasCookedData& Data, const FString& Path)
     {
-        return SaveSubUVAtlas(Data, std::filesystem::path(Path));
+        return SaveSubUVAtlas(Data, FPaths::PathFromUtf8(Path));
     }
 
     bool SaveSubUVAtlas(const FSubUVAtlasCookedData& Data, const std::filesystem::path& Path)
@@ -254,7 +255,7 @@ namespace Asset::Binary
 
     bool LoadSubUVAtlas(const FString& Path, FSubUVAtlasCookedData& OutData)
     {
-        return LoadSubUVAtlas(std::filesystem::path(Path), OutData);
+        return LoadSubUVAtlas(FPaths::PathFromUtf8(Path), OutData);
     }
 
     bool LoadSubUVAtlas(const std::filesystem::path& Path, FSubUVAtlasCookedData& OutData)

@@ -44,8 +44,7 @@ namespace Asset
             return {};
         }
 
-        const FWString Wide = Path.generic_wstring();
-        return FString(Wide.begin(), Wide.end());
+        return FPaths::Utf8FromPath(Path);
     }
 
     std::filesystem::path FAssetCacheManager::ResolveAssetPath(const FString& Path)
@@ -55,7 +54,7 @@ namespace Asset
             return {};
         }
 
-        std::filesystem::path Candidate(Path);
+        std::filesystem::path Candidate = FPaths::PathFromUtf8(Path);
         if (Candidate.is_absolute())
         {
             return Candidate;

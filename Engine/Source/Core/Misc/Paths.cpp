@@ -9,6 +9,11 @@
 #include <cassert>
 #include <system_error>
 
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
 namespace fs = std::filesystem;
 
 FPathConfig FPaths::Config{};
@@ -87,6 +92,54 @@ fs::path FPaths::Normalize(const fs::path& InPath)
 fs::path FPaths::Combine(const fs::path& Base, const fs::path& Relative)
 {
     return Normalize(Base / Relative);
+}
+
+fs::path FPaths::PathFromUtf8(const FString& Utf8Path)
+{
+    if (Utf8Path.empty())
+    {
+        return {};
+    }
+
+#if defined(_WIN32)
+    const int RequiredSize =
+        MultiByteToWideChar(CP_UTF8, 0, Utf8Path.c_str(), -1, nullptr, 0);
+    if (RequiredSize <= 1)
+    {
+        return {};
+    }
+
+    std::wstring WidePath(static_cast<size_t>(RequiredSize - 1), L'\0');
+    MultiByteToWideChar(CP_UTF8, 0, Utf8Path.c_str(), -1, WidePath.data(), RequiredSize);
+    return fs::path(WidePath);
+#else
+    return fs::path(Utf8Path);
+#endif
+}
+
+FString FPaths::Utf8FromPath(const fs::path& Path)
+{
+    if (Path.empty())
+    {
+        return {};
+    }
+
+#if defined(_WIN32)
+    const std::wstring WidePath = Path.native();
+    const int RequiredSize =
+        WideCharToMultiByte(CP_UTF8, 0, WidePath.c_str(), -1, nullptr, 0, nullptr, nullptr);
+    if (RequiredSize <= 1)
+    {
+        return {};
+    }
+
+    FString Utf8Path(static_cast<size_t>(RequiredSize - 1), '\0');
+    WideCharToMultiByte(CP_UTF8, 0, WidePath.c_str(), -1, Utf8Path.data(), RequiredSize, nullptr,
+                        nullptr);
+    return Utf8Path;
+#else
+    return Path.generic_string();
+#endif
 }
 
 const FPathConfig& FPaths::GetConfig()

@@ -8,6 +8,7 @@
 #include "Asset/Core/AssetNaming.h"
 #include "Asset/Builder/TextureBuilder.h"
 #include "Asset/Serialization/CookedDataBinaryIO.h"
+#include "Core/Misc/Paths.h"
 
 namespace Asset
 {
@@ -292,7 +293,7 @@ namespace Asset
                     continue;
                 }
 
-                const std::filesystem::path SourceTexturePath = std::filesystem::path(TexturePath);
+                const std::filesystem::path SourceTexturePath(TexturePath);
                 const FString BakedTexturePath = MakeBakedAssetPath(SourceTexturePath.generic_string());
                 if (BakedTexturePath.empty())
                 {
@@ -309,7 +310,7 @@ namespace Asset
                 }
 
                 Binary::SaveTexture(*TextureCooked, BakedTexturePath);
-                Material.TextureBindings.push_back({TextureSlot, std::filesystem::path(BakedTexturePath)});
+                Material.TextureBindings.push_back({TextureSlot, FPaths::PathFromUtf8(BakedTexturePath)});
             }
 
             const uint32 MaterialIndex = static_cast<uint32>(Result->Materials.size());

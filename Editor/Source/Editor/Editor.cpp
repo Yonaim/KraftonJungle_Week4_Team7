@@ -258,8 +258,7 @@ namespace
 
     FString PathToUtf8String(const std::filesystem::path& Path)
     {
-        const std::u8string Utf8Path = Path.u8string();
-        return FString(reinterpret_cast<const char*>(Utf8Path.data()), Utf8Path.size());
+        return FPaths::Utf8FromPath(Path);
     }
 
     FWString Utf8ToWide(const FString& InText)
@@ -454,7 +453,18 @@ namespace
                 continue;
             }
 
-            const FString Value = TrimIniValueCopy(TrimmedLine.substr(EqualsIndex + 1));
+            FString Value = TrimIniValueCopy(TrimmedLine.substr(EqualsIndex + 1));
+            if (Value.size() >= 2 && Value.front() == '\"' && Value.back() == '\"')
+            {
+                Value = Value.substr(1, Value.size() - 2);
+            }
+
+            if (Value.size() >= 2 && Value.substr(Value.size() - 2) == "\\n")
+            {
+                Value.resize(Value.size() - 2);
+            }
+
+            Value = TrimIniValueCopy(Value);
             if (Value.empty())
             {
                 continue;
@@ -780,7 +790,7 @@ void FEditor::PreloadStartupAssets()
             Engine::Scene::ResolveSceneAssetPathToAbsolute(AssetPathValue);
         if (ResolvedPath.empty())
         {
-            ResolvedPath = AssetPathValue;
+            ResolvedPath = FPaths::PathFromUtf8(AssetPathValue);
         }
 
         const FString               AbsolutePath = PathToUtf8String(ResolvedPath);

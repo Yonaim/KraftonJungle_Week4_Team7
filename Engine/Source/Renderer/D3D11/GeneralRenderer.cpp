@@ -127,8 +127,9 @@ bool FGeneralRenderer::Pick(int32 MouseX, int32 MouseY, uint32& OutPickId)
 
         UpdateObjectConstantBuffer(Cmd.WorldMatrix, Cmd.ObjectId, Cmd.UVOffset, Cmd.MultiplyColor, Cmd.AdditiveColor);
 
-        if (Cmd.DrawVertexCount > 0) 
-            DeviceContext->DrawIndexed(Cmd.DrawVertexCount, Cmd.FirstIndex, 0);
+        const uint32 IndexCount = Cmd.DrawVertexCount > 0 ? Cmd.DrawVertexCount : Cmd.DrawIndexCount;
+        if (IndexCount > 0)
+            DeviceContext->DrawIndexed(IndexCount, Cmd.FirstIndex, 0);
         else if (Cmd.MeshData->IndexBufferCount > 0)
             DeviceContext->DrawIndexed(Cmd.MeshData->IndexBufferCount, 0, 0);
         else if (Cmd.MeshData->VertexBufferCount > 0)
@@ -619,8 +620,9 @@ void FGeneralRenderer::ExecuteRenderPass(ERenderLayer InRenderLayer)
                                     Cmd.MultiplyColor, 
                                     Cmd.AdditiveColor);
 
-        if (Cmd.DrawVertexCount > 0) 
-            DeviceContext->DrawIndexed(Cmd.DrawVertexCount, Cmd.FirstIndex, 0);
+        const uint32 IndexCount = Cmd.DrawVertexCount > 0 ? Cmd.DrawVertexCount : Cmd.DrawIndexCount;
+        if (IndexCount > 0)
+            DeviceContext->DrawIndexed(IndexCount, Cmd.FirstIndex, 0);
         else if (Cmd.MeshData->IndexBufferCount > 0)
             DeviceContext->DrawIndexed(Cmd.MeshData->IndexBufferCount, 0, 0);
         else if (Cmd.MeshData->VertexBufferCount > 0)
