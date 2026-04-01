@@ -5,8 +5,10 @@
 #include "Engine/Scene/Scene.h"
 #include "Engine/Scene/World.h"
 #include "Engine/Game/Actor.h"
+#include "Engine/Component/Mesh/LineBatchComponent.h"
 
 #include "imgui.h"
+#include "Engine/EngineStatics.h"
 #include "Renderer/RendererModule.h"
 #include "Renderer/D3D11/GeneralRenderer.h"
 #include "Renderer/RenderCommand.h"
@@ -34,6 +36,8 @@ void FEditorViewportClient::Create()
     ViewportCamera.SetFarPlane(2000.0f);
     ViewportCamera.SetLocation(FVector(-20.0f, 1.0f, 10.0f));
     ViewportCamera.SetRotation(FRotator(0.0f, 0.0f, 0.0f));
+
+    GridLineBatcher = new Engine::Component::ULineBatchComponent();
 }
 
 void FEditorViewportClient::Release()
@@ -42,6 +46,12 @@ void FEditorViewportClient::Release()
     {
         delete InputRouter;
         InputRouter = nullptr;
+    }
+
+    if (GridLineBatcher)
+    {
+        delete GridLineBatcher;
+        GridLineBatcher = nullptr;
     }
 }
 
@@ -241,6 +251,139 @@ void FEditorViewportClient::BuildRenderData(FEditorRenderData& OutEditorRenderDa
     // 260401 NOTE: 기즈모 '정보'는 OutEditorRenderData, '렌더 커맨드'는 OutSceneRenderData에 나눠져있음... 
     // \(^o^)/
     HandleGizmoRenderCommand(OutEditorRenderData, OutSceneRenderData);
+
+    // 그리드 및 월드 축 렌더 커맨드 생성
+    if (OutEditorRenderData.bShowGrid || OutEditorRenderData.bShowWorldAxes)
+    {
+        DrawWorldGrid(OutEditorRenderData, OutSceneRenderData);
+    }
+}
+
+void FEditorViewportClient::DrawWorldGrid(FEditorRenderData& OutEditorRenderData,
+                                          FSceneRenderData&  OutSceneRenderData)
+{
+    if (!GridLineBatcher)
+    {
+        return;
+    }
+    
+    const float  PersistentLifeTime = -1.0f;
+
+    GridLineBatcher->ClearLines();
+    
+    if (OutEditorRenderData.bShowGrid)
+    {
+        const float GridSpacing = UEngineStatics::GridSpacing;
+        const FColor GridColor(0.3f, 0.3f, 0.3f, 1.0f);
+
+        // 카메라 위치를 기준으로 그리드 범위를 결정합니다.
+        const FVector CamLoc = ViewportCamera.GetLocation();
+        const float   MaxGridRange = 2000.0f; // 카메라로부터 그리드가 그려질 반경
+        const int32   LineCount = static_cast<int32>(MaxGridRange / GridSpacing);
+    
+        const EViewportProjectionType ProjType = ViewportCamera.GetProjectionType();
+        const EViewportOrthographicType OrthoType = ViewportCamera.GetOrthographicType();
+
+        if (ProjType == EViewportProjectionType::Perspective || OrthoType == EViewportOrthographicType::Top ||
+            OrthoType == EViewportOrthographicType::Bottom)
+        {
+            // XY 평면 그리드: 카메라 위치 주변으로 스냅된 중심 계산
+            float SnapX = std::floor(CamLoc.X / GridSpacing) * GridSpacing;
+            float SnapY = std::floor(CamLoc.Y / GridSpacing) * GridSpacing;
+
+            float MinX = SnapX - LineCount * GridSpacing;
+            float MaxX = SnapX + LineCount * GridSpacing;
+            float MinY = SnapY - LineCount * GridSpacing;
+            float MaxY = SnapY + LineCount * GridSpacing;
+
+            // X축에 평행한 선들 (Y축 값을 변화시키며 그림)
+            for (int32 i = -LineCount; i <= LineCount; ++i)
+            {
+                float y = SnapY + i * GridSpacing;
+                if (OutEditorRenderData.bShowWorldAxes && std::abs(y) < 0.01f) 
+                    continue; // 월드 축과 겹치는 부분 제외
+                GridLineBatcher->AddLine(FVector(MinX, y, 0.0f), FVector(MaxX, y, 0.0f), GridColor, PersistentLifeTime);
+            }
+
+            // Y축에 평행한 선들 (X축 값을 변화시키며 그림)
+            for (int32 i = -LineCount; i <= LineCount; ++i)
+            {
+                float x = SnapX + i * GridSpacing;
+                if (OutEditorRenderData.bShowWorldAxes && std::abs(x) < 0.01f) 
+                    continue; // 월드 축과 겹치는 부분 제외
+                GridLineBatcher->AddLine(FVector(x, MinY, 0.0f), FVector(x, MaxY, 0.0f), GridColor, PersistentLifeTime);
+            }
+        }
+        else if (OrthoType == EViewportOrthographicType::Front || OrthoType == EViewportOrthographicType::Back)
+        {
+            // YZ 평면 그리드
+            float SnapY = std::floor(CamLoc.Y / GridSpacing) * GridSpacing;
+            float SnapZ = std::floor(CamLoc.Z / GridSpacing) * GridSpacing;
+
+            float MinY = SnapY - LineCount * GridSpacing;
+            float MaxY = SnapY + LineCount * GridSpacing;
+            float MinZ = SnapZ - LineCount * GridSpacing;
+            float MaxZ = SnapZ + LineCount * GridSpacing;
+
+            for (int32 i = -LineCount; i <= LineCount; ++i)
+            {
+                float z = SnapZ + i * GridSpacing;
+                if (OutEditorRenderData.bShowWorldAxes && std::abs(z) < 0.01f) 
+                    continue;
+                GridLineBatcher->AddLine(FVector(0.0f, MinY, z), FVector(0.0f, MaxY, z), GridColor, PersistentLifeTime);
+            }
+
+            for (int32 i = -LineCount; i <= LineCount; ++i)
+            {
+                float y = SnapY + i * GridSpacing;
+                if (OutEditorRenderData.bShowWorldAxes && std::abs(y) < 0.01f) 
+                    continue;
+                GridLineBatcher->AddLine(FVector(0.0f, y, MinZ), FVector(0.0f, y, MaxZ), GridColor, PersistentLifeTime);
+            }
+        }
+        else if (OrthoType == EViewportOrthographicType::Left || OrthoType == EViewportOrthographicType::Right)
+        {
+            // XZ 평면 그리드
+            float SnapX = std::floor(CamLoc.X / GridSpacing) * GridSpacing;
+            float SnapZ = std::floor(CamLoc.Z / GridSpacing) * GridSpacing;
+
+            float MinX = SnapX - LineCount * GridSpacing;
+            float MaxX = SnapX + LineCount * GridSpacing;
+            float MinZ = SnapZ - LineCount * GridSpacing;
+            float MaxZ = SnapZ + LineCount * GridSpacing;
+
+            for (int32 i = -LineCount; i <= LineCount; ++i)
+            {
+                float z = SnapZ + i * GridSpacing;
+                if (OutEditorRenderData.bShowWorldAxes && std::abs(z) < 0.01f) 
+                    continue;
+                GridLineBatcher->AddLine(FVector(MinX, 0.0f, z), FVector(MaxX, 0.0f, z), GridColor, PersistentLifeTime);
+            }
+
+            for (int32 i = -LineCount; i <= LineCount; ++i)
+            {
+                float x = SnapX + i * GridSpacing;
+                if (OutEditorRenderData.bShowWorldAxes && std::abs(x) < 0.01f) 
+                    continue;
+                GridLineBatcher->AddLine(FVector(x, 0.0f, MinZ), FVector(x, 0.0f, MaxZ), GridColor, PersistentLifeTime);
+            }
+        }
+    }
+
+    // 월드 축
+    if (OutEditorRenderData.bShowWorldAxes)
+    {
+        const float AxisLen = 10000.0f; // 축은 충분히 길게 그림
+        GridLineBatcher->AddLine(FVector(-AxisLen, 0.0f, 0.0f), FVector(AxisLen, 0.0f, 0.0f), FColor::Red(),
+                                 PersistentLifeTime);
+        GridLineBatcher->AddLine(FVector(0.0f, -AxisLen, 0.0f), FVector(0.0f, AxisLen, 0.0f), FColor::Green(),
+                                 PersistentLifeTime);
+        GridLineBatcher->AddLine(FVector(0.0f, 0.0f, -AxisLen), FVector(0.0f, 0.0f, AxisLen), FColor::Blue(),
+                                 PersistentLifeTime);
+    }
+
+    // 그리드 라인배처의 렌더 데이터를 수집하여 OutSceneRenderData에 추가
+    GridLineBatcher->CollectRenderData(OutSceneRenderData, ESceneShowFlags::SF_Primitives);
 }
 
 void FEditorViewportClient::OnResize(uint32 Width, uint32 Height)

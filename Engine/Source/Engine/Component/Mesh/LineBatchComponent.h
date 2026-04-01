@@ -40,8 +40,6 @@ namespace Engine::Component
 
         void AddSphere(const FVector& InCenter, float InRadius, int32 InSegments, const FColor& InColor, float InLifeTime = 0.0f);
 
-        void AddWorldGrid(float InGridSize, float InGridSpacing, const FColor& InColor = FColor(0.5f, 0.5f, 0.5f, 1.0f));
-
         const TArray<FLineData>& GetLines() const { return Lines; }
 
         void ClearLines();
