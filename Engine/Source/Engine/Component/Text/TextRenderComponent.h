@@ -23,8 +23,8 @@ namespace Engine::Component
         void           SetBillboardOffset(const FVector& InBillboardOffset);
 
         const FFontResource* GetFontResource() const { return FontResource; }
-        FFontResource*       GetFontResource() { return FontResource; }
-        void                 SetFontResource(FFontResource* InFontResource);
+        const FFontResource* GetFontResource() { return FontResource; }
+        void                 SetFontResource(const FFontResource* InFontResource);
 
         const FString& GetFontPath() const { return FontPath; }
         void           SetFontPath(const FString& InFontPath);
@@ -100,12 +100,12 @@ namespace Engine::Component
                                               float InScale) const;
 
         FTextLayout BuildTextLayout() const;
-        virtual FFontResource* ResolveFontResourceForCollect() const;
+        virtual const FFontResource* ResolveFontResourceForCollect() const;
 
       protected:
         FString Text;
         FString FontPath;
-        FFontResource* FontResource = nullptr;
+        const FFontResource* FontResource = nullptr;
 
         float TextScale = 1.0f;
         float LetterSpacing = 0.0f;

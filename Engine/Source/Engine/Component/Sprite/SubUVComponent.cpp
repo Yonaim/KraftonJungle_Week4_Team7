@@ -82,8 +82,8 @@ namespace Engine::Component
             FrameIndex >= 0 && static_cast<size_t>(FrameIndex) < Resource->Frames.size())
         {
             const auto& Frame = Resource->Frames[FrameIndex];
-            OutUVMin = FVector2(Frame.Min.X, Frame.Min.Y);
-            OutUVMax = FVector2(Frame.Max.X, Frame.Max.Y);
+            OutUVMin = FVector2(Frame.X, Frame.Y);
+            OutUVMax = FVector2(Frame.X + Frame.Width, Frame.Y + Frame.Height);
             return;
         }
 

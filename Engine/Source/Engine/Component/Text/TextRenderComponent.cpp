@@ -120,7 +120,7 @@ namespace Engine::Component
         BillboardOffset = InBillboardOffset;
     }
 
-    void UTextRenderComponent::SetFontResource(FFontResource* InFontResource)
+    void UTextRenderComponent::SetFontResource(const FFontResource* InFontResource)
     {
         if (FontResource != InFontResource)
         {
@@ -383,7 +383,7 @@ namespace Engine::Component
 
     void UTextRenderComponent::CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const
     {
-        FFontResource* ResolvedFontResource = ResolveFontResourceForCollect();
+        const FFontResource* ResolvedFontResource = ResolveFontResourceForCollect();
         if (FontResource != ResolvedFontResource)
         {
             const_cast<UTextRenderComponent*>(this)->SetFontResource(ResolvedFontResource);

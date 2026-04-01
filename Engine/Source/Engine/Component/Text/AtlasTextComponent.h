@@ -42,7 +42,7 @@ namespace Engine::Component
 
       protected:
         Geometry::FAABB GetLocalAABB() const override { return {}; }
-        FFontResource* ResolveFontResourceForCollect() const override;
+        const FFontResource* ResolveFontResourceForCollect() const override;
 
         UFontAtlas* FontAsset = nullptr;
     };

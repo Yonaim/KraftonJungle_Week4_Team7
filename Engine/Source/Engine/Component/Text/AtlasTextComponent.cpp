@@ -63,8 +63,7 @@ namespace Engine::Component
         return FVector::ZeroVector;
     }
 
-
-    FFontResource* UAtlasTextComponent::ResolveFontResourceForCollect() const
+    const FFontAtlasRenderResource* UAtlasTextComponent::ResolveFontResourceForCollect() const
     {
         return GetFontRenderResource();
     }
