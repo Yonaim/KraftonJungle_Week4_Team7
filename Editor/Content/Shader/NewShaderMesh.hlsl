@@ -12,7 +12,9 @@ cbuffer ObjectConstants : register(b1)
     row_major float4x4 WorldMatrix;
     uint ObjectId;
     float2 UVOffset;
-    uint Padding2;
+    uint Padding;
+    float4 MultiplyColor;
+    float4 AdditiveColor;
 };
 
 struct VSInput
@@ -45,6 +47,9 @@ PSInput VSMain(VSInput In)
 float4 PSMain(PSInput In) : SV_TARGET
 {   
     float4 TexColor = MaterialTexture.Sample(NormalSampler, In.UV);
+    float4 BaseColor = TexColor * In.Color;
     
-    return TexColor * In.Color;
+    float4 FinalColor = (BaseColor * MultiplyColor) + AdditiveColor;
+    
+    return FinalColor;
 }

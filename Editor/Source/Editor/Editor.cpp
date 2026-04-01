@@ -46,6 +46,8 @@
 #include "Engine/Asset/StaticMesh.h"
 #include "CoreUObject/ObjectIterator.h"
 #include "Asset/Manager/AssetCacheManager.h"
+#include "Renderer/RendererModule.h"
+
 // TODO 삭제 예정
 namespace
 {
@@ -630,10 +632,11 @@ void FEditor::SetChromeHost(IEditorChromeHost* InChromeHost)
     UE_LOG(FEditor, ELogLevel::Verbose, "Editor chrome host set: %p", InChromeHost);
 }
 
-void FEditor::SetRuntimeServices(FD3D11RHI* InRHI, RHI::FDynamicRHI* InDynamicRHI,
+void FEditor::SetRuntimeServices(FRendererModule*     InRenderer, RHI::FDynamicRHI* InDynamicRHI,
                                  FAssetObjectManager* InAssetObjectManager)
 {
-    EditorContext.RHI = InRHI;
+    EditorContext.RHI = &InRenderer->GetRHI();
+    EditorContext.Renderer = InRenderer;
     EditorContext.DynamicRHI = InDynamicRHI;
     EditorContext.AssetObjectManager = InAssetObjectManager;
     AboutImageResource = nullptr;
@@ -642,8 +645,11 @@ void FEditor::SetRuntimeServices(FD3D11RHI* InRHI, RHI::FDynamicRHI* InDynamicRH
     ResolveSceneAssetReferences(CurWorld != nullptr ? CurWorld->GetActiveScene() : nullptr);
     PreloadStartupAssets();
     UE_LOG(FEditor, ELogLevel::Info,
-           "Runtime services updated. RHI=%p DynamicRHI=%p AssetObjectManager=%p", InRHI,
-           InDynamicRHI, InAssetObjectManager);
+           "Runtime services updated. RHI=%p DynamicRHI=%p AssetObjectManager=%p", 
+           EditorContext.RHI,
+           EditorContext.DynamicRHI, 
+           EditorContext.AssetObjectManager
+    );
 }
 
 void FEditor::LoadEditorSettings()
@@ -1913,7 +1919,6 @@ void FEditor::BuildRenderData()
             FEditorRenderData EditorRenderData = FEditorRenderData{};
             FSceneRenderData  SceneRenderData = FSceneRenderData{};
 
-            EditorRenderData.SceneView = Viewport->GetSceneView();
             SceneRenderData.SceneView = Viewport->GetSceneView();
             SceneRenderData.ViewMode =
                 Viewport->GetViewportClient()->GetRenderSetting().GetViewMode();
@@ -1923,12 +1928,12 @@ void FEditor::BuildRenderData()
             const ESceneShowFlags SceneShowFlags =
                 Viewport->GetViewportClient()->GetRenderSetting().BuildSceneShowFlags();
 
-            Viewport->GetViewportClient()->BuildRenderData(EditorRenderData, EditorShowFlags);
-
             if (CurWorld != nullptr)
             {
                 CurWorld->BuildRenderData(SceneRenderData, SceneShowFlags);
             }
+
+            Viewport->GetViewportClient()->BuildRenderData(EditorRenderData, SceneRenderData, EditorShowFlags);
 
             EditorRenderDatas.push_back(EditorRenderData);
             SceneRenderDatas.push_back(SceneRenderData);

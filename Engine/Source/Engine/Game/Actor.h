@@ -86,7 +86,6 @@ class ENGINE_API AActor : public UObject
     virtual bool IsRenderable() const { return false; }
     virtual bool IsVisible() const { return true; }
     virtual bool IsSelected() const { return false; }
-    virtual bool IsHovered() const { return false; }
 
     //  Bound 보여주기
     virtual bool IsShowBounds() const { return RootComponent->IsShowBounds(); }

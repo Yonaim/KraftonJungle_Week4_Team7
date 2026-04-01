@@ -8,7 +8,7 @@ cbuffer ObjectConstants : register(b1)
 {
     row_major float4x4 WorldMatrix;
     uint ObjectId;
-    uint Padding0;
+    uint IsHovered;
     uint Padding1;
     uint Padding2;
 };

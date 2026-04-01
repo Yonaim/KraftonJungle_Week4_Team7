@@ -31,6 +31,7 @@ class FViewportSelectionController : public Engine::Viewport::IViewportControlle
     void SetCamera(FViewportCamera* Camera) { ViewportCamera = Camera; }
     void SetActors(TArray<AActor*>* InActors) { Actors = InActors; }
     void SetEditorContext(FEditorContext* InContext) { Context = InContext; }
+    FEditorContext* GetEditorContext() { return Context; }
 
     void SetViewportSize(uint32 Width, uint32 Height)
     {
