@@ -267,7 +267,7 @@ namespace Asset
     FWString FFontAtlasBuilder::ResolveRelativePath(const std::filesystem::path& BasePath,
                                                     const FString&               RelativePath)
     {
-        const std::filesystem::path BaseDirectory = std::filesystem::path(BasePath).parent_path();
+        const std::filesystem::path BaseDirectory = BasePath.parent_path();
         return (BaseDirectory / FPaths::PathFromUtf8(RelativePath)).lexically_normal();
     }
 

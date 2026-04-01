@@ -140,7 +140,7 @@ namespace Asset
         }
 
         auto Result = std::make_shared<FIntermediateSubUVAtlasData>();
-        Result->Info.Name = std::filesystem::path(Source.NormalizedPath).stem().string();
+        Result->Info.Name = FPaths::Utf8FromPath(Source.NormalizedPath.stem());
 
         FString AtlasPath;
         if (ExtractString(Text, "image", AtlasPath) ||
@@ -261,7 +261,7 @@ namespace Asset
     FWString FSubUVAtlasBuilder::ResolveRelativePath(const std::filesystem::path& BasePath,
                                                      const FString&               RelativePath)
     {
-        const std::filesystem::path BaseDirectory = std::filesystem::path(BasePath).parent_path();
+        const std::filesystem::path BaseDirectory = BasePath.parent_path();
         return (BaseDirectory / FPaths::PathFromUtf8(RelativePath)).lexically_normal();
     }
 

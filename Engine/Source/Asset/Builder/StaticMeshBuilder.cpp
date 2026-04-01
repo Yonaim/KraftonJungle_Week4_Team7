@@ -356,7 +356,7 @@ namespace Asset
 
     std::shared_ptr<FIntermediateObjData> FStaticMeshBuilder::ParseObj(const FSourceRecord& Source)
     {
-        std::ifstream File(std::filesystem::path(Source.NormalizedPath));
+        std::ifstream File(Source.NormalizedPath);
         if (!File)
         {
             return nullptr;
@@ -507,7 +507,7 @@ namespace Asset
             }
 
             const std::filesystem::path CanonicalLibraryPath = ResolveMaterialLibraryPathForObj(
-                std::filesystem::path(Source.NormalizedPath),
+                Source.NormalizedPath,
                 Intermediate.MaterialLibraries[SourceLibraryIndex]);
             auto It = MaterialLibraryLookup.find(CanonicalLibraryPath);
             if (It != MaterialLibraryLookup.end())
