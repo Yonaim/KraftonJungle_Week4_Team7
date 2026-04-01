@@ -16,6 +16,7 @@ class FContentBrowserPanel : public IPanel
 
     const wchar_t* GetPanelID() const override;
     const wchar_t* GetDisplayName() const override;
+    bool           ShouldOpenByDefault() const override { return true; }
     int32          GetWindowMenuOrder() const override { return 40; }
 
     void OnOpen() override;

@@ -565,7 +565,7 @@ void FEditor::Create()
     PanelManager->SetPanelDescriptorRegisteredCallback([this](const FPanelDescriptor& Descriptor)
                                                        { RegisterWindowPanelCommand(Descriptor); });
     PanelManager->RegisterPanelInstance<FConsolePanel>(&LogBuffer);
-    PanelManager->RegisterPanelType<FContentBrowserPanel>();
+    PanelManager->RegisterPanelInstance<FContentBrowserPanel>();
     // PanelManager->RegisterPanelInstance<FControlPanel>();
     PanelManager->RegisterPanelInstance<FOutlinerPanel>();
     PanelManager->RegisterPanelInstance<FPropertiesPanel>();
