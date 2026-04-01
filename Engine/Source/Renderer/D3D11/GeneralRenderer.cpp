@@ -704,7 +704,6 @@ bool FGeneralRenderer::ReadBackMousePixel(int32 MouseX, int32 MouseY, uint32& Ou
         return false;
 
     OutObjectId = *reinterpret_cast<const uint32*>(Mapped.pData);
-    UE_LOG(Renderer.Pick, ELogLevel::Warning, "(%d, %d), OutObjectId: %d", MouseX, MouseY, OutObjectId);
     DeviceContext->Unmap(ReadbackTexture, 0);
     return true;
 }
