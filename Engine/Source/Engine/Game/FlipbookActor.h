@@ -1,5 +1,5 @@
 #pragma once
-#include "SpriteActor.h"
+#include "Actor.h"
 
 namespace Engine::Component
 {
@@ -7,9 +7,9 @@ namespace Engine::Component
     class USubUVAnimatedComponent;
 } // namespace Engine::Component
 
-class ENGINE_API AFlipbookActor : public ASpriteActor
+class ENGINE_API AFlipbookActor : public AActor
 {
-    DECLARE_RTTI(AFlipbookActor, ASpriteActor)
+    DECLARE_RTTI(AFlipbookActor, AActor)
   public:
     AFlipbookActor();
     ~AFlipbookActor() override = default;

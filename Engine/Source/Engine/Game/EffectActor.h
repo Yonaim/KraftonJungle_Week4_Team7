@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SpriteActor.h"
+#include "Actor.h"
 
 namespace Engine::Component
 {
@@ -8,9 +8,9 @@ namespace Engine::Component
     class USubUVAnimatedComponent;
 }
 
-class ENGINE_API AEffectActor : public ASpriteActor
+class ENGINE_API AEffectActor : public AActor
 {
-    DECLARE_RTTI(AEffectActor, ASpriteActor)
+    DECLARE_RTTI(AEffectActor, AActor)
 
   public:
     AEffectActor();
