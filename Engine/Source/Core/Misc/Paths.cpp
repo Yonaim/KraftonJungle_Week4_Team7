@@ -1,5 +1,11 @@
 #include "Core/Misc/Paths.h"
 
+#include <stdexcept>
+
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+
 #include <cassert>
 #include <system_error>
 
@@ -92,4 +98,43 @@ const FPathConfig& FPaths::GetConfig()
 bool FPaths::ValidateConfig(const FPathConfig& InConfig)
 {
     return !InConfig.EngineRoot.empty() && !InConfig.AppRoot.empty();
+}
+
+FWString FPaths::PathFromUtf8(const FString& Utf8Path)
+{
+    if (Utf8Path.empty())
+    {
+        return {};
+    }
+
+#ifdef _WIN32
+    // Windows std::filesystem::path는 wide path를 쓰는 쪽이 안전함.
+    const int WideLength = MultiByteToWideChar(CP_UTF8, 0, Utf8Path.c_str(), -1, nullptr, 0);
+
+    if (WideLength <= 0)
+    {
+        throw std::runtime_error("Failed to convert UTF-8 path to wide string.");
+    }
+
+    std::wstring WidePath;
+    WidePath.resize(static_cast<size_t>(WideLength - 1));
+
+    const int ConvertedLength =
+        MultiByteToWideChar(CP_UTF8, 0, Utf8Path.c_str(), -1, WidePath.data(), WideLength);
+
+    if (ConvertedLength <= 0)
+    {
+        throw std::runtime_error("Failed to convert UTF-8 path to wide string.");
+    }
+
+    return std::filesystem::path(WidePath);
+#else
+    // Linux/macOS에서는 UTF-8 narrow path로도 보통 잘 동작
+    return std::filesystem::path(Utf8Path);
+#endif
+}
+
+FWString FPaths::PathFromUtf8(const char* Utf8Path)
+{
+    return PathFromUtf8(Utf8Path ? FString(Utf8Path) : FString());
 }

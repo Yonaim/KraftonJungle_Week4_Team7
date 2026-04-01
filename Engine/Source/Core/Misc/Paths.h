@@ -4,6 +4,7 @@
 
 #include <filesystem>
 #include <utility>
+#include "Core/Containers/String.h"
 
 struct FPathConfig
 {
@@ -23,6 +24,9 @@ class ENGINE_API FPaths
   public:
     static bool Initialize(const FPathConfig& InConfig);
     static bool IsInitialized();
+
+    static FWString PathFromUtf8(const FString& Utf8Path);
+    static FWString PathFromUtf8(const char* Utf8Path);
 
     static const std::filesystem::path& EngineRoot();
     static const std::filesystem::path& AppRoot();

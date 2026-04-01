@@ -35,7 +35,12 @@ namespace
         }
 
         const USubUVAtlas* AtlasAsset = InComponent->GetSubUVAtlasAsset();
-        return AtlasAsset != nullptr ? AtlasAsset->GetAssetPath() : FString();
+        if (AtlasAsset != nullptr)
+        {
+            return AtlasAsset->GetAssetPath();
+        }
+
+        return InComponent->GetSubUVAtlasPath();
     }
 
     FString ResolveFontPath(const UAtlasTextComponent* InComponent)
@@ -86,10 +91,11 @@ void FSceneAssetBinder::BindActor(AActor* InActor, FAssetObjectManager* InAssetO
     }
 }
 
-void FSceneAssetBinder::BindComponent(USceneComponent* InComponent,
+void FSceneAssetBinder::BindComponent(USceneComponent*     InComponent,
                                       FAssetObjectManager* InAssetObjectManager)
 {
-    if (InComponent == nullptr || InAssetObjectManager == nullptr || !InAssetObjectManager->IsReady())
+    if (InComponent == nullptr || InAssetObjectManager == nullptr ||
+        !InAssetObjectManager->IsReady())
     {
         return;
     }
@@ -114,7 +120,8 @@ void FSceneAssetBinder::BindComponent(USceneComponent* InComponent,
         }
 
         StaticMeshComponent->SetStaticMeshAsset(StaticMeshAsset);
-        UE_LOG(SceneBinder, ELogLevel::Debug, "Bound static mesh asset object: %s", MeshPath.c_str());
+        UE_LOG(SceneBinder, ELogLevel::Debug, "Bound static mesh asset object: %s",
+               MeshPath.c_str());
         return;
     }
 
@@ -138,7 +145,8 @@ void FSceneAssetBinder::BindComponent(USceneComponent* InComponent,
         }
 
         SubUVComponent->SetSubUVAtlasAsset(AtlasAsset);
-        UE_LOG(SceneBinder, ELogLevel::Debug, "Bound SubUV atlas asset object: %s", AtlasPath.c_str());
+        UE_LOG(SceneBinder, ELogLevel::Debug, "Bound SubUV atlas asset object: %s",
+               AtlasPath.c_str());
         return;
     }
 

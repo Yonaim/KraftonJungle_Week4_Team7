@@ -2,65 +2,15 @@
 
 #include <filesystem>
 #include <fstream>
-#include <regex>
 #include <sstream>
 
+#include "ThirdParty/nlohmann/json.hpp"
+
 #include "Asset/Cache/AssetKeyUtils.h"
+#include "Core/Misc/Paths.h"
 
 namespace Asset
 {
-    namespace
-    {
-        static bool ExtractString(const FString& Text, const char* Key, FString& OutValue)
-        {
-            const std::regex Pattern("\\\"" + FString(Key) + "\\\"\\s*:\\s*\\\"([^\\\"]+)\\\"");
-            std::smatch      Match;
-            if (std::regex_search(Text, Match, Pattern) && Match.size() > 1)
-            {
-                OutValue = Match[1].str();
-                return true;
-            }
-            return false;
-        }
-
-        static bool ExtractUInt(const FString& Text, const char* Key, uint32& OutValue)
-        {
-            const std::regex Pattern("\\\"" + FString(Key) + "\\\"\\s*:\\s*(\\d+)");
-            std::smatch      Match;
-            if (std::regex_search(Text, Match, Pattern) && Match.size() > 1)
-            {
-                OutValue = static_cast<uint32>(std::stoul(Match[1].str()));
-                return true;
-            }
-            return false;
-        }
-
-        static bool ExtractFloat(const FString& Text, const char* Key, float& OutValue)
-        {
-            const std::regex Pattern("\\\"" + FString(Key) + "\\\"\\s*:\\s*(-?\\d+(?:\\.\\d+)?)");
-            std::smatch      Match;
-            if (std::regex_search(Text, Match, Pattern) && Match.size() > 1)
-            {
-                OutValue = std::stof(Match[1].str());
-                return true;
-            }
-            return false;
-        }
-
-        static bool ExtractBool(const FString& Text, const char* Key, bool& OutValue)
-        {
-            const std::regex Pattern("\\\"" + FString(Key) + "\\\"\\s*:\\s*(true|false|0|1)");
-            std::smatch      Match;
-            if (std::regex_search(Text, Match, Pattern) && Match.size() > 1)
-            {
-                const FString Value = Match[1].str();
-                OutValue = Value == "true" || Value == "1";
-                return true;
-            }
-            return false;
-        }
-    } // namespace
-
     std::shared_ptr<FSubUVAtlasCookedData>
     FSubUVAtlasBuilder::Build(const std::filesystem::path& Path,
                               const FTextureBuildSettings& AtlasTextureSettings)
@@ -138,72 +88,168 @@ namespace Asset
             return nullptr;
         }
 
+        nlohmann::json Root;
+        try
+        {
+            Root = nlohmann::json::parse(Text);
+        }
+        catch (const std::exception&)
+        {
+            return nullptr;
+        }
+
         auto Result = std::make_shared<FIntermediateSubUVAtlasData>();
         Result->Info.Name = std::filesystem::path(Source.NormalizedPath).stem().string();
 
-        FString AtlasPath;
-        if (ExtractString(Text, "image", AtlasPath) ||
-            ExtractString(Text, "atlasImagePath", AtlasPath) ||
-            ExtractString(Text, "texture", AtlasPath))
+        if (Root.contains("meta") && Root["meta"].is_object())
         {
-            Result->AtlasImagePath = ResolveRelativePath(Source.NormalizedPath, AtlasPath);
-        }
+            const auto& Meta = Root["meta"];
 
-        ExtractString(Text, "name", Result->Info.Name);
-        ExtractUInt(Text, "frameWidth", Result->Info.FrameWidth);
-        ExtractUInt(Text, "frameHeight", Result->Info.FrameHeight);
-        ExtractUInt(Text, "columns", Result->Info.Columns);
-        ExtractUInt(Text, "rows", Result->Info.Rows);
-        ExtractUInt(Text, "frameCount", Result->Info.FrameCount);
-        ExtractFloat(Text, "fps", Result->Info.FPS);
-        ExtractBool(Text, "loop", Result->Info.bLoop);
-
-        const std::regex FramePattern(
-            "\\{[^\\{\\}]*\\\"id\\\"\\s*:\\s*(\\d+)[^\\{\\}]*\\\"x\\\"\\s*:\\s*(\\d+)[^\\{\\}]*"
-            "\\\"y\\\"\\s*:\\s*(\\d+)[^\\{\\}]*\\\"width\\\"\\s*:\\s*(\\d+)[^\\{\\}]*"
-            "\\\"height\\\"\\s*:\\s*(\\d+)(?:[^\\{\\}]*\\\"pivotX\\\"\\s*:\\s*(-?\\d+(?:\\.\\d+)?))"
-            "?(?:[^\\{\\}]*\\\"pivotY\\\"\\s*:\\s*(-?\\d+(?:\\.\\d+)?))?(?:[^\\{\\}]*"
-            "\\\"duration\\\"\\s*:\\s*(-?\\d+(?:\\.\\d+)?))?[^\\{\\}]*\\}");
-
-        for (std::sregex_iterator It(Text.begin(), Text.end(), FramePattern), End; It != End; ++It)
-        {
-            FSubUVFrame Frame;
-            Frame.Id = static_cast<uint32>(std::stoul((*It)[1].str()));
-            Frame.X = static_cast<uint32>(std::stoul((*It)[2].str()));
-            Frame.Y = static_cast<uint32>(std::stoul((*It)[3].str()));
-            Frame.Width = static_cast<uint32>(std::stoul((*It)[4].str()));
-            Frame.Height = static_cast<uint32>(std::stoul((*It)[5].str()));
-            if ((*It)[6].matched)
-                Frame.PivotX = std::stof((*It)[6].str());
-            if ((*It)[7].matched)
-                Frame.PivotY = std::stof((*It)[7].str());
-            if ((*It)[8].matched)
-                Frame.Duration = std::stof((*It)[8].str());
-            Result->Frames.push_back(Frame);
-        }
-
-        const std::regex SequencePattern(
-            "\\{[^\\{\\}]*\\\"name\\\"\\s*:\\s*\\\"([^\\\"]+)\\\"[^\\{\\}]*\\\"startFrame\\\"\\s*:"
-            "\\s*(\\d+)[^\\{\\}]*\\\"endFrame\\\"\\s*:\\s*(\\d+)(?:[^\\{\\}]*\\\"loop\\\"\\s*:\\s*("
-            "true|false|0|1))?[^\\{\\}]*\\}");
-        for (std::sregex_iterator It(Text.begin(), Text.end(), SequencePattern), End; It != End;
-             ++It)
-        {
-            FSubUVSequence Sequence;
-            Sequence.Name = (*It)[1].str();
-            Sequence.StartFrame = static_cast<uint32>(std::stoul((*It)[2].str()));
-            Sequence.EndFrame = static_cast<uint32>(std::stoul((*It)[3].str()));
-            if ((*It)[4].matched)
+            if (Meta.contains("image") && Meta["image"].is_string())
             {
-                const FString LoopText = (*It)[4].str();
-                Sequence.bLoop = LoopText == "true" || LoopText == "1";
+                Result->AtlasImagePath =
+                    ResolveRelativePath(Source.NormalizedPath, Meta["image"].get<FString>());
             }
-            Result->Sequences[Sequence.Name] = Sequence;
+            else if (Meta.contains("atlasImagePath") && Meta["atlasImagePath"].is_string())
+            {
+                Result->AtlasImagePath =
+                    ResolveRelativePath(Source.NormalizedPath, Meta["atlasImagePath"].get<FString>());
+            }
+            else if (Meta.contains("texture") && Meta["texture"].is_string())
+            {
+                Result->AtlasImagePath =
+                    ResolveRelativePath(Source.NormalizedPath, Meta["texture"].get<FString>());
+            }
+
+            if (Meta.contains("app") && Meta["app"].is_string())
+            {
+                Result->Info.Name = Meta["app"].get<FString>();
+            }
+        }
+
+        if (Root.contains("name") && Root["name"].is_string())
+        {
+            Result->Info.Name = Root["name"].get<FString>();
+        }
+
+        if (Root.contains("fps") && Root["fps"].is_number())
+        {
+            Result->Info.FPS = Root["fps"].get<float>();
+        }
+
+        if (Root.contains("loop") && Root["loop"].is_boolean())
+        {
+            Result->Info.bLoop = Root["loop"].get<bool>();
+        }
+
+        if (Root.contains("frameWidth") && Root["frameWidth"].is_number_unsigned())
+        {
+            Result->Info.FrameWidth = Root["frameWidth"].get<uint32>();
+        }
+
+        if (Root.contains("frameHeight") && Root["frameHeight"].is_number_unsigned())
+        {
+            Result->Info.FrameHeight = Root["frameHeight"].get<uint32>();
+        }
+
+        if (Root.contains("columns") && Root["columns"].is_number_unsigned())
+        {
+            Result->Info.Columns = Root["columns"].get<uint32>();
+        }
+
+        if (Root.contains("rows") && Root["rows"].is_number_unsigned())
+        {
+            Result->Info.Rows = Root["rows"].get<uint32>();
+        }
+
+        if (Root.contains("frameCount") && Root["frameCount"].is_number_unsigned())
+        {
+            Result->Info.FrameCount = Root["frameCount"].get<uint32>();
+        }
+
+        if (Root.contains("frames") && Root["frames"].is_object())
+        {
+            uint32 RunningId = 0;
+
+            for (auto It = Root["frames"].begin(); It != Root["frames"].end(); ++It)
+            {
+                const FString FrameName = It.key();
+                const auto&   FrameObject = It.value();
+
+                if (!FrameObject.is_object() || !FrameObject.contains("frame") ||
+                    !FrameObject["frame"].is_object())
+                {
+                    continue;
+                }
+
+                const auto& Rect = FrameObject["frame"];
+
+                if (!Rect.contains("x") || !Rect.contains("y") ||
+                    !Rect.contains("w") || !Rect.contains("h"))
+                {
+                    continue;
+                }
+
+                FSubUVFrame Frame;
+                Frame.Id = RunningId++;
+                Frame.X = Rect["x"].get<uint32>();
+                Frame.Y = Rect["y"].get<uint32>();
+                Frame.Width = Rect["w"].get<uint32>();
+                Frame.Height = Rect["h"].get<uint32>();
+
+                if (FrameObject.contains("pivot") && FrameObject["pivot"].is_object())
+                {
+                    const auto& Pivot = FrameObject["pivot"];
+                    if (Pivot.contains("x") && Pivot["x"].is_number())
+                    {
+                        Frame.PivotX = Pivot["x"].get<float>();
+                    }
+                    if (Pivot.contains("y") && Pivot["y"].is_number())
+                    {
+                        Frame.PivotY = Pivot["y"].get<float>();
+                    }
+                }
+
+                Result->Frames.push_back(Frame);
+            }
         }
 
         if (Result->Info.FrameCount == 0)
         {
             Result->Info.FrameCount = static_cast<uint32>(Result->Frames.size());
+        }
+
+        if (Result->Info.FrameWidth == 0 && !Result->Frames.empty())
+        {
+            Result->Info.FrameWidth = Result->Frames[0].Width;
+        }
+
+        if (Result->Info.FrameHeight == 0 && !Result->Frames.empty())
+        {
+            Result->Info.FrameHeight = Result->Frames[0].Height;
+        }
+
+        if (Result->Info.Columns == 0 || Result->Info.Rows == 0)
+        {
+            if (Root.contains("meta") && Root["meta"].is_object() &&
+                Root["meta"].contains("size") && Root["meta"]["size"].is_object())
+            {
+                const auto& Size = Root["meta"]["size"];
+                const uint32 AtlasW =
+                    (Size.contains("w") && Size["w"].is_number_unsigned()) ? Size["w"].get<uint32>() : 0;
+                const uint32 AtlasH =
+                    (Size.contains("h") && Size["h"].is_number_unsigned()) ? Size["h"].get<uint32>() : 0;
+
+                if (Result->Info.FrameWidth > 0 && AtlasW > 0 && Result->Info.Columns == 0)
+                {
+                    Result->Info.Columns = AtlasW / Result->Info.FrameWidth;
+                }
+
+                if (Result->Info.FrameHeight > 0 && AtlasH > 0 && Result->Info.Rows == 0)
+                {
+                    Result->Info.Rows = AtlasH / Result->Info.FrameHeight;
+                }
+            }
         }
 
         return (!Result->AtlasImagePath.empty() && !Result->Frames.empty()) ? Result : nullptr;
@@ -261,7 +307,7 @@ namespace Asset
                                                      const FString&               RelativePath)
     {
         const std::filesystem::path BaseDirectory = std::filesystem::path(BasePath).parent_path();
-        return (BaseDirectory / std::filesystem::path(RelativePath)).lexically_normal();
+        return (BaseDirectory / FPaths::PathFromUtf8(RelativePath)).lexically_normal();
     }
 
 } // namespace Asset
