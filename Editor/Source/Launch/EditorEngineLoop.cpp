@@ -1,4 +1,6 @@
 #include "Engine/Asset/AssetObjectManager.h"
+
+#include <filesystem>
 #include "Asset/Manager/AssetCacheManager.h"
 #include "RHI/D3D11/D3D11DynamicRHI.h"
 #include "EditorEngineLoop.h"
@@ -20,6 +22,39 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND HWnd, UINT Mes
 
 namespace
 {
+    void EnsureEditorImGuiIniPaths(std::string& OutUserIniPath)
+    {
+        namespace fs = std::filesystem;
+
+        const fs::path LegacyPath("Editor/imgui.ini");
+        const fs::path DefaultPath("Editor/imgui.default.ini");
+        const fs::path UserPath("Editor/imgui.user.ini");
+
+        std::error_code Ec;
+        fs::create_directories(DefaultPath.parent_path(), Ec);
+        Ec.clear();
+
+        if (!fs::exists(DefaultPath, Ec) && !Ec && fs::exists(LegacyPath, Ec) && !Ec)
+        {
+            fs::copy_file(LegacyPath, DefaultPath, fs::copy_options::overwrite_existing, Ec);
+        }
+
+        Ec.clear();
+        if (!fs::exists(UserPath, Ec) && !Ec)
+        {
+            if (fs::exists(DefaultPath, Ec) && !Ec)
+            {
+                fs::copy_file(DefaultPath, UserPath, fs::copy_options::overwrite_existing, Ec);
+            }
+            else if (fs::exists(LegacyPath, Ec) && !Ec)
+            {
+                fs::copy_file(LegacyPath, UserPath, fs::copy_options::overwrite_existing, Ec);
+            }
+        }
+
+        OutUserIniPath = UserPath.string();
+    }
+
     ImVec4 MakeColor(uint8 R, uint8 G, uint8 B, uint8 A = 255)
     {
         return ImVec4(static_cast<float>(R) / 255.0f, static_cast<float>(G) / 255.0f,
@@ -164,6 +199,11 @@ bool FEditorEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
     ImGui::CreateContext();
     ApplyCoPassImGuiStyle();
     ImGuiIO& IO = ImGui::GetIO();
+
+    static std::string GEditorImGuiUserIniPath;
+    EnsureEditorImGuiIniPaths(GEditorImGuiUserIniPath);
+    IO.IniFilename = GEditorImGuiUserIniPath.c_str();
+    ImGui::LoadIniSettingsFromDisk(IO.IniFilename);
 #ifdef IMGUI_HAS_DOCK
     // 도킹 지원 ImGui를 교체한 뒤에는 여기서 기능 플래그를 켜야 DockSpace API가 실제로 동작합니다.
     IO.ConfigFlags |= ImGuiConfigFlags_DockingEnable;

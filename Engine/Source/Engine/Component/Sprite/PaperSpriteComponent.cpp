@@ -6,6 +6,7 @@
 #include <filesystem>
 
 #include "Core/Logging/LogMacros.h"
+#include "Core/Geometry/Primitives/AABBUtility.h"
 #include "Engine/Asset/Material.h"
 #include "Engine/Asset/StaticMesh.h"
 #include "Engine/Component/Core/ComponentProperty.h"
@@ -16,7 +17,6 @@
 #include "Renderer/SceneRenderData.h"
 #include "Renderer/SceneView.h"
 #include "RHI/D3D11/D3D11Texture.h"
-#include "Resources/Mesh/Quad.h"
 
 namespace Engine::Component
 {
@@ -67,6 +67,7 @@ namespace Engine::Component
         MeshAsset = nullptr;
         MeshData.reset();
         bBoundsDirty = true;
+        UE_LOG(SpriteComponent, ELogLevel::Verbose, "Sprite mesh path changed: %s", MeshPath.c_str());
     }
 
     void UPaperSpriteComponent::SetMeshAsset(UStaticMesh* InMeshAsset)
@@ -79,6 +80,8 @@ namespace Engine::Component
         MeshAsset = InMeshAsset;
         MeshData.reset();
         bBoundsDirty = true;
+        UE_LOG(SpriteComponent, ELogLevel::Debug, "Sprite mesh asset assigned: %s",
+               MeshAsset ? MeshAsset->GetAssetPath().c_str() : "<null>");
     }
 
     void UPaperSpriteComponent::SetTextureAsset(UTexture* InTextureAsset)
@@ -91,6 +94,8 @@ namespace Engine::Component
         TextureAsset = InTextureAsset;
         Material = nullptr;
         bBoundsDirty = true;
+        UE_LOG(SpriteComponent, ELogLevel::Debug, "Sprite texture asset assigned: %s",
+               TextureAsset ? TextureAsset->GetAssetPath().c_str() : "<null>");
     }
 
     void UPaperSpriteComponent::SetTexturePath(const FString& InPath)
@@ -104,6 +109,7 @@ namespace Engine::Component
         TextureAsset = nullptr;
         Material = nullptr;
         bBoundsDirty = true;
+        UE_LOG(SpriteComponent, ELogLevel::Verbose, "Sprite texture path changed: %s", TexturePath.c_str());
     }
 
     const FTextureRenderResource* UPaperSpriteComponent::GetTextureRenderResource() const
@@ -120,11 +126,30 @@ namespace Engine::Component
                    : nullptr;
     }
 
-    void UPaperSpriteComponent::SetBillboard(bool bInBillboard) { bBillboard = bInBillboard; }
+    void UPaperSpriteComponent::SetBillboard(bool bInBillboard)
+    {
+        if (bBillboard == bInBillboard)
+        {
+            return;
+        }
+
+        bBillboard = bInBillboard;
+        bBoundsDirty = true;
+        UE_LOG(SpriteComponent, ELogLevel::Verbose, "Sprite billboard changed: %d", bBillboard ? 1 : 0);
+    }
 
     void UPaperSpriteComponent::SetBillboardOffset(const FVector& InBillboardOffset)
     {
+        if (BillboardOffset == InBillboardOffset)
+        {
+            return;
+        }
+
         BillboardOffset = InBillboardOffset;
+        bBoundsDirty = true;
+        UE_LOG(SpriteComponent, ELogLevel::Verbose,
+               "Sprite billboard offset changed: (%.3f, %.3f, %.3f)",
+               BillboardOffset.X, BillboardOffset.Y, BillboardOffset.Z);
     }
 
     void UPaperSpriteComponent::DescribeProperties(FComponentPropertyBuilder& Builder)
@@ -142,7 +167,6 @@ namespace Engine::Component
             "billboard", L"Billboard", [this]() { return GetBillboard(); },
             [this](bool bInValue) { SetBillboard(bInValue); });
     }
-
 
     void UPaperSpriteComponent::GetUVs(FVector2& OutUVMin, FVector2& OutUVMax) const
     {
@@ -190,10 +214,14 @@ namespace Engine::Component
         MeshData->VertexBuffer.reset();
         MeshData->IndexBuffer.reset();
         MeshData->Vertices = {
-            {FVector(-1.0f, -1.0f, 0.0f), FVector(0, 0, 1), FColor::White(), FVector2(UVMin.X, UVMax.Y)},
-            {FVector(-1.0f, 1.0f, 0.0f), FVector(0, 0, 1), FColor::White(), FVector2(UVMax.X, UVMax.Y)},
-            {FVector(1.0f, 1.0f, 0.0f), FVector(0, 0, 1), FColor::White(), FVector2(UVMax.X, UVMin.Y)},
-            {FVector(1.0f, -1.0f, 0.0f), FVector(0, 0, 1), FColor::White(), FVector2(UVMin.X, UVMin.Y)},
+            {FVector(-1.0f, -1.0f, 0.0f), FVector(0, 0, 1), FColor::White(),
+             FVector2(UVMin.X, UVMax.Y)},
+            {FVector(-1.0f, 1.0f, 0.0f), FVector(0, 0, 1), FColor::White(),
+             FVector2(UVMax.X, UVMax.Y)},
+            {FVector(1.0f, 1.0f, 0.0f), FVector(0, 0, 1), FColor::White(),
+             FVector2(UVMax.X, UVMin.Y)},
+            {FVector(1.0f, -1.0f, 0.0f), FVector(0, 0, 1), FColor::White(),
+             FVector2(UVMin.X, UVMin.Y)},
         };
         MeshData->Indices = {0, 2, 1, 0, 3, 2};
         MeshData->VertexBufferCount = static_cast<uint32>(MeshData->Vertices.size());
@@ -361,99 +389,122 @@ namespace Engine::Component
     {
         OutTriangles.clear();
 
-        const FVector2 SpriteAspectScale = GetSpriteAspectScale();
-
-        if (MeshAsset != nullptr && MeshAsset->IsValidLowLevel())
-        {
-            const TArray<uint32>& Indices = MeshAsset->GetIndicesData();
-            for (size_t i = 0; i + 2 < Indices.size(); i += 3)
-            {
-                FVector P0, P1, P2;
-                if (!ReadStaticMeshVertexPosition(MeshAsset, Indices[i + 0], P0) ||
-                    !ReadStaticMeshVertexPosition(MeshAsset, Indices[i + 1], P1) ||
-                    !ReadStaticMeshVertexPosition(MeshAsset, Indices[i + 2], P2))
-                {
-                    continue;
-                }
-
-                P0.X *= SpriteAspectScale.X;
-                P0.Y *= SpriteAspectScale.Y;
-                P1.X *= SpriteAspectScale.X;
-                P1.Y *= SpriteAspectScale.Y;
-                P2.X *= SpriteAspectScale.X;
-                P2.Y *= SpriteAspectScale.Y;
-
-                Geometry::FTriangle Triangle;
-                Triangle.V0 = P0;
-                Triangle.V1 = P1;
-                Triangle.V2 = P2;
-                OutTriangles.push_back(Triangle);
-            }
-
-            return !OutTriangles.empty();
-        }
-
-        if (quad_topology != EMeshPrimitiveTopology::TriangleList)
+        if (MeshAsset == nullptr || !MeshAsset->IsValidLowLevel())
         {
             return false;
         }
 
-        for (uint32_t i = 0; i + 2 < quad_index_count; i += 3)
+        const TArray<uint32>& Indices = MeshAsset->GetIndicesData();
+        for (size_t i = 0; i + 2 < Indices.size(); i += 3)
         {
-            const uint16_t I0 = quad_indices[i + 0];
-            const uint16_t I1 = quad_indices[i + 1];
-            const uint16_t I2 = quad_indices[i + 2];
-
-            if (I0 >= quad_vertex_count || I1 >= quad_vertex_count || I2 >= quad_vertex_count)
+            FVector P0, P1, P2;
+            if (!ReadStaticMeshVertexPosition(MeshAsset, Indices[i + 0], P0) ||
+                !ReadStaticMeshVertexPosition(MeshAsset, Indices[i + 1], P1) ||
+                !ReadStaticMeshVertexPosition(MeshAsset, Indices[i + 2], P2))
             {
                 continue;
             }
 
             Geometry::FTriangle Triangle;
-            Triangle.V0 = FVector{quad_vertices[I0].x * SpriteAspectScale.X,
-                                  quad_vertices[I0].y * SpriteAspectScale.Y, quad_vertices[I0].z};
-            Triangle.V1 = FVector{quad_vertices[I1].x * SpriteAspectScale.X,
-                                  quad_vertices[I1].y * SpriteAspectScale.Y, quad_vertices[I1].z};
-            Triangle.V2 = FVector{quad_vertices[I2].x * SpriteAspectScale.X,
-                                  quad_vertices[I2].y * SpriteAspectScale.Y, quad_vertices[I2].z};
-
+            Triangle.V0 = P0;
+            Triangle.V1 = P1;
+            Triangle.V2 = P2;
             OutTriangles.push_back(Triangle);
         }
 
-        return OutTriangles.size() > 0;
+        return !OutTriangles.empty();
     }
 
     Geometry::FAABB UPaperSpriteComponent::GetLocalAABB() const
     {
-        const FVector2 SpriteAspectScale = GetSpriteAspectScale();
-
         if (MeshAsset != nullptr && MeshAsset->IsValidLowLevel())
         {
-            Geometry::FAABB MeshAABB = MeshAsset->GetAABB();
-            MeshAABB.Min.X *= SpriteAspectScale.X;
-            MeshAABB.Max.X *= SpriteAspectScale.X;
-            MeshAABB.Min.Y *= SpriteAspectScale.Y;
-            MeshAABB.Max.Y *= SpriteAspectScale.Y;
-            return MeshAABB;
+            return MeshAsset->GetAABB();
         }
 
-        FVector Min(FLT_MAX, FLT_MAX, FLT_MAX);
-        FVector Max(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+        return Geometry::FAABB();
+    }
 
-        for (uint32_t i = 0; i < quad_vertex_count; ++i)
+    void UPaperSpriteComponent::UpdateBounds()
+    {
+        AActor* Actor = GetOwnerActor();
+        if (Actor == nullptr)
         {
-            const FVector P(quad_vertices[i].x * SpriteAspectScale.X,
-                            quad_vertices[i].y * SpriteAspectScale.Y, quad_vertices[i].z);
-
-            Min.X = std::min(Min.X, P.X);
-            Min.Y = std::min(Min.Y, P.Y);
-            Min.Z = std::min(Min.Z, P.Z);
-            Max.X = std::max(Max.X, P.X);
-            Max.Y = std::max(Max.Y, P.Y);
-            Max.Z = std::max(Max.Z, P.Z);
+            WorldAABB = Geometry::FAABB();
+            return;
         }
 
-        return Geometry::FAABB(Min, Max);
+        const Geometry::FAABB LocalAABB = GetLocalAABB();
+
+        const FVector2 SpriteAspectScale = GetSpriteAspectScale();
+        const FMatrix  ActorWorld = Actor->GetWorldMatrix();
+        const FVector  SpriteOrigin = ActorWorld.GetOrigin() + BillboardOffset;
+
+        FMatrix BoundsWorldMatrix = ActorWorld;
+
+        if (bBillboard)
+        {
+            const FVector WorldScale = Actor->GetScale();
+
+            FVector RightAxis(1.0f, 0.0f, 0.0f);
+            FVector UpAxis(0.0f, 1.0f, 0.0f);
+            FVector ForwardAxis(0.0f, 0.0f, 1.0f);
+
+            if (ActorWorld.GetRightVector().SizeSquared() > 0.0f)
+            {
+                RightAxis = ActorWorld.GetRightVector().GetSafeNormal();
+            }
+
+            if (ActorWorld.GetUpVector().SizeSquared() > 0.0f)
+            {
+                UpAxis = ActorWorld.GetUpVector().GetSafeNormal();
+            }
+
+            if (ActorWorld.GetForwardVector().SizeSquared() > 0.0f)
+            {
+                ForwardAxis = ActorWorld.GetForwardVector().GetSafeNormal();
+            }
+
+            const FVector Row0 = UpAxis * (WorldScale.X * SpriteAspectScale.X);
+            const FVector Row1 = RightAxis * (WorldScale.Y * SpriteAspectScale.Y);
+            const FVector Row2 = ForwardAxis * WorldScale.Z;
+
+            BoundsWorldMatrix.M[0][0] = Row0.X;
+            BoundsWorldMatrix.M[0][1] = Row0.Y;
+            BoundsWorldMatrix.M[0][2] = Row0.Z;
+            BoundsWorldMatrix.M[0][3] = 0.0f;
+
+            BoundsWorldMatrix.M[1][0] = Row1.X;
+            BoundsWorldMatrix.M[1][1] = Row1.Y;
+            BoundsWorldMatrix.M[1][2] = Row1.Z;
+            BoundsWorldMatrix.M[1][3] = 0.0f;
+
+            BoundsWorldMatrix.M[2][0] = Row2.X;
+            BoundsWorldMatrix.M[2][1] = Row2.Y;
+            BoundsWorldMatrix.M[2][2] = Row2.Z;
+            BoundsWorldMatrix.M[2][3] = 0.0f;
+
+            BoundsWorldMatrix.M[3][0] = SpriteOrigin.X;
+            BoundsWorldMatrix.M[3][1] = SpriteOrigin.Y;
+            BoundsWorldMatrix.M[3][2] = SpriteOrigin.Z;
+            BoundsWorldMatrix.M[3][3] = 1.0f;
+        }
+        else
+        {
+            BoundsWorldMatrix.M[0][0] *= SpriteAspectScale.X;
+            BoundsWorldMatrix.M[0][1] *= SpriteAspectScale.X;
+            BoundsWorldMatrix.M[0][2] *= SpriteAspectScale.X;
+
+            BoundsWorldMatrix.M[1][0] *= SpriteAspectScale.Y;
+            BoundsWorldMatrix.M[1][1] *= SpriteAspectScale.Y;
+            BoundsWorldMatrix.M[1][2] *= SpriteAspectScale.Y;
+
+            BoundsWorldMatrix.M[3][0] += BillboardOffset.X;
+            BoundsWorldMatrix.M[3][1] += BillboardOffset.Y;
+            BoundsWorldMatrix.M[3][2] += BillboardOffset.Z;
+        }
+
+        WorldAABB = Geometry::TransformAABB(LocalAABB, BoundsWorldMatrix);
     }
 
     REGISTER_CLASS(Engine::Component, UPaperSpriteComponent)

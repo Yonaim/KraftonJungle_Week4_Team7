@@ -12,6 +12,8 @@
 #include "Engine/Game/SphereActor.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Scene/World.h"
+#include "CoreUObject/ObjectIterator.h"
+#include "Engine/Asset/Asset.h"
 #include "Content/EditorContentIndex.h"
 #include "Renderer/Types/ViewMode.h"
 #include "Viewport/EditorViewportClient.h"
@@ -247,34 +249,185 @@ namespace
         }
     }
 
-    ImVec4 GetLogTextColor(ELogLevel Verbosity)
+    ImVec4 GetLogTextColor(ELogLevel Level)
     {
-        switch (Verbosity)
+        switch (Level)
         {
-        case ELogLevel::Debug:
+        case ELogLevel::Verbose:
             return ImVec4(0.60f, 0.60f, 0.60f, 1.0f); // Gray
-        case ELogLevel::Info:
+        case ELogLevel::Debug:
             return ImVec4(1.00f, 1.00f, 1.00f, 1.0f); // White
+        case ELogLevel::Info:
+            return ImVec4(0.00f, 1.00f, 1.00f, 1.0f); // Cyan
         case ELogLevel::Warning:
             return ImVec4(1.00f, 1.00f, 0.00f, 1.0f); // Yellow
         case ELogLevel::Error:
             return ImVec4(1.00f, 0.20f, 0.20f, 1.0f); // Red
-        case ELogLevel::Fatal:
-            return ImVec4(1.00f, 1.00f, 1.00f, 1.0f); // White
         default:
             return ImVec4(1.00f, 1.00f, 1.00f, 1.0f);
         }
     }
 
-    ImU32 GetLogBackgroundColorU32(ELogLevel Verbosity)
+
+
+    std::string GetEditorImGuiDefaultIniPath()
     {
-        switch (Verbosity)
+        return "Editor/imgui.default.ini";
+    }
+
+    std::string GetEditorImGuiUserIniPath()
+    {
+        return "Editor/imgui.user.ini";
+    }
+
+    bool ResetEditorImGuiLayoutToDefault()
+    {
+        namespace fs = std::filesystem;
+
+        std::error_code Ec;
+        const fs::path DefaultPath(GetEditorImGuiDefaultIniPath());
+        const fs::path UserPath(GetEditorImGuiUserIniPath());
+
+        if (!fs::exists(DefaultPath, Ec) || Ec)
         {
-        case ELogLevel::Fatal:
-            return IM_COL32(180, 32, 32, 255); // White on red
+            return false;
+        }
+
+        fs::create_directories(UserPath.parent_path(), Ec);
+        Ec.clear();
+        fs::copy_file(DefaultPath, UserPath, fs::copy_options::overwrite_existing, Ec);
+        if (Ec)
+        {
+            return false;
+        }
+
+        ImGui::LoadIniSettingsFromDisk(UserPath.string().c_str());
+        ImGui::SaveIniSettingsToDisk(UserPath.string().c_str());
+        return true;
+    }
+    ImU32 GetLogBackgroundColorU32(ELogLevel Level)
+    {
+        switch (Level)
+        {
+        case ELogLevel::Error:
+            return IM_COL32(48, 12, 12, 255);
         default:
             return IM_COL32(0, 0, 0, 0);
         }
+    }
+
+    struct FObjectTypeStatLine
+    {
+        FString TypeName;
+        uint32  Count = 0;
+        size_t  MemoryBytes = 0;
+    };
+
+    struct FObjectResourceStatLine
+    {
+        FString TypeName;
+        FString ResourceKey;
+        uint32  Count = 0;
+        size_t  MemoryBytes = 0;
+    };
+
+    struct FObjectOverlayStats
+    {
+        uint32 TotalCount = 0;
+        size_t TotalMemoryBytes = 0;
+        TArray<FObjectTypeStatLine>     TypeStats;
+        TArray<FObjectResourceStatLine> ResourceStats;
+    };
+
+    const char* GetLogLevelButtonLabel(ELogLevel Level)
+    {
+        switch (Level)
+        {
+        case ELogLevel::Verbose:
+            return "Verbose";
+        case ELogLevel::Debug:
+            return "Debug";
+        case ELogLevel::Info:
+            return "Info";
+        case ELogLevel::Warning:
+            return "Warning";
+        case ELogLevel::Error:
+            return "Error";
+        default:
+            return "Unknown";
+        }
+    }
+
+    FObjectOverlayStats BuildObjectOverlayStats()
+    {
+        FObjectOverlayStats Stats;
+        TMap<FString, FObjectTypeStatLine> TypeMap;
+        TMap<FString, FObjectResourceStatLine> ResourceMap;
+
+        for (FObjectIterator It; It; ++It)
+        {
+            UObject* Object = *It;
+            if (Object == nullptr)
+            {
+                continue;
+            }
+
+            const FString TypeName = Object->GetTypeName();
+            const size_t  MemoryBytes = Object->GetStatMemoryBytes();
+
+            FObjectTypeStatLine& TypeStat = TypeMap[TypeName];
+            TypeStat.TypeName = TypeName;
+            TypeStat.Count += 1;
+            TypeStat.MemoryBytes += MemoryBytes;
+
+            Stats.TotalCount += 1;
+            Stats.TotalMemoryBytes += MemoryBytes;
+
+            const FString ResourceKey = Object->GetStatResourceKey();
+            if (!ResourceKey.empty())
+            {
+                const FString ResourceMapKey = TypeName + "||" + ResourceKey;
+                FObjectResourceStatLine& ResourceStat = ResourceMap[ResourceMapKey];
+                ResourceStat.TypeName = TypeName;
+                ResourceStat.ResourceKey = ResourceKey;
+                ResourceStat.Count += 1;
+                ResourceStat.MemoryBytes += MemoryBytes;
+            }
+        }
+
+        Stats.TypeStats.reserve(TypeMap.size());
+        for (const auto& [Key, Value] : TypeMap)
+        {
+            Stats.TypeStats.push_back(Value);
+        }
+
+        Stats.ResourceStats.reserve(ResourceMap.size());
+        for (const auto& [Key, Value] : ResourceMap)
+        {
+            Stats.ResourceStats.push_back(Value);
+        }
+
+        std::sort(Stats.TypeStats.begin(), Stats.TypeStats.end(),
+                  [](const FObjectTypeStatLine& Left, const FObjectTypeStatLine& Right)
+                  {
+                      if (Left.MemoryBytes != Right.MemoryBytes)
+                      {
+                          return Left.MemoryBytes > Right.MemoryBytes;
+                      }
+                      return Left.Count > Right.Count;
+                  });
+
+        std::sort(Stats.ResourceStats.begin(), Stats.ResourceStats.end(),
+                  [](const FObjectResourceStatLine& Left, const FObjectResourceStatLine& Right)
+                  {
+                      if (Left.Count != Right.Count)
+                      {
+                          return Left.Count > Right.Count;
+                      }
+                      return Left.MemoryBytes > Right.MemoryBytes;
+                  });
+
+        return Stats;
     }
 
     const char* ContentItemTypeToString(EContentBrowserItemType ItemType)
@@ -428,6 +581,37 @@ void FConsolePanel::Draw()
 
 void FConsolePanel::DrawToolbar()
 {
+    ImGui::TextUnformatted("Minimum Level");
+    ImGui::SameLine();
+
+    const ELogLevel CurrentLogLevel = GetGlobalLogLevel();
+    ImGui::SetNextItemWidth(180.0f);
+
+    int CurrentLogLevelIndex = static_cast<int>(CurrentLogLevel);
+    if (ImGui::BeginCombo("##EngineLogLevelCombo", GetLogLevelButtonLabel(CurrentLogLevel)))
+    {
+        for (int32 Index = static_cast<int32>(ELogLevel::Verbose);
+             Index <= static_cast<int32>(ELogLevel::Error); ++Index)
+        {
+            const ELogLevel OptionLevel = static_cast<ELogLevel>(Index);
+            const bool bSelected = (CurrentLogLevelIndex == Index);
+            if (ImGui::Selectable(GetLogLevelButtonLabel(OptionLevel), bSelected))
+            {
+                SetGlobalLogLevel(OptionLevel);
+                UE_LOG(Console, ELogLevel::Info, "Log level changed to %s.",
+                       GetLogLevelLabel(OptionLevel));
+                bScrollToBottom = true;
+            }
+
+            if (bSelected)
+            {
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        ImGui::EndCombo();
+    }
+
+    ImGui::SameLine();
     if (ImGui::Button("Clear"))
     {
         ExecuteCommand("clear");
@@ -441,6 +625,20 @@ void FConsolePanel::DrawToolbar()
 
     ImGui::SameLine();
     ImGui::Checkbox("Auto-scroll", &bAutoScroll);
+
+    ImGui::SameLine();
+    if (ImGui::Button("Reset Layout"))
+    {
+        if (ResetEditorImGuiLayoutToDefault())
+        {
+            UE_LOG(Console, ELogLevel::Info, "ImGui layout restored to default.");
+        }
+        else
+        {
+            UE_LOG(Console, ELogLevel::Error, "Failed to restore ImGui layout to default.");
+        }
+        bScrollToBottom = true;
+    }
 }
 
 void FConsolePanel::DrawLogOutput()
@@ -460,9 +658,18 @@ void FConsolePanel::DrawLogOutput()
     }
 
     const TArray<FEditorLogEntry>& Entries = LogBuffer->GetLogBuffer();
+    const ELogLevel               VisibleLogLevel = GetGlobalLogLevel();
+    int32                         VisibleEntryCount = 0;
     for (const FEditorLogEntry& Entry : Entries)
     {
-        if (Entry.Verbosity == ELogLevel::Fatal)
+        if (static_cast<uint8>(Entry.Level) < static_cast<uint8>(VisibleLogLevel))
+        {
+            continue;
+        }
+
+        ++VisibleEntryCount;
+
+        if (Entry.Level == ELogLevel::Error)
         {
             const float  AvailableWidth = ImGui::GetContentRegionAvail().x;
             const ImVec2 StartPos = ImGui::GetCursorScreenPos();
@@ -477,11 +684,11 @@ void FConsolePanel::DrawLogOutput()
             ImGui::GetWindowDrawList()->AddRectFilled(
                 StartPos,
                 ImVec2(StartPos.x + AvailableWidth, StartPos.y + TextSize.y + PaddingY * 2.0f),
-                GetLogBackgroundColorU32(Entry.Verbosity));
+                GetLogBackgroundColorU32(Entry.Level));
 
             ImGui::Dummy(ImVec2(0.0f, PaddingY));
             ImGui::SetCursorScreenPos(ImVec2(StartPos.x + PaddingX, StartPos.y + PaddingY));
-            ImGui::PushStyleColor(ImGuiCol_Text, GetLogTextColor(Entry.Verbosity));
+            ImGui::PushStyleColor(ImGuiCol_Text, GetLogTextColor(Entry.Level));
             ImGui::PushTextWrapPos(StartPos.x + AvailableWidth - PaddingX);
             ImGui::TextWrapped("%s", Entry.Message.c_str());
             ImGui::PopTextWrapPos();
@@ -496,20 +703,20 @@ void FConsolePanel::DrawLogOutput()
         }
         else
         {
-            ImGui::PushStyleColor(ImGuiCol_Text, GetLogTextColor(Entry.Verbosity));
+            ImGui::PushStyleColor(ImGuiCol_Text, GetLogTextColor(Entry.Level));
             ImGui::TextWrapped("%s", Entry.Message.c_str());
             ImGui::PopStyleColor();
         }
     }
 
-    if (Entries.size() != LastVisibleLogCount)
+    if (VisibleEntryCount != LastVisibleLogCount)
     {
         if (bAutoScroll || bScrollToBottom)
         {
             ImGui::SetScrollHereY(1.0f);
         }
 
-        LastVisibleLogCount = static_cast<int32>(Entries.size());
+        LastVisibleLogCount = VisibleEntryCount;
         bScrollToBottom = false;
     }
 
@@ -583,7 +790,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
     {
         UE_LOG(Console, ELogLevel::Info, "Commands:");
         UE_LOG(Console, ELogLevel::Info,
-               "  help, clear, debug <text>, info <text>, warn <text>, error <text>, fatal <text>");
+               "  help, clear, verbose <text>, debug <text>, info <text>, warn <text>, error <text>");
         UE_LOG(Console, ELogLevel::Info,
                "  scene.new, scene.open <path>, scene.save, scene.saveas <path>, scene.clear, "
                "scene.list, scene.summary");
@@ -598,7 +805,14 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
         UE_LOG(Console, ELogLevel::Info,
                "  show.bounds <on|off>, show.grid <on|off>, show.outline <on|off>");
         UE_LOG(Console, ELogLevel::Info,
-               "  stats.fps, stats.memory, stats.gpu, content.refresh, content.find <keyword>");
+               "  stats.fps, stats.memory, stats.gpu, stats.uobject, content.refresh, content.find <keyword>");
+        bScrollToBottom = true;
+        return;
+    }
+
+    if (StartsWith(TrimmedCommand, "verbose "))
+    {
+        UE_LOG(Console, ELogLevel::Verbose, "%s", TrimmedCommand.substr(8).c_str());
         bScrollToBottom = true;
         return;
     }
@@ -631,12 +845,6 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
         return;
     }
 
-    if (StartsWith(TrimmedCommand, "fatal "))
-    {
-        UE_LOG(Console, ELogLevel::Fatal, "%s", TrimmedCommand.substr(6).c_str());
-        bScrollToBottom = true;
-        return;
-    }
 
     if (StartsWith(TrimmedCommand, "stat "))
     {
@@ -1276,7 +1484,7 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
 
     if (CommandName == "stat all")
     {
-        ActiveStatOverlays = STAT_FPS | STAT_MEMORY;
+        ActiveStatOverlays = STAT_FPS | STAT_MEMORY | STAT_UOBJECT;
         bScrollToBottom = true;
         return;
     }
@@ -1320,6 +1528,17 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
     {
         UE_LOG(Console, ELogLevel::Warning,
                "GPU memory stats are not available in the current build.");
+        bScrollToBottom = true;
+        return;
+    }
+
+    if (CommandName == "stat uobject")
+    {
+        const FObjectOverlayStats ObjectStats = BuildObjectOverlayStats();
+        UE_LOG(Console, ELogLevel::Info, "UObject count = %u", ObjectStats.TotalCount);
+        UE_LOG(Console, ELogLevel::Info, "UObject wrapper memory = %.2f KB",
+               static_cast<float>(ObjectStats.TotalMemoryBytes) / 1024.0f);
+        ActiveStatOverlays ^= STAT_UOBJECT;
         bScrollToBottom = true;
         return;
     }
@@ -1391,29 +1610,33 @@ void FConsolePanel::ExecuteCommand(const FString& CommandLine)
 void FConsolePanel::RenderCommandOverlays()
 {
     if (ActiveStatOverlays == STAT_NONE)
+    {
         return;
+    }
 
-    ImDrawList* DrawList = ImGui::GetForegroundDrawList();
-    float       Y = 10.0f;
-    const float LineHeight = ImGui::GetTextLineHeight() + 4.0f;
+    FEditorContext* Context = GetContext();
+    ImDrawList*     DrawList = ImGui::GetForegroundDrawList();
+    float           Y = 10.0f;
+    const float     LineHeight = ImGui::GetTextLineHeight() + 4.0f;
 
     auto DrawStatText = [&](const char* Text, ImVec4 Color = {1, 1, 0, 1})
     {
-        ImVec2 Pos = ImVec2(10.0f, Y + 100.0f);
+        const ImVec2 Pos = ImVec2(10.0f, Y + 100.0f);
         DrawList->AddText(ImVec2(Pos.x + 1, Pos.y + 1), IM_COL32(0, 0, 0, 200), Text);
         DrawList->AddText(Pos, ImGui::ColorConvertFloat4ToU32(Color), Text);
         Y += LineHeight;
     };
 
-    char Buf[128];
+    char Buf[256];
 
-    if (ActiveStatOverlays & STAT_FPS && Context != nullptr)
+    if ((ActiveStatOverlays & STAT_FPS) != 0 && Context != nullptr)
     {
         snprintf(Buf, sizeof(Buf), "FPS: %.1f (%.3f ms)", Context->CurrentFPS,
                  Context->DeltaTime * 1000.0f);
         DrawStatText(Buf);
     }
-    if (ActiveStatOverlays & STAT_MEMORY)
+
+    if ((ActiveStatOverlays & STAT_MEMORY) != 0)
     {
         snprintf(Buf, sizeof(Buf), "TotalAllocationCount = %u",
                  UEngineStatics::TotalAllocationCount);
@@ -1422,5 +1645,31 @@ void FConsolePanel::RenderCommandOverlays()
         snprintf(Buf, sizeof(Buf), "Heap Usage = %.2f KB",
                  UEngineStatics::TotalAllocatedBytes / 1024.0f);
         DrawStatText(Buf, {0.4f, 1.0f, 0.4f, 1.0f});
+    }
+
+    if ((ActiveStatOverlays & STAT_UOBJECT) != 0)
+    {
+        const FObjectOverlayStats ObjectStats = BuildObjectOverlayStats();
+        snprintf(Buf, sizeof(Buf), "UObject: %u objects / %.2f KB", ObjectStats.TotalCount,
+                 static_cast<float>(ObjectStats.TotalMemoryBytes) / 1024.0f);
+        DrawStatText(Buf, {0.2f, 0.9f, 1.0f, 1.0f});
+
+        const size_t MaxTypeLines = std::min<size_t>(ObjectStats.TypeStats.size(), 8);
+        for (size_t Index = 0; Index < MaxTypeLines; ++Index)
+        {
+            const FObjectTypeStatLine& TypeStat = ObjectStats.TypeStats[Index];
+            snprintf(Buf, sizeof(Buf), "  %s: %u / %.2f KB", TypeStat.TypeName.c_str(),
+                     TypeStat.Count, static_cast<float>(TypeStat.MemoryBytes) / 1024.0f);
+            DrawStatText(Buf, {0.85f, 0.95f, 1.0f, 1.0f});
+        }
+
+        const size_t MaxResourceLines = std::min<size_t>(ObjectStats.ResourceStats.size(), 6);
+        for (size_t Index = 0; Index < MaxResourceLines; ++Index)
+        {
+            const FObjectResourceStatLine& ResourceStat = ObjectStats.ResourceStats[Index];
+            snprintf(Buf, sizeof(Buf), "  %s x%u : %s", ResourceStat.TypeName.c_str(),
+                     ResourceStat.Count, ResourceStat.ResourceKey.c_str());
+            DrawStatText(Buf, {1.0f, 0.95f, 0.65f, 1.0f});
+        }
     }
 }

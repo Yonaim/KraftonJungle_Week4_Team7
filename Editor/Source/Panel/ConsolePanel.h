@@ -11,9 +11,10 @@ class FEditorLogBuffer;
 enum EStatOverlayFlags : uint32
 {
     STAT_NONE = 0,
-    STAT_FPS = 1 << 0,    
-    STAT_MEMORY = 1 << 1, 
-    STAT_GPU = 1 << 2,    
+    STAT_FPS = 1 << 0,
+    STAT_MEMORY = 1 << 1,
+    STAT_GPU = 1 << 2,
+    STAT_UOBJECT = 1 << 3,
 };
 
 class FConsolePanel : public IPanel

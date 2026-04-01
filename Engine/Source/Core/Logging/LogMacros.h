@@ -1,50 +1,30 @@
 #pragma once
 
 #include <cstdio>
-#include "LogOutputDevice.h"
-#include "Core/CoreGlobals.h"
 #include <cstdarg>
 
-inline const char* GetLogLevelLabel(ELogLevel Level)
+#include "LogOutputDevice.h"
+#include "Core/CoreGlobals.h"
+
+#ifndef UE_DEFAULT_LOG_LEVEL
+#define UE_DEFAULT_LOG_LEVEL ELogLevel::Verbose
+#endif
+
+inline void InitializeDefaultLogLevel()
 {
-    switch (Level)
+    static bool bInitialized = false;
+    if (!bInitialized)
     {
-    case ELogLevel::Debug:
-        return "DEBUG";
-    case ELogLevel::Info:
-        return "INFO";
-    case ELogLevel::Warning:
-        return "WARNING";
-    case ELogLevel::Error:
-        return "ERROR";
-    case ELogLevel::Fatal:
-        return "FATAL";
-    default:
-        return "UNKNOWN";
+        SetGlobalLogLevel(UE_DEFAULT_LOG_LEVEL);
+        bInitialized = true;
     }
 }
 
-/**
- * LogOutput Macro
- *
- * Category    : Category name only (e.g. Console, Renderer, Engine), no registration required
- * Level       : ELogLevel (Debug / Info / Warning / Error / Fatal)
- * Format, ... : printf-style format string
- *
- * Level colors in Console Panel
- *   Debug   : Gray
- *   Info    : White
- *   Warning : Yellow
- *   Error   : Red
- *   Fatal   : White text on red background
- *
- * Example)
- *   UE_LOG(Console, ELogLevel::Debug, "Value: %d", 42);
- *   UE_LOG(Renderer, ELogLevel::Error, "CreateBuffer failed");
- */
 inline void LogMessage(ELogLevel Level, const char* Category, const char* Format, ...)
 {
-    if (!GLog)
+    InitializeDefaultLogLevel();
+
+    if (!GLog || !ShouldLog(Level))
     {
         return;
     }
@@ -64,8 +44,4 @@ inline void LogMessage(ELogLevel Level, const char* Category, const char* Format
     GLog->Log(Level, FinalBuffer);
 }
 
-#define UE_LOG(Category, Level, Format, ...)                                                       \
-    do                                                                                             \
-    {                                                                                              \
-        LogMessage(Level, #Category, Format, ##__VA_ARGS__);                                       \
-    } while (0)
+#define UE_LOG(Category, Level, Format, ...)                                                           do                                                                                                 {                                                                                                      LogMessage(Level, #Category, Format, ##__VA_ARGS__);                                           } while (0)

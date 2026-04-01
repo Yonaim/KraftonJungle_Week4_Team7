@@ -5,6 +5,6 @@
 
 struct FEditorLogEntry
 {
-    ELogLevel Verbosity;
+    ELogLevel Level = ELogLevel::Info;
     FString   Message;
 };

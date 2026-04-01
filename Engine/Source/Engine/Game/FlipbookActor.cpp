@@ -19,7 +19,7 @@ AFlipbookActor::AFlipbookActor()
 
     Name = "FlipbookActor";
 
-    UE_LOG(FEditor, ELogLevel::Debug, "FlipbookActor Component RTTI: %s",
+    UE_LOG(FEditor, ELogLevel::Verbose, "FlipbookActor Component RTTI: %s",
            AnimatedComponent->GetTypeName());
 }
 

@@ -607,7 +607,7 @@ void FEditor::Release()
 
 void FEditor::Initialize()
 {
-    UE_LOG(FEditor, ELogLevel::Debug, "Editor initialize called.");
+    UE_LOG(FEditor, ELogLevel::Verbose, "Editor initialize called.");
     if (CurWorld == nullptr)
     {
         CurWorld = new FWorld();
@@ -627,7 +627,7 @@ void FEditor::SetChromeHost(IEditorChromeHost* InChromeHost)
 {
     ChromeHost = InChromeHost;
     EditorChrome.SetHost(InChromeHost);
-    UE_LOG(FEditor, ELogLevel::Debug, "Editor chrome host set: %p", InChromeHost);
+    UE_LOG(FEditor, ELogLevel::Verbose, "Editor chrome host set: %p", InChromeHost);
 }
 
 void FEditor::SetRuntimeServices(FD3D11RHI* InRHI, RHI::FDynamicRHI* InDynamicRHI,
@@ -750,7 +750,7 @@ void FEditor::PreloadStartupAssets()
 
     if (EditorContext.StartupPreloadAssetPaths.empty())
     {
-        UE_LOG(FEditor, ELogLevel::Debug, "No startup preload assets were configured.");
+        UE_LOG(FEditor, ELogLevel::Verbose, "No startup preload assets were configured.");
         return;
     }
 
@@ -862,7 +862,7 @@ void FEditor::SaveEditorSettings() const
 
     if (PersistentSettings.Save(SettingsData))
     {
-        UE_LOG(FEditor, ELogLevel::Debug,
+        UE_LOG(FEditor, ELogLevel::Verbose,
                "Saved editor settings: GridSpacing=%.2f CameraMoveSpeed=%.2f "
                "CameraRotationSpeed=%.2f LeftPaneWidth=%.2f",
                SettingsData.GridSpacing, SettingsData.CameraMoveSpeed,
@@ -926,7 +926,7 @@ void FEditor::RequestOpenScene()
 
     if (!ShowOpenSceneFileDialog(ChromeHost, InitialDirectory, SelectedPath))
     {
-        UE_LOG(FEditor, ELogLevel::Debug, "Open scene dialog was cancelled.");
+        UE_LOG(FEditor, ELogLevel::Verbose, "Open scene dialog was cancelled.");
         return;
     }
 
@@ -1098,7 +1098,7 @@ void FEditor::ResolveActorAssetReferences(AActor* Actor)
         return;
     }
 
-    UE_LOG(FEditor, ELogLevel::Debug, "Resolving asset references for actor: %s",
+    UE_LOG(FEditor, ELogLevel::Verbose, "Resolving asset references for actor: %s",
            Actor->GetTypeName());
     FSceneAssetBinder::BindActor(Actor, EditorContext.AssetObjectManager);
 }

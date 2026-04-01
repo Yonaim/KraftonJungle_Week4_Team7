@@ -29,6 +29,8 @@ class UAsset : public UObject
         return !AssetPath.empty();
     }
 
+    FString GetStatResourceKey() const override { return AssetPath; }
+
   private:
     FString AssetPath;
     FString AssetName;

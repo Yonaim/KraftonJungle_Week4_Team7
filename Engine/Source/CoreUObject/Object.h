@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 #include "ObjectFactory.h"
 #include "Core/Misc/Name.h"
 
@@ -62,6 +64,9 @@ class ENGINE_API UObject
     }
     virtual bool IsA(const void* Id) const { return GetClass() == Id; }
     virtual const char* GetTypeName() const { return "UObject"; }
+    virtual size_t GetAllocatedSizeBytes() const;
+    virtual size_t GetStatMemoryBytes() const { return GetAllocatedSizeBytes(); }
+    virtual FString GetStatResourceKey() const { return ""; }
 
     void *operator new(size_t Size);
     void  operator delete(void* Pointer, size_t Size);

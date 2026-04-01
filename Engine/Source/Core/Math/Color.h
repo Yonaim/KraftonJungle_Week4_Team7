@@ -10,7 +10,7 @@ struct ENGINE_API FColor
 
     constexpr FColor(float InR, float InG, float InB, float InA) : r(InR), g(InG), b(InB), a(InA) {}
     ~FColor() = default;
-    
+
     FColor(const FVector4& Other)
     {
         r = Other.X;
@@ -18,11 +18,33 @@ struct ENGINE_API FColor
         b = Other.Z;
         a = Other.W;
     }
-    
-    operator FVector4() const
+
+    FColor& operator=(const FVector4& Other)
     {
-        return FVector4{ r, g, b, a };
+        r = Other.X;
+        g = Other.Y;
+        b = Other.Z;
+        a = Other.W;
+        return *this;
     }
+
+    FColor& operator=(const FColor& Other)
+    {
+        r = Other.r;
+        g = Other.g;
+        b = Other.b;
+        a = Other.a;
+        return *this;
+    }
+
+    bool operator==(const FColor& Other) const
+    {
+        return r == Other.r && g == Other.g && b == Other.b && a == Other.a;
+    }
+
+    bool operator!=(const FColor& Other) const { return !(*this == Other); }
+
+    operator FVector4() const { return FVector4{r, g, b, a}; }
 
   public:
     static constexpr FColor White() { return FColor(1.0f, 1.0f, 1.0f, 1.0f); }

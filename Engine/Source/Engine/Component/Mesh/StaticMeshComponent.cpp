@@ -1,4 +1,5 @@
 #include "Core/CoreMinimal.h"
+#include "Core/Logging/LogMacros.h"
 #include "StaticMeshComponent.h"
 #include "Engine/Component/Core/ComponentProperty.h"
 #include "Engine/Asset/StaticMesh.h"
@@ -48,12 +49,17 @@ namespace Engine::Component
         MeshData.reset();
         OverrideMaterials.clear();
         bBoundsDirty = true;
+        UE_LOG(StaticMeshComponent, ELogLevel::Verbose,
+               "Static mesh path changed: %s", MeshPath.c_str());
     }
 
     void UStaticMeshComponent::SetStaticMeshAsset(UStaticMesh* InStaticMesh)
     {
         bBoundsDirty = true;
         StaticMesh = InStaticMesh;
+        UE_LOG(StaticMeshComponent, ELogLevel::Debug,
+               "Static mesh asset assigned: %s",
+               StaticMesh ? StaticMesh->GetAssetPath().c_str() : "<null>");
         SyncMaterialOverridesWithStaticMesh();
     }
 
@@ -67,6 +73,8 @@ namespace Engine::Component
         }
 
         OverrideMaterials.resize(StaticMesh->GetMaterialSlots().size(), nullptr);
+        UE_LOG(StaticMeshComponent, ELogLevel::Verbose,
+               "Material override slots synced: %zu", OverrideMaterials.size());
     }
 
     void UStaticMeshComponent::CollectRenderData(FSceneRenderData& OutRenderData,
@@ -318,6 +326,8 @@ namespace Engine::Component
         if (OverrideMaterials.size() < StaticMesh->GetMaterialSlots().size())
         {
             OverrideMaterials.resize(StaticMesh->GetMaterialSlots().size(), nullptr);
+        UE_LOG(StaticMeshComponent, ELogLevel::Verbose,
+               "Material override slots synced: %zu", OverrideMaterials.size());
         }
 
         OverrideMaterials[SlotIndex] = InMaterial;

@@ -2,10 +2,10 @@
 
 FEditorLogBuffer::~FEditorLogBuffer() { LogEntries.clear(); }
 
-void FEditorLogBuffer::Log(ELogLevel Verbosity, const char* Message)
+void FEditorLogBuffer::Log(ELogLevel Level, const char* Message)
 {
     FEditorLogEntry LogEntry;
-    LogEntry.Verbosity = Verbosity;
+    LogEntry.Level = Level;
     LogEntry.Message = (Message != nullptr) ? Message : "";
     LogEntries.push_back(LogEntry);
 }

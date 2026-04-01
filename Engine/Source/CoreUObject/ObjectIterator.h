@@ -5,7 +5,7 @@
 /**
  * FObjectIterator — 모든 UObject를 순회합니다.
  */
-class FObjectIterator
+class ENGINE_API FObjectIterator
 {
   public:
     FObjectIterator();
@@ -22,7 +22,6 @@ class FObjectIterator
 
     int32 CurrentIndex;
 };
-
 
 /*
  * TObjectIterator<T>는 특정 타입의 UObject들을 순회하는 반복자입니다.

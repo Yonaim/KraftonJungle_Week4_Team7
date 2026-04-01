@@ -3,6 +3,7 @@
 #include "Asset/Builder/MaterialBuilder.h"
 #include "Asset/Core/AssetNaming.h"
 #include "Asset/Manager/AssetCacheManager.h"
+#include "Core/HAL/PlatformTime.h"
 #include "Core/Logging/LogMacros.h"
 #include "CoreUObject/ObjectIterator.h"
 #include "Engine/Asset/FontAtlas.h"
@@ -34,11 +35,40 @@ namespace
     }
 }
 
+namespace
+{
+    double ToMilliseconds(double Seconds)
+    {
+        return Seconds * 1000.0;
+    }
+
+    template <typename TObjectType>
+    TObjectType* LogAssetLoadResult(const char* AssetTypeLabel, const FString& AssetPath,
+                                    double StartSeconds, TObjectType* Result,
+                                    bool bWasCacheHit = false)
+    {
+        const double ElapsedMs = ToMilliseconds(FPlatformTime::Seconds() - StartSeconds);
+        if (Result != nullptr)
+        {
+            UE_LOG(AssetObject, ELogLevel::Info, "%s load succeeded: %s (%.3f ms%s)",
+                   AssetTypeLabel, AssetPath.c_str(), ElapsedMs,
+                   bWasCacheHit ? ", cache hit" : "");
+        }
+        else
+        {
+            UE_LOG(AssetObject, ELogLevel::Error, "%s load failed: %s (%.3f ms)", AssetTypeLabel,
+                   AssetPath.c_str(), ElapsedMs);
+        }
+
+        return Result;
+    }
+}
+
 UObject* FAssetObjectManager::LoadAssetObject(const FString& AssetPath)
 {
     if (!IsReady())
     {
-        UE_LOG(FEditor, ELogLevel::Error,
+        UE_LOG(AssetObject, ELogLevel::Error,
                "AssetObjectManager is not ready to load asset object: %s", AssetPath.c_str());
         return nullptr;
     }
@@ -62,144 +92,159 @@ UObject* FAssetObjectManager::LoadAssetObject(const FString& AssetPath)
 
 UStaticMesh* FAssetObjectManager::LoadStaticMeshObject(const FString& AssetPath)
 {
+    const double StartSeconds = FPlatformTime::Seconds();
+
     if (!IsReady() || AssetPath.empty())
     {
-        return nullptr;
+        return LogAssetLoadResult<UStaticMesh>("Static mesh asset", AssetPath, StartSeconds, nullptr);
     }
 
     if (UStaticMesh* ExistingObject = FindAssetObjectByPath<UStaticMesh>(AssetPath))
     {
-        return ExistingObject;
+        return LogAssetLoadResult<UStaticMesh>("Static mesh asset", AssetPath, StartSeconds,
+                                               ExistingObject, true);
     }
 
     std::shared_ptr<Asset::FObjCookedData> CookedData = AssetCacheManager->BuildStaticMesh(AssetPath);
     if (CookedData == nullptr)
     {
-        return nullptr;
+        return LogAssetLoadResult<UStaticMesh>("Static mesh asset", AssetPath, StartSeconds, nullptr);
     }
 
     UStaticMesh* NewObject = new UStaticMesh();
     if (!NewObject->LoadFromCooked(AssetPath, std::move(CookedData), *DynamicRHI))
     {
         delete NewObject;
-        return nullptr;
+        return LogAssetLoadResult<UStaticMesh>("Static mesh asset", AssetPath, StartSeconds, nullptr);
     }
 
     BindStaticMeshMaterialSlots(NewObject);
-    return NewObject;
+    return LogAssetLoadResult<UStaticMesh>("Static mesh asset", AssetPath, StartSeconds, NewObject);
 }
 
 UTexture* FAssetObjectManager::LoadTextureObject(const FString& AssetPath)
 {
+    const double StartSeconds = FPlatformTime::Seconds();
+
     if (!IsReady() || AssetPath.empty())
     {
-        return nullptr;
+        return LogAssetLoadResult<UTexture>("Texture asset", AssetPath, StartSeconds, nullptr);
     }
 
     if (UTexture* ExistingObject = FindAssetObjectByPath<UTexture>(AssetPath))
     {
-        return ExistingObject;
+        return LogAssetLoadResult<UTexture>("Texture asset", AssetPath, StartSeconds,
+                                            ExistingObject, true);
     }
 
     std::shared_ptr<Asset::FTextureCookedData> CookedData = AssetCacheManager->BuildTexture(AssetPath);
     if (CookedData == nullptr)
     {
-        return nullptr;
+        return LogAssetLoadResult<UTexture>("Texture asset", AssetPath, StartSeconds, nullptr);
     }
 
     UTexture* NewObject = new UTexture();
     if (!NewObject->LoadFromCooked(AssetPath, std::move(CookedData), *DynamicRHI))
     {
         delete NewObject;
-        return nullptr;
+        return LogAssetLoadResult<UTexture>("Texture asset", AssetPath, StartSeconds, nullptr);
     }
 
-    return NewObject;
+    return LogAssetLoadResult<UTexture>("Texture asset", AssetPath, StartSeconds, NewObject);
 }
 
 UMaterial* FAssetObjectManager::LoadMaterialObject(const FString& AssetPath)
 {
+    const double StartSeconds = FPlatformTime::Seconds();
+
     if (!IsReady() || AssetPath.empty())
     {
-        return nullptr;
+        return LogAssetLoadResult<UMaterial>("Material asset", AssetPath, StartSeconds, nullptr);
     }
 
     if (UMaterial* ExistingObject = FindAssetObjectByPath<UMaterial>(AssetPath))
     {
-        return ExistingObject;
+        return LogAssetLoadResult<UMaterial>("Material asset", AssetPath, StartSeconds,
+                                             ExistingObject, true);
     }
 
     std::shared_ptr<Asset::FMtlCookedData> CookedData = AssetCacheManager->BuildMaterial(AssetPath);
     if (CookedData == nullptr)
     {
-        return nullptr;
+        return LogAssetLoadResult<UMaterial>("Material asset", AssetPath, StartSeconds, nullptr);
     }
 
     UMaterial* NewObject = new UMaterial();
     if (!NewObject->LoadFromCooked(AssetPath, std::move(CookedData), *DynamicRHI))
     {
         delete NewObject;
-        return nullptr;
+        return LogAssetLoadResult<UMaterial>("Material asset", AssetPath, StartSeconds, nullptr);
     }
 
-    return NewObject;
+    return LogAssetLoadResult<UMaterial>("Material asset", AssetPath, StartSeconds, NewObject);
 }
 
 USubUVAtlas* FAssetObjectManager::LoadSubUVAtlasObject(const FString& AssetPath)
 {
+    const double StartSeconds = FPlatformTime::Seconds();
+
     if (!IsReady() || AssetPath.empty())
     {
-        return nullptr;
+        return LogAssetLoadResult<USubUVAtlas>("SubUV atlas asset", AssetPath, StartSeconds, nullptr);
     }
 
     if (USubUVAtlas* ExistingObject = FindAssetObjectByPath<USubUVAtlas>(AssetPath))
     {
-        return ExistingObject;
+        return LogAssetLoadResult<USubUVAtlas>("SubUV atlas asset", AssetPath, StartSeconds,
+                                               ExistingObject, true);
     }
 
     std::shared_ptr<Asset::FSubUVAtlasCookedData> CookedData =
         AssetCacheManager->BuildSubUVAtlas(AssetPath);
     if (CookedData == nullptr)
     {
-        return nullptr;
+        return LogAssetLoadResult<USubUVAtlas>("SubUV atlas asset", AssetPath, StartSeconds, nullptr);
     }
 
     USubUVAtlas* NewObject = new USubUVAtlas();
     if (!NewObject->LoadFromCooked(AssetPath, std::move(CookedData), *DynamicRHI))
     {
         delete NewObject;
-        return nullptr;
+        return LogAssetLoadResult<USubUVAtlas>("SubUV atlas asset", AssetPath, StartSeconds, nullptr);
     }
 
-    return NewObject;
+    return LogAssetLoadResult<USubUVAtlas>("SubUV atlas asset", AssetPath, StartSeconds, NewObject);
 }
 
 UFontAtlas* FAssetObjectManager::LoadFontAtlasObject(const FString& AssetPath)
 {
+    const double StartSeconds = FPlatformTime::Seconds();
+
     if (!IsReady() || AssetPath.empty())
     {
-        return nullptr;
+        return LogAssetLoadResult<UFontAtlas>("Font atlas asset", AssetPath, StartSeconds, nullptr);
     }
 
     if (UFontAtlas* ExistingObject = FindAssetObjectByPath<UFontAtlas>(AssetPath))
     {
-        return ExistingObject;
+        return LogAssetLoadResult<UFontAtlas>("Font atlas asset", AssetPath, StartSeconds,
+                                              ExistingObject, true);
     }
 
     std::shared_ptr<Asset::FFontAtlasCookedData> CookedData = AssetCacheManager->BuildFontAtlas(AssetPath);
     if (CookedData == nullptr)
     {
-        return nullptr;
+        return LogAssetLoadResult<UFontAtlas>("Font atlas asset", AssetPath, StartSeconds, nullptr);
     }
 
     UFontAtlas* NewObject = new UFontAtlas();
     if (!NewObject->LoadFromCooked(AssetPath, std::move(CookedData), *DynamicRHI))
     {
         delete NewObject;
-        return nullptr;
+        return LogAssetLoadResult<UFontAtlas>("Font atlas asset", AssetPath, StartSeconds, nullptr);
     }
 
-    return NewObject;
+    return LogAssetLoadResult<UFontAtlas>("Font atlas asset", AssetPath, StartSeconds, NewObject);
 }
 
 void FAssetObjectManager::BindStaticMeshMaterialSlots(UStaticMesh* StaticMeshAsset)
@@ -257,7 +302,7 @@ void FAssetObjectManager::BindStaticMeshMaterialSlots(UStaticMesh* StaticMeshAss
         UMaterial* MaterialAsset = LoadMaterialObject(MaterialAssetPath);
         if (MaterialAsset == nullptr)
         {
-            UE_LOG(FEditor, ELogLevel::Error,
+            UE_LOG(AssetObject, ELogLevel::Error,
                    "Failed to load material object for mesh slot %zu: %s -> %s", SlotIndex,
                    StaticMeshAsset->GetAssetPath().c_str(), MaterialAssetPath.c_str());
             MaterialSlots[SlotIndex] = nullptr;
@@ -265,7 +310,7 @@ void FAssetObjectManager::BindStaticMeshMaterialSlots(UStaticMesh* StaticMeshAss
         }
 
         MaterialSlots[SlotIndex] = MaterialAsset;
-        UE_LOG(FEditor, ELogLevel::Debug, "Bound material slot %zu: %s -> %s", SlotIndex,
+        UE_LOG(AssetObject, ELogLevel::Verbose, "Bound material slot %zu: %s -> %s", SlotIndex,
                StaticMeshAsset->GetAssetPath().c_str(), MaterialAssetPath.c_str());
     }
 }

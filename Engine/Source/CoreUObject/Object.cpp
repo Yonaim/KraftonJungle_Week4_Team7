@@ -12,6 +12,12 @@ namespace
         return AllocatedObjectTypeNames;
     }
 
+    TMap<const void*, size_t>& GetAllocatedObjectSizes()
+    {
+        static TMap<const void*, size_t> AllocatedObjectSizes;
+        return AllocatedObjectSizes;
+    }
+
     const char* ResolveAllocatedObjectTypeName(const UObject* Object)
     {
         if (Object == nullptr)
@@ -47,14 +53,14 @@ UObject::UObject()
     GUObjectArray.push_back(this);
 
     const FString ObjectName = ResolveObjectName(this);
-    UE_LOG(UObject, ELogLevel::Debug, "Created %s (UUID=%u, Name=%s, Address=%p)",
+    UE_LOG(UObject, ELogLevel::Verbose, "Created %s (UUID=%u, Name=%s, Address=%p)",
            ResolveAllocatedObjectTypeName(this), UUID, ObjectName.c_str(), this);
 }
 
 UObject::~UObject()
 {
     const FString ObjectName = ResolveObjectName(this);
-    UE_LOG(UObject, ELogLevel::Debug, "Destroyed %s (UUID=%u, Name=%s, Address=%p)",
+    UE_LOG(UObject, ELogLevel::Verbose, "Destroyed %s (UUID=%u, Name=%s, Address=%p)",
            ResolveAllocatedObjectTypeName(this), UUID, ObjectName.c_str(), this);
 
     if (InternalIndex < GUObjectArray.size() && GUObjectArray[InternalIndex] == this)
@@ -63,6 +69,14 @@ UObject::~UObject()
     }
 
     GetAllocatedObjectTypeNames().erase(this);
+    GetAllocatedObjectSizes().erase(this);
+}
+
+size_t UObject::GetAllocatedSizeBytes() const
+{
+    const auto& Sizes = GetAllocatedObjectSizes();
+    const auto  It = Sizes.find(this);
+    return It != Sizes.end() ? It->second : sizeof(UObject);
 }
 
 void* UObject::operator new(size_t Size) { return AllocateObject(Size, "UObject"); }
@@ -76,6 +90,7 @@ void* UObject::AllocateObject(size_t Size, const char* InTypeName)
 
     void* Pointer = ::operator new(Size);
     GetAllocatedObjectTypeNames()[Pointer] = InTypeName != nullptr ? InTypeName : "UObject";
+    GetAllocatedObjectSizes()[Pointer] = Size;
     return Pointer;
 }
 
