@@ -3,6 +3,7 @@
 #include "Core/Misc/BitMaskEnum.h"
 #include "Engine/Component/Core/PrimitiveComponent.h"
 #include "Engine/Game/Actor.h"
+#include "Renderer/SceneRenderData.h"
 
 namespace Engine::Component
 {
@@ -35,10 +36,16 @@ namespace Engine::Component
     void UUUIDComponent::CollectRenderData(FSceneRenderData& OutRenderData,
                                            ESceneShowFlags   InShowFlags) const
     {
-        if (IsFlagSet(InShowFlags, ESceneShowFlags::SF_UUIDText))
-        {
-            UAtlasTextComponent::CollectRenderData(OutRenderData, InShowFlags);
-        }
+        if (!IsFlagSet(InShowFlags, ESceneShowFlags::SF_UUIDText))
+            return;
+        
+        FRenderCommand Command;
+        // TextRenderComponent::CreateRenderCommand()를 그대로 사용
+        if (CreateRenderCommand(OutRenderData, InShowFlags, Command)) 
+            return;
+        
+        Command.bIgnoreWireFrame = true;
+        OutRenderData.RenderCommands.push_back(Command);
     }
 
     FVector UUUIDComponent::ComputeWorldAnchor(const AActor& InOwnerActor) const

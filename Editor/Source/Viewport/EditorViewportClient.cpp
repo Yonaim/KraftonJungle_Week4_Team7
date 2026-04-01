@@ -91,24 +91,8 @@ void FEditorViewportClient::HandleInputEvent(const Engine::ApplicationCore::FInp
     }
 }
 
-void FEditorViewportClient::BuildRenderData(FEditorRenderData& OutEditorRenderData,
-                                            FSceneRenderData&  OutSceneRenderData,
-                                            EEditorShowFlags   InShowFlags)
+void FEditorViewportClient::HandleGizmoRenderCommand(FEditorRenderData& OutEditorRenderData, FSceneRenderData& OutSceneRenderData)
 {
-    // SceneView 업데이트
-    SceneView.SetViewMatrix(ViewportCamera.GetViewMatrix());
-    SceneView.SetProjectionMatrix(ViewportCamera.GetProjectionMatrix());
-    SceneView.SetViewLocation(ViewportCamera.GetLocation());
-    SceneView.SetClipPlanes(ViewportCamera.GetNearPlane(), ViewportCamera.GetFarPlane());
-    SceneView.OnResize({0, 0, (int32)ViewportCamera.GetWidth(), (int32)ViewportCamera.GetHeight()});
-    OutSceneRenderData.SceneView = &SceneView;
-
-    OutEditorRenderData.bShowGrid = IsFlagSet(InShowFlags, EEditorShowFlags::SF_Grid);
-    OutEditorRenderData.bShowWorldAxes = IsFlagSet(InShowFlags, EEditorShowFlags::SF_WorldAxes);
-    OutEditorRenderData.bShowSelectionOutline =
-        IsFlagSet(InShowFlags, EEditorShowFlags::SF_SelectionOutline);
-    OutEditorRenderData.bShowGizmo = IsFlagSet(InShowFlags, EEditorShowFlags::SF_Gizmo);
-
     if (!SelectionController.GetSelectedActors().empty())
     {
         OutEditorRenderData.Gizmo.GizmoType = GizmoController.GetGizmoType();
@@ -128,7 +112,7 @@ void FEditorViewportClient::BuildRenderData(FEditorRenderData& OutEditorRenderDa
         GizmoController.GizmoScale =
             (ViewportCamera.GetLocation() -
              GizmoController.GetSelectedActor()->GetRootComponent()->GetRelativeLocation())
-                .Size() /
+            .Size() /
             10.f;
         //  Size 여기서 조정
         OutEditorRenderData.Gizmo.Scale = GizmoController.GizmoScale;
@@ -144,7 +128,7 @@ void FEditorViewportClient::BuildRenderData(FEditorRenderData& OutEditorRenderDa
                 {
                     const auto& GizmoRes = GeneralRenderer->GetGizmoResources();
                     const auto& GizmoDraw = OutEditorRenderData.Gizmo;
-                    FMatrix World = FMatrix::MakeScale(GizmoDraw.Scale) * GizmoDraw.Frame;
+                    FMatrix     World = FMatrix::MakeScale(GizmoDraw.Scale) * GizmoDraw.Frame;
 
                     const TArray<FGizmoMeshPart>* Parts = nullptr;
                     switch (GizmoDraw.GizmoType)
@@ -167,8 +151,8 @@ void FEditorViewportClient::BuildRenderData(FEditorRenderData& OutEditorRenderDa
 
                             // Highlight Check
                             EGizmoType DecodedType;
-                            EAxis DecodedAxis;
-                            bool bIsHovered = false;
+                            EAxis      DecodedAxis;
+                            bool       bIsHovered = false;
                             if (PickId::DecodeGizmoPart(Part.PickId, DecodedType, DecodedAxis))
                             {
                                 if (DecodedAxis == EAxis::Center)
@@ -214,6 +198,49 @@ void FEditorViewportClient::BuildRenderData(FEditorRenderData& OutEditorRenderDa
         GizmoController.SetSelectedActor(nullptr);
         GizmoController.bIsDrawed = false;
     }
+}
+
+void FEditorViewportClient::BuildRenderData(FEditorRenderData& OutEditorRenderData,
+                                            FSceneRenderData&  OutSceneRenderData,
+                                            EEditorShowFlags   InShowFlags)
+{
+    // SceneView 업데이트
+    SceneView.SetViewMatrix(ViewportCamera.GetViewMatrix());
+    SceneView.SetProjectionMatrix(ViewportCamera.GetProjectionMatrix());
+    SceneView.SetViewLocation(ViewportCamera.GetLocation());
+    SceneView.SetClipPlanes(ViewportCamera.GetNearPlane(), ViewportCamera.GetFarPlane());
+    SceneView.OnResize({0, 0, (int32)ViewportCamera.GetWidth(), (int32)ViewportCamera.GetHeight()});
+    OutSceneRenderData.SceneView = &SceneView;
+    
+    switch(RenderSetting.GetViewMode())
+    {
+    case EViewModeIndex::VMI_Lit:
+    case EViewModeIndex::VMI_Unlit:
+        break;      // Do nothing
+    case EViewModeIndex::VMI_Wireframe:
+        for (auto& RC : OutSceneRenderData.RenderCommands)
+        {
+            if (RC.bIgnoreWireFrame) 
+                continue;
+            RC.RasterizerOption.FillMode = D3D11_FILL_WIREFRAME;
+        }
+        break;
+    }
+
+    // EditorView 업데이트
+    OutEditorRenderData.bShowGrid = 
+                                IsFlagSet(InShowFlags, EEditorShowFlags::SF_Grid);
+    OutEditorRenderData.bShowWorldAxes = 
+                                IsFlagSet(InShowFlags, EEditorShowFlags::SF_WorldAxes);
+    OutEditorRenderData.bShowSelectionOutline =
+                                IsFlagSet(InShowFlags, EEditorShowFlags::SF_SelectionOutline);
+    OutEditorRenderData.bShowGizmo = 
+                                IsFlagSet(InShowFlags, EEditorShowFlags::SF_Gizmo);
+
+    // 기즈모 렌더 커맨드 생성
+    // 260401 NOTE: 기즈모 '정보'는 OutEditorRenderData, '렌더 커맨드'는 OutSceneRenderData에 나눠져있음... 
+    // \(^o^)/
+    HandleGizmoRenderCommand(OutEditorRenderData, OutSceneRenderData);
 }
 
 void FEditorViewportClient::OnResize(uint32 Width, uint32 Height)

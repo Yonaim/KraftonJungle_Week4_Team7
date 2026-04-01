@@ -1934,11 +1934,12 @@ void FEditor::BuildRenderData()
             const ESceneShowFlags SceneShowFlags =
                 Viewport->GetViewportClient()->GetRenderSetting().BuildSceneShowFlags();
 
+            // World에서 렌더링되어야 할 것들로 RenderData 채우기
             if (CurWorld != nullptr)
             {
                 CurWorld->BuildRenderData(SceneRenderData, SceneShowFlags);
             }
-
+            // Viewport에서 렌더링되어야 할 것들로 RenderData 채우기 & 뷰포트 카메라 정보 설정 (기즈모 등)
             Viewport->GetViewportClient()->BuildRenderData(EditorRenderData, SceneRenderData, EditorShowFlags);
 
             EditorRenderDatas.push_back(EditorRenderData);
