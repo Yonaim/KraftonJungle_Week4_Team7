@@ -10,7 +10,6 @@ namespace Engine::Component
 {
     ULineBatchComponent::ULineBatchComponent()
     {
-        AddWorldGrid(1000.0f, 15.0f);
     }
 
     Geometry::FAABB ULineBatchComponent::GetLocalAABB() const
@@ -154,31 +153,6 @@ namespace Engine::Component
             AddLine(InCenter + FVector(SinA * InRadius, 0.0f, CosA * InRadius),
                     InCenter + FVector(SinNext * InRadius, 0.0f, CosNext * InRadius), InColor, InLifeTime);
         }
-    }
-
-    void ULineBatchComponent::AddWorldGrid(float InGridSize, float InGridSpacing, const FColor& InColor)
-    {
-        if (InGridSpacing <= 0.0f) InGridSpacing = 100.0f;
-
-        const float HalfSize = InGridSize * 0.5f;
-        const float PersistentLifeTime = -1.0f; // 영구 유지
-
-        // X축에 평행한 선들
-        for (float y = -InGridSpacing; y >= -HalfSize; y -= InGridSpacing)
-            AddLine(FVector(-HalfSize, y, 0.0f), FVector(HalfSize, y, 0.0f), InColor, PersistentLifeTime);
-        for (float y = InGridSpacing; y <= HalfSize; y += InGridSpacing)
-            AddLine(FVector(-HalfSize, y, 0.0f), FVector(HalfSize, y, 0.0f), InColor, PersistentLifeTime);
-
-        // Y축에 평행한 선들
-        for (float x = -InGridSpacing; x >= -HalfSize; x -= InGridSpacing)
-            AddLine(FVector(x, -HalfSize, 0.0f), FVector(x, HalfSize, 0.0f), InColor, PersistentLifeTime);
-        for (float x = InGridSpacing; x <= HalfSize; x += InGridSpacing)
-            AddLine(FVector(x, -HalfSize, 0.0f), FVector(x, HalfSize, 0.0f), InColor, PersistentLifeTime);
-
-        // 기저 축
-        AddLine(FVector(-HalfSize, 0.0f, 0.0f), FVector(HalfSize, 0.0f, 0.01f), FColor::Red(), PersistentLifeTime);
-        AddLine(FVector(0.0f, -HalfSize, 0.0f), FVector(0.0f, HalfSize, 0.01f), FColor::Green(), PersistentLifeTime);
-        AddLine(FVector(0.0f, 0.0f, -HalfSize), FVector(0.0f, 0.0f, HalfSize), FColor::Blue(), PersistentLifeTime);
     }
 
     void ULineBatchComponent::ClearLines()

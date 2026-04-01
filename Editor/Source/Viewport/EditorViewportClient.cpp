@@ -5,8 +5,10 @@
 #include "Engine/Scene/Scene.h"
 #include "Engine/Scene/World.h"
 #include "Engine/Game/Actor.h"
+#include "Engine/Component/Mesh/LineBatchComponent.h"
 
 #include "imgui.h"
+#include "Engine/EngineStatics.h"
 #include "Renderer/RendererModule.h"
 #include "Renderer/D3D11/GeneralRenderer.h"
 #include "Renderer/RenderCommand.h"
@@ -34,6 +36,8 @@ void FEditorViewportClient::Create()
     ViewportCamera.SetFarPlane(2000.0f);
     ViewportCamera.SetLocation(FVector(-20.0f, 1.0f, 10.0f));
     ViewportCamera.SetRotation(FRotator(0.0f, 0.0f, 0.0f));
+
+    GridLineBatcher = new Engine::Component::ULineBatchComponent();
 }
 
 void FEditorViewportClient::Release()
@@ -42,6 +46,12 @@ void FEditorViewportClient::Release()
     {
         delete InputRouter;
         InputRouter = nullptr;
+    }
+
+    if (GridLineBatcher)
+    {
+        delete GridLineBatcher;
+        GridLineBatcher = nullptr;
     }
 }
 
@@ -241,6 +251,99 @@ void FEditorViewportClient::BuildRenderData(FEditorRenderData& OutEditorRenderDa
     // 260401 NOTE: 기즈모 '정보'는 OutEditorRenderData, '렌더 커맨드'는 OutSceneRenderData에 나눠져있음... 
     // \(^o^)/
     HandleGizmoRenderCommand(OutEditorRenderData, OutSceneRenderData);
+
+    // 그리드 및 월드 축 렌더 커맨드 생성
+    if (OutEditorRenderData.bShowGrid || OutEditorRenderData.bShowWorldAxes)
+    {
+        DrawWorldGrid(OutEditorRenderData, OutSceneRenderData);
+    }
+}
+
+void FEditorViewportClient::DrawWorldGrid(FEditorRenderData& OutEditorRenderData,
+                                          FSceneRenderData&  OutSceneRenderData)
+{
+    if (!GridLineBatcher)
+    {
+        return;
+    }
+
+    GridLineBatcher->ClearLines();
+
+    const float GridSize = 2000.0f;
+    const float GridSpacing = UEngineStatics::GridSpacing;
+    const FColor GridColor(0.3f, 0.3f, 0.3f, 1.0f);
+    const float  HalfSize = GridSize * 0.5f;
+    const float  PersistentLifeTime = -1.0f;
+
+    const EViewportProjectionType ProjType = ViewportCamera.GetProjectionType();
+    const EViewportOrthographicType OrthoType = ViewportCamera.GetOrthographicType();
+
+    if (ProjType == EViewportProjectionType::Perspective || OrthoType == EViewportOrthographicType::Top ||
+        OrthoType == EViewportOrthographicType::Bottom)
+    {
+        // XY 평면 그리드
+        for (float y = -GridSpacing; y >= -HalfSize; y -= GridSpacing)
+            GridLineBatcher->AddLine(FVector(-HalfSize, y, 0.0f), FVector(HalfSize, y, 0.0f), GridColor,
+                                     PersistentLifeTime);
+        for (float y = GridSpacing; y <= HalfSize; y += GridSpacing)
+            GridLineBatcher->AddLine(FVector(-HalfSize, y, 0.0f), FVector(HalfSize, y, 0.0f), GridColor,
+                                     PersistentLifeTime);
+
+        for (float x = -GridSpacing; x >= -HalfSize; x -= GridSpacing)
+            GridLineBatcher->AddLine(FVector(x, -HalfSize, 0.0f), FVector(x, HalfSize, 0.0f), GridColor,
+                                     PersistentLifeTime);
+        for (float x = GridSpacing; x <= HalfSize; x += GridSpacing)
+            GridLineBatcher->AddLine(FVector(x, -HalfSize, 0.0f), FVector(x, HalfSize, 0.0f), GridColor,
+                                     PersistentLifeTime);
+    }
+    else if (OrthoType == EViewportOrthographicType::Front || OrthoType == EViewportOrthographicType::Back)
+    {
+        // YZ 평면 그리드
+        for (float z = -GridSpacing; z >= -HalfSize; z -= GridSpacing)
+            GridLineBatcher->AddLine(FVector(0.0f, -HalfSize, z), FVector(0.0f, HalfSize, z), GridColor,
+                                     PersistentLifeTime);
+        for (float z = GridSpacing; z <= HalfSize; z += GridSpacing)
+            GridLineBatcher->AddLine(FVector(0.0f, -HalfSize, z), FVector(0.0f, HalfSize, z), GridColor,
+                                     PersistentLifeTime);
+
+        for (float y = -GridSpacing; y >= -HalfSize; y -= GridSpacing)
+            GridLineBatcher->AddLine(FVector(0.0f, y, -HalfSize), FVector(0.0f, y, HalfSize), GridColor,
+                                     PersistentLifeTime);
+        for (float y = GridSpacing; y <= HalfSize; y += GridSpacing)
+            GridLineBatcher->AddLine(FVector(0.0f, y, -HalfSize), FVector(0.0f, y, HalfSize), GridColor,
+                                     PersistentLifeTime);
+    }
+    else if (OrthoType == EViewportOrthographicType::Left || OrthoType == EViewportOrthographicType::Right)
+    {
+        // XZ 평면 그리드
+        for (float z = -GridSpacing; z >= -HalfSize; z -= GridSpacing)
+            GridLineBatcher->AddLine(FVector(-HalfSize, 0.0f, z), FVector(HalfSize, 0.0f, z), GridColor,
+                                     PersistentLifeTime);
+        for (float z = GridSpacing; z <= HalfSize; z += GridSpacing)
+            GridLineBatcher->AddLine(FVector(-HalfSize, 0.0f, z), FVector(HalfSize, 0.0f, z), GridColor,
+                                     PersistentLifeTime);
+
+        for (float x = -GridSpacing; x >= -HalfSize; x -= GridSpacing)
+            GridLineBatcher->AddLine(FVector(x, 0.0f, -HalfSize), FVector(x, 0.0f, HalfSize), GridColor,
+                                     PersistentLifeTime);
+        for (float x = GridSpacing; x <= HalfSize; x += GridSpacing)
+            GridLineBatcher->AddLine(FVector(x, 0.0f, -HalfSize), FVector(x, 0.0f, HalfSize), GridColor,
+                                     PersistentLifeTime);
+    }
+
+    // 월드 축 (SF_WorldAxes 플래그가 켜져 있을 때만)
+    if (OutEditorRenderData.bShowWorldAxes)
+    {
+        GridLineBatcher->AddLine(FVector(-HalfSize, 0.0f, 0.0f), FVector(HalfSize, 0.0f, 0.0f), FColor::Red(),
+                                 PersistentLifeTime);
+        GridLineBatcher->AddLine(FVector(0.0f, -HalfSize, 0.0f), FVector(0.0f, HalfSize, 0.0f), FColor::Green(),
+                                 PersistentLifeTime);
+        GridLineBatcher->AddLine(FVector(0.0f, 0.0f, -HalfSize), FVector(0.0f, 0.0f, HalfSize), FColor::Blue(),
+                                 PersistentLifeTime);
+    }
+
+    // 그리드 라인배처의 렌더 데이터를 수집하여 OutSceneRenderData에 추가
+    GridLineBatcher->CollectRenderData(OutSceneRenderData, ESceneShowFlags::SF_Primitives);
 }
 
 void FEditorViewportClient::OnResize(uint32 Width, uint32 Height)

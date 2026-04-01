@@ -14,7 +14,7 @@
 #include "Renderer/Types/EditorShowFlags.h"
 #include "Renderer/SceneView.h"
 
-struct FEditorContext;
+namespace Engine::Component { class ULineBatchComponent; }
 
 class FEditorViewportClient : public Engine::Viewport::IViewportClient
 {
@@ -71,6 +71,8 @@ class FEditorViewportClient : public Engine::Viewport::IViewportClient
 
   private:
     void DrawOutline();
+    void DrawWorldGrid(FEditorRenderData& OutEditorRenderData,
+                       FSceneRenderData&  OutSceneRenderData);
 
   private:
     FWorld* CurWorld = nullptr;
@@ -87,4 +89,6 @@ class FEditorViewportClient : public Engine::Viewport::IViewportClient
     FNavigationInputContext ViewportInputContext{&NavigationController};
     FSelectionInputContext  SelectionInputContext{&SelectionController};
     FGizmoInputContext      GizmoInputContext{&GizmoController};
+
+    Engine::Component::ULineBatchComponent* GridLineBatcher = nullptr;
 };
