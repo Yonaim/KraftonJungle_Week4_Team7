@@ -42,6 +42,117 @@
 
 #pragma comment(lib, "Comdlg32.lib")
 
+#include "Engine/Asset/StaticMesh.h"
+#include "CoreUObject/ObjectIterator.h"
+#include "Asset/Manager/AssetCacheManager.h"
+// TODO 삭제 예정
+namespace
+{
+    UStaticMesh* FindPreloadedStaticMeshObject(const FString& AssetPath)
+    {
+        for (TObjectIterator<UStaticMesh> It; It; ++It)
+        {
+            UStaticMesh* StaticMesh = *It;
+            if (StaticMesh == nullptr || !StaticMesh->IsValidLowLevel())
+            {
+                continue;
+            }
+
+            if (StaticMesh->GetAssetPath() == AssetPath)
+            {
+                return StaticMesh;
+            }
+        }
+        return nullptr;
+    }
+
+    UStaticMesh* EnsurePreloadedStaticMeshObject(const FString&             AssetPath,
+                                                 Asset::FAssetCacheManager* AssetCacheManager,
+                                                 RHI::FDynamicRHI*          DynamicRHI)
+    {
+        FObjectFactory::RegisterObjectType(UStaticMesh::GetClass(),
+    []() -> UObject*
+    {
+        return new UStaticMesh();
+    });
+    
+        UE_LOG(FEditor, ELogLevel::Info, "EnsurePreloadedStaticMeshObject START: %s",
+               AssetPath.c_str());
+
+        if (AssetCacheManager == nullptr || DynamicRHI == nullptr)
+        {
+            UE_LOG(FEditor, ELogLevel::Warning,
+                   "EnsurePreloadedStaticMeshObject early fail: cache=%p rhi=%p", AssetCacheManager,
+                   DynamicRHI);
+            return nullptr;
+        }
+
+        if (UStaticMesh* Existing = FindPreloadedStaticMeshObject(AssetPath))
+        {
+            UE_LOG(FEditor, ELogLevel::Info,
+                   "EnsurePreloadedStaticMeshObject found existing: %s ptr=%p", AssetPath.c_str(),
+                   Existing);
+            return Existing;
+        }
+
+        auto CookedData = AssetCacheManager->BuildStaticMesh(AssetPath);
+        UE_LOG(FEditor, ELogLevel::Info,
+               "EnsurePreloadedStaticMeshObject BuildStaticMesh: %s cooked=%p", AssetPath.c_str(),
+               CookedData.get());
+
+        if (CookedData == nullptr)
+        {
+            UE_LOG(FEditor, ELogLevel::Warning,
+                   "EnsurePreloadedStaticMeshObject fail: cooked data null: %s", AssetPath.c_str());
+            return nullptr;
+        }
+
+if (UStaticMesh::GetClass() == nullptr)
+{
+    UE_LOG(FEditor, ELogLevel::Error,
+           "UStaticMesh::GetClass() returned null");
+    return nullptr;
+}
+        UE_LOG(FEditor, ELogLevel::Info,
+       "UStaticMesh::GetClass() = %p",
+       UStaticMesh::GetClass());
+
+        UStaticMesh* NewObject =
+            (UStaticMesh*)FObjectFactory::ConstructObject(UStaticMesh::GetClass());
+
+        UE_LOG(FEditor, ELogLevel::Info,
+               "EnsurePreloadedStaticMeshObject ConstructObject: %s obj=%p", AssetPath.c_str(),
+               NewObject);
+
+        if (NewObject == nullptr)
+        {
+            UE_LOG(FEditor, ELogLevel::Warning,
+                   "EnsurePreloadedStaticMeshObject fail: construct object null: %s",
+                   AssetPath.c_str());
+            return nullptr;
+        }
+
+        const bool bLoadSucceeded = NewObject->LoadFromCooked(AssetPath, CookedData, *DynamicRHI);
+        UE_LOG(FEditor, ELogLevel::Info,
+               "EnsurePreloadedStaticMeshObject LoadFromCooked: %s success=%s obj=%p",
+               AssetPath.c_str(), bLoadSucceeded ? "true" : "false", NewObject);
+
+        if (!bLoadSucceeded)
+        {
+            UE_LOG(FEditor, ELogLevel::Warning,
+                   "EnsurePreloadedStaticMeshObject fail: LoadFromCooked false: %s",
+                   AssetPath.c_str());
+            delete NewObject;
+            return nullptr;
+        }
+
+        UE_LOG(FEditor, ELogLevel::Info, "EnsurePreloadedStaticMeshObject RETURN: %s obj=%p",
+               AssetPath.c_str(), NewObject);
+
+        return NewObject;
+    }
+} // namespace
+
 namespace
 {
 #ifdef IMGUI_HAS_DOCK
@@ -583,10 +694,9 @@ void FEditor::LoadEditorSettings()
 
     float Ratios[3] = {SettingsData.SplitterRatio1, SettingsData.SplitterRatio2,
                        SettingsData.SplitterRatio3};
-   
+
     ViewportTab.SetSplitterRatios(Ratios);
     OnViewportResized();
-    
 
     UEngineStatics::GridSpacing = FMath::Clamp(SettingsData.GridSpacing, 1.0f, 1000.0f);
 
@@ -636,6 +746,8 @@ void FEditor::LoadStartupAssetPreloadList()
 
 void FEditor::PreloadStartupAssets()
 {
+
+    
     if (EditorContext.AssetCacheManager == nullptr)
     {
         UE_LOG(FEditor, ELogLevel::Warning,
@@ -679,9 +791,45 @@ void FEditor::PreloadStartupAssets()
             continue;
         }
 
+            UStaticMesh* MeshObject = EnsurePreloadedStaticMeshObject(
+                AbsolutePath, EditorContext.AssetCacheManager, EditorContext.DynamicRHI);
+
+            if (MeshObject == nullptr)
+            {
+                UE_LOG(FEditor, ELogLevel::Warning,
+                       "StaticMesh preload built asset but failed to create UObject wrapper: %s",
+                       AbsolutePath.c_str());
+            }
+            else
+            {
+                UE_LOG(FEditor, ELogLevel::Info, "StaticMesh preload created UObject wrapper: %s",
+                       AbsolutePath.c_str());
+            }
+
         ++RequestedCount;
 
         bool bSucceeded = false;
+
+        auto MeshAsset = EditorContext.AssetCacheManager->BuildStaticMesh(AbsolutePath);
+        bSucceeded = (MeshAsset != nullptr);
+
+        if (bSucceeded)
+        {
+            UStaticMesh* MeshObject = EnsurePreloadedStaticMeshObject(
+                AbsolutePath, EditorContext.AssetCacheManager, EditorContext.DynamicRHI);
+
+            if (MeshObject == nullptr)
+            {
+                UE_LOG(FEditor, ELogLevel::Warning,
+                       "StaticMesh preload built asset but failed to create UObject wrapper: %s",
+                       AbsolutePath.c_str());
+            }
+            else
+            {
+                UE_LOG(FEditor, ELogLevel::Info, "StaticMesh preload created UObject wrapper: %s",
+                       AbsolutePath.c_str());
+            }
+        }
 
         switch (AssetKind)
         {
@@ -699,8 +847,27 @@ void FEditor::PreloadStartupAssets()
 
         case Asset::EAssetFileKind::StaticMesh:
         {
-            bSucceeded =
-                (EditorContext.AssetCacheManager->BuildStaticMesh(AbsolutePath) != nullptr);
+            auto MeshAsset = EditorContext.AssetCacheManager->BuildStaticMesh(AbsolutePath);
+            bSucceeded = (MeshAsset != nullptr);
+
+            if (bSucceeded)
+            {
+                UStaticMesh* MeshObject = EnsurePreloadedStaticMeshObject(
+                    AbsolutePath, EditorContext.AssetCacheManager, EditorContext.DynamicRHI);
+
+                if (MeshObject == nullptr)
+                {
+                    UE_LOG(
+                        FEditor, ELogLevel::Warning,
+                        "StaticMesh preload built asset but failed to create UObject wrapper: %s",
+                        AbsolutePath.c_str());
+                }
+                else
+                {
+                    UE_LOG(FEditor, ELogLevel::Info,
+                           "StaticMesh preload created UObject wrapper: %s", AbsolutePath.c_str());
+                }
+            }
             break;
         }
 

@@ -41,7 +41,7 @@ class UTexture : public UAsset
         RenderResource.reset();
     }
 
-    bool LoadFromCooked(const FString&                      InAssetPath,
+    ENGINE_API bool LoadFromCooked(const FString&                      InAssetPath,
                         std::shared_ptr<FTextureCookedData> InCookedData,
                         RHI::FDynamicRHI&                   InDynamicRHI);
 

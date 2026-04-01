@@ -2,7 +2,7 @@
 
 #include "Object.h"
 
-extern TArray<UObject*> GUObjectArray;
+TArray<UObject*> GUObjectArray;
 
 /**
  * FObjectIterator — 모든 UObject를 순회합니다.

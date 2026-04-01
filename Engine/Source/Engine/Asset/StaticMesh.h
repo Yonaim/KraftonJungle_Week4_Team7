@@ -54,7 +54,7 @@ class UStaticMesh : public UAsset
         RenderResource.reset();
     }
 
-    bool LoadFromCooked(const FString&                         InAssetPath,
+    ENGINE_API bool LoadFromCooked(const FString&                         InAssetPath,
                         std::shared_ptr<FObjCookedData> InCookedData,
                         RHI::FDynamicRHI&                      InDynamicRHI);
 
@@ -74,7 +74,7 @@ class UStaticMesh : public UAsset
     EStaticMeshVertexFormat GetVertexFormat() const;
 
     void Build();
-    bool IsValidLowLevel() const;
+    ENGINE_API  bool IsValidLowLevel() const;
 
     const Geometry::FAABB& GetAABB() const { return CachedAABB; }
     void                   CalculateAABB();
