@@ -192,7 +192,7 @@ namespace Engine::Component
             [this](const bool& InValue) { SetEnableUVScroll(InValue); });
 
         Builder.AddFloat(
-            "ScrollSpeed", L"ScrollSpeed", [this]() { return GetUVScrollSpeed(); },
+            "ScrollSpeed", L"Scroll Speed(Cycles/s)", [this]() { return GetUVScrollSpeed(); },
             [this](const float& InValue) { SetUVScrollSpeed(InValue); });
     }
 
