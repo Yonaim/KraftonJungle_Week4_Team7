@@ -30,7 +30,7 @@ namespace Asset
         Resource->Frames = CookedData.Frames;
         Resource->Sequences = CookedData.Sequences;
         Resource->TextureResource = TextureResource;
-        Resource->AtlasTexture = std::move(TextureResource->Texture);
+        Resource->AtlasTexture = TextureResource->Texture;
         return Resource;
     }
 
