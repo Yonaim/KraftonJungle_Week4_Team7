@@ -7,6 +7,10 @@
 #include "Engine/Game/Actor.h"
 
 #include "imgui.h"
+#include "Renderer/RendererModule.h"
+#include "Renderer/D3D11/GeneralRenderer.h"
+#include "Renderer/RenderCommand.h"
+#include "Renderer/SceneRenderData.h"
 
 void FEditorViewportClient::Create()
 {
@@ -16,6 +20,7 @@ void FEditorViewportClient::Create()
     InputRouter->AddContext(&GizmoInputContext);
     GizmoController.SetViewportClient(this);
     GizmoController.SetViewportSelectionController(&SelectionController);
+    SelectionController.SetViewportClient(this);
 
     NavigationController.SetCamera(&ViewportCamera);
     NavigationController.SetSelectionController(&SelectionController);
@@ -86,28 +91,38 @@ void FEditorViewportClient::HandleInputEvent(const Engine::ApplicationCore::FInp
     }
 }
 
-void FEditorViewportClient::BuildRenderData(FEditorRenderData& OutRenderData,
+void FEditorViewportClient::BuildRenderData(FEditorRenderData& OutEditorRenderData,
+                                            FSceneRenderData&  OutSceneRenderData,
                                             EEditorShowFlags   InShowFlags)
 {
-    OutRenderData.bShowGrid = IsFlagSet(InShowFlags, EEditorShowFlags::SF_Grid);
-    OutRenderData.bShowWorldAxes = IsFlagSet(InShowFlags, EEditorShowFlags::SF_WorldAxes);
-    OutRenderData.bShowSelectionOutline =
+    // SceneView 업데이트
+    SceneView.SetViewMatrix(ViewportCamera.GetViewMatrix());
+    SceneView.SetProjectionMatrix(ViewportCamera.GetProjectionMatrix());
+    SceneView.SetViewLocation(ViewportCamera.GetLocation());
+    SceneView.SetClipPlanes(ViewportCamera.GetNearPlane(), ViewportCamera.GetFarPlane());
+    SceneView.OnResize({0, 0, (int32)ViewportCamera.GetWidth(), (int32)ViewportCamera.GetHeight()});
+    OutSceneRenderData.SceneView = &SceneView;
+
+    OutEditorRenderData.bShowGrid = IsFlagSet(InShowFlags, EEditorShowFlags::SF_Grid);
+    OutEditorRenderData.bShowWorldAxes = IsFlagSet(InShowFlags, EEditorShowFlags::SF_WorldAxes);
+    OutEditorRenderData.bShowSelectionOutline =
         IsFlagSet(InShowFlags, EEditorShowFlags::SF_SelectionOutline);
+    OutEditorRenderData.bShowGizmo = IsFlagSet(InShowFlags, EEditorShowFlags::SF_Gizmo);
 
     if (!SelectionController.GetSelectedActors().empty())
     {
-        OutRenderData.Gizmo.GizmoType = GizmoController.GetGizmoType();
-        OutRenderData.Gizmo.Highlight = GizmoController.GetGizmoHighlight();
+        OutEditorRenderData.Gizmo.GizmoType = GizmoController.GetGizmoType();
+        OutEditorRenderData.Gizmo.Highlight = GizmoController.GetGizmoHighlight();
         GizmoController.SetSelectedActor(SelectionController.GetSelectedActors().back());
         if (GizmoController.bIsWorldMode && GizmoController.GetGizmoType() != EGizmoType::Scaling)
         {
             FVector RelativeLocation{
                 GizmoController.GetSelectedActor()->GetRootComponent()->GetRelativeLocation()};
-            OutRenderData.Gizmo.Frame = FMatrix::MakeTranslation(RelativeLocation);
+            OutEditorRenderData.Gizmo.Frame = FMatrix::MakeTranslation(RelativeLocation);
         }
         else
         {
-            OutRenderData.Gizmo.Frame =
+            OutEditorRenderData.Gizmo.Frame =
                 GizmoController.GetSelectedActor()->GetRootComponent()->GetRelativeMatrixNoScale();
         }
         GizmoController.GizmoScale =
@@ -116,17 +131,86 @@ void FEditorViewportClient::BuildRenderData(FEditorRenderData& OutRenderData,
                 .Size() /
             10.f;
         //  Size 여기서 조정
-        OutRenderData.Gizmo.Scale = GizmoController.GizmoScale;
-        OutRenderData.bShowGizmo = IsFlagSet(InShowFlags, EEditorShowFlags::SF_Gizmo);
-        GizmoController.bIsDrawed = OutRenderData.bShowGizmo;
+        OutEditorRenderData.Gizmo.Scale = GizmoController.GizmoScale;
+        GizmoController.bIsDrawed = OutEditorRenderData.bShowGizmo;
+
+        // Gizmo Render Commands
+        if (OutEditorRenderData.bShowGizmo && OutEditorRenderData.Gizmo.GizmoType != EGizmoType::None)
+        {
+            if (SelectionController.GetEditorContext() && SelectionController.GetEditorContext()->Renderer)
+            {
+                FGeneralRenderer* GeneralRenderer = SelectionController.GetEditorContext()->Renderer->GetGeneralRenderer();
+                if (GeneralRenderer)
+                {
+                    const auto& GizmoRes = GeneralRenderer->GetGizmoResources();
+                    const auto& GizmoDraw = OutEditorRenderData.Gizmo;
+                    FMatrix World = FMatrix::MakeScale(GizmoDraw.Scale) * GizmoDraw.Frame;
+
+                    const TArray<FGizmoMeshPart>* Parts = nullptr;
+                    switch (GizmoDraw.GizmoType)
+                    {
+                    case EGizmoType::Translation: Parts = &GizmoRes.TranslationParts; break;
+                    case EGizmoType::Rotation:    Parts = &GizmoRes.RotationParts;    break;
+                    case EGizmoType::Scaling:     Parts = &GizmoRes.ScaleParts;       break;
+                    }
+
+                    if (Parts)
+                    {
+                        for (const auto& Part : *Parts)
+                        {
+                            FRenderCommand Cmd;
+                            Cmd.MeshData = Part.MeshData.get();
+                            Cmd.WorldMatrix = World;
+                            Cmd.Material = FGeneralRenderer::GetDefaultMaterial();
+                            Cmd.RenderLayer = ERenderLayer::Overlay;
+                            Cmd.ObjectId = Part.PickId;
+
+                            // Highlight Check
+                            EGizmoType DecodedType;
+                            EAxis DecodedAxis;
+                            bool bIsHovered = false;
+                            if (PickId::DecodeGizmoPart(Part.PickId, DecodedType, DecodedAxis))
+                            {
+                                if (DecodedAxis == EAxis::Center)
+                                    bIsHovered = (GizmoDraw.Highlight == EGizmoHighlight::Center);
+                                else if (DecodedAxis == EAxis::X)
+                                    bIsHovered = (GizmoDraw.Highlight == EGizmoHighlight::X);
+                                else if (DecodedAxis == EAxis::Y)
+                                    bIsHovered = (GizmoDraw.Highlight == EGizmoHighlight::Y);
+                                else if (DecodedAxis == EAxis::Z)
+                                    bIsHovered = (GizmoDraw.Highlight == EGizmoHighlight::Z);
+                            }
+                            
+                            if (bIsHovered)
+                            {
+                                // Solid Yellow
+                                Cmd.MultiplyColor = FVector4(0.0f, 0.0f, 0.0f, 1.0f);
+                                Cmd.AdditiveColor = FVector4(1.0f, 1.0f, 0.0f, 1.0f);
+                            }
+                            else
+                            {
+                                Cmd.MultiplyColor = FVector4(1.0f, 1.0f, 1.0f, 1.0f);
+                                Cmd.AdditiveColor = FVector4(0.0f, 0.0f, 0.0f, 1.0f);
+                            }
+                            
+                            Cmd.DepthStencilOption.DepthEnable = true;
+                            Cmd.DepthStencilOption.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+                            Cmd.DepthStencilOption.DepthFunc = D3D11_COMPARISON_ALWAYS;
+                            Cmd.RasterizerOption.CullMode = D3D11_CULL_NONE;
+
+                            OutSceneRenderData.RenderCommands.push_back(Cmd);
+                        }
+                    }
+                }
+            }
+        }
     }
     else
     {
-        OutRenderData.Gizmo.GizmoType = EGizmoType::None;
-        OutRenderData.Gizmo.Highlight = EGizmoHighlight::None;
-        OutRenderData.Gizmo.Frame = FMatrix::Identity;
-        OutRenderData.Gizmo.Scale = 1.0f;
-        OutRenderData.bShowGizmo = false;
+        OutEditorRenderData.Gizmo.GizmoType = EGizmoType::None;
+        OutEditorRenderData.Gizmo.Highlight = EGizmoHighlight::None;
+        OutEditorRenderData.Gizmo.Frame = FMatrix::Identity;
+        OutEditorRenderData.Gizmo.Scale = 1.0f;
         GizmoController.SetSelectedActor(nullptr);
         GizmoController.bIsDrawed = false;
     }
@@ -175,27 +259,3 @@ void FEditorViewportClient::DrawViewportOverlay()
     DrawList->AddRect(ImVec2(MinX, MinY), ImVec2(MaxX, MaxY), IM_COL32(80, 140, 255, 255), 0.0f, 0,
                       1.5f);
 }
-
-// void FEditorViewportClient::DrawViewportOverlay()
-//{
-//     if (!SelectionController.IsDraggingSelection())
-//     {
-//         return;
-//     }
-//
-//     int32 StartX, StartY, EndX, EndY;
-//     SelectionController.GetSelectionRect(StartX, StartY, EndX, EndY);
-//
-//     const float MinX = (float)std::min(StartX, EndX);
-//     const float MinY = (float)std::min(StartY, EndY);
-//     const float MaxX = (float)std::max(StartX, EndX);
-//     const float MaxY = (float)std::max(StartY, EndY);
-//
-//     ImDrawList* DrawList = ImGui::GetForegroundDrawList();
-//     DrawList->AddRectFilled(ImVec2(MinX, MinY), ImVec2(MaxX, MaxY), IM_COL32(80, 140, 255, 40));
-//     DrawList->AddRect(ImVec2(MinX, MinY), ImVec2(MaxX, MaxY), IM_COL32(80, 140, 255, 255), 0.0f,
-//     0,
-//                       1.5f);
-// }
-
-void FEditorViewportClient::DrawOutline() {}

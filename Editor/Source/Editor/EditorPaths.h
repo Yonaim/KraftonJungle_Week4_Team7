@@ -12,4 +12,6 @@ class ENGINE_API FEditorPaths
     static std::filesystem::path ConfigDirectory();
     static std::filesystem::path EditorConfigFile();
     static std::filesystem::path EditorStartupConfigFile();
+    static std::filesystem::path ImGuiDefaultIniFile();
+    static std::filesystem::path ImGuiUserIniFile();
 };

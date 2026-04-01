@@ -10,7 +10,7 @@ class FEditorLogBuffer : public ILogOutputDevice
     FEditorLogBuffer() = default;
     ~FEditorLogBuffer() override;
 
-    void Log(ELogLevel Verbosity, const char* Message) override;
+    void Log(ELogLevel Level, const char* Message) override;
 
     const TArray<FEditorLogEntry>& GetLogBuffer() const { return LogEntries; }
     void                           Clear();

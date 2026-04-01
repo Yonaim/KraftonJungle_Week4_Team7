@@ -11,21 +11,21 @@ UObject* FObjectFactory::ConstructObject(const void* Id)
 {
     auto& Registry = GetRegistry();
 
-    UE_LOG(FEngine, ELogLevel::Error,
+    UE_LOG(ObjectFactory, ELogLevel::Verbose,
            "ConstructObject input class=%p registry=%p size=%zu",
            Id, &Registry, Registry.size());
 
     auto It = Registry.find(Id);
     if (It == Registry.end())
     {
-        UE_LOG(FEngine, ELogLevel::Error,
+        UE_LOG(ObjectFactory, ELogLevel::Error,
                "ConstructObject failed: no creator registered for class=%p", Id);
         return nullptr;
     }
 
     UObject* Obj = It->second();
 
-    UE_LOG(FEngine, ELogLevel::Info,
+    UE_LOG(ObjectFactory, ELogLevel::Debug,
            "ConstructObject success: class=%p obj=%p", Id, Obj);
 
     return Obj;
@@ -36,7 +36,7 @@ void FObjectFactory::RegisterObjectType(const void* Id, std::function<UObject*()
     auto& Registry = GetRegistry();
     Registry[Id] = std::move(FactoryFunction);
 
-    UE_LOG(FEngine, ELogLevel::Error,
+    UE_LOG(ObjectFactory, ELogLevel::Verbose,
            "RegisterClass: class=%p registry=%p size=%zu",
            Id, &Registry, Registry.size());
 }

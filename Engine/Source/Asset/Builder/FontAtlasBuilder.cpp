@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <fstream>
 #include <sstream>
+#include "ThirdParty/nlohmann/json.hpp"
 
 #include "Asset/Cache/AssetKeyUtils.h"
 #include "Asset/Cache/AssetBuildCache.h"
@@ -86,136 +87,76 @@ namespace Asset
             return nullptr;
         }
 
+        nlohmann::json J = nlohmann::json::parse(Text, nullptr, false);
+        if (J.is_discarded() || !J.is_object())
+        {
+            return nullptr;
+        }
+
         auto Result = std::make_shared<FIntermediateFontAtlasData>();
 
-        std::istringstream Stream(Text);
-        FString            Line;
-        while (std::getline(Stream, Line))
+        // info
+        if (J.contains("info") && J["info"].is_object())
         {
-            Line = Trim(Line);
-            if (Line.empty() || Line[0] == '#')
-            {
-                continue;
-            }
+            const auto& Info = J["info"];
+            Result->Info.Face = Info.value("face", "");
+            Result->Info.Size = Info.value("size", 0);
+            Result->Info.bBold = Info.value("bold", 0) != 0;
+            Result->Info.bItalic = Info.value("italic", 0) != 0;
+            Result->Info.bUnicode = Info.value("unicode", 0) != 0;
+        }
 
-            std::istringstream Iss(Line);
-            FString            Tag;
-            Iss >> Tag;
+        // common
+        if (J.contains("common") && J["common"].is_object())
+        {
+            const auto& Common = J["common"];
+            Result->Common.LineHeight = Common.value("lineHeight", 0u);
+            Result->Common.Base = Common.value("base", 0u);
+            Result->Common.ScaleW = Common.value("scaleW", 0u);
+            Result->Common.ScaleH = Common.value("scaleH", 0u);
+            Result->Common.Pages = Common.value("pages", 0u);
+            Result->Common.bPacked = Common.value("packed", 0) != 0;
+        }
 
-            TMap<FString, FString> Pairs;
-            TryParseKeyValueLine(Line, Pairs);
+        // atlas page path
+        if (J.contains("pages") && J["pages"].is_array() && !J["pages"].empty())
+        {
+            const FString RelativePagePath = J["pages"][0].get<std::string>();
+            Result->AtlasImagePath = ResolveRelativePath(Source.NormalizedPath, RelativePagePath);
+        }
 
-            if (Tag == "info")
+        // chars
+        if (J.contains("chars") && J["chars"].is_array())
+        {
+            for (const auto& CharNode : J["chars"])
             {
-                auto It = Pairs.find("face");
-                if (It != Pairs.end())
+                if (!CharNode.is_object())
                 {
-                    Result->Info.Face = It->second;
+                    continue;
                 }
-                It = Pairs.find("size");
-                if (It != Pairs.end())
-                {
-                    Result->Info.Size = std::stoi(It->second);
-                }
-                It = Pairs.find("bold");
-                if (It != Pairs.end())
-                {
-                    Result->Info.bBold = std::stoi(It->second) != 0;
-                }
-                It = Pairs.find("italic");
-                if (It != Pairs.end())
-                {
-                    Result->Info.bItalic = std::stoi(It->second) != 0;
-                }
-                It = Pairs.find("unicode");
-                if (It != Pairs.end())
-                {
-                    Result->Info.bUnicode = std::stoi(It->second) != 0;
-                }
-            }
-            else if (Tag == "common")
-            {
-                auto It = Pairs.find("lineHeight");
-                if (It != Pairs.end())
-                {
-                    Result->Common.LineHeight = static_cast<uint32>(std::stoul(It->second));
-                }
-                It = Pairs.find("base");
-                if (It != Pairs.end())
-                {
-                    Result->Common.Base = static_cast<uint32>(std::stoul(It->second));
-                }
-                It = Pairs.find("scaleW");
-                if (It != Pairs.end())
-                {
-                    Result->Common.ScaleW = static_cast<uint32>(std::stoul(It->second));
-                }
-                It = Pairs.find("scaleH");
-                if (It != Pairs.end())
-                {
-                    Result->Common.ScaleH = static_cast<uint32>(std::stoul(It->second));
-                }
-                It = Pairs.find("pages");
-                if (It != Pairs.end())
-                {
-                    Result->Common.Pages = static_cast<uint32>(std::stoul(It->second));
-                }
-                It = Pairs.find("packed");
-                if (It != Pairs.end())
-                {
-                    Result->Common.bPacked = std::stoi(It->second) != 0;
-                }
-            }
-            else if (Tag == "page")
-            {
-                auto It = Pairs.find("file");
-                if (It != Pairs.end())
-                {
-                    Result->AtlasImagePath = ResolveRelativePath(Source.NormalizedPath, It->second);
-                }
-            }
-            else if (Tag == "char")
-            {
+
                 FFontGlyph Glyph;
-                auto       It = Pairs.find("id");
-                if (It != Pairs.end())
-                    Glyph.Id = static_cast<uint32>(std::stoul(It->second));
-                It = Pairs.find("x");
-                if (It != Pairs.end())
-                    Glyph.X = static_cast<uint32>(std::stoul(It->second));
-                It = Pairs.find("y");
-                if (It != Pairs.end())
-                    Glyph.Y = static_cast<uint32>(std::stoul(It->second));
-                It = Pairs.find("width");
-                if (It != Pairs.end())
-                    Glyph.Width = static_cast<uint32>(std::stoul(It->second));
-                It = Pairs.find("height");
-                if (It != Pairs.end())
-                    Glyph.Height = static_cast<uint32>(std::stoul(It->second));
-                It = Pairs.find("xoffset");
-                if (It != Pairs.end())
-                    Glyph.XOffset = std::stoi(It->second);
-                It = Pairs.find("yoffset");
-                if (It != Pairs.end())
-                    Glyph.YOffset = std::stoi(It->second);
-                It = Pairs.find("xadvance");
-                if (It != Pairs.end())
-                    Glyph.XAdvance = std::stoi(It->second);
-                It = Pairs.find("page");
-                if (It != Pairs.end())
-                    Glyph.Page = static_cast<uint32>(std::stoul(It->second));
-                It = Pairs.find("chnl");
-                if (It != Pairs.end())
-                    Glyph.Channel = static_cast<uint32>(std::stoul(It->second));
+                Glyph.Id = CharNode.value("id", 0u);
+                Glyph.X = CharNode.value("x", 0u);
+                Glyph.Y = CharNode.value("y", 0u);
+                Glyph.Width = CharNode.value("width", 0u);
+                Glyph.Height = CharNode.value("height", 0u);
+                Glyph.XOffset = CharNode.value("xoffset", 0);
+                Glyph.YOffset = CharNode.value("yoffset", 0);
+                Glyph.XAdvance = CharNode.value("xadvance", 0);
+                Glyph.Page = CharNode.value("page", 0u);
+                Glyph.Channel = CharNode.value("chnl", 0u);
 
-                if (Glyph.Id != 0 || Glyph.IsValid())
-                {
-                    Result->Glyphs[Glyph.Id] = Glyph;
-                }
+                Result->Glyphs[Glyph.Id] = Glyph;
             }
         }
 
-        return (!Result->AtlasImagePath.empty() && !Result->Glyphs.empty()) ? Result : nullptr;
+        if (Result->AtlasImagePath.empty() || Result->Glyphs.empty())
+        {
+            return nullptr;
+        }
+
+        return Result;
     }
 
     std::shared_ptr<FFontAtlasCookedData>

@@ -3,6 +3,10 @@
 #include "Core/HAL/PlatformTypes.h"
 #include "Core/Math/Matrix.h"
 
+#include "Core/Containers/Array.h"
+#include <memory>
+
+struct FMeshData;
 class FSceneView;
 
 enum class EGizmoType : uint8
@@ -12,6 +16,23 @@ enum class EGizmoType : uint8
     Rotation = 2,
     Scaling = 3,
     Count = 4
+};
+
+struct FGizmoMeshPart
+{
+    FGizmoMeshPart() = default;
+    FGizmoMeshPart(std::shared_ptr<FMeshData> InMeshData, uint32 InPickId)
+        : MeshData(std::move(InMeshData)), PickId(InPickId) {}
+
+    std::shared_ptr<FMeshData> MeshData;
+    uint32                     PickId = 0;
+};
+
+struct FGizmoResources
+{
+    TArray<FGizmoMeshPart> TranslationParts;
+    TArray<FGizmoMeshPart> RotationParts;
+    TArray<FGizmoMeshPart> ScaleParts;
 };
 
 enum class EGizmoHighlight : uint8
@@ -38,8 +59,6 @@ struct FGizmoDrawData
 
 struct FEditorRenderData
 {
-    const FSceneView* SceneView = nullptr;
-
     bool bShowGrid = false;
     bool bShowWorldAxes = false;
     bool bShowSelectionOutline = false;

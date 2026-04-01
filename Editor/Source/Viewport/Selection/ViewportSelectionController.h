@@ -8,6 +8,7 @@
 class FScene;
 class AActor;
 struct FEditorContext;
+class FEditorViewportClient;
 
 class FViewportSelectionController : public Engine::Viewport::IViewportController
 {
@@ -31,6 +32,8 @@ class FViewportSelectionController : public Engine::Viewport::IViewportControlle
     void SetCamera(FViewportCamera* Camera) { ViewportCamera = Camera; }
     void SetActors(TArray<AActor*>* InActors) { Actors = InActors; }
     void SetEditorContext(FEditorContext* InContext) { Context = InContext; }
+    void SetViewportClient(FEditorViewportClient* InViewportClient) { ViewportClient = InViewportClient; }
+    FEditorContext* GetEditorContext() { return Context; }
 
     void SetViewportSize(uint32 Width, uint32 Height)
     {
@@ -48,7 +51,6 @@ class FViewportSelectionController : public Engine::Viewport::IViewportControlle
   }
 
 private:
-    // Geometry::FRay BuildPickRay(int32 MouseX, int32 MouseY) const;
     AActor* PickActor(int32 MouseX, int32 MouseY) const;
 
     void SelectSingle(AActor* Actor);
@@ -64,9 +66,10 @@ private:
     bool ProjectWorldToScreen(const FVector& WorldPos, FVector2& OutScreenPos) const;
 
   private:
-    FEditorContext*  Context = nullptr;
-    TArray<AActor*>* Actors = nullptr;
-    FViewportCamera* ViewportCamera = nullptr;
+    FEditorContext*        Context = nullptr;
+    FEditorViewportClient* ViewportClient = nullptr;
+    TArray<AActor*>*       Actors = nullptr;
+    FViewportCamera*       ViewportCamera = nullptr;
 
     uint32 ViewportWidth = 0;
     uint32 ViewportHeight = 0;

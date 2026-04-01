@@ -38,8 +38,11 @@ namespace Engine::Component
 
         const FTextureRenderResource* GetTextureRenderResource() const;
         FTextureRenderResource*       GetTextureRenderResource();
-        const FTextureRenderResource* GetTextureResource() const { return GetTextureRenderResource(); }
-        FTextureRenderResource*       GetTextureResource() { return GetTextureRenderResource(); }
+        const FTextureRenderResource* GetTextureResource() const
+        {
+            return GetTextureRenderResource();
+        }
+        FTextureRenderResource* GetTextureResource() { return GetTextureRenderResource(); }
 
         bool GetBillboard() const { return bBillboard; }
         void SetBillboard(bool bInBillboard);
@@ -49,12 +52,14 @@ namespace Engine::Component
 
         void DescribeProperties(FComponentPropertyBuilder& Builder) override;
 
-        void CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const override;
+        void CollectRenderData(FSceneRenderData& OutRenderData,
+                               ESceneShowFlags   InShowFlags) const override;
 
         bool GetLocalTriangles(TArray<Geometry::FTriangle>& OutTriangles) const override;
 
       protected:
         Geometry::FAABB GetLocalAABB() const override;
+        void            UpdateBounds() override;
 
       protected:
         virtual void GetUVs(FVector2& OutUVMin, FVector2& OutUVMax) const;

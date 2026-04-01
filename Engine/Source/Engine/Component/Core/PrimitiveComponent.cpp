@@ -16,7 +16,18 @@ namespace Engine::Component
 {
     const FColor& UPrimitiveComponent::GetColor() const { return Color; }
 
-    void UPrimitiveComponent::SetColor(const FColor& NewColor) { Color = NewColor; }
+    void UPrimitiveComponent::SetColor(const FColor& NewColor)
+    {
+        if (Color == NewColor)
+        {
+            return;
+        }
+
+        Color = NewColor;
+        UE_LOG(PrimitiveComponent, ELogLevel::Verbose,
+               "Color updated on %s (owner=%s)", GetTypeName(),
+               GetOwnerActor() ? GetOwnerActor()->GetTypeName() : "<none>");
+    }
 
     const Geometry::FAABB& UPrimitiveComponent::GetWorldAABB() const
     {
@@ -80,7 +91,8 @@ namespace Engine::Component
 
         if (bBoundsDirty)
         {
-            // UE_LOG(UPrimitiveComponent, ELogLevel::Debug, "Bounds Update!");
+            UE_LOG(PrimitiveComponent, ELogLevel::Verbose, "Bounds dirty -> updating AABB for %s",
+                   GetTypeName());
             UpdateBounds();
             bBoundsDirty = false;
         }
@@ -130,7 +142,6 @@ namespace Engine::Component
         MutableRenderCommand.bIsVisible = Actor->IsVisible();
         MutableRenderCommand.bIsPickable = Actor->IsPickable();
         MutableRenderCommand.bIsSelected = Actor->IsSelected();
-        MutableRenderCommand.bIsHovered = Actor->IsHovered();
 
         OutRenderData.RenderCommands.push_back(MutableRenderCommand);
     }
@@ -175,12 +186,25 @@ namespace Engine::Component
             }
 
             WorldAABB = Geometry::FAABB(Min, Max);
+            UE_LOG(PrimitiveComponent, ELogLevel::Verbose,
+                   "AABB updated from triangles for %s: min=(%.3f, %.3f, %.3f) max=(%.3f, %.3f, %.3f)",
+                   GetTypeName(), WorldAABB.Min.X, WorldAABB.Min.Y, WorldAABB.Min.Z,
+                   WorldAABB.Max.X, WorldAABB.Max.Y, WorldAABB.Max.Z);
             return;
         }
 
         WorldAABB = Geometry::TransformAABB(GetLocalAABB(), WorldMatrix);
+        UE_LOG(PrimitiveComponent, ELogLevel::Verbose,
+               "AABB updated from local bounds for %s: min=(%.3f, %.3f, %.3f) max=(%.3f, %.3f, %.3f)",
+               GetTypeName(), WorldAABB.Min.X, WorldAABB.Min.Y, WorldAABB.Min.Z,
+               WorldAABB.Max.X, WorldAABB.Max.Y, WorldAABB.Max.Z);
     }
 
-    void UPrimitiveComponent::OnTransformChanged() { bBoundsDirty = true; }
+    void UPrimitiveComponent::OnTransformChanged()
+    {
+        bBoundsDirty = true;
+        UE_LOG(PrimitiveComponent, ELogLevel::Verbose, "Transform changed -> bounds marked dirty for %s",
+               GetTypeName());
+    }
 
 } // namespace Engine::Component

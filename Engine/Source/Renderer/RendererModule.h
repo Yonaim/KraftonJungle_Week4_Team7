@@ -3,7 +3,6 @@
 #include <Windows.h>
 
 #include "Renderer/D3D11/D3D11Common.h"
-#include "Renderer/D3D11/D3D11OutlineRenderer.h"
 #include "Renderer/D3D11/D3D11RHI.h"
 #include "Renderer/D3D11/GeneralRenderer.h"
 #include "Renderer/EditorRenderData.h"
@@ -35,6 +34,8 @@ class ENGINE_API FRendererModule
               FPickResult& OutResult);
 
     FD3D11RHI& GetRHI() { return GeneralRenderer->GetRHI(); }
+
+    FGeneralRenderer* GetGeneralRenderer() { return GeneralRenderer; }
 
     void SetVSyncEnabled(bool bEnabled);
     bool IsVSyncEnabled() const;

@@ -13,7 +13,7 @@ namespace Engine::Component
         DECLARE_RTTI(UAtlasTextComponent, UTextRenderComponent)
 
       public:
-        UAtlasTextComponent() = default;
+        UAtlasTextComponent();
         ~UAtlasTextComponent() override = default;
 
         const UFontAtlas* GetFontAsset() const { return FontAsset; }

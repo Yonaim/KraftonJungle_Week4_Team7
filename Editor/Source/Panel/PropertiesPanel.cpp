@@ -3,15 +3,18 @@
 #include "Content/ContentBrowserDragDrop.h"
 #include "Editor/Editor.h"
 #include "Editor/EditorContext.h"
-#include "CoreUObject/Object.h"
+
 #include "Core/Misc/Name.h"
 #include "Engine/Component/Core/ComponentProperty.h"
 #include "Engine/Component/Core/SceneComponent.h"
 #include "Engine/Component/Core/UnknownComponent.h"
+#include "Engine/Component/Mesh/StaticMeshComponent.h"
 #include "Engine/Game/Actor.h"
 #include "Engine/Game/UnknownActor.h"
 #include "Engine/Scene/SceneAssetBinder.h"
 #include "Engine/Scene/SceneAssetPath.h"
+#include "Engine/Asset/StaticMesh.h"
+#include "CoreUObject/ObjectIterator.h"
 #include "imgui.h"
 
 #include <algorithm>
@@ -433,7 +436,6 @@ namespace
         case EComponentPropertyType::Color:
             return DrawColorPropertyRow(LabelId, DisplayLabel, Descriptor);
         }
-
         return false;
     }
 } // namespace
@@ -487,6 +489,10 @@ void FPropertiesPanel::Draw()
     DrawTransformEditor(TargetComponent);
     ImGui::Separator();
     DrawComponentPropertyEditor(TargetComponent);
+    ImGui::Separator();
+    DrawStaticMeshEditor(TargetComponent);
+    ImGui::Separator();
+    DrawMaterialsEditor(TargetComponent);
 
     ImGui::End();
 }
@@ -802,7 +808,7 @@ void FPropertiesPanel::DrawComponentPropertyEditor(
             if (Descriptor.Type == Engine::Component::EComponentPropertyType::AssetPath)
             {
                 bRequiresActorRebind = true;
-            }
+            } 
         }
     }
 
@@ -827,4 +833,140 @@ void FPropertiesPanel::DrawComponentPropertyEditor(
     }
 }
 
+void FPropertiesPanel::DrawStaticMeshEditor(Engine::Component::USceneComponent* TargetComponent)
+{
+    if (bDirty)
+    {
+        RebuildAssetComboCache();
+    }
+
+    TArray<const char*> NamePtrs;
+    for (const FStaticMeshEntry& Mesh : CachedStaticMeshes)
+    {
+        NamePtrs.push_back(Mesh.Name.c_str());
+    }
+
+    int CurrentIndex = 0;
+    ImGui::PushID("Static Mesh");
+    ImGui::TextUnformatted("Static Mesh");
+    ImGui::SetNextItemWidth(-1.0f);
+    if (ImGui::Combo("##Combo", &CurrentIndex, NamePtrs.data(), (int32)NamePtrs.size()))
+    {
+        if (CurrentIndex == 0)
+            return;
+
+        const FString& SelectedPath = CachedStaticMeshes[CurrentIndex].Ptr->GetCookedData()->SourcePath;
+        
+        if (auto* StaticMeshComponent = Cast<Engine::Component::UStaticMeshComponent>(TargetComponent))
+        {
+            if (GetContext() != nullptr && GetContext()->AssetObjectManager != nullptr &&
+                GetContext()->DynamicRHI != nullptr)
+            {
+                StaticMeshComponent->SetStaticMeshPath(SelectedPath);
+
+                FSceneAssetBinder::BindComponent(TargetComponent, GetContext()->AssetObjectManager);
+            }
+        }
+    }
+    ImGui::PopID();
+}
+
+void FPropertiesPanel::DrawMaterialsEditor(Engine::Component::USceneComponent* TargetComponent) 
+{
+    if (TargetComponent == nullptr ||
+        !TargetComponent->IsA(Engine::Component::UStaticMeshComponent::GetClass()))
+    {
+        return;
+    }
+
+    if (bDirty)
+    {
+        RebuildAssetComboCache();
+    }
+
+    Engine::Component::UStaticMeshComponent* StaticMeshComponent =
+        Cast<Engine::Component::UStaticMeshComponent>(TargetComponent);
+    UStaticMesh* StaticMesh = StaticMeshComponent->GetStaticMeshAsset();
+
+    TArray<const char*> NamePtrs;
+    for (const FMaterialEntry& Material : CachedMaterials)
+    {
+        NamePtrs.push_back(Material.Name.c_str());
+    }
+
+    ImGui::TextUnformatted("Materials");
+    for (int i = 0; i < StaticMeshComponent->GetMaterialSlotCount(); i++)
+    {
+        int CurrentIndex = 0;
+        ImGui::PushID("Materials");
+
+        std::string slotName = "Element " + std::to_string(i);
+        ImGui::TextUnformatted(slotName.c_str());
+        ImGui::SetNextItemWidth(-1.0f);
+        ImGui::SameLine();
+        if (ImGui::Combo("##Combo", &CurrentIndex, NamePtrs.data(), (int32)NamePtrs.size()))
+        {
+            if (CurrentIndex == 0)
+                return;
+
+            UMaterial* SelectedMaterial = CachedMaterials[CurrentIndex].Ptr;
+
+            if (GetContext() != nullptr && GetContext()->AssetObjectManager != nullptr &&
+                GetContext()->DynamicRHI != nullptr)
+            {
+                StaticMeshComponent->SetMaterial(i, SelectedMaterial);
+
+                FSceneAssetBinder::BindComponent(TargetComponent, GetContext()->AssetObjectManager);
+            }
+        }
+        ImGui::PopID();
+    }
+}
+
 void FPropertiesPanel::ResetAssetPathEditState() { AssetPathEditBuffers.clear(); }
+
+void FPropertiesPanel::RebuildAssetComboCache() 
+{
+    CachedStaticMeshes.clear();
+    CachedMaterials.clear();
+
+    // index 0: 선택 없음
+    FStaticMeshEntry MeshEntry = {"None", "", nullptr};
+    CachedStaticMeshes.push_back(MeshEntry);
+
+    FMaterialEntry MaterialEntry = {"None", "", nullptr};
+    CachedMaterials.push_back(MaterialEntry);
+
+    for (TObjectIterator<UStaticMesh> It; It; ++It) 
+    {
+        UStaticMesh* StaticMesh = *It;
+        
+        if (StaticMesh == nullptr)
+            continue;
+
+        FStaticMeshEntry MeshEntry;
+        MeshEntry.Name = StaticMesh->GetMeshName();
+        MeshEntry.SourcePath = StaticMesh->GetAssetPath();
+        MeshEntry.Ptr = StaticMesh;
+
+        CachedStaticMeshes.push_back(MeshEntry);
+    }
+
+
+    for (TObjectIterator<UMaterial> It; It; ++It)
+    {
+        UMaterial* Material = *It;
+
+        if (Material == nullptr)
+            continue;
+
+        FMaterialEntry MaterialEntry;
+        MaterialEntry.Name = Material->GetAssetName();
+        MaterialEntry.SourcePath = Material->GetAssetPath();
+        MaterialEntry.Ptr = Material;
+
+        CachedMaterials.push_back(MaterialEntry);
+    }
+
+    bDirty = false;
+}

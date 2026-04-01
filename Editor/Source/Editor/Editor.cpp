@@ -46,6 +46,8 @@
 #include "Engine/Asset/StaticMesh.h"
 #include "CoreUObject/ObjectIterator.h"
 #include "Asset/Manager/AssetCacheManager.h"
+#include "Renderer/RendererModule.h"
+
 // TODO 삭제 예정
 namespace
 {
@@ -607,7 +609,7 @@ void FEditor::Release()
 
 void FEditor::Initialize()
 {
-    UE_LOG(FEditor, ELogLevel::Debug, "Editor initialize called.");
+    UE_LOG(FEditor, ELogLevel::Verbose, "Editor initialize called.");
     if (CurWorld == nullptr)
     {
         CurWorld = new FWorld();
@@ -627,13 +629,14 @@ void FEditor::SetChromeHost(IEditorChromeHost* InChromeHost)
 {
     ChromeHost = InChromeHost;
     EditorChrome.SetHost(InChromeHost);
-    UE_LOG(FEditor, ELogLevel::Debug, "Editor chrome host set: %p", InChromeHost);
+    UE_LOG(FEditor, ELogLevel::Verbose, "Editor chrome host set: %p", InChromeHost);
 }
 
-void FEditor::SetRuntimeServices(FD3D11RHI* InRHI, RHI::FDynamicRHI* InDynamicRHI,
+void FEditor::SetRuntimeServices(FRendererModule*     InRenderer, RHI::FDynamicRHI* InDynamicRHI,
                                  FAssetObjectManager* InAssetObjectManager)
 {
-    EditorContext.RHI = InRHI;
+    EditorContext.RHI = &InRenderer->GetRHI();
+    EditorContext.Renderer = InRenderer;
     EditorContext.DynamicRHI = InDynamicRHI;
     EditorContext.AssetObjectManager = InAssetObjectManager;
     AboutImageResource = nullptr;
@@ -642,8 +645,11 @@ void FEditor::SetRuntimeServices(FD3D11RHI* InRHI, RHI::FDynamicRHI* InDynamicRH
     ResolveSceneAssetReferences(CurWorld != nullptr ? CurWorld->GetActiveScene() : nullptr);
     PreloadStartupAssets();
     UE_LOG(FEditor, ELogLevel::Info,
-           "Runtime services updated. RHI=%p DynamicRHI=%p AssetObjectManager=%p", InRHI,
-           InDynamicRHI, InAssetObjectManager);
+           "Runtime services updated. RHI=%p DynamicRHI=%p AssetObjectManager=%p", 
+           EditorContext.RHI,
+           EditorContext.DynamicRHI, 
+           EditorContext.AssetObjectManager
+    );
 }
 
 void FEditor::LoadEditorSettings()
@@ -750,7 +756,7 @@ void FEditor::PreloadStartupAssets()
 
     if (EditorContext.StartupPreloadAssetPaths.empty())
     {
-        UE_LOG(FEditor, ELogLevel::Debug, "No startup preload assets were configured.");
+        UE_LOG(FEditor, ELogLevel::Verbose, "No startup preload assets were configured.");
         return;
     }
 
@@ -862,7 +868,7 @@ void FEditor::SaveEditorSettings() const
 
     if (PersistentSettings.Save(SettingsData))
     {
-        UE_LOG(FEditor, ELogLevel::Debug,
+        UE_LOG(FEditor, ELogLevel::Verbose,
                "Saved editor settings: GridSpacing=%.2f CameraMoveSpeed=%.2f "
                "CameraRotationSpeed=%.2f LeftPaneWidth=%.2f",
                SettingsData.GridSpacing, SettingsData.CameraMoveSpeed,
@@ -926,7 +932,7 @@ void FEditor::RequestOpenScene()
 
     if (!ShowOpenSceneFileDialog(ChromeHost, InitialDirectory, SelectedPath))
     {
-        UE_LOG(FEditor, ELogLevel::Debug, "Open scene dialog was cancelled.");
+        UE_LOG(FEditor, ELogLevel::Verbose, "Open scene dialog was cancelled.");
         return;
     }
 
@@ -1098,7 +1104,7 @@ void FEditor::ResolveActorAssetReferences(AActor* Actor)
         return;
     }
 
-    UE_LOG(FEditor, ELogLevel::Debug, "Resolving asset references for actor: %s",
+    UE_LOG(FEditor, ELogLevel::Verbose, "Resolving asset references for actor: %s",
            Actor->GetTypeName());
     FSceneAssetBinder::BindActor(Actor, EditorContext.AssetObjectManager);
 }
@@ -1913,7 +1919,6 @@ void FEditor::BuildRenderData()
             FEditorRenderData EditorRenderData = FEditorRenderData{};
             FSceneRenderData  SceneRenderData = FSceneRenderData{};
 
-            EditorRenderData.SceneView = Viewport->GetSceneView();
             SceneRenderData.SceneView = Viewport->GetSceneView();
             SceneRenderData.ViewMode =
                 Viewport->GetViewportClient()->GetRenderSetting().GetViewMode();
@@ -1923,12 +1928,12 @@ void FEditor::BuildRenderData()
             const ESceneShowFlags SceneShowFlags =
                 Viewport->GetViewportClient()->GetRenderSetting().BuildSceneShowFlags();
 
-            Viewport->GetViewportClient()->BuildRenderData(EditorRenderData, EditorShowFlags);
-
             if (CurWorld != nullptr)
             {
                 CurWorld->BuildRenderData(SceneRenderData, SceneShowFlags);
             }
+
+            Viewport->GetViewportClient()->BuildRenderData(EditorRenderData, SceneRenderData, EditorShowFlags);
 
             EditorRenderDatas.push_back(EditorRenderData);
             SceneRenderDatas.push_back(SceneRenderData);

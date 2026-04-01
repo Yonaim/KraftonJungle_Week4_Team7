@@ -5,6 +5,11 @@
 
 namespace Engine::Component
 {
+    UAtlasTextComponent::UAtlasTextComponent() 
+    {
+        FontPath = "/Content/Font/JetBrainsMono/JetBrainsMono_Medium.font.json";
+    }
+
     void UAtlasTextComponent::SetFontAsset(UFontAtlas* InFontAsset)
     {
         if (FontAsset == InFontAsset)

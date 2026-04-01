@@ -3,11 +3,28 @@
 #include "Panel.h"
 
 class AActor;
+class UStaticMesh;
+class UMaterial;
 
 namespace Engine::Component
 {
     class USceneComponent;
+    class UStaticMeshComponent;
 }
+
+struct FStaticMeshEntry
+{
+    FString      Name;
+    FString      SourcePath;
+    UStaticMesh* Ptr = nullptr;
+};
+
+struct FMaterialEntry
+{
+    FString      Name;
+    FString      SourcePath;
+    UMaterial* Ptr = nullptr;
+};
 
 class FPropertiesPanel : public IPanel
 {
@@ -36,7 +53,10 @@ class FPropertiesPanel : public IPanel
     void SyncEditTransformFromTarget(Engine::Component::USceneComponent* TargetComponent);
     void DrawTransformEditor(Engine::Component::USceneComponent* TargetComponent);
     void DrawComponentPropertyEditor(Engine::Component::USceneComponent* TargetComponent);
+    void DrawStaticMeshEditor(Engine::Component::USceneComponent* TargetComponent);
+    void DrawMaterialsEditor(Engine::Component::USceneComponent* TargetComponent);
     void ResetAssetPathEditState();
+    void RebuildAssetComboCache();
 
   private:
     FVector EditLocation = { 0.f, 0.f, 0.f };
@@ -44,4 +64,8 @@ class FPropertiesPanel : public IPanel
     FVector EditScale = { 1.f, 1.f, 1.f };
     Engine::Component::USceneComponent* CachedTargetComponent = nullptr;
     TMap<FString, FString> AssetPathEditBuffers;
+    
+    TArray<FStaticMeshEntry> CachedStaticMeshes;
+    TArray<FMaterialEntry>   CachedMaterials;
+    bool bDirty = true;
 };

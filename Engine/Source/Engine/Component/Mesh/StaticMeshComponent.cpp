@@ -1,4 +1,5 @@
 #include "Core/CoreMinimal.h"
+#include "Core/Logging/LogMacros.h"
 #include "StaticMeshComponent.h"
 #include "Engine/Component/Core/ComponentProperty.h"
 #include "Engine/Asset/StaticMesh.h"
@@ -48,12 +49,17 @@ namespace Engine::Component
         MeshData.reset();
         OverrideMaterials.clear();
         bBoundsDirty = true;
+        UE_LOG(StaticMeshComponent, ELogLevel::Verbose,
+               "Static mesh path changed: %s", MeshPath.c_str());
     }
 
     void UStaticMeshComponent::SetStaticMeshAsset(UStaticMesh* InStaticMesh)
     {
         bBoundsDirty = true;
         StaticMesh = InStaticMesh;
+        UE_LOG(StaticMeshComponent, ELogLevel::Debug,
+               "Static mesh asset assigned: %s",
+               StaticMesh ? StaticMesh->GetAssetPath().c_str() : "<null>");
         SyncMaterialOverridesWithStaticMesh();
     }
 
@@ -67,6 +73,8 @@ namespace Engine::Component
         }
 
         OverrideMaterials.resize(StaticMesh->GetMaterialSlots().size(), nullptr);
+        UE_LOG(StaticMeshComponent, ELogLevel::Verbose,
+               "Material override slots synced: %zu", OverrideMaterials.size());
     }
 
     void UStaticMeshComponent::CollectRenderData(FSceneRenderData& OutRenderData,
@@ -123,7 +131,6 @@ namespace Engine::Component
             Cmd.bIsVisible = Actor->IsVisible();
             Cmd.bIsPickable = Actor->IsPickable();
             Cmd.bIsSelected = Actor->IsSelected();
-            Cmd.bIsHovered = Actor->IsHovered();
 
             OutRenderData.RenderCommands.push_back(Cmd);
         }
@@ -153,7 +160,6 @@ namespace Engine::Component
                 Cmd.bIsVisible = Actor->IsVisible();
                 Cmd.bIsPickable = Actor->IsPickable();
                 Cmd.bIsSelected = Actor->IsSelected();
-                Cmd.bIsHovered = Actor->IsHovered();
 
                 OutRenderData.RenderCommands.push_back(Cmd);
             }
@@ -162,6 +168,10 @@ namespace Engine::Component
 
     void UStaticMeshComponent::Update(float DeltaTime)
     {
+        if (bEnableUVScroll == false)
+        {
+            return;
+        }
         UVOffset.X += ScrollSpeed * DeltaTime;
         UVOffset.Y += ScrollSpeed * DeltaTime;
 
@@ -176,6 +186,23 @@ namespace Engine::Component
         Builder.AddAssetPath(
             "ObjStaticMeshAsset", L"Mesh Asset", [this]() { return GetStaticMeshPath(); },
             [this](const FString& InValue) { SetStaticMeshPath(InValue); });
+
+        Builder.AddBool(
+            "IsScrolling", L"IsScrolling", [this]() { return GetEnableUVScroll(); },
+            [this](const bool& InValue) { SetEnableUVScroll(InValue); });
+
+        Builder.AddFloat(
+            "ScrollSpeed", L"Scroll Speed(Cycles/s)", [this]() { return GetUVScrollSpeed(); },
+            [this](const float& InValue) { SetUVScrollSpeed(InValue); });
+
+        for (int i = 0; i < GetMaterialSlotCount(); i++)
+        {
+            std::wstring display = std::wstring(L"Material") + std::to_wstring(i);
+            Builder.AddAssetPath(
+                "ObjMaterialAsset", display,
+                [this]() { return GetStaticMeshPath(); },
+                [this](const FString& InValue) { SetStaticMeshPath(InValue); });
+        }
     }
 
     bool UStaticMeshComponent::GetLocalTriangles(TArray<Geometry::FTriangle>& OutTriangles) const
@@ -318,6 +345,8 @@ namespace Engine::Component
         if (OverrideMaterials.size() < StaticMesh->GetMaterialSlots().size())
         {
             OverrideMaterials.resize(StaticMesh->GetMaterialSlots().size(), nullptr);
+        UE_LOG(StaticMeshComponent, ELogLevel::Verbose,
+               "Material override slots synced: %zu", OverrideMaterials.size());
         }
 
         OverrideMaterials[SlotIndex] = InMaterial;

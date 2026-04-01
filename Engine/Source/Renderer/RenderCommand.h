@@ -39,7 +39,9 @@ struct ENGINE_API FRenderCommand
     bool bIsVisible = true;
     bool bIsPickable = true;
     bool bIsSelected = false;
-    bool bIsHovered = false;
+
+    FVector4 MultiplyColor = FVector4(1.0f, 1.0f, 1.0f, 1.0f);
+    FVector4 AdditiveColor = FVector4(0.0f, 0.0f, 0.0f, 0.0f);
 
     void SetStates(const UMaterial* InMaterial, EMeshTopology InTopology);
     void SetDefaultStates();

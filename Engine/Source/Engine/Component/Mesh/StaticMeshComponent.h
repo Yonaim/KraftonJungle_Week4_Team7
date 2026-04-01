@@ -23,6 +23,12 @@ namespace Engine::Component
         UStaticMesh*       GetStaticMeshAsset() { return StaticMesh; }
         void               SetStaticMeshAsset(UStaticMesh* InStaticMesh);
 
+        void SetEnableUVScroll(bool bInEnableUVScroll) { bEnableUVScroll = bInEnableUVScroll; }
+        bool GetEnableUVScroll() const { return bEnableUVScroll; }
+
+        void SetUVScrollSpeed(float InScrollSpeed) { ScrollSpeed = InScrollSpeed; }
+        float GetUVScrollSpeed() const { return ScrollSpeed; }
+
         // Primitive
         virtual void CollectRenderData(FSceneRenderData& OutRenderData,
                                        ESceneShowFlags   InShowFlags) const override;
@@ -59,8 +65,10 @@ namespace Engine::Component
 
         mutable std::shared_ptr<FMeshData> MeshData;
 
+        //UV Scroll
         float ScrollSpeed = 1.0f;
         FVector2 UVOffset = FVector2::Zero();
+        bool     bEnableUVScroll = false;
     };
 
 } // namespace Engine::Component

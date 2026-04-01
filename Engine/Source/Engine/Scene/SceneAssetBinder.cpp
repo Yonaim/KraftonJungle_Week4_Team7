@@ -62,7 +62,7 @@ void FSceneAssetBinder::BindScene(FScene* InScene, FAssetObjectManager* InAssetO
         return;
     }
 
-    UE_LOG(FEditor, ELogLevel::Info, "Binding scene assets for %zu actor(s)", Actors->size());
+    UE_LOG(SceneBinder, ELogLevel::Debug, "Binding scene assets for %zu actor(s)", Actors->size());
 
     for (AActor* Actor : *Actors)
     {
@@ -77,7 +77,7 @@ void FSceneAssetBinder::BindActor(AActor* InActor, FAssetObjectManager* InAssetO
         return;
     }
 
-    UE_LOG(FEditor, ELogLevel::Debug, "Binding actor: %s (components=%zu)",
+    UE_LOG(SceneBinder, ELogLevel::Verbose, "Binding actor: %s (components=%zu)",
            InActor->GetTypeName(), InActor->GetOwnedComponents().size());
 
     for (USceneComponent* Component : InActor->GetOwnedComponents())
@@ -99,7 +99,7 @@ void FSceneAssetBinder::BindComponent(USceneComponent* InComponent,
         const FString MeshPath = StaticMeshComponent->GetStaticMeshPath();
         if (MeshPath.empty())
         {
-            UE_LOG(FEditor, ELogLevel::Warning, "StaticMeshComponent has empty mesh path");
+            UE_LOG(SceneBinder, ELogLevel::Warning, "StaticMeshComponent has empty mesh path");
             StaticMeshComponent->SetStaticMeshAsset(nullptr);
             return;
         }
@@ -107,14 +107,14 @@ void FSceneAssetBinder::BindComponent(USceneComponent* InComponent,
         UStaticMesh* StaticMeshAsset = InAssetObjectManager->LoadStaticMeshObject(MeshPath);
         if (StaticMeshAsset == nullptr)
         {
-            UE_LOG(FEditor, ELogLevel::Error, "Failed to load static mesh object: %s",
+            UE_LOG(SceneBinder, ELogLevel::Error, "Failed to load static mesh object: %s",
                    MeshPath.c_str());
             StaticMeshComponent->SetStaticMeshAsset(nullptr);
             return;
         }
 
         StaticMeshComponent->SetStaticMeshAsset(StaticMeshAsset);
-        UE_LOG(FEditor, ELogLevel::Info, "Bound static mesh asset object: %s", MeshPath.c_str());
+        UE_LOG(SceneBinder, ELogLevel::Debug, "Bound static mesh asset object: %s", MeshPath.c_str());
         return;
     }
 
@@ -123,7 +123,7 @@ void FSceneAssetBinder::BindComponent(USceneComponent* InComponent,
         const FString AtlasPath = ResolveSubUVPath(SubUVComponent);
         if (AtlasPath.empty())
         {
-            UE_LOG(FEditor, ELogLevel::Warning, "SubUVComponent has empty atlas path");
+            UE_LOG(SceneBinder, ELogLevel::Warning, "SubUVComponent has empty atlas path");
             SubUVComponent->SetSubUVAtlasAsset(nullptr);
             return;
         }
@@ -131,14 +131,14 @@ void FSceneAssetBinder::BindComponent(USceneComponent* InComponent,
         USubUVAtlas* AtlasAsset = InAssetObjectManager->LoadSubUVAtlasObject(AtlasPath);
         if (AtlasAsset == nullptr)
         {
-            UE_LOG(FEditor, ELogLevel::Error, "Failed to load SubUV atlas object: %s",
+            UE_LOG(SceneBinder, ELogLevel::Error, "Failed to load SubUV atlas object: %s",
                    AtlasPath.c_str());
             SubUVComponent->SetSubUVAtlasAsset(nullptr);
             return;
         }
 
         SubUVComponent->SetSubUVAtlasAsset(AtlasAsset);
-        UE_LOG(FEditor, ELogLevel::Info, "Bound SubUV atlas asset object: %s", AtlasPath.c_str());
+        UE_LOG(SceneBinder, ELogLevel::Debug, "Bound SubUV atlas asset object: %s", AtlasPath.c_str());
         return;
     }
 
@@ -147,7 +147,7 @@ void FSceneAssetBinder::BindComponent(USceneComponent* InComponent,
         const FString MeshPath = SpriteComponent->GetMeshAssetPath();
         if (MeshPath.empty())
         {
-            UE_LOG(FEditor, ELogLevel::Warning, "PaperSpriteComponent has empty mesh path");
+            UE_LOG(SceneBinder, ELogLevel::Warning, "PaperSpriteComponent has empty mesh path");
             SpriteComponent->SetMeshAsset(nullptr);
         }
         else
@@ -155,14 +155,14 @@ void FSceneAssetBinder::BindComponent(USceneComponent* InComponent,
             UStaticMesh* MeshAsset = InAssetObjectManager->LoadStaticMeshObject(MeshPath);
             if (MeshAsset == nullptr)
             {
-                UE_LOG(FEditor, ELogLevel::Error, "Failed to load sprite mesh object: %s",
+                UE_LOG(SceneBinder, ELogLevel::Error, "Failed to load sprite mesh object: %s",
                        MeshPath.c_str());
                 SpriteComponent->SetMeshAsset(nullptr);
             }
             else
             {
                 SpriteComponent->SetMeshAsset(MeshAsset);
-                UE_LOG(FEditor, ELogLevel::Debug, "Bound sprite mesh asset object: %s",
+                UE_LOG(SceneBinder, ELogLevel::Verbose, "Bound sprite mesh asset object: %s",
                        MeshPath.c_str());
             }
         }
@@ -170,7 +170,7 @@ void FSceneAssetBinder::BindComponent(USceneComponent* InComponent,
         const FString TexturePath = ResolveTexturePath(SpriteComponent);
         if (TexturePath.empty())
         {
-            UE_LOG(FEditor, ELogLevel::Warning, "PaperSpriteComponent has empty texture path");
+            UE_LOG(SceneBinder, ELogLevel::Warning, "PaperSpriteComponent has empty texture path");
             SpriteComponent->SetTextureAsset(nullptr);
             return;
         }
@@ -178,14 +178,14 @@ void FSceneAssetBinder::BindComponent(USceneComponent* InComponent,
         UTexture* TextureAsset = InAssetObjectManager->LoadTextureObject(TexturePath);
         if (TextureAsset == nullptr)
         {
-            UE_LOG(FEditor, ELogLevel::Error, "Failed to load texture object: %s",
+            UE_LOG(SceneBinder, ELogLevel::Error, "Failed to load texture object: %s",
                    TexturePath.c_str());
             SpriteComponent->SetTextureAsset(nullptr);
             return;
         }
 
         SpriteComponent->SetTextureAsset(TextureAsset);
-        UE_LOG(FEditor, ELogLevel::Info, "Bound sprite asset objects: mesh=%s texture=%s",
+        UE_LOG(SceneBinder, ELogLevel::Debug, "Bound sprite asset objects: mesh=%s texture=%s",
                MeshPath.c_str(), TexturePath.c_str());
         return;
     }
@@ -195,7 +195,7 @@ void FSceneAssetBinder::BindComponent(USceneComponent* InComponent,
         const FString FontPath = ResolveFontPath(AtlasTextComponent);
         if (FontPath.empty())
         {
-            UE_LOG(FEditor, ELogLevel::Warning, "AtlasTextComponent has empty font path");
+            UE_LOG(SceneBinder, ELogLevel::Warning, "AtlasTextComponent has empty font path");
             AtlasTextComponent->SetFontAsset(nullptr);
             return;
         }
@@ -203,14 +203,14 @@ void FSceneAssetBinder::BindComponent(USceneComponent* InComponent,
         UFontAtlas* FontAsset = InAssetObjectManager->LoadFontAtlasObject(FontPath);
         if (FontAsset == nullptr)
         {
-            UE_LOG(FEditor, ELogLevel::Error, "Failed to load font atlas object: %s",
+            UE_LOG(SceneBinder, ELogLevel::Error, "Failed to load font atlas object: %s",
                    FontPath.c_str());
             AtlasTextComponent->SetFontAsset(nullptr);
             return;
         }
 
         AtlasTextComponent->SetFontAsset(FontAsset);
-        UE_LOG(FEditor, ELogLevel::Info, "Bound font atlas asset object: %s",
+        UE_LOG(SceneBinder, ELogLevel::Debug, "Bound font atlas asset object: %s",
                FontPath.c_str());
         return;
     }

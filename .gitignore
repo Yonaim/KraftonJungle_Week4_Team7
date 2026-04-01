@@ -1,4 +1,5 @@
-
+*.bin
+*.texture
 
 # Embedded Python (override *.exe/*.dll ignore below)
 !Scripts/python/**
