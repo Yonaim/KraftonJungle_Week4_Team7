@@ -168,6 +168,10 @@ namespace Engine::Component
 
     void UStaticMeshComponent::Update(float DeltaTime)
     {
+        if (bEnableUVScroll == false)
+        {
+            return;
+        }
         UVOffset.X += ScrollSpeed * DeltaTime;
         UVOffset.Y += ScrollSpeed * DeltaTime;
 
@@ -182,6 +186,14 @@ namespace Engine::Component
         Builder.AddAssetPath(
             "ObjStaticMeshAsset", L"Mesh Asset", [this]() { return GetStaticMeshPath(); },
             [this](const FString& InValue) { SetStaticMeshPath(InValue); });
+
+        Builder.AddBool(
+            "IsScrolling", L"IsScrolling", [this]() { return GetEnableUVScroll(); },
+            [this](const bool& InValue) { SetEnableUVScroll(InValue); });
+
+        Builder.AddFloat(
+            "ScrollSpeed", L"ScrollSpeed", [this]() { return GetUVScrollSpeed(); },
+            [this](const float& InValue) { SetUVScrollSpeed(InValue); });
     }
 
     bool UStaticMeshComponent::GetLocalTriangles(TArray<Geometry::FTriangle>& OutTriangles) const
