@@ -812,14 +812,12 @@ void FPropertiesPanel::DrawComponentPropertyEditor(
     }
 
     if (bRequiresActorRebind && GetContext() != nullptr &&
-        GetContext()->AssetCacheManager != nullptr && GetContext()->DynamicRHI != nullptr)
+        GetContext()->AssetObjectManager != nullptr && GetContext()->DynamicRHI != nullptr)
     {
         AActor* SelectedActor = ResolveSelectedActor();
         if (SelectedActor != nullptr)
         {
-            FSceneAssetBinder::BindActor(SelectedActor, GetContext()->AssetCacheManager,
-                                         GetContext()->DynamicRHI);
-            UE_LOG(FEditor, ELogLevel::Debug, "????");
+            FSceneAssetBinder::BindActor(SelectedActor, GetContext()->AssetObjectManager);
         }
     }
 

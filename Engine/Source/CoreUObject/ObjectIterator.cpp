@@ -1,7 +1,5 @@
 #include "ObjectIterator.h"
 
-extern TArray<UObject*> GUObjectArray;
-
 FObjectIterator::FObjectIterator() : CurrentIndex(0) { AdvanceToNextValid(); }
 
 FObjectIterator::operator bool() const

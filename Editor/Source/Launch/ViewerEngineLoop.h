@@ -1,3 +1,4 @@
+#include "Engine/Asset/AssetObjectManager.h"
 #pragma once
 
 #include "Core/CoreMinimal.h"
@@ -11,10 +12,7 @@
 #endif
 
 class FViewer;
-namespace Asset
-{
-    class FAssetCacheManager;
-}
+class FAssetObjectManager;
 
 namespace RHI
 {
@@ -33,21 +31,21 @@ class FViewerEngineLoop : public IEngineLoop
     void Tick() override;
     void InitializeForTime() override;
 
-    static bool HandleViewerMessage(HWND HWnd, UINT Message, WPARAM WParam, LPARAM LParam, LRESULT& OutResult, void* UserData);
-    bool HandleWindowResize();
-    bool RunFrameOnce();
-    bool RunFrameOnceWithoutResize();
-    void UpdateFrameTiming();
+    static bool HandleViewerMessage(HWND HWnd, UINT Message, WPARAM WParam, LPARAM LParam,
+                                    LRESULT& OutResult, void* UserData);
+    bool        HandleWindowResize();
+    bool        RunFrameOnce();
+    bool        RunFrameOnceWithoutResize();
+    void        UpdateFrameTiming();
     Engine::ApplicationCore::FWindowsApplication* GetWindowsApplication() const;
 
   private:
     Engine::ApplicationCore::IApplication* Application = nullptr;
     Engine::ApplicationCore::FInputSystem* InputSystem = nullptr;
 
-    FViewer*               Viewer = nullptr;
-    FRendererModule* Renderer = nullptr;
-    Asset::FAssetCacheManager* AssetCacheManager = nullptr;
-    RHI::FDynamicRHI*          AssetDynamicRHI = nullptr;
+    FViewer*             Viewer = nullptr;
+    FRendererModule*     Renderer = nullptr;
+    FAssetObjectManager* AssetObjectManager = nullptr;
 
     int32 CachedWindowWidth = 0;
     int32 CachedWindowHeight = 0;

@@ -294,6 +294,9 @@
     <ClCompile Include="Source\Engine\Asset\Asset.cpp">
       <Filter>Source\Engine\Asset</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\Asset\AssetObjectManager.cpp">
+      <Filter>Source\Engine\Asset</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Engine\Asset\FontAtlas.cpp">
       <Filter>Source\Engine\Asset</Filter>
     </ClCompile>
@@ -804,6 +807,9 @@
       <Filter>Source\CoreUObject</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Asset\Asset.h">
+      <Filter>Source\Engine\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Asset\AssetObjectManager.h">
       <Filter>Source\Engine\Asset</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Asset\FontAtlas.h">

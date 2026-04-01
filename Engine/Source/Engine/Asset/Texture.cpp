@@ -51,3 +51,24 @@ bool UTexture::LoadFromCooked(const FString&                      InAssetPath,
     UE_LOG(FEditor, ELogLevel::Info, "Texture asset load succeeded: %s", InAssetPath.c_str());
     return true;
 }
+
+
+bool UTexture::IsValidLowLevel() const
+{
+    if (CookedData == nullptr)
+    {
+        return false;
+    }
+
+    if (!CookedData->IsValid())
+    {
+        return false;
+    }
+
+    if (RenderResource == nullptr)
+    {
+        return false;
+    }
+
+    return true;
+}

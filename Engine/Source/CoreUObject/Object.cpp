@@ -2,7 +2,7 @@
 #include "Engine/EngineStatics.h"
 #include "Object.h"
 
-extern TArray<UObject*> GUObjectArray;
+TArray<UObject*> GUObjectArray;
 
 namespace
 {

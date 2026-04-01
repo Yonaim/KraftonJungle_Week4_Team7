@@ -6,12 +6,6 @@
 #include "Core/Logging/LogMacros.h"
 
 class AActor;
-class UAssetManager;
-
-namespace Asset
-{
-    class FAssetCacheManager;
-}
 
 namespace Engine::Component
 {

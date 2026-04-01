@@ -29,10 +29,7 @@ struct FPanelDescriptor;
 class AActor;
 class UObject;
 class FD3D11RHI;
-namespace Asset
-{
-    class FAssetCacheManager;
-}
+class FAssetObjectManager;
 
 namespace RHI
 {
@@ -79,7 +76,7 @@ class FEditor
     void Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* InputSystem);
     void SetChromeHost(IEditorChromeHost* InChromeHost);
     void SetRuntimeServices(FD3D11RHI* InRHI, RHI::FDynamicRHI* InDynamicRHI,
-                            Asset::FAssetCacheManager* InAssetCacheManager);
+                            FAssetObjectManager* InAssetObjectManager);
 
     void OnWindowResized(float Width, float Height);
     void OnViewportResized();

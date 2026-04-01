@@ -1,8 +1,8 @@
 #include "Editor.h"
 
 #include "Editor/EditorPaths.h"
-#include "Asset/Manager/AssetCacheManager.h"
 #include "Asset/Core/AssetNaming.h"
+#include "Engine/Asset/AssetObjectManager.h"
 #include "Viewport/EditorViewportClient.h"
 #include "Engine/Scene/SceneAssetPath.h"
 
@@ -72,11 +72,8 @@ namespace
                                                  RHI::FDynamicRHI*          DynamicRHI)
     {
         FObjectFactory::RegisterObjectType(UStaticMesh::GetClass(),
-    []() -> UObject*
-    {
-        return new UStaticMesh();
-    });
-    
+                                           []() -> UObject* { return new UStaticMesh(); });
+
         UE_LOG(FEditor, ELogLevel::Info, "EnsurePreloadedStaticMeshObject START: %s",
                AssetPath.c_str());
 
@@ -108,15 +105,12 @@ namespace
             return nullptr;
         }
 
-if (UStaticMesh::GetClass() == nullptr)
-{
-    UE_LOG(FEditor, ELogLevel::Error,
-           "UStaticMesh::GetClass() returned null");
-    return nullptr;
-}
-        UE_LOG(FEditor, ELogLevel::Info,
-       "UStaticMesh::GetClass() = %p",
-       UStaticMesh::GetClass());
+        if (UStaticMesh::GetClass() == nullptr)
+        {
+            UE_LOG(FEditor, ELogLevel::Error, "UStaticMesh::GetClass() returned null");
+            return nullptr;
+        }
+        UE_LOG(FEditor, ELogLevel::Info, "UStaticMesh::GetClass() = %p", UStaticMesh::GetClass());
 
         UStaticMesh* NewObject =
             (UStaticMesh*)FObjectFactory::ConstructObject(UStaticMesh::GetClass());
@@ -637,19 +631,19 @@ void FEditor::SetChromeHost(IEditorChromeHost* InChromeHost)
 }
 
 void FEditor::SetRuntimeServices(FD3D11RHI* InRHI, RHI::FDynamicRHI* InDynamicRHI,
-                                 Asset::FAssetCacheManager* InAssetCacheManager)
+                                 FAssetObjectManager* InAssetObjectManager)
 {
     EditorContext.RHI = InRHI;
     EditorContext.DynamicRHI = InDynamicRHI;
-    EditorContext.AssetCacheManager = InAssetCacheManager;
+    EditorContext.AssetObjectManager = InAssetObjectManager;
     AboutImageResource = nullptr;
     bAttemptedAboutImageLoad = false;
     EnsureAboutImageLoaded();
     ResolveSceneAssetReferences(CurWorld != nullptr ? CurWorld->GetActiveScene() : nullptr);
     PreloadStartupAssets();
     UE_LOG(FEditor, ELogLevel::Info,
-           "Runtime services updated. RHI=%p DynamicRHI=%p AssetCacheManager=%p", InRHI,
-           InDynamicRHI, InAssetCacheManager);
+           "Runtime services updated. RHI=%p DynamicRHI=%p AssetObjectManager=%p", InRHI,
+           InDynamicRHI, InAssetObjectManager);
 }
 
 void FEditor::LoadEditorSettings()
@@ -747,12 +741,10 @@ void FEditor::LoadStartupAssetPreloadList()
 
 void FEditor::PreloadStartupAssets()
 {
-
-    
-    if (EditorContext.AssetCacheManager == nullptr)
+    if (EditorContext.AssetObjectManager == nullptr || EditorContext.DynamicRHI == nullptr)
     {
         UE_LOG(FEditor, ELogLevel::Warning,
-               "Skipped startup asset preloading because AssetCacheManager is null.");
+               "Skipped startup asset preloading because runtime asset services are incomplete.");
         return;
     }
 
@@ -792,96 +784,20 @@ void FEditor::PreloadStartupAssets()
             continue;
         }
 
-            UStaticMesh* MeshObject = EnsurePreloadedStaticMeshObject(
-                AbsolutePath, EditorContext.AssetCacheManager, EditorContext.DynamicRHI);
-
-            if (MeshObject == nullptr)
-            {
-                UE_LOG(FEditor, ELogLevel::Warning,
-                       "StaticMesh preload built asset but failed to create UObject wrapper: %s",
-                       AbsolutePath.c_str());
-            }
-            else
-            {
-                UE_LOG(FEditor, ELogLevel::Info, "StaticMesh preload created UObject wrapper: %s",
-                       AbsolutePath.c_str());
-            }
-
         ++RequestedCount;
 
         bool bSucceeded = false;
 
-        auto MeshAsset = EditorContext.AssetCacheManager->BuildStaticMesh(AbsolutePath);
-        bSucceeded = (MeshAsset != nullptr);
-
-        if (bSucceeded)
-        {
-            UStaticMesh* MeshObject = EnsurePreloadedStaticMeshObject(
-                AbsolutePath, EditorContext.AssetCacheManager, EditorContext.DynamicRHI);
-
-            if (MeshObject == nullptr)
-            {
-                UE_LOG(FEditor, ELogLevel::Warning,
-                       "StaticMesh preload built asset but failed to create UObject wrapper: %s",
-                       AbsolutePath.c_str());
-            }
-            else
-            {
-                UE_LOG(FEditor, ELogLevel::Info, "StaticMesh preload created UObject wrapper: %s",
-                       AbsolutePath.c_str());
-            }
-        }
-
         switch (AssetKind)
         {
         case Asset::EAssetFileKind::Texture:
-        {
-            bSucceeded = (EditorContext.AssetCacheManager->BuildTexture(AbsolutePath) != nullptr);
-            break;
-        }
-
         case Asset::EAssetFileKind::MaterialLibrary:
-        {
-            bSucceeded = (EditorContext.AssetCacheManager->BuildMaterial(AbsolutePath) != nullptr);
-            break;
-        }
-
         case Asset::EAssetFileKind::StaticMesh:
-        {
-            auto MeshAsset = EditorContext.AssetCacheManager->BuildStaticMesh(AbsolutePath);
-            bSucceeded = (MeshAsset != nullptr);
-
-            if (bSucceeded)
-            {
-                UStaticMesh* MeshObject = EnsurePreloadedStaticMeshObject(
-                    AbsolutePath, EditorContext.AssetCacheManager, EditorContext.DynamicRHI);
-
-                if (MeshObject == nullptr)
-                {
-                    UE_LOG(
-                        FEditor, ELogLevel::Warning,
-                        "StaticMesh preload built asset but failed to create UObject wrapper: %s",
-                        AbsolutePath.c_str());
-                }
-                else
-                {
-                    UE_LOG(FEditor, ELogLevel::Info,
-                           "StaticMesh preload created UObject wrapper: %s", AbsolutePath.c_str());
-                }
-            }
-            break;
-        }
-
         case Asset::EAssetFileKind::TextureAtlas:
-        {
-            bSucceeded =
-                (EditorContext.AssetCacheManager->BuildSubUVAtlas(AbsolutePath) != nullptr);
-            break;
-        }
-
         case Asset::EAssetFileKind::Font:
         {
-            bSucceeded = (EditorContext.AssetCacheManager->BuildFontAtlas(AbsolutePath) != nullptr);
+            UObject* AssetObject = EditorContext.AssetObjectManager->LoadAssetObject(AbsolutePath);
+            bSucceeded = (AssetObject != nullptr);
             break;
         }
 
@@ -889,8 +805,8 @@ void FEditor::PreloadStartupAssets()
         {
             ++SkippedCount;
             UE_LOG(FEditor, ELogLevel::Warning,
-                   "Skipped startup preload scene asset because FAssetCacheManager does not build "
-                   "scenes: %s",
+                   "Skipped startup preload scene asset because scene UObject creation is not "
+                   "supported: %s",
                    AbsolutePath.c_str());
             continue;
         }
@@ -1176,7 +1092,7 @@ void FEditor::ReplaceCurrentScene(std::unique_ptr<FScene> NewScene)
 
 void FEditor::ResolveActorAssetReferences(AActor* Actor)
 {
-    if (Actor == nullptr || EditorContext.AssetCacheManager == nullptr ||
+    if (Actor == nullptr || EditorContext.AssetObjectManager == nullptr ||
         EditorContext.DynamicRHI == nullptr)
     {
         return;
@@ -1184,12 +1100,12 @@ void FEditor::ResolveActorAssetReferences(AActor* Actor)
 
     UE_LOG(FEditor, ELogLevel::Debug, "Resolving asset references for actor: %s",
            Actor->GetTypeName());
-    FSceneAssetBinder::BindActor(Actor, EditorContext.AssetCacheManager, EditorContext.DynamicRHI);
+    FSceneAssetBinder::BindActor(Actor, EditorContext.AssetObjectManager);
 }
 
 void FEditor::ResolveSceneAssetReferences(FScene* Scene)
 {
-    if (Scene == nullptr || EditorContext.AssetCacheManager == nullptr ||
+    if (Scene == nullptr || EditorContext.AssetObjectManager == nullptr ||
         EditorContext.DynamicRHI == nullptr)
     {
         return;
@@ -1198,7 +1114,7 @@ void FEditor::ResolveSceneAssetReferences(FScene* Scene)
     TArray<AActor*>* SceneActors = (Scene->GetActors());
     UE_LOG(FEditor, ELogLevel::Info, "Resolving scene asset references for %zu actor(s).",
            SceneActors != nullptr ? SceneActors->size() : size_t(0));
-    FSceneAssetBinder::BindScene(Scene, EditorContext.AssetCacheManager, EditorContext.DynamicRHI);
+    FSceneAssetBinder::BindScene(Scene, EditorContext.AssetObjectManager);
 }
 
 void FEditor::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* InputSystem)
@@ -1208,7 +1124,8 @@ void FEditor::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
     Engine::ApplicationCore::FInputState InputState = InputSystem->GetInputState();
 
     FViewport*    HoveredViewport = nullptr;
-    FViewportRect HoveredRect{};;
+    FViewportRect HoveredRect{};
+    ;
     for (auto Viewport : ViewportTab.GetViewports())
     {
         if (!Viewport->IsValid())
@@ -1240,8 +1157,7 @@ void FEditor::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* Input
 
     while (InputSystem->PollEvent(Event))
     {
-        if (Event.Type ==
-            Engine::ApplicationCore::EInputEventType::MouseButtonDown)
+        if (Event.Type == Engine::ApplicationCore::EInputEventType::MouseButtonDown)
         {
             if (HoveredViewport != nullptr && !bIsMouseCaptured)
             {
@@ -1448,7 +1364,7 @@ void FEditor::MarkSceneDirty() { SceneDocument.bDirty = true; }
 void FEditor::EnsureAboutImageLoaded()
 {
     if (AboutImageResource != nullptr || bAttemptedAboutImageLoad ||
-        EditorContext.AssetCacheManager == nullptr)
+        EditorContext.AssetObjectManager == nullptr)
     {
         return;
     }

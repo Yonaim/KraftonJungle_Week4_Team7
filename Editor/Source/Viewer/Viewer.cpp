@@ -3,6 +3,7 @@
 #include "Engine/Component/Mesh/StaticMeshComponent.h"
 #include "Engine/Asset/StaticMesh.h"
 #include "Engine/Scene/SceneAssetBinder.h"
+#include "Engine/Asset/AssetObjectManager.h"
 #include "RHI/DynamicRHI.h"
 
 #include "imgui.h"
@@ -37,18 +38,18 @@ void FViewer::Release()
 
     RHI = nullptr;
     DynamicRHI = nullptr;
-    AssetCacheManager = nullptr;
+    AssetObjectManager = nullptr;
 
     delete SceneView;
     SceneView = nullptr;
 }
 
 void FViewer::SetRuntimeServices(FD3D11RHI* InRHI, RHI::FDynamicRHI* InDynamicRHI,
-                                 Asset::FAssetCacheManager* InAssetCacheManager)
+                                 FAssetObjectManager* InAssetObjectManager)
 {
     RHI = InRHI;
     DynamicRHI = InDynamicRHI;
-    AssetCacheManager = InAssetCacheManager;
+    AssetObjectManager = InAssetObjectManager;
 }
 
 void FViewer::Tick(float DeltaTime, Engine::ApplicationCore::FInputSystem* InputSystem)
@@ -181,7 +182,12 @@ void FViewer::DrawPanel(HWND hWnd)
 
 void FViewer::SetUpView()
 {
-    FSceneAssetBinder::BindActor(StaticMeshActor, AssetCacheManager, DynamicRHI);
+    if (StaticMeshActor == nullptr || AssetObjectManager == nullptr || DynamicRHI == nullptr)
+    {
+        return;
+    }
+
+    FSceneAssetBinder::BindActor(StaticMeshActor, AssetObjectManager);
     SetBestView();
 }
 

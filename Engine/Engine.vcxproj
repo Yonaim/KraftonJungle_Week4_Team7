@@ -115,6 +115,7 @@
     <ClInclude Include="Source\CoreUObject\ObjectFactory.h" />
     <ClInclude Include="Source\CoreUObject\ObjectIterator.h" />
     <ClInclude Include="Source\Engine\Asset\Asset.h" />
+    <ClInclude Include="Source\Engine\Asset\AssetObjectManager.h" />
     <ClInclude Include="Source\Engine\Asset\FontAtlas.h" />
     <ClInclude Include="Source\Engine\Asset\Material.h" />
     <ClInclude Include="Source\Engine\Asset\StaticMesh.h" />
@@ -263,6 +264,7 @@
     <ClCompile Include="Source\CoreUObject\ObjectFactory.cpp" />
     <ClCompile Include="Source\CoreUObject\ObjectIterator.cpp" />
     <ClCompile Include="Source\Engine\Asset\Asset.cpp" />
+    <ClCompile Include="Source\Engine\Asset\AssetObjectManager.cpp" />
     <ClCompile Include="Source\Engine\Asset\FontAtlas.cpp" />
     <ClCompile Include="Source\Engine\Asset\Material.cpp" />
     <ClCompile Include="Source\Engine\Asset\StaticMesh.cpp" />

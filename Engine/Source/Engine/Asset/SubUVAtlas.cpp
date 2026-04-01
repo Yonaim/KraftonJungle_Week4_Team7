@@ -51,3 +51,24 @@ bool USubUVAtlas::LoadFromCooked(const FString&                         InAssetP
     UE_LOG(FEditor, ELogLevel::Info, "SubUV atlas asset load succeeded: %s", InAssetPath.c_str());
     return true;
 }
+
+
+bool USubUVAtlas::IsValidLowLevel() const
+{
+    if (CookedData == nullptr)
+    {
+        return false;
+    }
+
+    if (!CookedData->IsValid())
+    {
+        return false;
+    }
+
+    if (RenderResource == nullptr)
+    {
+        return false;
+    }
+
+    return true;
+}
