@@ -23,6 +23,8 @@ namespace Engine::Component
 
         const FSubUVAtlasRenderResource* GetSubUVAtlasRenderResource() const;
         FSubUVAtlasRenderResource*       GetSubUVAtlasRenderResource();
+        const FTextureRenderResource*    GetTextureRenderResource() const override;
+        FTextureRenderResource*          GetTextureRenderResource() override;
 
         int32 GetFrameIndex() const { return FrameIndex; }
         void  SetFrameIndex(int32 InFrameIndex);

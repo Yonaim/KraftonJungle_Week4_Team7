@@ -273,15 +273,20 @@ namespace Engine::Component
             EnsureDynamicQuadMeshData();
         }
 
-        if (TextureAsset)
+        const FTextureRenderResource* TextureResource = GetTextureRenderResource();
+        if (TextureResource != nullptr)
         {
             if (!Material)
             {
                 Material = std::make_shared<UMaterial>();
-                Material->SetAssetName("M_Sprite_" + TextureAsset->GetAssetName());
+                const FString TextureName =
+                    (TextureAsset != nullptr && !TextureAsset->GetAssetName().empty())
+                        ? TextureAsset->GetAssetName()
+                        : FString("SubUVAtlas");
+                Material->SetAssetName("M_Sprite_" + TextureName);
 
                 auto CookedData = std::make_shared<FMtlCookedData>();
-                CookedData->Name = "M_Sprite_" + TextureAsset->GetAssetName();
+                CookedData->Name = "M_Sprite_" + TextureName;
                 Material->SetCookedData(CookedData);
             }
 
@@ -296,16 +301,14 @@ namespace Engine::Component
             RenderResource->NormalTexture.reset();
             RenderResource->ORMTexture.reset();
 
-            if (TextureAsset->GetRenderResource() && TextureAsset->GetRenderResource()->GetSRV())
+            if (TextureResource->GetSRV())
             {
                 RHI::FTextureDesc Desc;
-                Desc.Width =
-                    TextureAsset->GetCookedData() ? TextureAsset->GetCookedData()->Width : 0;
-                Desc.Height =
-                    TextureAsset->GetCookedData() ? TextureAsset->GetCookedData()->Height : 0;
+                Desc.Width = TextureResource->Width;
+                Desc.Height = TextureResource->Height;
                 Desc.Format = RHI::EPixelFormat::RGBA32F;
                 RenderResource->BaseColorTexture = std::make_shared<RHI::D3D11::FD3D11Texture2D>(
-                    Desc, nullptr, TextureAsset->GetRenderResource()->GetSRV());
+                    Desc, nullptr, TextureResource->GetSRV());
             }
         }
         else
