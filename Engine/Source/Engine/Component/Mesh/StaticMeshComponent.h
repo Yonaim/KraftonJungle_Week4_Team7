@@ -18,11 +18,8 @@ namespace Engine::Component
         ~UStaticMeshComponent() override = default;
 
         const std::filesystem::path& GetStaticMeshPath() const { return MeshPath; }
+        void                         SetStaticMeshPath(const FString& InPath);
         void                         SetStaticMeshPath(const std::filesystem::path& InPath);
-        void                         SetStaticMeshPath(const FString& InPath)
-        {
-            SetStaticMeshPath(std::filesystem::path(InPath));
-        }
 
         const UStaticMesh* GetStaticMeshAsset() const { return StaticMesh; }
         UStaticMesh*       GetStaticMeshAsset() { return StaticMesh; }

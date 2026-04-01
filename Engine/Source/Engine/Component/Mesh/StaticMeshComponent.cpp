@@ -47,6 +47,11 @@ namespace Engine::Component
         }
     } // namespace
 
+    void UStaticMeshComponent::SetStaticMeshPath(const FString& InPath)
+    {
+        SetStaticMeshPath(std::filesystem::path(InPath));
+    }
+
     void UStaticMeshComponent::SetStaticMeshPath(const std::filesystem::path& InPath)
     {
         if (MeshPath == InPath)
