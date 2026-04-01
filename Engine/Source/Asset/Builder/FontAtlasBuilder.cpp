@@ -7,6 +7,7 @@
 
 #include "Asset/Cache/AssetKeyUtils.h"
 #include "Asset/Cache/AssetBuildCache.h"
+#include "Core/Misc/Paths.h"
 
 namespace Asset
 {
@@ -266,8 +267,8 @@ namespace Asset
     FWString FFontAtlasBuilder::ResolveRelativePath(const std::filesystem::path& BasePath,
                                                     const FString&               RelativePath)
     {
-        const std::filesystem::path BaseDirectory = std::filesystem::path(BasePath).parent_path();
-        return (BaseDirectory / std::filesystem::path(RelativePath)).lexically_normal();
+        const std::filesystem::path BaseDirectory = BasePath.parent_path();
+        return (BaseDirectory / FPaths::PathFromUtf8(RelativePath)).lexically_normal();
     }
 
 } // namespace Asset

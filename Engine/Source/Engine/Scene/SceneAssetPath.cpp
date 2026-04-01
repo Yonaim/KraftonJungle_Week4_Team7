@@ -127,7 +127,7 @@ namespace Engine::Scene
             return Trimmed;
         }
 
-        return BuildSceneAssetVirtualPath(std::filesystem::path(SlashNormalized));
+        return BuildSceneAssetVirtualPath(FPaths::PathFromUtf8(SlashNormalized));
     }
 
     std::filesystem::path ResolveSceneAssetPathToAbsolute(const FString& InPath)
@@ -151,13 +151,13 @@ namespace Engine::Scene
             std::filesystem::path AbsolutePath = FPaths::AppContentDir();
             if (!RelativePath.empty())
             {
-                AbsolutePath /= std::filesystem::path(RelativePath);
+                AbsolutePath /= FPaths::PathFromUtf8(RelativePath);
             }
 
             return NormalizeAbsolutePath(AbsolutePath);
         }
 
-        std::filesystem::path AbsolutePath = std::filesystem::path(SlashNormalized);
+        std::filesystem::path AbsolutePath = FPaths::PathFromUtf8(SlashNormalized);
         if (AbsolutePath.is_relative())
         {
             AbsolutePath = FPaths::AppContentDir() / AbsolutePath;

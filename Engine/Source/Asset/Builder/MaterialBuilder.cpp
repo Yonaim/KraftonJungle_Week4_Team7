@@ -8,6 +8,7 @@
 #include "Asset/Core/AssetNaming.h"
 #include "Asset/Builder/TextureBuilder.h"
 #include "Asset/Serialization/CookedDataBinaryIO.h"
+#include "Core/Misc/Paths.h"
 
 namespace Asset
 {
@@ -137,10 +138,10 @@ namespace Asset
     {
         if (MaterialName.empty())
         {
-            return LibraryPath.generic_string();
+            return FPaths::Utf8FromPath(LibraryPath);
         }
 
-        return LibraryPath.generic_string() + "::" + MaterialName;
+        return FPaths::Utf8FromPath(LibraryPath) + "::" + MaterialName;
     }
 
     bool FMaterialBuilder::SplitMaterialAssetPath(const FString& InAssetPath,
@@ -172,7 +173,7 @@ namespace Asset
         auto Result = std::make_shared<FIntermediateMtlLibraryData>();
         Result->SourcePath = Source.NormalizedPath;
 
-        const FString DefaultName = std::filesystem::path(Source.NormalizedPath).stem().string();
+        const FString DefaultName = FPaths::Utf8FromPath(Source.NormalizedPath.stem());
 
         std::istringstream Stream(Text);
         FString            Line;
@@ -273,7 +274,7 @@ namespace Asset
             FMtlCookedData Material;
             Material.SourcePath = Result->SourcePath;
             Material.Name = MaterialIntermediate.Name.empty()
-                                ? std::filesystem::path(Source.NormalizedPath).stem().string()
+                                ? FPaths::Utf8FromPath(Source.NormalizedPath.stem())
                                 : MaterialIntermediate.Name;
             Material.DiffuseColor = MaterialIntermediate.DiffuseColor;
             Material.AmbientColor = MaterialIntermediate.AmbientColor;
@@ -285,15 +286,15 @@ namespace Asset
             {
                 const EMaterialTextureSlot TextureSlot = ResolveTextureSlot(TextureRef.SlotName);
                 const FWString             TexturePath =
-                    ResolveRelativePath(std::filesystem::path(Source.NormalizedPath).parent_path(),
-                                        TextureRef.TexturePath.string());
+                    ResolveRelativePath(Source.NormalizedPath.parent_path(),
+                                        FPaths::Utf8FromPath(TextureRef.TexturePath));
                 if (TexturePath.empty())
                 {
                     continue;
                 }
 
-                const std::filesystem::path SourceTexturePath = std::filesystem::path(TexturePath);
-                const FString BakedTexturePath = MakeBakedAssetPath(SourceTexturePath.generic_string());
+                const std::filesystem::path SourceTexturePath(TexturePath);
+                const FString BakedTexturePath = MakeBakedAssetPath(FPaths::Utf8FromPath(SourceTexturePath));
                 if (BakedTexturePath.empty())
                 {
                     continue;
@@ -309,7 +310,7 @@ namespace Asset
                 }
 
                 Binary::SaveTexture(*TextureCooked, BakedTexturePath);
-                Material.TextureBindings.push_back({TextureSlot, std::filesystem::path(BakedTexturePath)});
+                Material.TextureBindings.push_back({TextureSlot, FPaths::PathFromUtf8(BakedTexturePath)});
             }
 
             const uint32 MaterialIndex = static_cast<uint32>(Result->Materials.size());
@@ -322,7 +323,7 @@ namespace Asset
             return nullptr;
         }
 
-        const FString BakedLibraryPath = MakeBakedAssetPath(Result->SourcePath.generic_string());
+        const FString BakedLibraryPath = MakeBakedAssetPath(FPaths::Utf8FromPath(Result->SourcePath));
         if (!BakedLibraryPath.empty())
         {
             Binary::SaveMaterialLibrary(*Result, BakedLibraryPath);

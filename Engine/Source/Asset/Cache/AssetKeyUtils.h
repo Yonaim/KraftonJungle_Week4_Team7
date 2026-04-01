@@ -10,6 +10,7 @@
 #include "Asset/Intermediate/IntermediateObjData.h"
 #include "Asset/Intermediate/IntermediateSubUVAtlasData.h"
 #include "Asset/Intermediate/IntermediateTextureData.h"
+#include "Core/Misc/Paths.h"
 
 namespace Asset
 {
@@ -23,8 +24,7 @@ namespace Asset
         }
         inline FString PathToKeyString(const std::filesystem::path& Path)
         {
-            const FWString Wide = Path.generic_wstring();
-            return FString(Wide.begin(), Wide.end());
+            return FPaths::Utf8FromPath(Path);
         }
 
         inline void HashVector(size_t& Seed, const FVector& V)

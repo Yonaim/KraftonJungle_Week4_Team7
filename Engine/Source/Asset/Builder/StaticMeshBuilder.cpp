@@ -10,6 +10,7 @@
 
 #include "Asset/Cache/AssetKeyUtils.h"
 #include "Asset/Builder/MaterialBuilder.h"
+#include "Core/Misc/Paths.h"
 
 namespace Asset
 {
@@ -355,7 +356,7 @@ namespace Asset
 
     std::shared_ptr<FIntermediateObjData> FStaticMeshBuilder::ParseObj(const FSourceRecord& Source)
     {
-        std::ifstream File(std::filesystem::path(Source.NormalizedPath));
+        std::ifstream File(Source.NormalizedPath);
         if (!File)
         {
             return nullptr;
@@ -413,7 +414,7 @@ namespace Asset
                         continue;
                     }
 
-                    Result->MaterialLibraries.push_back(std::filesystem::path(LibraryPath));
+                    Result->MaterialLibraries.push_back(FPaths::PathFromUtf8(LibraryPath));
                     CurrentMaterialLibraryIndex =
                         static_cast<int32>(Result->MaterialLibraries.size()) - 1;
                 }
@@ -506,7 +507,7 @@ namespace Asset
             }
 
             const std::filesystem::path CanonicalLibraryPath = ResolveMaterialLibraryPathForObj(
-                std::filesystem::path(Source.NormalizedPath),
+                Source.NormalizedPath,
                 Intermediate.MaterialLibraries[SourceLibraryIndex]);
             auto It = MaterialLibraryLookup.find(CanonicalLibraryPath);
             if (It != MaterialLibraryLookup.end())

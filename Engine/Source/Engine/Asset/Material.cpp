@@ -1,5 +1,6 @@
 #include "Engine/Asset/Material.h"
 #include "Core/Logging/LogMacros.h"
+#include "Core/Misc/Paths.h"
 
 #include <filesystem>
 
@@ -20,8 +21,8 @@ namespace
             return {};
         }
 
-        const std::filesystem::path FilePath(InAssetPath);
-        return FilePath.stem().string();
+        const std::filesystem::path FilePath = FPaths::PathFromUtf8(InAssetPath);
+        return FPaths::Utf8FromPath(FilePath.stem());
     }
 } // namespace
 

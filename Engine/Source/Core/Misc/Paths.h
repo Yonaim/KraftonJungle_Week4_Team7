@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Core/EngineAPI.h"
+#include "Core/Containers/String.h"
 
 #include <filesystem>
 #include <utility>
-#include "Core/Containers/String.h"
 
 struct FPathConfig
 {
@@ -25,9 +25,6 @@ class ENGINE_API FPaths
     static bool Initialize(const FPathConfig& InConfig);
     static bool IsInitialized();
 
-    static FWString PathFromUtf8(const FString& Utf8Path);
-    static FWString PathFromUtf8(const char* Utf8Path);
-
     static const std::filesystem::path& EngineRoot();
     static const std::filesystem::path& AppRoot();
     static const std::filesystem::path& EngineContentDir();
@@ -42,6 +39,9 @@ class ENGINE_API FPaths
 
     static std::filesystem::path Combine(const std::filesystem::path& Base,
                                          const std::filesystem::path& Relative);
+
+    static std::filesystem::path PathFromUtf8(const FString& Utf8Path);
+    static FString               Utf8FromPath(const std::filesystem::path& Path);
 
     template <typename... TPaths>
     static std::filesystem::path Combine(const std::filesystem::path& Base,
