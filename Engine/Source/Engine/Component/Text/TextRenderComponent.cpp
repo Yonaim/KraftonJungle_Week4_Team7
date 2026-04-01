@@ -571,13 +571,13 @@ namespace Engine::Component
 
             // TL, TR, BR, BL (Clockwise winding for front face in Left-Handed space)
             InMeshData->Vertices.push_back(
-                {FVector(X_left, Y_top, 0.0f), Normal, GlyphColor, FVector2(U_min, V_min)});
+                {FVector(Y_top, X_left, 0.0f), Normal, GlyphColor, FVector2(U_min, V_min)});
             InMeshData->Vertices.push_back(
-                {FVector(X_right, Y_top, 0.0f), Normal, GlyphColor, FVector2(U_max, V_min)});
+                {FVector(Y_top, X_right, 0.0f), Normal, GlyphColor, FVector2(U_max, V_min)});
             InMeshData->Vertices.push_back(
-                {FVector(X_right, Y_bottom, 0.0f), Normal, GlyphColor, FVector2(U_max, V_max)});
+                {FVector(Y_bottom, X_right, 0.0f), Normal, GlyphColor, FVector2(U_max, V_max)});
             InMeshData->Vertices.push_back(
-                {FVector(X_left, Y_bottom, 0.0f), Normal, GlyphColor, FVector2(U_min, V_max)});
+                {FVector(Y_bottom, X_left, 0.0f), Normal, GlyphColor, FVector2(U_min, V_max)});
 
             InMeshData->Indices.push_back(VertexOffset + 0);
             InMeshData->Indices.push_back(VertexOffset + 1);
