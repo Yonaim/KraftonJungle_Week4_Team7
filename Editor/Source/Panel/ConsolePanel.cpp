@@ -23,6 +23,10 @@
 #include "Viewport/Selection/ViewportSelectionController.h"
 #include "imgui.h"
 
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <commdlg.h>
+
 #include <algorithm>
 #include <cstdlib>
 #include <filesystem>
@@ -302,9 +306,44 @@ namespace
             return false;
         }
 
-        ImGui::LoadIniSettingsFromDisk(UserPath.string().c_str());
-        ImGui::SaveIniSettingsToDisk(UserPath.string().c_str());
+        ImGui::LoadIniSettingsFromDisk(DefaultPath.string().c_str());
         return true;
+    }
+
+    bool SaveCurrentImGuiLayoutAs(bool& bOutCanceled)
+    {
+        namespace fs = std::filesystem;
+
+        std::array<wchar_t, 1024> FileBuffer{};
+        const fs::path DefaultPath = FEditorPaths::ImGuiUserIniFile();
+        const std::wstring DefaultPathText = DefaultPath.wstring();
+        wcsncpy_s(FileBuffer.data(), FileBuffer.size(), DefaultPathText.c_str(), _TRUNCATE);
+
+        OPENFILENAMEW Dialog = {};
+        Dialog.lStructSize = sizeof(Dialog);
+        Dialog.lpstrFilter = L"ImGui ini (*.ini)\0*.ini\0All Files (*.*)\0*.*\0";
+        Dialog.lpstrFile = FileBuffer.data();
+        Dialog.nMaxFile = static_cast<DWORD>(FileBuffer.size());
+        Dialog.lpstrInitialDir = DefaultPath.parent_path().empty() ? nullptr : DefaultPath.parent_path().c_str();
+        Dialog.lpstrDefExt = L"ini";
+        Dialog.Flags = OFN_EXPLORER | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_OVERWRITEPROMPT;
+
+        if (!GetSaveFileNameW(&Dialog))
+        {
+            const DWORD ExtendedError = CommDlgExtendedError();
+            bOutCanceled = (ExtendedError == 0);
+            return false;
+        }
+
+        bOutCanceled = false;
+
+        const fs::path SelectedPath(FileBuffer.data());
+        std::error_code Ec;
+        fs::create_directories(SelectedPath.parent_path(), Ec);
+        Ec.clear();
+
+        ImGui::SaveIniSettingsToDisk(SelectedPath.string().c_str());
+        return !Ec;
     }
     ImU32 GetLogBackgroundColorU32(ELogLevel Level)
     {
@@ -639,6 +678,22 @@ void FConsolePanel::DrawToolbar()
             UE_LOG(Console, ELogLevel::Error, "Failed to restore ImGui layout to default.");
         }
         bScrollToBottom = true;
+    }
+
+    ImGui::SameLine();
+    if (ImGui::Button("Save Layout As..."))
+    {
+        bool bCanceled = false;
+        if (SaveCurrentImGuiLayoutAs(bCanceled))
+        {
+            UE_LOG(Console, ELogLevel::Info, "Current ImGui layout saved.");
+            bScrollToBottom = true;
+        }
+        else if (!bCanceled)
+        {
+            UE_LOG(Console, ELogLevel::Error, "Failed to save current ImGui layout.");
+            bScrollToBottom = true;
+        }
     }
 }
 

@@ -190,15 +190,12 @@ bool FEditorEngineLoop::PreInit(HINSTANCE HInstance, uint32 NCmdShow)
     static std::string GEditorImGuiDefaultIniPath;
     static std::string GEditorImGuiUserIniPath;
     EnsureEditorImGuiIniPaths(GEditorImGuiDefaultIniPath, GEditorImGuiUserIniPath);
-    IO.IniFilename = GEditorImGuiUserIniPath.c_str();
+    IO.IniFilename = nullptr;
 
+    ImGui::ClearIniSettings();
     if (!GEditorImGuiDefaultIniPath.empty())
     {
         ImGui::LoadIniSettingsFromDisk(GEditorImGuiDefaultIniPath.c_str());
-    }
-    if (!GEditorImGuiUserIniPath.empty())
-    {
-        ImGui::LoadIniSettingsFromDisk(GEditorImGuiUserIniPath.c_str());
     }
 #ifdef IMGUI_HAS_DOCK
     // 도킹 지원 ImGui를 교체한 뒤에는 여기서 기능 플래그를 켜야 DockSpace API가 실제로 동작합니다.
