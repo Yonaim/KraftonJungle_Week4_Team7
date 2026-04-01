@@ -106,6 +106,12 @@ bool FGeneralRenderer::Pick(int32 MouseX, int32 MouseY, uint32& OutPickId)
     blendStateOption.BlendEnable = false;
     auto blendState = RenderStateManager->GetOrCreateBlendState(blendStateOption);
     RenderStateManager->BindState(blendState);
+    
+    // Backface culling 비활성화
+    FRasterizerStateOption rasterizerStateOption;
+    rasterizerStateOption.CullMode = D3D11_CULL_NONE;
+    auto rasterizerState = RenderStateManager->GetOrCreateRasterizerState(rasterizerStateOption);
+    RenderStateManager->BindState(rasterizerState);
 
     for (const auto& Cmd : CommandList)
     {
