@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <sstream>
 
 #include "Asset/Cache/AssetKey.h"
@@ -19,6 +20,11 @@ namespace Asset
             std::ostringstream Oss;
             Oss << std::hex << Seed;
             return Oss.str();
+        }
+        inline FString PathToKeyString(const std::filesystem::path& Path)
+        {
+            const FWString Wide = Path.generic_wstring();
+            return FString(Wide.begin(), Wide.end());
         }
 
         inline void HashVector(size_t& Seed, const FVector& V)
@@ -57,7 +63,7 @@ namespace Asset
             for (const auto& Ref : Data.TextureRefs)
             {
                 KeyHash::CombineString(Seed, Ref.SlotName);
-                KeyHash::CombineString(Seed, Ref.TexturePath);
+                KeyHash::CombineString(Seed, PathToKeyString(Ref.TexturePath));
             }
         }
 
@@ -71,7 +77,7 @@ namespace Asset
         inline FMaterialIntermediateKey MakeIntermediateKey(const FIntermediateMtlLibraryData& Data)
         {
             size_t Seed = 0;
-            KeyHash::CombineString(Seed, Data.SourcePath);
+            KeyHash::CombineString(Seed, PathToKeyString(Data.SourcePath));
             for (const auto& Material : Data.Materials)
             {
                 HashMaterialData(Seed, Material);
@@ -92,7 +98,7 @@ namespace Asset
                 HashVector2(Seed, UV);
             for (const auto& LibraryPath : Data.MaterialLibraries)
             {
-                KeyHash::CombineString(Seed, LibraryPath);
+                KeyHash::CombineString(Seed, PathToKeyString(LibraryPath));
             }
 
             for (const auto& Face : Data.Faces)

@@ -39,16 +39,16 @@ namespace Asset::Binary
         }
 
         template <typename T>
-        bool SaveImpl(const T& Data, const FString& Path, ECookedBinaryAssetType AssetType)
+        bool SaveImpl(const T& Data, const std::filesystem::path& Path,
+                      ECookedBinaryAssetType AssetType)
         {
-            std::filesystem::path OutputPath(Path);
-            if (OutputPath.empty())
+            if (Path.empty())
             {
                 return false;
             }
 
             std::error_code             Ec;
-            const std::filesystem::path ParentPath = OutputPath.parent_path();
+            const std::filesystem::path ParentPath = Path.parent_path();
             if (!ParentPath.empty())
             {
                 std::filesystem::create_directories(ParentPath, Ec);
@@ -58,7 +58,7 @@ namespace Asset::Binary
                 }
             }
 
-            FWindowsBinWriter Writer(OutputPath);
+            FWindowsBinWriter Writer(Path);
             if (!Writer.IsOk() || !WriteHeader(Writer, AssetType))
             {
                 return false;
@@ -70,9 +70,10 @@ namespace Asset::Binary
         }
         
         template <typename T>
-        bool LoadImpl(const FString& Path, T& OutData, ECookedBinaryAssetType AssetType)
+        bool LoadImpl(const std::filesystem::path& Path, T& OutData,
+                      ECookedBinaryAssetType AssetType)
         {
-            FWindowsBinReader Reader{std::filesystem::path(Path)};
+            FWindowsBinReader Reader{Path};
             if (!Reader.IsOk() || !ReadHeader(Reader, AssetType))
             {
                 return false;
@@ -162,50 +163,101 @@ namespace Asset::Binary
 
     bool SaveTexture(const FTextureCookedData& Data, const FString& Path)
     {
+        return SaveTexture(Data, std::filesystem::path(Path));
+    }
+
+    bool SaveTexture(const FTextureCookedData& Data, const std::filesystem::path& Path)
+    {
         return SaveImpl(Data, Path, ECookedBinaryAssetType::Texture);
     }
 
     bool LoadTexture(const FString& Path, FTextureCookedData& OutData)
+    {
+        return LoadTexture(std::filesystem::path(Path), OutData);
+    }
+
+    bool LoadTexture(const std::filesystem::path& Path, FTextureCookedData& OutData)
     {
         return LoadImpl(Path, OutData, ECookedBinaryAssetType::Texture);
     }
 
     bool SaveMaterialLibrary(const FMtlCookedLibraryData& Data, const FString& Path)
     {
+        return SaveMaterialLibrary(Data, std::filesystem::path(Path));
+    }
+
+    bool SaveMaterialLibrary(const FMtlCookedLibraryData&       Data,
+                             const std::filesystem::path& Path)
+    {
         return SaveImpl(Data, Path, ECookedBinaryAssetType::MaterialLibrary);
     }
 
     bool LoadMaterialLibrary(const FString& Path, FMtlCookedLibraryData& OutData)
+    {
+        return LoadMaterialLibrary(std::filesystem::path(Path), OutData);
+    }
+
+    bool LoadMaterialLibrary(const std::filesystem::path& Path, FMtlCookedLibraryData& OutData)
     {
         return LoadImpl(Path, OutData, ECookedBinaryAssetType::MaterialLibrary);
     }
 
     bool SaveStaticMesh(const FObjCookedData& Data, const FString& Path)
     {
+        return SaveStaticMesh(Data, std::filesystem::path(Path));
+    }
+
+    bool SaveStaticMesh(const FObjCookedData& Data, const std::filesystem::path& Path)
+    {
         return SaveImpl(Data, Path, ECookedBinaryAssetType::StaticMesh);
     }
 
     bool LoadStaticMesh(const FString& Path, FObjCookedData& OutData)
+    {
+        return LoadStaticMesh(std::filesystem::path(Path), OutData);
+    }
+
+    bool LoadStaticMesh(const std::filesystem::path& Path, FObjCookedData& OutData)
     {
         return LoadImpl(Path, OutData, ECookedBinaryAssetType::StaticMesh);
     }
 
     bool SaveFontAtlas(const FFontAtlasCookedData& Data, const FString& Path)
     {
+        return SaveFontAtlas(Data, std::filesystem::path(Path));
+    }
+
+    bool SaveFontAtlas(const FFontAtlasCookedData& Data, const std::filesystem::path& Path)
+    {
         return SaveImpl(Data, Path, ECookedBinaryAssetType::FontAtlas);
     }
 
     bool LoadFontAtlas(const FString& Path, FFontAtlasCookedData& OutData)
+    {
+        return LoadFontAtlas(std::filesystem::path(Path), OutData);
+    }
+
+    bool LoadFontAtlas(const std::filesystem::path& Path, FFontAtlasCookedData& OutData)
     {
         return LoadImpl(Path, OutData, ECookedBinaryAssetType::FontAtlas);
     }
 
     bool SaveSubUVAtlas(const FSubUVAtlasCookedData& Data, const FString& Path)
     {
+        return SaveSubUVAtlas(Data, std::filesystem::path(Path));
+    }
+
+    bool SaveSubUVAtlas(const FSubUVAtlasCookedData& Data, const std::filesystem::path& Path)
+    {
         return SaveImpl(Data, Path, ECookedBinaryAssetType::SubUVAtlas);
     }
 
     bool LoadSubUVAtlas(const FString& Path, FSubUVAtlasCookedData& OutData)
+    {
+        return LoadSubUVAtlas(std::filesystem::path(Path), OutData);
+    }
+
+    bool LoadSubUVAtlas(const std::filesystem::path& Path, FSubUVAtlasCookedData& OutData)
     {
         return LoadImpl(Path, OutData, ECookedBinaryAssetType::SubUVAtlas);
     }

@@ -173,7 +173,7 @@ namespace Asset
         }
 
         auto Result = std::make_shared<FFontAtlasCookedData>();
-        Result->SourcePath = std::filesystem::path(Source.NormalizedPath).string();
+        Result->SourcePath = Source.NormalizedPath;
         Result->AtlasTexture = AtlasTexture;
         Result->Info = Intermediate.Info;
         Result->Common = Intermediate.Common;

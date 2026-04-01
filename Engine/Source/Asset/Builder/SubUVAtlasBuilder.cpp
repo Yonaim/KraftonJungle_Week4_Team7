@@ -223,7 +223,7 @@ namespace Asset
         }
 
         auto Result = std::make_shared<FSubUVAtlasCookedData>();
-        Result->SourcePath = std::filesystem::path(Source.NormalizedPath).string();
+        Result->SourcePath = Source.NormalizedPath;
         Result->AtlasTexture = AtlasTexture;
         Result->Info = Intermediate.Info;
         Result->Frames = Intermediate.Frames;

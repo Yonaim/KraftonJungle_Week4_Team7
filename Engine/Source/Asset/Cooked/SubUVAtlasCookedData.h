@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <filesystem>
 
 #include "Asset/Core/SubUVAtlasTypes.h"
 #include "Asset/Cooked/TextureCookedData.h"
@@ -10,7 +11,7 @@ namespace Asset
 
     struct FSubUVAtlasCookedData
     {
-        FString                             SourcePath;
+        std::filesystem::path               SourcePath;
         std::shared_ptr<FTextureCookedData> AtlasTexture;
         FSubUVAtlasInfo                     Info;
         TArray<FSubUVFrame>                 Frames;
