@@ -191,7 +191,7 @@ bool FGeneralRenderer::InitializeDefaultMaterial()
     if (!ShaderManager.LoadPixelShader(Device, PSPath, L"PSMain"))
         return false;
 
-    /** 기본 Material 생성 */
+    // 기본 Material 생성 
     {
         DefaultMeshVS = FShaderMap::Get().GetOrCreateVertexShader(Device, VSPath, L"VSMain");
         DefaultMeshPS = FShaderMap::Get().GetOrCreatePixelShader(Device, PSPath, L"PSMain");
@@ -214,7 +214,7 @@ bool FGeneralRenderer::InitializeDefaultMaterial()
         DefaultMaterial->SetRenderResource(RenderResource);
     }
 
-    /** 기본 Sprite Material 생성 */
+    // 기본 Sprite Material 생성
     {
         DefaultSpriteMaterial = std::make_shared<UMaterial>();
         DefaultSpriteMaterial->SetAssetName("M_DefaultSprite");

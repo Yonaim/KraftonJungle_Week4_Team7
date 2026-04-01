@@ -380,8 +380,8 @@ namespace Engine::Component
 
         return Layout;
     }
-
-    void UTextRenderComponent::CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const
+    
+    bool UTextRenderComponent::CreateRenderCommand(FSceneRenderData& InRenderData, ESceneShowFlags InShowFlags, FRenderCommand& Command) const
     {
         const FFontResource* ResolvedFontResource = ResolveFontResourceForCollect();
         if (FontResource != ResolvedFontResource)
@@ -391,18 +391,18 @@ namespace Engine::Component
 
         if (Text.empty() || FontResource == nullptr)
         {
-            return;
+            return true;
         }
 
         if (!IsFlagSet(InShowFlags, ESceneShowFlags::SF_BillboardText) && bBillboard)
         {
-            return;
+            return true;
         }
 
         AActor* Actor = GetOwnerActor();
         if (Actor == nullptr)
         {
-            return;
+            return true;
         }
 
         if (!MeshData)
@@ -431,26 +431,24 @@ namespace Engine::Component
             Material->SetRenderResource(RenderResource);
         }
 
-        FRenderCommand Command;
         Command.MeshData = MeshData.get();
         Command.Material = Material ? Material.get() : FGeneralRenderer::GetDefaultSpriteMaterial();
-        Command.MeshData->bIsDynamicMesh = true;
         
         const FMatrix PlacementWorld = GetRenderPlacementWorld(*Actor);
         const FVector PlacementOffset = GetRenderPlacementOffset(*Actor);
-        FVector Origin = PlacementWorld.GetOrigin() + PlacementOffset + BillboardOffset;
+        FVector       Origin = PlacementWorld.GetOrigin() + PlacementOffset + BillboardOffset;
 
-        if (bBillboard && OutRenderData.SceneView)
+        if (bBillboard && InRenderData.SceneView)
         {
-            const FMatrix CameraWorld = OutRenderData.SceneView->GetViewMatrix().GetInverse();
-            FVector RightAxis = CameraWorld.GetRightVector();
-            FVector UpAxis = CameraWorld.GetUpVector();
-            FVector ForwardAxis = CameraWorld.GetForwardVector();
+            const FMatrix CameraWorld = InRenderData.SceneView->GetViewMatrix().GetInverse();
+            FVector       RightAxis = CameraWorld.GetRightVector();
+            FVector       UpAxis = CameraWorld.GetUpVector();
+            FVector       ForwardAxis = CameraWorld.GetForwardVector();
 
             const FVector WorldScale = Actor->GetScale();
-            FVector Row0 = UpAxis * WorldScale.X;
-            FVector Row1 = RightAxis * WorldScale.Y;
-            FVector Row2 = -ForwardAxis;
+            FVector       Row0 = UpAxis * WorldScale.X;
+            FVector       Row1 = RightAxis * WorldScale.Y;
+            FVector       Row2 = -ForwardAxis;
 
             Command.WorldMatrix.M[0][0] = Row0.X; Command.WorldMatrix.M[0][1] = Row0.Y; Command.WorldMatrix.M[0][2] = Row0.Z; Command.WorldMatrix.M[0][3] = 0.0f;
             Command.WorldMatrix.M[1][0] = Row1.X; Command.WorldMatrix.M[1][1] = Row1.Y; Command.WorldMatrix.M[1][2] = Row1.Z; Command.WorldMatrix.M[1][3] = 0.0f;
@@ -483,6 +481,14 @@ namespace Engine::Component
         Command.bIsVisible = Actor->IsVisible();
         Command.bIsPickable = Actor->IsPickable();
         Command.bIsSelected = Actor->IsSelected();
+        return false;
+    }
+
+    void UTextRenderComponent::CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const
+    {
+        FRenderCommand Command;
+        if (CreateRenderCommand(OutRenderData, InShowFlags, Command)) 
+            return;
 
         OutRenderData.RenderCommands.push_back(Command);
     }

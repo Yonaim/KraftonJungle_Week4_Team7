@@ -32,6 +32,8 @@ class FEditorViewportClient : public Engine::Viewport::IViewportClient
 
     void HandleInputEvent(const Engine::ApplicationCore::FInputEvent& Event,
                           const Engine::ApplicationCore::FInputState& State) override;
+    void HandleGizmoRenderCommand(FEditorRenderData& OutEditorRenderData,
+                                  FSceneRenderData&  OutSceneRenderData);
 
     void BuildRenderData(FEditorRenderData& OutEditorRenderData,
                          FSceneRenderData&  OutSceneRenderData, EEditorShowFlags InShowFlags);

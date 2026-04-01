@@ -7,8 +7,6 @@
 
 class FSceneView;
 
-namespace Engine::Component { class ULineBatchComponent; }
-
 struct FSceneRenderData
 {
     const FSceneView* SceneView = nullptr;

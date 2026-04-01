@@ -22,6 +22,7 @@ struct ENGINE_API FRenderCommand
     uint64            SortKey = 0;
     Geometry::FAABB  WorldAABB;
     bool             bDrawAABB = false;
+    bool             bIgnoreWireFrame = false;
 
     FVector2 UVOffset = {0.f, 0.f};
 

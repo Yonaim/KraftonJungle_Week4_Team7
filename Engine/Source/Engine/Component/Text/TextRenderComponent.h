@@ -100,10 +100,13 @@ namespace Engine::Component
         float          GetMissingGlyphAdvance(const FFontResource& InFont, float InLineHeight,
                                               float InScale) const;
 
-        FTextLayout BuildTextLayout() const;
+        FTextLayout                  BuildTextLayout() const;
         virtual const FFontResource* ResolveFontResourceForCollect() const {return nullptr;}
 
-      protected:
+    protected:
+        bool CreateRenderCommand(FSceneRenderData& InRenderData, ESceneShowFlags InShowFlags,
+                                 FRenderCommand& Command) const;
+    protected:
         FString Text;
         FString FontPath;
         const FFontResource* FontResource = nullptr;

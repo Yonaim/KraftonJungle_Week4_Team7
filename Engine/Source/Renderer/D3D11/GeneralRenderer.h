@@ -133,7 +133,6 @@ private:
     /** 기본 공유 리소스 */
     static std::shared_ptr<UMaterial> DefaultMaterial;
     static std::shared_ptr<UMaterial> DefaultSpriteMaterial;
-    std::shared_ptr<UMaterial> DefaultTextureMaterial;
 
     std::shared_ptr<FVertexShader> DefaultMeshVS;
     std::shared_ptr<FPixelShader>  DefaultMeshPS;
