@@ -103,8 +103,15 @@ fs::path FPaths::PathFromUtf8(const FString& Utf8Path)
         return {};
     }
 
-    std::wstring WidePath(static_cast<size_t>(RequiredSize - 1), L'\0');
-    MultiByteToWideChar(CP_UTF8, 0, Utf8Path.c_str(), -1, WidePath.data(), RequiredSize);
+    std::wstring WidePath(static_cast<size_t>(RequiredSize), L'\0');
+    const int ConvertedSize =
+        MultiByteToWideChar(CP_UTF8, 0, Utf8Path.c_str(), -1, WidePath.data(), RequiredSize);
+    if (ConvertedSize <= 1)
+    {
+        return {};
+    }
+
+    WidePath.resize(static_cast<size_t>(ConvertedSize - 1));
     return fs::path(WidePath);
 #else
     return fs::path(Utf8Path);
@@ -127,9 +134,15 @@ FString FPaths::Utf8FromPath(const fs::path& Path)
         return {};
     }
 
-    FString Utf8Path(static_cast<size_t>(RequiredSize - 1), '\0');
-    WideCharToMultiByte(CP_UTF8, 0, WidePath.c_str(), -1, Utf8Path.data(), RequiredSize, nullptr,
-                        nullptr);
+    FString Utf8Path(static_cast<size_t>(RequiredSize), '\0');
+    const int ConvertedSize = WideCharToMultiByte(CP_UTF8, 0, WidePath.c_str(), -1,
+                                                  Utf8Path.data(), RequiredSize, nullptr, nullptr);
+    if (ConvertedSize <= 1)
+    {
+        return {};
+    }
+
+    Utf8Path.resize(static_cast<size_t>(ConvertedSize - 1));
     return Utf8Path;
 #else
     return Path.generic_string();
