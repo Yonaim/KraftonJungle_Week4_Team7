@@ -23,7 +23,11 @@ namespace Asset
     struct FStaticMeshBuildSettings
     {
         bool bRecomputeNormals = false;
-        bool bFlipV = false;
+
+        // OBJ source UV is treated as bottom-left origin.
+        // Engine cooked UV convention is top-left origin.
+        // Flip V during cook by default.
+        bool bFlipV = true;
 
         FString ToKeyString() const
         {
