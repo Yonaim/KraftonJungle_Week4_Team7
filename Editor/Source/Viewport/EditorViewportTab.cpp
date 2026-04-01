@@ -128,7 +128,7 @@ void SEditorViewportTab::DrawSplitters(SSplitter* Splitter, SSplitter* Parent)
 
     FViewportRect Rect = Splitter->GetViewportRect();
     ImGuiIO&      IO = ImGui::GetIO();
-    ImDrawList*   DrawList = ImGui::GetForegroundDrawList();
+    ImDrawList*   DrawList = ImGui::GetBackgroundDrawList();
 
     if (SSplitterH* H = dynamic_cast<SSplitterH*>(Splitter))
     {
