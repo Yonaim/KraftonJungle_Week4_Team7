@@ -18,6 +18,9 @@ namespace Engine::Component
         USubUVAtlas*       GetSubUVAtlasAsset() { return SubUVAtlasAsset; }
         void               SetSubUVAtlasAsset(USubUVAtlas* InAsset);
 
+        const FString& GetSubUVAtlasPath() const { return SubUVAtlasPath; }
+        void           SetSubUVAtlasPath(const FString& InPath);
+
         const FSubUVAtlasRenderResource* GetSubUVAtlasRenderResource() const;
         FSubUVAtlasRenderResource*       GetSubUVAtlasRenderResource();
 
@@ -26,13 +29,14 @@ namespace Engine::Component
 
         int32 GetFrameCount() const;
 
-        // USpriteComponent 오버라이드
-        void GetUVs(FVector2& OutUVMin, FVector2& OutUVMax) const;
+        // UPaperSpriteComponent override
+        void GetUVs(FVector2& OutUVMin, FVector2& OutUVMax) const override;
 
         // UAtlasComponent 오버라이드
         void DescribeProperties(FComponentPropertyBuilder& Builder) override;
 
       protected:
+        FString     SubUVAtlasPath;
         USubUVAtlas* SubUVAtlasAsset = nullptr;
         int32        FrameIndex = 0;
     };

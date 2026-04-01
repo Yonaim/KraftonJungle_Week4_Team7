@@ -383,6 +383,12 @@ namespace Engine::Component
 
     void UTextRenderComponent::CollectRenderData(FSceneRenderData& OutRenderData, ESceneShowFlags InShowFlags) const
     {
+        FFontResource* ResolvedFontResource = ResolveFontResourceForCollect();
+        if (FontResource != ResolvedFontResource)
+        {
+            const_cast<UTextRenderComponent*>(this)->SetFontResource(ResolvedFontResource);
+        }
+
         if (Text.empty() || FontResource == nullptr)
         {
             return;

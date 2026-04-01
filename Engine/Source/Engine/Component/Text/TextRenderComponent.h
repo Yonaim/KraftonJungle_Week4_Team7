@@ -100,6 +100,7 @@ namespace Engine::Component
                                               float InScale) const;
 
         FTextLayout BuildTextLayout() const;
+        virtual FFontResource* ResolveFontResourceForCollect() const;
 
       protected:
         FString Text;
