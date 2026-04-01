@@ -4,7 +4,10 @@
 #include <filesystem>
 
 #include "Asset/Cache/AssetKeyUtils.h"
+#include "Asset/Core/AssetNaming.h"
+#include "Asset/Serialization/CookedDataBinaryIO.h"
 #include "Asset/Source/SourceLoader.h"
+#include "Core/Misc/Paths.h"
 #include "ThirdParty/stb/stb_image.h"
 
 namespace Asset
@@ -19,6 +22,18 @@ namespace Asset
         if (Source == nullptr)
         {
             return nullptr;
+        }
+
+        const FString BakedTexturePath = MakeBakedAssetPath(FPaths::Utf8FromPath(Source->NormalizedPath));
+        if (!BakedTexturePath.empty())
+        {
+            FTextureCookedData BakedData;
+            if (Binary::LoadTexture(BakedTexturePath, BakedData) && BakedData.IsValid())
+            {
+                LastBuildReport.bUsedCachedCooked = true;
+                LastBuildReport.ResultSource = EAssetBuildResultSource::CookedCache;
+                return std::make_shared<FTextureCookedData>(std::move(BakedData));
+            }
         }
 
         auto& IntermediateCache = Cache.GetIntermediateCache(FTextureAssetTag{});
@@ -78,6 +93,11 @@ namespace Asset
         else if (Cooked)
         {
             LastBuildReport.ResultSource = EAssetBuildResultSource::BuiltFromFreshIntermediate;
+        }
+
+        if (Cooked && !BakedTexturePath.empty())
+        {
+            Binary::SaveTexture(*Cooked, BakedTexturePath);
         }
 
         return Cooked;

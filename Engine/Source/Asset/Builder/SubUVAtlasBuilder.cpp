@@ -7,6 +7,8 @@
 #include "ThirdParty/nlohmann/json.hpp"
 
 #include "Asset/Cache/AssetKeyUtils.h"
+#include "Asset/Core/AssetNaming.h"
+#include "Asset/Serialization/CookedDataBinaryIO.h"
 #include "Core/Misc/Paths.h"
 
 namespace Asset
@@ -20,6 +22,18 @@ namespace Asset
         if (Source == nullptr)
         {
             return nullptr;
+        }
+
+        const FString BakedAtlasPath = MakeBakedAssetPath(FPaths::Utf8FromPath(Source->NormalizedPath));
+        if (!BakedAtlasPath.empty())
+        {
+            FSubUVAtlasCookedData BakedData;
+            if (Binary::LoadSubUVAtlas(BakedAtlasPath, BakedData) && BakedData.IsValid())
+            {
+                LastBuildReport.bUsedCachedCooked = true;
+                LastBuildReport.ResultSource = EAssetBuildResultSource::CookedCache;
+                return std::make_shared<FSubUVAtlasCookedData>(std::move(BakedData));
+            }
         }
 
         auto& IntermediateCache = Cache.GetIntermediateCache(FSubUVAtlasAssetTag{});
@@ -74,6 +88,11 @@ namespace Asset
         else if (Cooked)
         {
             LastBuildReport.ResultSource = EAssetBuildResultSource::BuiltFromFreshIntermediate;
+        }
+
+        if (Cooked && !BakedAtlasPath.empty())
+        {
+            Binary::SaveSubUVAtlas(*Cooked, BakedAtlasPath);
         }
 
         return Cooked;

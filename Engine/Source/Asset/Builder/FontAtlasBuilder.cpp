@@ -7,6 +7,8 @@
 
 #include "Asset/Cache/AssetKeyUtils.h"
 #include "Asset/Cache/AssetBuildCache.h"
+#include "Asset/Core/AssetNaming.h"
+#include "Asset/Serialization/CookedDataBinaryIO.h"
 #include "Core/Misc/Paths.h"
 
 namespace Asset
@@ -20,6 +22,18 @@ namespace Asset
         if (Source == nullptr)
         {
             return nullptr;
+        }
+
+        const FString BakedFontPath = MakeBakedAssetPath(FPaths::Utf8FromPath(Source->NormalizedPath));
+        if (!BakedFontPath.empty())
+        {
+            FFontAtlasCookedData BakedData;
+            if (Binary::LoadFontAtlas(BakedFontPath, BakedData) && BakedData.IsValid())
+            {
+                LastBuildReport.bUsedCachedCooked = true;
+                LastBuildReport.ResultSource = EAssetBuildResultSource::CookedCache;
+                return std::make_shared<FFontAtlasCookedData>(std::move(BakedData));
+            }
         }
 
         auto& IntermediateCache = Cache.GetIntermediateCache(FFontAtlasAssetTag{});
@@ -74,6 +88,11 @@ namespace Asset
         else if (Cooked)
         {
             LastBuildReport.ResultSource = EAssetBuildResultSource::BuiltFromFreshIntermediate;
+        }
+
+        if (Cooked && !BakedFontPath.empty())
+        {
+            Binary::SaveFontAtlas(*Cooked, BakedFontPath);
         }
 
         return Cooked;
