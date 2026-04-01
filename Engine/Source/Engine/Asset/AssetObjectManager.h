@@ -54,4 +54,5 @@ class ENGINE_API FAssetObjectManager
   private:
     Asset::FAssetCacheManager* AssetCacheManager = nullptr;
     RHI::FDynamicRHI*          DynamicRHI = nullptr;
+    TMap<FString, UObject*>    AssetObjectIndex;
 };

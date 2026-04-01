@@ -35,6 +35,27 @@ namespace
 
         return nullptr;
     }
+
+    template <typename TObjectType>
+    TObjectType* FindIndexedAssetObject(TMap<FString, UObject*>& AssetObjectIndex,
+                                        const FString&            AssetPath)
+    {
+        auto IndexedIt = AssetObjectIndex.find(AssetPath);
+        if (IndexedIt == AssetObjectIndex.end())
+        {
+            return nullptr;
+        }
+
+        UObject* IndexedObject = IndexedIt->second;
+        if (IndexedObject == nullptr || !IndexedObject->IsValidLowLevel() ||
+            !IndexedObject->IsA(TObjectType::GetClass()))
+        {
+            AssetObjectIndex.erase(IndexedIt);
+            return nullptr;
+        }
+
+        return static_cast<TObjectType*>(IndexedObject);
+    }
 }
 
 namespace
@@ -103,8 +124,15 @@ UStaticMesh* FAssetObjectManager::LoadStaticMeshObject(const FString& AssetPath)
         return LogAssetLoadResult<UStaticMesh>("Static mesh asset", AssetPath, StartSeconds, nullptr);
     }
 
+    if (UStaticMesh* ExistingObject = FindIndexedAssetObject<UStaticMesh>(AssetObjectIndex, AssetPath))
+    {
+        return LogAssetLoadResult<UStaticMesh>("Static mesh asset", AssetPath, StartSeconds,
+                                               ExistingObject, true);
+    }
+
     if (UStaticMesh* ExistingObject = FindAssetObjectByPath<UStaticMesh>(AssetPath))
     {
+        AssetObjectIndex[AssetPath] = ExistingObject;
         return LogAssetLoadResult<UStaticMesh>("Static mesh asset", AssetPath, StartSeconds,
                                                ExistingObject, true);
     }
@@ -122,6 +150,7 @@ UStaticMesh* FAssetObjectManager::LoadStaticMeshObject(const FString& AssetPath)
         return LogAssetLoadResult<UStaticMesh>("Static mesh asset", AssetPath, StartSeconds, nullptr);
     }
 
+    AssetObjectIndex[AssetPath] = NewObject;
     BindStaticMeshMaterialSlots(NewObject);
     return LogAssetLoadResult<UStaticMesh>("Static mesh asset", AssetPath, StartSeconds, NewObject);
 }
@@ -135,8 +164,15 @@ UTexture* FAssetObjectManager::LoadTextureObject(const FString& AssetPath)
         return LogAssetLoadResult<UTexture>("Texture asset", AssetPath, StartSeconds, nullptr);
     }
 
+    if (UTexture* ExistingObject = FindIndexedAssetObject<UTexture>(AssetObjectIndex, AssetPath))
+    {
+        return LogAssetLoadResult<UTexture>("Texture asset", AssetPath, StartSeconds,
+                                            ExistingObject, true);
+    }
+
     if (UTexture* ExistingObject = FindAssetObjectByPath<UTexture>(AssetPath))
     {
+        AssetObjectIndex[AssetPath] = ExistingObject;
         return LogAssetLoadResult<UTexture>("Texture asset", AssetPath, StartSeconds,
                                             ExistingObject, true);
     }
@@ -154,6 +190,7 @@ UTexture* FAssetObjectManager::LoadTextureObject(const FString& AssetPath)
         return LogAssetLoadResult<UTexture>("Texture asset", AssetPath, StartSeconds, nullptr);
     }
 
+    AssetObjectIndex[AssetPath] = NewObject;
     return LogAssetLoadResult<UTexture>("Texture asset", AssetPath, StartSeconds, NewObject);
 }
 
@@ -166,8 +203,15 @@ UMaterial* FAssetObjectManager::LoadMaterialObject(const FString& AssetPath)
         return LogAssetLoadResult<UMaterial>("Material asset", AssetPath, StartSeconds, nullptr);
     }
 
+    if (UMaterial* ExistingObject = FindIndexedAssetObject<UMaterial>(AssetObjectIndex, AssetPath))
+    {
+        return LogAssetLoadResult<UMaterial>("Material asset", AssetPath, StartSeconds,
+                                             ExistingObject, true);
+    }
+
     if (UMaterial* ExistingObject = FindAssetObjectByPath<UMaterial>(AssetPath))
     {
+        AssetObjectIndex[AssetPath] = ExistingObject;
         return LogAssetLoadResult<UMaterial>("Material asset", AssetPath, StartSeconds,
                                              ExistingObject, true);
     }
@@ -185,6 +229,7 @@ UMaterial* FAssetObjectManager::LoadMaterialObject(const FString& AssetPath)
         return LogAssetLoadResult<UMaterial>("Material asset", AssetPath, StartSeconds, nullptr);
     }
 
+    AssetObjectIndex[AssetPath] = NewObject;
     return LogAssetLoadResult<UMaterial>("Material asset", AssetPath, StartSeconds, NewObject);
 }
 
@@ -197,8 +242,15 @@ USubUVAtlas* FAssetObjectManager::LoadSubUVAtlasObject(const FString& AssetPath)
         return LogAssetLoadResult<USubUVAtlas>("SubUV atlas asset", AssetPath, StartSeconds, nullptr);
     }
 
+    if (USubUVAtlas* ExistingObject = FindIndexedAssetObject<USubUVAtlas>(AssetObjectIndex, AssetPath))
+    {
+        return LogAssetLoadResult<USubUVAtlas>("SubUV atlas asset", AssetPath, StartSeconds,
+                                               ExistingObject, true);
+    }
+
     if (USubUVAtlas* ExistingObject = FindAssetObjectByPath<USubUVAtlas>(AssetPath))
     {
+        AssetObjectIndex[AssetPath] = ExistingObject;
         return LogAssetLoadResult<USubUVAtlas>("SubUV atlas asset", AssetPath, StartSeconds,
                                                ExistingObject, true);
     }
@@ -217,6 +269,7 @@ USubUVAtlas* FAssetObjectManager::LoadSubUVAtlasObject(const FString& AssetPath)
         return LogAssetLoadResult<USubUVAtlas>("SubUV atlas asset", AssetPath, StartSeconds, nullptr);
     }
 
+    AssetObjectIndex[AssetPath] = NewObject;
     return LogAssetLoadResult<USubUVAtlas>("SubUV atlas asset", AssetPath, StartSeconds, NewObject);
 }
 
@@ -229,8 +282,15 @@ UFontAtlas* FAssetObjectManager::LoadFontAtlasObject(const FString& AssetPath)
         return LogAssetLoadResult<UFontAtlas>("Font atlas asset", AssetPath, StartSeconds, nullptr);
     }
 
+    if (UFontAtlas* ExistingObject = FindIndexedAssetObject<UFontAtlas>(AssetObjectIndex, AssetPath))
+    {
+        return LogAssetLoadResult<UFontAtlas>("Font atlas asset", AssetPath, StartSeconds,
+                                              ExistingObject, true);
+    }
+
     if (UFontAtlas* ExistingObject = FindAssetObjectByPath<UFontAtlas>(AssetPath))
     {
+        AssetObjectIndex[AssetPath] = ExistingObject;
         return LogAssetLoadResult<UFontAtlas>("Font atlas asset", AssetPath, StartSeconds,
                                               ExistingObject, true);
     }
@@ -248,6 +308,7 @@ UFontAtlas* FAssetObjectManager::LoadFontAtlasObject(const FString& AssetPath)
         return LogAssetLoadResult<UFontAtlas>("Font atlas asset", AssetPath, StartSeconds, nullptr);
     }
 
+    AssetObjectIndex[AssetPath] = NewObject;
     return LogAssetLoadResult<UFontAtlas>("Font atlas asset", AssetPath, StartSeconds, NewObject);
 }
 
