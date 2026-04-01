@@ -194,6 +194,15 @@ namespace Engine::Component
         Builder.AddFloat(
             "ScrollSpeed", L"Scroll Speed(Cycles/s)", [this]() { return GetUVScrollSpeed(); },
             [this](const float& InValue) { SetUVScrollSpeed(InValue); });
+
+        //for (int i = 0; i < GetMaterialSlotCount(); i++)
+        //{
+        //    std::wstring display = std::wstring(L"Material") + std::to_wstring(i);
+        //    Builder.AddAssetPath(
+        //        "ObjMaterialAsset", display,
+        //        [this]() { return GetStaticMeshPath(); },
+        //        [this](const FString& InValue) { SetStaticMeshPath(InValue); });
+        //}
     }
 
     bool UStaticMeshComponent::GetLocalTriangles(TArray<Geometry::FTriangle>& OutTriangles) const

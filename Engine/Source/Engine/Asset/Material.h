@@ -11,7 +11,7 @@
 
 using namespace Asset;
 
-class UMaterial : public UAsset
+class ENGINE_API UMaterial : public UAsset
 {
     DECLARE_RTTI(UMaterial, UAsset)
 

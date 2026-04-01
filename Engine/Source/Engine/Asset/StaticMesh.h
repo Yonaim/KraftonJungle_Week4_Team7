@@ -23,7 +23,7 @@ struct FStaticMeshSection
     uint32 MaterialIndex = 0;
 };
 
-class UStaticMesh : public UAsset
+class ENGINE_API UStaticMesh : public UAsset
 {
     DECLARE_RTTI(UStaticMesh, UAsset)
 
@@ -54,7 +54,7 @@ class UStaticMesh : public UAsset
         RenderResource.reset();
     }
 
-    ENGINE_API bool LoadFromCooked(const FString&                         InAssetPath,
+    bool LoadFromCooked(const FString&                         InAssetPath,
                         std::shared_ptr<FObjCookedData> InCookedData,
                         RHI::FDynamicRHI&                      InDynamicRHI);
 
@@ -74,7 +74,7 @@ class UStaticMesh : public UAsset
     EStaticMeshVertexFormat GetVertexFormat() const;
 
     void Build();
-    ENGINE_API  bool IsValidLowLevel() const;
+    bool IsValidLowLevel() const;
 
     const Geometry::FAABB& GetAABB() const { return CachedAABB; }
     void                   CalculateAABB();

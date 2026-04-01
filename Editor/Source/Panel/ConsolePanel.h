@@ -40,6 +40,7 @@ class FConsolePanel : public IPanel
   private:
     FEditorLogBuffer* LogBuffer = nullptr;
     std::array<char, 256> InputBuffer{};
+    std::array<char, 256> SearchBuffer{};
     int32 LastVisibleLogCount = 0;
     bool bAutoScroll = true;
     bool bScrollToBottom = false;
