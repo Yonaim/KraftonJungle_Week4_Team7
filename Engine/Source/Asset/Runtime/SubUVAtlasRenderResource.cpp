@@ -29,7 +29,8 @@ namespace Asset
         Resource->Common.bPacked = false;
         Resource->Frames = CookedData.Frames;
         Resource->Sequences = CookedData.Sequences;
-        Resource->AtlasTexture = std::move(TextureResource->Texture);
+        Resource->TextureResource = TextureResource;
+        Resource->AtlasTexture = TextureResource->Texture;
         return Resource;
     }
 
@@ -39,6 +40,7 @@ namespace Asset
     {
         Info = {};
         Common = {};
+        TextureResource.reset();
         Frames.clear();
         Sequences.clear();
         AtlasTexture.reset();

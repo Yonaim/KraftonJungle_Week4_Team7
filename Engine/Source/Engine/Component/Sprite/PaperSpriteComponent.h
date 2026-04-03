@@ -36,8 +36,8 @@ namespace Engine::Component
         const FString& GetTexturePath() const { return TexturePath; }
         void           SetTexturePath(const FString& InPath);
 
-        const FTextureRenderResource* GetTextureRenderResource() const;
-        FTextureRenderResource*       GetTextureRenderResource();
+        virtual const FTextureRenderResource* GetTextureRenderResource() const;
+        virtual FTextureRenderResource*       GetTextureRenderResource();
         const FTextureRenderResource* GetTextureResource() const
         {
             return GetTextureRenderResource();

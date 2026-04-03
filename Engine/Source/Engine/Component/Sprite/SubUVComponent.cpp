@@ -44,6 +44,22 @@ namespace Engine::Component
                    : nullptr;
     }
 
+    const FTextureRenderResource* USubUVComponent::GetTextureRenderResource() const
+    {
+        const FSubUVAtlasRenderResource* Resource = GetSubUVAtlasRenderResource();
+        return (Resource != nullptr && Resource->TextureResource != nullptr)
+                   ? Resource->TextureResource.get()
+                   : nullptr;
+    }
+
+    FTextureRenderResource* USubUVComponent::GetTextureRenderResource()
+    {
+        FSubUVAtlasRenderResource* Resource = GetSubUVAtlasRenderResource();
+        return (Resource != nullptr && Resource->TextureResource != nullptr)
+                   ? Resource->TextureResource.get()
+                   : nullptr;
+    }
+
     void USubUVComponent::SetFrameIndex(int32 InFrameIndex)
     {
         FrameIndex = (InFrameIndex >= 0) ? InFrameIndex : 0;
@@ -82,8 +98,12 @@ namespace Engine::Component
             FrameIndex >= 0 && static_cast<size_t>(FrameIndex) < Resource->Frames.size())
         {
             const auto& Frame = Resource->Frames[FrameIndex];
-            OutUVMin = FVector2(Frame.X, Frame.Y);
-            OutUVMax = FVector2(Frame.X + Frame.Width, Frame.Y + Frame.Height);
+            const float AtlasWidth = static_cast<float>(std::max(1u, Resource->Common.ScaleW));
+            const float AtlasHeight = static_cast<float>(std::max(1u, Resource->Common.ScaleH));
+            OutUVMin = FVector2(static_cast<float>(Frame.X) / AtlasWidth,
+                                static_cast<float>(Frame.Y) / AtlasHeight);
+            OutUVMax = FVector2(static_cast<float>(Frame.X + Frame.Width) / AtlasWidth,
+                                static_cast<float>(Frame.Y + Frame.Height) / AtlasHeight);
             return;
         }
 

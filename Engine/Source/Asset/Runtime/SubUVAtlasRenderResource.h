@@ -21,6 +21,7 @@ namespace Asset
     {
         FSubUVAtlasInfo                   Info;
         FSubUVAtlasCommon                 Common;
+        std::shared_ptr<FTextureRenderResource> TextureResource;
         std::shared_ptr<RHI::FRHITexture> AtlasTexture;
         TArray<FSubUVFrame>               Frames;
         TMap<FString, FSubUVSequence>     Sequences;
